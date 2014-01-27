@@ -8,9 +8,9 @@ module akra {
 		code?: string;
 	}
 	export interface IUICodeEditor extends IUIComponent {
-		/** readonly */ codemirror: CodeMirrorEditor;
-
-		value: string;
+		getCodeMirror(): CodeMirrorEditor;
+		getValue(): string;
+		setValue(sValue: string): void;
 	}
 }
 

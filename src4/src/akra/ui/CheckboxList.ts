@@ -3,47 +3,47 @@
 
 module akra.ui {
 	export class CheckboxList extends Component implements IUICheckboxList {
-		changed: ISignal<{(pList: IUICheckboxList, pCheckbox: IUICheckbox):void;}>;
+		changed: ISignal<{ (pList: IUICheckboxList, pCheckbox: IUICheckbox): void; }>;
 
 		private _nSize: uint = 0;
 		private _pItems: IUICheckbox[] = [];
 		private _bMultiSelect: boolean = false;
 		private _bLikeRadio: boolean = false;
 
-		 get length(): uint { return this._nSize; }
-		 get radio(): boolean { return this._bLikeRadio; }
-		 set radio(b: boolean) { this._bLikeRadio = b; }
-		 get items(): IUICheckbox[] { return this._pItems; }
+		getLength(): uint { return this._nSize; }
+		isRadio(): boolean { return this._bLikeRadio; }
+		setRadio(b: boolean): void { this._bLikeRadio = b; }
+		getItems(): IUICheckbox[] { return this._pItems; }
 
-		 get checked(): IUICheckbox {
-			for (var i: int = 0; i < this.items.length; ++ i) {
-				if (this.items[i].checked) {
-					return this.items[i];
+		isChecked(): IUICheckbox {
+			for (var i: int = 0; i < this._pItems.length; ++i) {
+				if (this._pItems[i].isChecked()) {
+					return this._pItems[i];
 				}
 			}
 
 			return null;
 		}
-		
-		constructor (parent, options?, eType: EUIComponents = EUIComponents.CHECKBOX_LIST) {
+
+		constructor(parent, options?, eType: EUIComponents = EUIComponents.CHECKBOX_LIST) {
 			super(parent, options, eType);
 
 			this.setLayout(EUILayouts.HORIZONTAL);
 
-			this.layout.childAdded.connect(this, this._childAdded, EEventTypes.UNICAST);
-			this.layout.childRemoved.connect(this, this._childRemoved, EEventTypes.UNICAST);
+			this.getLayout().childAdded.connect(this, this._childAdded, EEventTypes.UNICAST);
+			this.getLayout().childRemoved.connect(this, this._childRemoved, EEventTypes.UNICAST);
 
 			// this.connect(this.layout, SIGNAL(childAdded), SLOT(_childAdded), EEventTypes.UNICAST);
 			// this.connect(this.layout, SIGNAL(childRemoved), SLOT(_childRemoved), EEventTypes.UNICAST);\
 
-			var pChild: IUINode = <IUINode>this.layout.child;
+			var pChild: IUINode = <IUINode>this.getLayout().getChild();
 
 			while (!isNull(pChild)) {
 				if (isCheckbox(pChild)) {
 					this.addCheckbox(<IUICheckbox>pChild);
 				}
 
-				pChild = <IUINode>pChild.sibling;
+				pChild = <IUINode>pChild.getSibling();
 			}
 		}
 
@@ -54,14 +54,14 @@ module akra.ui {
 
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
-			this.radio = isDef($comp.attr("radio")) && $comp.attr("radio").toLowerCase() !== "false";
-			this._bMultiSelect = isDef($comp.attr("multiselect")) && 
-				$comp.attr("multiselect").toLowerCase() !== "false";
+			this.setRadio(isDef($comp.attr("radio")) && $comp.attr("radio").toLowerCase() !== "false");
+			this._bMultiSelect = isDef($comp.attr("multiselect")) &&
+			$comp.attr("multiselect").toLowerCase() !== "false";
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-checkboxlist");
+			this.getElement().addClass("component-checkboxlist");
 		}
 
 		hasMultiSelect(): boolean {
@@ -78,7 +78,7 @@ module akra.ui {
 
 			pItems.first.$element.addClass("first");
 
-			for (var i: int = 0; i < pItems.length - 1; ++ i) {
+			for (var i: int = 0; i < pItems.length - 1; ++i) {
 				pItems[i].$element.removeClass("last");
 			};
 
@@ -107,10 +107,10 @@ module akra.ui {
 					var pCheckbox: IUICheckbox = this._pItems[i];
 					// this.disconnect(pCheckbox, SIGNAL(changed), SLOT(_changed));
 					pCheckbox.changed.disconnect(this, this._changed);
-					
+
 					this._pItems.splice(i, 1);
 					this.update();
-				}	
+				}
 			}
 		}
 
@@ -121,13 +121,13 @@ module akra.ui {
 			}
 			else {
 
-				if (!bCheked && this.radio) {
-					pCheckbox.checked = true;
+				if (!bCheked && this.isRadio()) {
+					pCheckbox.setChecked(true);
 					return;
 				}
 
 				var pItems: IUICheckbox[] = this._pItems;
-				for (var i: int = 0; i < pItems.length; ++ i) {
+				for (var i: int = 0; i < pItems.length; ++i) {
 					if (pItems[i] === pCheckbox) {
 						continue;
 					}

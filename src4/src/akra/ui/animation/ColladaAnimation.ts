@@ -8,19 +8,19 @@ module akra.ui.animation {
 		protected _pNameLb: IUILabel;
 
 
-		 get animation(): IColladaAnimation {
+		getAnimation(): IColladaAnimation {
 			return this._pCollada.getAnimation(this._iAnimation);
 		}
 
-		 get collada(): ICollada {
+		getCollada(): ICollada {
 			return this._pCollada;
 		}
 
-		 get index(): uint {
+		getIndex(): uint {
 			return this._iAnimation;
 		}
 
-		constructor (parent, options?) {
+		constructor(parent, options?) {
 			super(parent, options, EUIComponents.COLLADA_ANIMATION);
 
 			this.template("animation.ColladaAnimation.tpl");
@@ -32,19 +32,19 @@ module akra.ui.animation {
 
 		setAnimation(pCollada: ICollada, iAnimation: int): void {
 			this._pCollada = pCollada;
-			this._pNameLb.text = this.animation.name || "unknown";
+			this._pNameLb.setText(this.getAnimation().name || "unknown");
 		}
 
 		_nameChanged(pLb: IUILabel, sName: string): void {
-			this.animation.name = sName;
+			this.getAnimation().name = sName;
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-colladaanimation");
+			this.getElement().addClass("component-colladaanimation");
 
 			this.setDraggable(true, {
-				helper: "clone", 
+				helper: "clone",
 				containment: "document",
 				cursor: "crosshair",
 				scroll: false

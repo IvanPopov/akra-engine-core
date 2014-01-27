@@ -6,13 +6,14 @@
 
 module akra {
 	export interface IUICheckboxList extends IUIComponent {
-		/** readonly */ length: uint;
-		/** readonly */ items: IUICheckbox[];
+		getLength(): uint;
+		getItems(): IUICheckbox[];
 	
-		/** readonly */ checked: IUICheckbox;
+		isChecked(): IUICheckbox;
 	
 		//режим, в котором хотябы 1 чекбокс должен оставаться выбранным
-		radio: boolean;
+		isRadio(): boolean;
+		setRadio(bValue: boolean): void;
 	
 		hasMultiSelect(): boolean;
 	

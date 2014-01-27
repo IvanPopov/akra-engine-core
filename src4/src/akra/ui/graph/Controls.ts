@@ -7,11 +7,15 @@ module akra.ui.graph {
 		public controls: IUIComponent;
 		public graph: IUIGraph;
 
+		getGraph(): IUIGraph {
+			return this.graph;
+		}
+
 		constructor (parent, options?, pGraph: IUIGraph = null) {
 			super(parent, options);/*EUIComponents.GRAPH_CONTROLS*/
 			
-			this.controls = this.ui.createComponent("Controls");
-			this.graph = pGraph || <IUIGraph>this.ui.createComponent("Graph");
+			this.controls = this.getUI().createComponent("Controls");
+			this.graph = pGraph || <IUIGraph>this.getUI().createComponent("Graph");
 
 			this.controls.attachToParent(this);
 			this.graph.attachToParent(this);
@@ -28,7 +32,7 @@ module akra.ui.graph {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-graphcontrols");
+			this.getElement().addClass("component-graphcontrols");
 		}
 	}
 

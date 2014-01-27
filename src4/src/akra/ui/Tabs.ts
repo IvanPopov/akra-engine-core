@@ -10,18 +10,18 @@ module akra.ui {
 
 		protected $bookmarks: JQuery;
 
-		 get active(): IUIPanel {
+		constructor(parent, options?, eType: EUIComponents = EUIComponents.TABS) {
+			super(parent, options, eType, $("<div class=\"component-tabs\"><div class=\"bookmarks\"></div></div>"));
+
+			this.$bookmarks = this.getElement().find(".bookmarks:first");
+		}
+
+		getActiveTab(): IUIPanel {
 			return this._pTabs[this._iActiveTab] || null;
 		}
 
-		 get length(): int {
+		getLength(): int {
 			return this._pTabs.length;
-		}
-
-		constructor (parent, options?, eType: EUIComponents = EUIComponents.TABS) {
-			super(parent, options, eType, $("<div class=\"component-tabs\"><div class=\"bookmarks\"></div></div>"));
-
-			this.$bookmarks = this.el.find(".bookmarks:first");
 		}
 
 		addChild(pEntity: IEntity): IEntity {
@@ -37,7 +37,7 @@ module akra.ui {
 			pPanel.titleUpdated.connect(this, this._tabTitleUpdated);
 
 			pPanel.index = this._pTabs.length;
-			
+
 			this._pTabs.push(pPanel);
 
 
@@ -52,7 +52,7 @@ module akra.ui {
 		}
 
 		tabIndex(pPanel: IUIPanel): uint {
-			for (var i: int = 0; i < this._pTabs.length; ++ i) {
+			for (var i: int = 0; i < this._pTabs.length; ++i) {
 				if (pPanel == this._pTabs[i]) {
 					return i;
 				}
@@ -62,8 +62,8 @@ module akra.ui {
 		}
 
 		findTabByTitle(sName: string): int {
-			for (var i = 0; i < this._pTabs.length; ++ i) {
-				if (this._pTabs[i].title === sName) {
+			for (var i = 0; i < this._pTabs.length; ++i) {
+				if (this._pTabs[i].getTitle() === sName) {
 					return i;
 				}
 			}
@@ -72,16 +72,16 @@ module akra.ui {
 		}
 
 		findTab(sName: string): int {
-			for (var i = 0; i < this._pTabs.length; ++ i) {
-				if (this._pTabs[i].name === sName) {
+			for (var i = 0; i < this._pTabs.length; ++i) {
+				if (this._pTabs[i].getName() === sName) {
 					return i;
 				}
 			}
 
 			return -1;
-		}	
+		}
 
-		 tab(iTab: int): IUIPanel {
+		tab(iTab: int): IUIPanel {
 			return this._pTabs[iTab];
 		}
 
@@ -89,7 +89,7 @@ module akra.ui {
 			var n: uint = 0;
 
 			if (isInt(panel)) {
-				n = <uint>panel;	
+				n = <uint>panel;
 			}
 			else {
 				n = this.tabIndex(<IUIPanel>panel);
@@ -99,9 +99,9 @@ module akra.ui {
 				return;
 			}
 
-			if (this.active) {
-				this.active.hide();
-				this.bookmarkFor(this.active).removeClass("active");
+			if (!isNull(this.getActiveTab())) {
+				this.getActiveTab().hide();
+				this.bookmarkFor(this.getActiveTab()).removeClass("active");
 			}
 
 			this.bookmarkFor(this._pTabs[n]).addClass("active");
@@ -121,7 +121,7 @@ module akra.ui {
 		}
 
 		protected createBookmarkFor(pPanel: IUIPanel): void {
-			var $bookmark: JQuery = $("<div class=\"bookmark\" id=\"tab-" + pPanel.guid + "\">" + pPanel.title + "</div>");
+			var $bookmark: JQuery = $("<div class=\"bookmark\" id=\"tab-" + pPanel.guid + "\">" + pPanel.getTitle() + "</div>");
 			this.$bookmarks.append($bookmark);
 
 			var pTabs: Tabs = this;

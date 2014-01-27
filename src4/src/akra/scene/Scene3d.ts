@@ -35,15 +35,15 @@ module akra.scene {
 	export class Scene3d implements IScene3d {
 		guid: uint = guid();
 
-		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(<any>this);
-		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(<any>this);
+		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }>;
+		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }>;
 
-		beforeUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(<any>this);
-		postUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(<any>this);
-		preUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(<any>this);
+		beforeUpdate: ISignal<{ (pScene: IScene3d): void; }>;
+		postUpdate: ISignal<{ (pScene: IScene3d): void; }>;
+		preUpdate: ISignal<{ (pScene: IScene3d): void; }>;
 
-		nodeAttachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(<any>this);
-		nodeDetachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(<any>this);
+		nodeAttachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }>;
+		nodeDetachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }>;
 
 		protected _sName: string;
 		protected _pRootNode: ISceneNode;
@@ -68,6 +68,8 @@ module akra.scene {
 		}
 
 		constructor(pSceneManager: ISceneManager, sName: string = null) {
+			this.setupSignals();
+
 			this._pSceneManager = pSceneManager;
 			this._sName = sName;
 			this._pRootNode = this.createNode("root-node");
@@ -100,7 +102,18 @@ module akra.scene {
 
 			// i = this.addDisplayList(new LightGraph);
 			// debug.assert(i == DL_LIGHTING, "invalid lighting list index");
+		}
 
+		protected setupSignals(): void {
+			this.displayListAdded = this.displayListAdded || new Signal(<any>this);
+			this.displayListRemoved = this.displayListRemoved || new Signal(<any>this);
+
+			this.beforeUpdate = this.beforeUpdate || new Signal(<any>this);
+			this.postUpdate = this.postUpdate || new Signal(<any>this);
+			this.preUpdate = this.preUpdate || new Signal(<any>this);
+
+			this.nodeAttachment = this.nodeAttachment || new Signal(<any>this);
+			this.nodeDetachment = this.nodeDetachment || new Signal(<any>this);
 		}
 
 		getManager(): ISceneManager {

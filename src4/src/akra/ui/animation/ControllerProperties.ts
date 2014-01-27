@@ -46,13 +46,13 @@ module akra.ui.animation {
 
 		private updateProperties(): void {
 			var pController: IAnimationController = this._pController;
-			this._pTotalAnimLabel.text = <string><any>pController.totalAnimations;
-			this._pActiveAnimation.text = pController.active? pController.active.name: "[not selected]";
+			this._pTotalAnimLabel.setText(<string><any>pController.getTotalAnimations());
+			this._pActiveAnimation.setText(pController.getActive()? pController.getActive().getName(): "[not selected]");
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationcontrollerproperties");
+			this.getElement().addClass("component-animationcontrollerproperties");
 		}
 	}
 

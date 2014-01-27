@@ -23,7 +23,11 @@ module akra.ui {
 			var pVector: Vector = <Vector>this.getSender();
 
 			if (pVector.$lock.prop("checked")) {
-				pVector.x.text = pVector.y.text = pVector.z.text = pVector.w.text = sValue;
+				//pVector.x.setText(pVector.y.setText(pVector.z.setText(pVector.w.setText(sValue;
+				pVector.x.setText(sValue);
+				pVector.y.setText(sValue);
+				pVector.z.setText(sValue);
+				pVector.w.setText(sValue);
 			}
 
 			super.emit(pVector.value);
@@ -74,7 +78,7 @@ module akra.ui {
 			this.z.changed.connect(this.changed);
 			this.w.changed.connect(this.changed);
 
-			this.$lock = this.el.find("input[type=checkbox]:first");
+			this.$lock = this.getElement().find("input[type=checkbox]:first");
 
 
 			this.setVec4(Vec4.temp(0.));
@@ -89,21 +93,21 @@ module akra.ui {
 			var bValue: boolean = isDefAndNotNull($comp.attr("editable")) || false;
 			var sPostfix: string = $comp.attr("postfix") || null;
 
-			this.x.postfix = sPostfix;
-			this.y.postfix = sPostfix;
-			this.z.postfix = sPostfix;
-			this.w.postfix = sPostfix;
+			this.x.setPostfix(sPostfix);
+			this.y.setPostfix(sPostfix);
+			this.z.setPostfix(sPostfix);
+			this.w.setPostfix(sPostfix);
 
 			this.editable(bValue);
 		}
 
 		editable(bValue: boolean = true): void {
 			if (bValue) {
-				this.el.addClass("editable");
+				this.getElement().addClass("editable");
 				this.$lock.show();
 			}
 			else {
-				this.el.removeClass("editable");
+				this.getElement().removeClass("editable");
 				this.$lock.hide();
 			}
 			
@@ -124,7 +128,7 @@ module akra.ui {
 			if (n === this.totalComponents) {
 				return;
 			}
-			var pSpanList: JQuery = this.el.find(">span");
+			var pSpanList: JQuery = this.getElement().find(">span");
 
 			switch (n) {
 				case 2:
@@ -145,63 +149,63 @@ module akra.ui {
 
 		setVec2(v: IVec2): void {
 			var n: uint = this._iFixed;
-			this.x.text = prettifyNumber(v.x);
-			this.y.text = prettifyNumber(v.y);
+			this.x.setText(prettifyNumber(v.x));
+			this.y.setText(prettifyNumber(v.y));
 
 			this.useComponents(2);
 		}
 
 		setVec3(v: IVec3): void {
 			var n: uint = this._iFixed;
-			this.x.text = prettifyNumber(v.x);
-			this.y.text = prettifyNumber(v.y);
-			this.z.text = prettifyNumber(v.z);
+			this.x.setText(prettifyNumber(v.x));
+			this.y.setText(prettifyNumber(v.y));
+			this.z.setText(prettifyNumber(v.z));
 
 			this.useComponents(3);
 		}
 
 		setVec4(v: IVec4): void {
 			var n: uint = this._iFixed;
-			this.x.text = prettifyNumber(v.x);
-			this.y.text = prettifyNumber(v.y);
-			this.z.text = prettifyNumber(v.z);
-			this.w.text = prettifyNumber(v.w);
+			this.x.setText(prettifyNumber(v.x));
+			this.y.setText(prettifyNumber(v.y));
+			this.z.setText(prettifyNumber(v.z));
+			this.w.setText(prettifyNumber(v.w));
 
 			this.useComponents(4);
 		}
 
 		setColor(c: IColorValue): void {
-			this.x.text = prettifyNumber(c.r);
-			this.y.text = prettifyNumber(c.g);
-			this.z.text = prettifyNumber(c.b);
-			this.w.text = prettifyNumber(c.a);
+			this.x.setText(prettifyNumber(c.r));
+			this.y.setText(prettifyNumber(c.g));
+			this.z.setText(prettifyNumber(c.b));
+			this.w.setText(prettifyNumber(c.a));
 			this.useComponents(4);
 		}
 
 		toVec2(): IVec2 {
 			return Vec2.temp(
-					parseFloat(this.x.text), 
-					parseFloat(this.y.text));
+					parseFloat(this.x.getText()), 
+					parseFloat(this.y.getText()));
 		}
 
 		toVec3(): IVec3 {
 			return Vec3.temp(
-					parseFloat(this.x.text), 
-					parseFloat(this.y.text), 
-					parseFloat(this.z.text));
+					parseFloat(this.x.getText()), 
+					parseFloat(this.y.getText()), 
+					parseFloat(this.z.getText()));
 		}
 
 		toVec4(): IVec4 {
 			return Vec4.temp(
-					parseFloat(this.x.text), 
-					parseFloat(this.y.text), 
-					parseFloat(this.z.text), 
-					parseFloat(this.w.text));
+					parseFloat(this.x.getText()), 
+					parseFloat(this.y.getText()), 
+					parseFloat(this.z.getText()), 
+					parseFloat(this.w.getText()));
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-vector");
+			this.getElement().addClass("component-vector");
 		}
 	}
 

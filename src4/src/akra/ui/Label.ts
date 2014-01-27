@@ -7,7 +7,7 @@ module akra.ui {
 			var pLabel: Label = <Label>this.getSender();
 
 			pLabel.$text.css("display", "none");
-			pLabel.$input.val(pLabel.text);
+			pLabel.$input.val(pLabel.getText());
 			pLabel.$input.css("display", "-block").focus();
 
 			super.emit(e);
@@ -19,9 +19,9 @@ module akra.ui {
 			var pLabel: Label = <Label>this.getSender();
 
 			var sText: string = pLabel.$input.val();
-			var isChanged: boolean = (pLabel.text !== sText);
+			var isChanged: boolean = (pLabel.getText() !== sText);
 
-			pLabel.text = sText;
+			pLabel.setText(sText);
 			pLabel.$text.css("display", "block");
 			pLabel.$input.css("display", "none");
 
@@ -48,7 +48,7 @@ module akra.ui {
 	}
 
 	export class Label extends Component implements IUILabel {
-		changed: ISignal<{(pLabel: IUILabel, sValue: string): void;}>;
+		changed: ISignal<{ (pLabel: IUILabel, sValue: string): void; }>;
 
 		protected $text: JQuery;
 		protected $input: JQuery;
@@ -56,18 +56,18 @@ module akra.ui {
 		protected _bEditable: boolean = false;
 		protected _sPostfix: string = null;
 
-		 get text(): string { 
-			var s: string = this.$text.html(); 
+		getText(): string {
+			var s: string = this.$text.html();
 			return s.substr(0, s.length - (this._sPostfix || "").length);
 		}
 
-		set text(x: string) { this.$text.html(x + (this._sPostfix || "")); }
-		set postfix(s: string) { this._sPostfix = s; }
-		get postfix(): string { return this._sPostfix; }
+		setText(x: string) { this.$text.html(x + (this._sPostfix || "")); }
+		setPostfix(s: string) { this._sPostfix = s; }
+		getPostfix(): string { return this._sPostfix; }
 
-		constructor (ui, options?, eType: EUIComponents = EUIComponents.LABEL) {
-			super(ui, options, eType, 
-			 $("<div>\
+		constructor(ui, options?, eType: EUIComponents = EUIComponents.LABEL) {
+			super(ui, options, eType,
+				$("<div>\
 					<div class='label-text'></div>\
 					<input \
 					onfocus=\"this.style.width = ((this.value.length + 1) * 6) + 'px';\" \
@@ -77,8 +77,8 @@ module akra.ui {
 			this.$text = this.$element.find(".label-text");
 			this.$input = this.$element.find(".label-input");
 
-			this.text = isObject(options)? options.text || "": "";
-			this.editable(isObject(options)? options.editable || false: false);
+			this.setText(isObject(options) ? options.text || "" : "");
+			this.editable(isObject(options) ? options.editable || false : false);
 		}
 
 		protected setupSignals(): void {
@@ -93,12 +93,12 @@ module akra.ui {
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
 
-			this.text = $comp.attr("text");
+			this.setText($comp.attr("text"));
 			this.editable(isDef($comp.attr("editable")) || false);
-			this.postfix = $comp.attr("postfix");
+			this.setPostfix($comp.attr("postfix"));
 		}
 
-		 isEditable(): boolean {
+		isEditable(): boolean {
 			return this._bEditable;
 		}
 
@@ -107,17 +107,17 @@ module akra.ui {
 
 			if (bValue) {
 				this.handleEvent("click keydown focusout");
-				this.el.addClass("editable");
+				this.getElement().addClass("editable");
 			}
 			else {
-				this.el.removeClass("editable");
+				this.getElement().removeClass("editable");
 				this.disableEvent("click keydown focusout");
 			}
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-label");
+			this.getElement().addClass("component-label");
 		}
 
 

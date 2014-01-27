@@ -18,11 +18,11 @@ module akra.ui {
 			super.emit(pLocation);
 
 			var pNode = this.getSender();
-			var pChild: IUINode = <IUINode>pNode.child;
+			var pChild: IUINode = <IUINode>pNode.getChild();
 
 			while (!isNull(pChild)) {
 				pChild.relocated.emit(pLocation);
-				pChild = <IUINode>pChild.sibling;
+				pChild = <IUINode>pChild.getSibling();
 			}
 		}
 	}
@@ -33,15 +33,15 @@ module akra.ui {
 		protected _pUI: IUI;
 		protected _eNodeType: EUINodeTypes;
 
-		get ui(): IUI { return this._pUI; }
-		get nodeType(): EUINodeTypes { return this._eNodeType; }
+		getUI(): IUI { return this._pUI; }
+		getNodeType(): EUINodeTypes { return this._eNodeType; }
 
 		constructor(pParent: IUINode, eNodeType?: EUINodeTypes);
 		constructor(pUI: IUI, eNodeType?: EUINodeTypes);
 		constructor(parent, eNodeType: EUINodeTypes = EUINodeTypes.UNKNOWN) {
 			super(EEntityTypes.UI_NODE);
 
-			this._pUI = parent instanceof UI ? <IUI>parent : (<IUINode>parent).ui;
+			this._pUI = parent instanceof UI ? <IUI>parent : (<IUINode>parent).getUI();
 			this._eNodeType = eNodeType;
 
 			if (parent instanceof Node) {
@@ -65,12 +65,12 @@ module akra.ui {
 		recursiveRender(): void {
 			this.render();
 
-			if (this.sibling) {
-				(<IUINode>this.sibling).recursiveRender();
+			if (!isNull(this.getSibling())) {
+				(<IUINode>this.getSibling()).recursiveRender();
 			}
 
-			if (this.child) {
-				(<IUINode>this.child).recursiveRender();
+			if (!isNull(this.getChild())) {
+				(<IUINode>this.getChild()).recursiveRender();
 			}
 		}
 
@@ -84,11 +84,11 @@ module akra.ui {
 		}
 
 		addChild(pChild: IEntity): IEntity {
-			if (this.child) {
-				var pRightSibling: IEntity = this.child.rightSibling;
+			if (this.getChild()) {
+				var pRightSibling: IEntity = this.getChild().getRightSibling();
 
 				if (pRightSibling) {
-					pRightSibling.sibling = pChild;
+					pRightSibling.setSibling(pChild);
 					this.childAdded.emit(pChild);
 					return pChild;
 				}
@@ -107,7 +107,7 @@ module akra.ui {
 		}
 
 		protected findRenderTarget(): IUINode {
-			var pParent: IUINode = <IUINode>this.parent;
+			var pParent: IUINode = <IUINode>this.getParent();
 
 			while (!isNull(pParent)) {
 
@@ -115,7 +115,7 @@ module akra.ui {
 					return pParent;
 				}
 
-				pParent = <IUINode>pParent.parent;
+				pParent = <IUINode>pParent.getParent();
 			}
 
 			return null;
@@ -131,19 +131,19 @@ module akra.ui {
 	export function getUI(parent: IUINode): IUI;
 	export function getUI(parent: IUI): IUI;
 	export function getUI(parent): IUI {
-		return isUI(parent) ? <IUI>parent : (<IUINode>parent).ui;
+		return isUI(parent) ? <IUI>parent : (<IUINode>parent).getUI();
 	}
 
 	export function isUINode(pEntity: IEntity): boolean {
-		return isDefAndNotNull(pEntity) && pEntity.type === EEntityTypes.UI_NODE;
+		return isDefAndNotNull(pEntity) && pEntity.getType() === EEntityTypes.UI_NODE;
 	}
 
 	export function isLayout(pEntity: IEntity): boolean {
-		return isUINode(pEntity) && (<IUINode>pEntity).nodeType === EUINodeTypes.LAYOUT;
+		return isUINode(pEntity) && (<IUINode>pEntity).getNodeType() === EUINodeTypes.LAYOUT;
 	}
 
 	export function containsHTMLElement(pEntity: IEntity): boolean {
-		return isUINode(pEntity) && (<IUINode>pEntity).nodeType >= EUINodeTypes.HTML;
+		return isUINode(pEntity) && (<IUINode>pEntity).getNodeType() >= EUINodeTypes.HTML;
 	}
 }
 

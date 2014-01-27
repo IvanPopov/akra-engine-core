@@ -57,16 +57,16 @@ module akra.ui.animation {
 
 			filedrop.addHandler(null, {
 				drop: (file: File, content, format, e: DragEvent): void => {
-					pGraph.el.removeClass("file-drag-over");
+					pGraph.getElement().removeClass("file-drag-over");
 
 
 
 					var pName: IPathinfo = path.parse(file.name);
-					var sExt: string = pName.ext.toUpperCase();
+					var sExt: string = pName.getExt().toUpperCase();
 
 					if (sExt == "DAE") {
 						console.log("before resource creation...");
-						var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+						var pModelResource: ICollada = <ICollada>pRmgr.getColladaPool().createResource(pName.toString());
 						console.log("before model parsing...");
 						pModelResource.parse(<string>content, { scene: false, name: pName.toString() });
 
@@ -95,15 +95,15 @@ module akra.ui.animation {
 				},
 
 				// dragenter: (e) => {
-				// 	pGraph.el.addClass("file-drag-over");
+				// 	pGraph.getElement().addClass("file-drag-over");
 				// },
 
 				dragover: (e) => {
-					pGraph.el.addClass("file-drag-over");
+					pGraph.getElement().addClass("file-drag-over");
 				},
 
 				dragleave: (e) => {
-					pGraph.el.removeClass("file-drag-over");
+					pGraph.getElement().removeClass("file-drag-over");
 				},
 
 				format: EFileDataTypes.TEXT
@@ -133,7 +133,7 @@ module akra.ui.animation {
 
 
 			if (bPlay) {
-				this._pAnimationController.play.emit(pNode.animation);
+				this._pAnimationController.play.emit(pNode.getAnimation());
 			}
 
 			this.nodeSelected.emit(pNode, bPlay);
@@ -157,13 +157,13 @@ module akra.ui.animation {
 		findNodeByAnimation(sName: string): IUIAnimationNode;
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 		findNodeByAnimation(animation): IUIAnimationNode {
-			var sName: string = !isString(animation) ? (<IAnimationBase>animation).name : <string>animation;
+			var sName: string = !isString(animation) ? (<IAnimationBase>animation).getName() : <string>animation;
 			var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
 
 			for (var i: int = 0; i < pNodes.length; i++) {
-				var pAnim: IAnimationBase = pNodes[i].animation;
+				var pAnim: IAnimationBase = pNodes[i].getAnimation();
 
-				if (!isNull(pAnim) && pAnim.name === sName) {
+				if (!isNull(pAnim) && pAnim.getName() === sName) {
 					return pNodes[i];
 				}
 			}
@@ -174,7 +174,7 @@ module akra.ui.animation {
 		createNodeByController(pController: IAnimationController): void {
 			var pNode: IUIAnimationNode = null;
 			// LOG("createNodeByController(", pController ,")")
-			for (var i: int = 0; i < pController.totalAnimations; ++i) {
+			for (var i: int = 0; i < pController.getTotalAnimations(); ++i) {
 				var pAnimation: IAnimationBase = pController.getAnimation(i);
 				pNode = this.createNodeByAnimation(pAnimation);
 			}
@@ -183,7 +183,7 @@ module akra.ui.animation {
 		}
 
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
-			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
+			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.getName());
 			var pSubAnim: IAnimationBase = null;
 			var pSubNode: IUIAnimationNode = null;
 			var pBlend: IAnimationBlend = null;
@@ -212,7 +212,7 @@ module akra.ui.animation {
 				pBlend = <IAnimationBlend>pAnimation;
 				// pBlender.animation = pBlend;
 
-				for (var i = 0; i < pBlend.totalAnimations; i++) {
+				for (var i = 0; i < pBlend.getTotalAnimations(); i++) {
 					pSubAnim = pBlend.getAnimation(i);
 					pSubNode = this.createNodeByAnimation(pSubAnim);
 					pMask = pBlend.getAnimationMask(i);
@@ -263,19 +263,19 @@ module akra.ui.animation {
 			if (pAnimation.extra) {
 				if (pAnimation.extra.graph) {
 					setTimeout(() => {
-						var o = pGraph.el.offset();
-						pNode.el.offset({ left: o.left + pAnimation.extra.graph.x, top: o.top + pAnimation.extra.graph.y });
+						var o = pGraph.getElement().offset();
+						pNode.getElement().offset({ left: o.left + pAnimation.extra.graph.x, top: o.top + pAnimation.extra.graph.y });
 
 						if (pBlender) {
-							var o = pBlender.el.offset();
-							for (var i = 0; i < pBlender.totalMasks; ++i) {
+							var o = pBlender.getElement().offset();
+							for (var i = 0; i < pBlender.getTotalMasks(); ++i) {
 								var pMaskNode = pBlender.getMaskNode(i);
 
 								if (!pMaskNode) {
 									continue;
 								}
 
-								pMaskNode.el.offset({ left: o.left - 60 - pMaskNode.el.width() + i * 30, top: o.top - 30 + i * 30 });
+								pMaskNode.getElement().offset({ left: o.left - 60 - pMaskNode.getElement().width() + i * 30, top: o.top - 30 + i * 30 });
 								pMaskNode.routing();
 							}
 						}
@@ -287,7 +287,7 @@ module akra.ui.animation {
 
 			pNode.routing();
 
-			if (pAnimation === this.getController().active) {
+			if (pAnimation === this.getController().getActive()) {
 				this.selectNode(pNode);
 			}
 
@@ -324,7 +324,7 @@ module akra.ui.animation {
 			if (isComponent(pChild, EUIComponents.GRAPH_NODE)) {
 				var pNode: IUIGraphNode = <IUIGraphNode>pChild;
 				//this.connect(pNode, SIGNAL(selected), SLOT(selectNode));
-				pNode.selected.connect(this, <(pNode: IUIGraphNode, bModifierd: boolean) => void>this.selectNode);
+				pNode.selected.connect(this, this.selectNode);
 			}
 
 			return pChild;
@@ -332,12 +332,12 @@ module akra.ui.animation {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationgraph");
+			this.getElement().addClass("component-animationgraph");
 		}
 
 		static DropSignal = DropSignal;
 	}
 
-	register("animation.Graph", Graph);
+	register("animation.Graph", <any>Graph);
 }
 

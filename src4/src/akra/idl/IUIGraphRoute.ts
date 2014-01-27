@@ -1,9 +1,6 @@
-
-#define UIGRAPH_INVALID_ROUTE -1
-
+//#define UIGRAPH_INVALID_ROUTE -1
 
 /// <reference path="IUIGraphConnector.ts" />
-/// <reference path="IUIGraphEvent.ts" />
 /// <reference path="IColor.ts" />
 
 module akra {

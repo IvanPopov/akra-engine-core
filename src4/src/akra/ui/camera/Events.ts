@@ -52,7 +52,7 @@ module akra.ui.camera {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-cameraevents");
+			this.getElement().addClass("component-cameraevents");
 		}
 	}
 

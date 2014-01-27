@@ -1,5 +1,6 @@
 /// <reference path="../../idl/IUIGraphNode.ts" />
 /// <reference path="../../idl/IUIAnimationControls.ts" />
+/// <reference path="../../idl/IDocument.ts" />
 
 /// <reference path="../graph/Controls.ts" />
 
@@ -64,16 +65,16 @@ module akra.ui.animation {
 		protected createExporter(): io.Exporter {
 			var pExporter = new io.Exporter;
 			var pController = this.graph.getController();
-			var pGraphOffset = this.graph.el.offset();
+			var pGraphOffset = this.graph.getElement().offset();
 
 			pExporter.writeController(pController);
 			
-			for (var i = 0; i < pController.totalAnimations; ++ i) {
+			for (var i = 0; i < pController.getTotalAnimations(); ++ i) {
 				var pAnimation: IAnimationBase = pController.getAnimation(i);
 				var pEntry: IAnimationBaseEntry = <IAnimationBaseEntry>pExporter.findEntry(pAnimation.guid);
 				var pGraphNode: IUIAnimationNode = this.graph.findNodeByAnimation(pAnimation);
 
-				var pOffset = pGraphNode.el.offset();
+				var pOffset = pGraphNode.getElement().offset();
 
 				if (!pEntry.extra) {
 					pEntry.extra = {}

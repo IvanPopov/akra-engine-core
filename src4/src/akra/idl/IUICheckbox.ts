@@ -11,8 +11,9 @@ module akra {
 	export interface IUICheckbox extends IUIComponent {
 		changed: ISignal<{ (pChekbox: IUICheckbox, bValue: boolean): void; }>;
 
-		checked: boolean;
-		text: string;
+		setChecked(bValue: boolean): void;
+		getText(): string;
+		setText(sValue: string): void;
 
 		isChecked(): boolean;
 

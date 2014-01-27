@@ -5,14 +5,14 @@ module akra.ui {
 	class MouseleaveSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
 		emit(e?: IUIEvent): void {
 			super.emit(e);
-			(<Menu>this.getSender()).layout.hide();
+			(<Menu>this.getSender()).getLayout().hide();
 		}
 	}
 
 	class MouseenterSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
 		emit(e?: IUIEvent): void {
 			super.emit(e);
-			(<Menu>this.getSender()).layout.show();
+			(<Menu>this.getSender()).getLayout().show();
 		}
 	}
 
@@ -20,19 +20,14 @@ module akra.ui {
 	export class Menu extends Component {
 		protected $title: JQuery;
 
-		 get text(): string { return this.$title.html(); }
-		 set text(s: string) {
-			this.$title.html(s);
-		}
-
-		constructor (parent, options?, eType: EUIComponents = EUIComponents.MENU) {
-			super(parent, mergeOptions({layout: EUILayouts.VERTICAL}, options), eType, $(
+		constructor(parent, options?, eType: EUIComponents = EUIComponents.MENU) {
+			super(parent, mergeOptions({ layout: EUILayouts.VERTICAL }, options), eType, $(
 				"<div class=\"component-menu\">\
 					<div class=\"menu-title\"></div>\
 				</div>"));
 
-			this.$title = this.el.find(".menu-title:first");
-			
+			this.$title = this.getElement().find(".menu-title:first");
+
 			this.handleEvent("mouseenter mouseleave");
 		}
 
@@ -43,13 +38,18 @@ module akra.ui {
 			super.setupSignals();
 		}
 
+		getText(): string { return this.$title.html(); }
+		setText(s: string): void {
+			this.$title.html(s);
+		}
+
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
 
 			var sText: string = $comp.attr("text");
-			
+
 			if (isString(sText)) {
-				this.text = sText;
+				this.setText(sText);
 			}
 		}
 

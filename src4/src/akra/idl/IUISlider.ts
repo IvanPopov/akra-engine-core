@@ -2,10 +2,13 @@
 
 module akra {
 	export interface IUISlider extends IUIComponent {
-		/** readonly */ pin: IUIComponent;
-		value: float;
-		range: float;
-		text: string;
+		getPin(): IUIComponent;
+		getValue(): float;
+		setValue(fValue: float): void;
+		getRange(): float;
+		setRange(fRange: float): void;
+		getText(): string;
+		setText(sValue: string): void;
 
 		updated: ISignal<{ (pSlider: IUISlider, fValue: float): void; }>;
 	}

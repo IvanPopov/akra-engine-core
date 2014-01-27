@@ -35,6 +35,13 @@ module akra {
 	}
 	
 	export interface IEventProvider extends IUnique {
-		
+		/**
+		 * Special function which should be defined and redefined signals.
+		 * Must be defined immediately after the constructor.
+		 * Must be called immediately after the super() call in costructor or
+		 * called first.
+		 */
+		//FIXME: will be removed from interface.
+		setupSignals(): void;
 	}
 }

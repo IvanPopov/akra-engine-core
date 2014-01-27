@@ -36,12 +36,13 @@ module akra.ui.animation {
 
 			if (nTotal > nSliders) {
 				for (var i: int = nSliders; i < nTotal; ++ i) {
-					this.connect(pSliders[i], SIGNAL(updated), SLOT(_changed));
+					//this.connect(pSliders[i], SIGNAL(updated), SLOT(_changed));
+					pSliders[i].updated.connect(this, this._changed);
 				}
 			}
 
 			if (nSliders > 0) {
-				pSliders[nSliders - 1].el.removeClass("last");
+				pSliders[nSliders - 1].getElement().removeClass("last");
 			}
 
 			if (nTotal < nSliders) {
@@ -51,31 +52,31 @@ module akra.ui.animation {
 				}
 			}
 
-			this.el.find(".row > span").each((i, el) => {
+			this.getElement().find(".row > span").each((i, el) => {
 				if (i === nTotal) {
 					return false;
 				}
 
-				pSliders[i].name = pBones[i];
-				pSliders[i].value = pMask[pBones[i]];
+				pSliders[i].setName(pBones[i]);
+				pSliders[i].setValue(pMask[pBones[i]]);
 
 				this._changed(pSliders[i], pMask[pBones[i]]);
 
 				$(el).html(pBones[i] + ":");
 			})
 
-			pSliders[0].el.parent().addClass("first");
-			pSliders[nTotal - 1].el.parent().addClass("last");
+			pSliders[0].getElement().parent().addClass("first");
+			pSliders[nTotal - 1].getElement().parent().addClass("last");
 		}
 
 		_changed(pSlider: IUISlider, fValue: float): void {
-			pSlider.text = fValue.toFixed(1);
-			this._pMask[pSlider.name] = fValue;
+			pSlider.setText(fValue.toFixed(1));
+			this._pMask[pSlider.getName()] = fValue;
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationmaskproperties");
+			this.getElement().addClass("component-animationmaskproperties");
 		}
 	}
 

@@ -9,7 +9,8 @@ module akra {
 	}
 
 	export interface IUIButton extends IUIComponent {
-		text: string;
+		getText(): string;
+		setText(sValue: string): void;
 	}
 }
 

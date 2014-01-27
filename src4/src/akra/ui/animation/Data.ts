@@ -8,13 +8,13 @@ module akra.ui.animation {
 	export class Data extends Node implements IUIAnimationData {
 		private _pAnimation: IAnimation = null;
 
-		get animation(): IAnimation {
+		getAnimation(): IAnimation {
 			return this._pAnimation;
 		}
 
-		 set animation(pAnim: IAnimation) {
+		setAnimation(pAnim: IAnimation) {
 			this._pAnimation = pAnim;
-			(<IUILabel>this.child).text = pAnim.name;
+			(<IUILabel>this.getChild()).setText(pAnim.getName());
 		}
 
 		constructor (pGraph: IUIGraph, pAnim: IAnimation = null) {
@@ -23,7 +23,7 @@ module akra.ui.animation {
 			this.template("animation.Data.tpl");
 
 			if (!isNull(pAnim)) {
-				this.animation = pAnim;
+				this.setAnimation(pAnim);
 			}
 
 			this.linkAreas();
@@ -31,12 +31,12 @@ module akra.ui.animation {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationdata");
+			this.getElement().addClass("component-animationdata");
 		}
 
 	}
 
-	register("animation.Data", Data);
+	register("animation.Data", <any>Data);
 }
 
 

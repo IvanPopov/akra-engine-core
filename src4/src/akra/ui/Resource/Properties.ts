@@ -2,6 +2,7 @@
 /// <reference path="../../idl/IResourcePoolItem.ts" />
 /// <reference path="../animation/ColladaAnimation.ts" />
 /// <reference path="../Component.ts" />
+/// <reference path="../../pool/resources/Collada.ts" />
 
 module akra.ui.resource {
 	export class Properties extends Component {
@@ -20,7 +21,7 @@ module akra.ui.resource {
 
 			this._pName = <IUILabel>this.findEntity("name");
 			this._pColldaProperties = <IUIComponent>this.findEntity("collada-properties");
-			this.$colladaAnimations = this._pColldaProperties.el.find("div.row:first");
+			this.$colladaAnimations = this._pColldaProperties.getElement().find("div.row:first");
 		}
 
 		setResource(pItem: IResourcePoolItem): void {
@@ -36,10 +37,10 @@ module akra.ui.resource {
 		protected updateProperties(): void {
 			var pItem: IResourcePoolItem = this._pResource;
 
-			this._pName.text = pItem.findResourceName();
+			this._pName.setText(pItem.findResourceName());
 
 			//collada-properties
-			if (core.pool.resources.isColladaResource(pItem)) {
+			if (pool.resources.Collada.isColladaResource(pItem)) {
 				this._pColldaProperties.show();	
 				
 				var pCollada: ICollada = <ICollada>pItem;
@@ -73,9 +74,9 @@ module akra.ui.resource {
 			}
 		}
 
-		rendered(): void {
-			super.rendered();
-			this.el.addClass("component-resourceproperties");
+		protected finalizeRender(): void {
+			super.finalizeRender();
+			this.getElement().addClass("component-resourceproperties");
 		}
 	}
 

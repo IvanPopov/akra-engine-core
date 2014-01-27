@@ -20,10 +20,17 @@ module akra.scene {
 		getName(): string {
 			return this._sName;
 		}
+
 		//setName(sName: string): void { this._sName = sName; }
 
 		constructor(sName: string) {
+			this.setupSignals();
+
 			this._sName = sName;
+		}
+
+		protected setupSignals(): void {
+
 		}
 
 		_onNodeAttachment(pScene: IScene3d, pNode: T): void {

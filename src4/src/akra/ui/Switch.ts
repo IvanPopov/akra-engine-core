@@ -8,12 +8,12 @@ module akra.ui {
 
 		private $checkbox: JQuery;
 
-		get value(): boolean {
+		getValue(): boolean {
 			return this.isOn();
 		}
 
-		set value(bValue: boolean) {
-			if (bValue != this.value) {
+		setValue(bValue: boolean) {
+			if (bValue != this.getValue()) {
 				this._setValue(bValue);
 				this.changed.emit(bValue);
 			}
@@ -29,11 +29,11 @@ module akra.ui {
 				));
 
 			// this.handleEvent("click");
-			this.$checkbox = this.el.find("input[type=checkbox]");
+			this.$checkbox = this.getElement().find("input[type=checkbox]");
 
 			this.$checkbox.click((e: IUIEvent) => {
 				e.stopPropagation();
-				this.changed.emit(this.value);
+				this.changed.emit(this.getValue());
 			});
 		}
 
@@ -49,7 +49,7 @@ module akra.ui {
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
 
-			this.value = isDef($comp.attr("on"));
+			this.setValue(isDef($comp.attr("on")));
 		}
 
 		isOn(): boolean {

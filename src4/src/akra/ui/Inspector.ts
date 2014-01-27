@@ -1,6 +1,8 @@
 /// <reference path="../idl/IUILabel.ts" />
 /// <reference path="../idl/IModelEntry.ts" />
 
+/// <reference path="../animation/Controller.ts" />
+
 /// <reference path="Component.ts" />
 /// <reference path="resource/Properties.ts" />
 /// <reference path="animation/ControllerProperties.ts" />
@@ -11,9 +13,10 @@
 /// <reference path="animation/MaskProperties.ts" />
 /// <reference path="camera/Events.ts" />
 /// <reference path="scene/Events.ts" />
-/// <reference path="ui/animation/Controller.ts" />
 
 module akra.ui {
+	import Vec3 = math.Vec3;
+
 	export class Inspector extends Component {
 		protected _pSceneEvents: scene.Events;
 
@@ -79,12 +82,21 @@ module akra.ui {
 
 			this._pCameraEvents = <camera.Events>this.findEntity("camera-events");
 
-			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_updateName));
-			this.connect(this._pPosition, SIGNAL(changed), SLOT(_updateLocalPosition));
-			this.connect(this._pRotation, SIGNAL(changed), SLOT(_updateRotation));
-			this.connect(this._pScale, SIGNAL(changed), SLOT(_updateScale));
-			this.connect(this._pInheritance, SIGNAL(changed), SLOT(_updateInheritance));
-			this.connect(this._pAddControllerBtn, SIGNAL(click), SLOT(_addController));
+			//this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_updateName));
+			//this.connect(this._pPosition, SIGNAL(changed), SLOT(_updateLocalPosition));
+			//this.connect(this._pRotation, SIGNAL(changed), SLOT(_updateRotation));
+			//this.connect(this._pScale, SIGNAL(changed), SLOT(_updateScale));
+			//this.connect(this._pInheritance, SIGNAL(changed), SLOT(_updateInheritance));
+			//this.connect(this._pAddControllerBtn, SIGNAL(click), SLOT(_addController));
+
+			this._pNameLabel.changed.connect(this, this._updateName);
+			this._pPosition.changed.connect(this, this._updateLocalPosition);
+			this._pRotation.changed.connect(this, this._updateRotation);
+			this._pScale.changed.connect(this, this._updateScale);
+			this._pInheritance.changed.connect(this, this._updateInheritance);
+
+			this._pAddControllerBtn.click.connect(this, this._addController);
+
 			//---------------
 			this._pAnimationNodeProperties = <animation.NodeProperties>this.findEntity("animation-node-properties");
 			this._pAnimationMaskProperties = <animation.MaskProperties>this.findEntity("animation-mask-properties");
@@ -96,6 +108,11 @@ module akra.ui {
 			this._pSceneEvents.show();
 		}
 
+		protected setupSignals(): void {
+			this.nodeNameChanged = this.nodeNameChanged || new Signal(<any>this);
+			super.setupSignals();
+		}
+
 		private getControllerUI(): ui.animation.Controller {
 			if (this._nTotalVisibleControllers === this._pControllers.length) {
 				console.log("create controller >> ");
@@ -104,9 +121,11 @@ module akra.ui {
 						show: false
 					});
 
-				pController.render(this._pAddControllerBtn.el.parent());
-				this.connect(pController, SIGNAL(edit), SLOT(_editCintroller));
-				this.connect(pController, SIGNAL(remove), SLOT(_removeController));
+				pController.render(this._pAddControllerBtn.getElement().parent());
+				//this.connect(pController, SIGNAL(edit), SLOT(_editCintroller));
+				//this.connect(pController, SIGNAL(remove), SLOT(_removeController));
+				pController.edit.connect(this, this._editCintroller);
+				pController.remove.connect(this, this._removeController);
 				this._pControllers.push(pController);
 			}
 
@@ -127,12 +146,12 @@ module akra.ui {
 			var pController: IAnimationController = ide.getEngine().createAnimationController();
 			var pControllerUI = this.getControllerUI();
 			pControllerUI.controller = pController;
-			// this._pAddControllerBtn.el.append(pControllerUI.el.parent());
+			// this._pAddControllerBtn.getElement().append(pControllerUI.getElement().parent());
 			this._pNode.addController(pController);
 		}
 
 		_removeController(pControllerUI: ui.animation.Controller): void {
-			LOG("remove controller");
+			debug.log("remove controller");
 		}
 
 		_editCintroller(pControllerUI: ui.animation.Controller): void {
@@ -145,12 +164,12 @@ module akra.ui {
 				sName = null;
 			}
 
-			this._pNode.name = sName;
-			this.nodeNameChanged(this._pNode);
+			this._pNode.setName(sName);
+			this.nodeNameChanged.emit(this._pNode);
 		}
 
 		_updateInheritance(pCheckboxList: IUICheckboxList, pCheckbox: IUICheckbox): void {
-			switch (pCheckbox.name) {
+			switch (pCheckbox.getName()) {
 				case "position":
 					this._pNode.setInheritance(ENodeInheritance.POSITION);
 					return;
@@ -169,16 +188,16 @@ module akra.ui {
 		}
 
 		_updateScale(pVector: IUIVector, pScale: IVec3): void {
-			this._pNode.localScale = pScale;
+			this._pNode.setLocalScale(pScale);
 		}
 
 		_updateLocalPosition(pVector: IUIVector, pPos: IVec3): void {
-			this._pNode.localPosition = pPos;
+			this._pNode.setLocalPosition(pPos);
 		}
 
-		rendered(): void {
-			super.rendered();
-			this.el.addClass("component-inspector");
+		protected finalizeRender(): void {
+			super.finalizeRender();
+			this.getElement().addClass("component-inspector");
 		}
 
 		_scenePostUpdated(pScene: IScene3d): void {
@@ -190,31 +209,33 @@ module akra.ui {
 		private updateProperties(): void {
 			var pNode: ISceneNode = this._pNode;
 
-			this._pNameLabel.text = (pNode.name || "null").toString();
-			this._pPosition.setVec3(pNode.localPosition);
+			this._pNameLabel.setText((pNode.getName() || "null").toString());
+			this._pPosition.setVec3(pNode.getLocalScale());
 			
-			var v3fRot: IVec3 = vec3();
-			pNode.localOrientation.toYawPitchRoll(v3fRot);
-			this._pRotation.setVec3(vec3(v3fRot.y, v3fRot.x, v3fRot.z).scale(180.0 / math.PI));
+			var v3fRot: IVec3 = Vec3.temp();
+			pNode.getLocalOrientation().toYawPitchRoll(v3fRot);
+			this._pRotation.setVec3(Vec3.temp(v3fRot.y, v3fRot.x, v3fRot.z).scale(180.0 / math.PI));
 			
-			this._pScale.setVec3(pNode.localScale);
-			this._pWorldPosition.setVec3(pNode.worldPosition);
+			this._pScale.setVec3(pNode.getLocalScale());
+			this._pWorldPosition.setVec3(pNode.getWorldPosition());
+
+			var pItems: IUICheckbox[] = this._pInheritance.getItems();
 
 			switch (pNode.getInheritance()) {
 				case ENodeInheritance.POSITION: 
-					this._pInheritance.items[0].checked = true;
+					pItems[0].setChecked(true);
 					break;
 		        case ENodeInheritance.ROTSCALE: 
-		        	this._pInheritance.items[1].checked = true;
+					pItems[1].setChecked(true);
 		        	break;
 		    	case ENodeInheritance.ALL: 
-		    		this._pInheritance.items[2].checked = true;
+					pItems[2].setChecked(true);
 		    		break;
 			}
 
 			this.hideAllControllersUI();
 
-			for (var i = 0; i < pNode.totalControllers; ++ i) {
+			for (var i = 0; i < pNode.getTotalControllers(); ++ i) {
 				var pControllerUI = this.getControllerUI();
 				pControllerUI.controller = pNode.getController(i);
 			}
@@ -224,91 +245,95 @@ module akra.ui {
 
 		inspectAnimationNode(pNode: IUIAnimationNode): void {
 			if (isNull(pNode) || isNull(pNode.animation)) {
-				this.el.find("div[name=animation-node]").hide();
+				this.getElement().find("div[name=animation-node]").hide();
 				return;
 			}
 
-			this.el.find("div[name=animation-node]").show();
+			this.getElement().find("div[name=animation-node]").show();
 			this._pAnimationNodeProperties.setNode(pNode);
 
 			if (animation.isMaskNode(pNode)) {
-				this.el.find(".animation-mask-properties-row:first").show();
+				this.getElement().find(".animation-mask-properties-row:first").show();
 				this._pAnimationMaskProperties.setMask(<IUIAnimationMask>pNode);
 			}
 			else {
-				this.el.find(".animation-mask-properties-row:first").hide();
+				this.getElement().find(".animation-mask-properties-row:first").hide();
 			}
 		}
 
 		inspectAnimationController(pController: IAnimationController): void {
 			if (isNull(pController)) {
 				if (this._bControllerVisible) {
-					this.el.find("div[name=animation-controller]").hide();
+					this.getElement().find("div[name=animation-controller]").hide();
 					this._bControllerVisible = false;
 				}
 				return;
 			}
 			if (!this._bControllerVisible) {
 				this._bControllerVisible = true;
-				this.el.find("div[name=animation-controller]").show();
+				this.getElement().find("div[name=animation-controller]").show();
 			}
 			this._pController.setController(pController);
 		}
 
 		inspectNode(pNode: ISceneNode): void {
 			if (this._pNode) {
-				this.disconnect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
+				//this.disconnect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
+				this._pNode.getScene().postUpdate.disconnect(this, this._scenePostUpdated);
 			}
 
 			this._pNode = pNode;
 			this.updateProperties();
 
-			if (akra.scene.objects.isModelEntry(pNode)) {
+			if (akra.scene.objects.ModelEntry.isModelEntry(pNode)) {
 				var pEntry: IModelEntry = (<IModelEntry>pNode);
-				this.el.find("div[name=model-entry]").show();
+				this.getElement().find("div[name=model-entry]").show();
 				
-				this._pResource.setResource(pEntry.resource);
+				this._pResource.setResource(pEntry.getResource());
 			}
 			else {
-				this.el.find("div[name=model-entry]").hide();	
+				this.getElement().find("div[name=model-entry]").hide();	
 			}
 
-			if (akra.scene.isModel(pNode)) {
+			if (akra.scene.SceneModel.isModel(pNode)) {
 				var pModel: ISceneModel = <ISceneModel>pNode;
-				this.el.find("div[name=scene-model]").show();
+				this.getElement().find("div[name=scene-model]").show();
 
 				this._pSceneModel.setModel(pModel);
 
-				if (!isNull(pModel.mesh)) {
-					this._pMesh.setMesh(pModel.mesh);
+				if (!isNull(pModel.getMesh())) {
+					this._pMesh.setMesh(pModel.getMesh());
 				}
 			}
 			else {
-				this.el.find("div[name=scene-model]").hide();
+				this.getElement().find("div[name=scene-model]").hide();
 			}
 
-			if (akra.scene.light.isLightPoint(pNode)) {
+			if (akra.scene.light.LightPoint.isLightPoint(pNode)) {
 				var pPoint: ILightPoint = <ILightPoint>pNode;
-				this.el.find("div[name=light-point]").show();
+				this.getElement().find("div[name=light-point]").show();
 				this._pLight.setLight(pPoint);	
 			}
 			else {
-				this.el.find("div[name=light-point]").hide();
+				this.getElement().find("div[name=light-point]").hide();
 			}
 
-			if (akra.scene.objects.isCamera(pNode)) {
+			if (akra.scene.objects.Camera.isCamera(pNode)) {
 				var pCamera: ICamera = <ICamera>pNode;
-				this.el.find("div[name=camera]").show();
+				this.getElement().find("div[name=camera]").show();
 				this._pCameraEvents.setCamera(pCamera);
 			}
 			else {
-				this.el.find("div[name=camera]").hide();
+				this.getElement().find("div[name=camera]").hide();
 			}
 
-			this.connect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
+			//this.connect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
+			this._pNode.getScene().postUpdate.connect(this, this._scenePostUpdated);
 		}
 
-		BROADCAST(nodeNameChanged, CALL(node));
+		nodeNameChanged: ISignal<{ (pInspector: IUIComponent, pNode: ISceneNode): void;}>
+
+		//BROADCAST(nodeNameChanged, CALL(node));
 	}
 
 	register("Inspector", Inspector);

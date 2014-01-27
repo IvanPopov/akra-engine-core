@@ -11,10 +11,10 @@ module akra.ui {
 	}
 
 	export class Button extends Component implements IUIButton {
-		 get text(): string { return this.el.html(); }
-		 set text(x: string) { this.el.html(x); }
+		getText(): string { return this.getElement().html(); }
+		setText(x: string) { this.getElement().html(x); }
 
-		constructor (ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
+		constructor(ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
 			super(ui, options, eType, $("<button class=\"component-button\"/>"));
 
 			this.handleEvent("click");
@@ -31,16 +31,16 @@ module akra.ui {
 			var sImage: string = $comp.attr("img");
 
 			if (isString(sImage)) {
-				this.text = ("<img src='" + sImage + "' />");
+				this.setText(("<img src='" + sImage + "' />"));
 			}
 			else {
-				this.text = $comp.attr("text") || (sImage? "": "push");
+				this.setText($comp.attr("text") || (sImage ? "" : "push"));
 			}
 		}
 
 		protected applyOptions(pOptions: IUIButtonOptions): void {
 			super.applyOptions(pOptions);
-			this.text = pOptions.text || "push";
+			this.setText(pOptions.text || "push");
 		}
 
 		static ClickSignal = ClickSignal;

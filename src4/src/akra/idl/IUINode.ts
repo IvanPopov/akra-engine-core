@@ -20,8 +20,8 @@ module akra {
 	} 
 	
 	export interface IUINode extends IEntity {
-		nodeType: EUINodeTypes;
-		ui: IUI;
+		getNodeType(): EUINodeTypes;
+		getUI(): IUI;
 	
 		render(): boolean;
 		render(pParent: IUINode): boolean;

@@ -69,13 +69,13 @@ module akra.ui.graph {
 		protected _pAreas: IGraphNodeAreaMap = <any>{};
 		protected _isSuitable: boolean = true;
 
-		get graphNodeType(): EUIGraphNodes {
+		getGraphNodeType(): EUIGraphNodes {
 			return this._eGraphNodeType;
 		}
 
-		get graph(): IUIGraph { return <IUIGraph>this.parent; }
+		getGraph(): IUIGraph { return <IUIGraph>this.getParent(); }
 
-		get areas(): IGraphNodeAreaMap {
+		getAreas(): IGraphNodeAreaMap {
 			return this._pAreas;
 		}
 
@@ -100,8 +100,8 @@ module akra.ui.graph {
 			//FIXME: without timeout must be all OK!
 			setTimeout(() => {
 
-				node.el.css("position", "absolute");
-				node.el.offset(node.graph.el.offset());
+				node.getElement().css("position", "absolute");
+				node.getElement().offset(node.getGraph().getElement().offset());
 
 			}, 5);
 
@@ -111,7 +111,7 @@ module akra.ui.graph {
 			pGraph.connectionBegin.connect(this, this.onConnectionBegin);
 			pGraph.connectionEnd.connect(this, this.onConnectionEnd);
 
-			this.el.disableSelection();
+			this.getElement().disableSelection();
 		}
 
 		protected setupSignals(): void {
@@ -127,9 +127,9 @@ module akra.ui.graph {
 		}
 
 		getOutputConnector(): IUIGraphConnector {
-			for (var i in this.areas) {
-				if (this.areas[i].isSupportsOutgoing()) {
-					return this.areas[i].prepareForConnect();
+			for (var i in this.getAreas()) {
+				if (this.getAreas()[i].isSupportsOutgoing()) {
+					return this.getAreas()[i].prepareForConnect();
 				}
 			}
 
@@ -137,31 +137,31 @@ module akra.ui.graph {
 		}
 
 		getInputConnector(): IUIGraphConnector {
-			for (var i in this.areas) {
-				if (this.areas[i].isSupportsIncoming()) {
-					return this.areas[i].prepareForConnect();
+			for (var i in this.getAreas()) {
+				if (this.getAreas()[i].isSupportsIncoming()) {
+					return this.getAreas()[i].prepareForConnect();
 				}
 			}
 		}
 
 		protected onConnectionEnd(pGraph: IUIGraph): void {
 			this._isSuitable = false;
-			this.el.removeClass("open blocked");
+			this.getElement().removeClass("open blocked");
 			this.routing();
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
-			if (pRoute.left.node === this) {
+			if (pRoute.left.getNode() === this) {
 				return;
 			}
 
 			if (!this.canAcceptConnect()) {
-				this.el.addClass("blocked");
+				this.getElement().addClass("blocked");
 				return;
 			}
 
 			this._isSuitable = true;
-			this.el.addClass("open");
+			this.getElement().addClass("open");
 		}
 
 		//finding areas in direct childrens
@@ -170,7 +170,7 @@ module akra.ui.graph {
 
 			for (var i = 0; i < pChildren.length; ++i) {
 				if (isConnectionArea(pChildren[i])) {
-					this.addConnectionArea(pChildren[i].name, <IUIGraphConnectionArea>pChildren[i]);
+					this.addConnectionArea(pChildren[i].getName(), <IUIGraphConnectionArea>pChildren[i]);
 				}
 			}
 		}
@@ -182,8 +182,8 @@ module akra.ui.graph {
 		findRoute(pNode: IUIGraphNode): IUIGraphRoute {
 			var pRoute: IUIGraphRoute = null;
 
-			for (var i in this.areas) {
-				pRoute = this.areas[i].findRoute(pNode)
+			for (var i in this.getAreas()) {
+				pRoute = this.getAreas()[i].findRoute(pNode)
 				if (!isNull(pRoute)) {
 					return pRoute;
 				}
@@ -197,8 +197,8 @@ module akra.ui.graph {
 		}
 
 		canAcceptConnect(): boolean {
-			for (var i in this.areas) {
-				if (this.areas[i].isSupportsIncoming()) {
+			for (var i in this.getAreas()) {
+				if (this.getAreas()[i].isSupportsIncoming()) {
 					return true;
 				}
 			}
@@ -209,7 +209,7 @@ module akra.ui.graph {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-graphnode");
+			this.getElement().addClass("component-graphnode");
 		}
 
 		
@@ -237,7 +237,7 @@ module akra.ui.graph {
 
 				pSidePanels[i] = new ConnectionArea(this, { show: false });
 				pSidePanels[i].setLayout(EUILayouts.HORIZONTAL);
-				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
+				pSidePanels[i].render(this.getElement().find(".graph-node-" + sSide + ":first"));
 
 				this._pAreas[sSide] = pSidePanels[i];
 			}
@@ -246,7 +246,7 @@ module akra.ui.graph {
 				var sSide: string = pSidesLR[i];
 
 				pSidePanels[i] = new ConnectionArea(this, { show: false });
-				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
+				pSidePanels[i].render(this.getElement().find(".graph-node-" + sSide + ":first"));
 
 				this.addConnectionArea(sSide, pSidePanels[i]);
 			}

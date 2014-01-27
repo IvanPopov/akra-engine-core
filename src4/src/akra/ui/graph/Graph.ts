@@ -39,7 +39,7 @@ module akra.ui.graph {
 			var pGraph: Graph = <Graph>this.getSender();
 
 			if (!isNull(pGraph.tempRoute)) {
-				var pOffset = pGraph.el.offset();
+				var pOffset = pGraph.getElement().offset();
 				pGraph.tempRoute.routing({ x: e.pageX - pOffset.left, y: e.pageY - pOffset.top });
 			}
 		}
@@ -73,11 +73,11 @@ module akra.ui.graph {
 
 		 get nodes(): IUIGraphNode[] {
 			var pNodes: IUIGraphNode[] = [];
-			var pChild: IEntity = this.child;
+			var pChild: IEntity = this.getChild();
 			
 			while(!isNull(pChild)) {
 				pNodes.push(<IUIGraphNode>pChild);
-				pChild = pChild.sibling;
+				pChild = pChild.getSibling();
 			}
 
 			return pNodes;
@@ -97,7 +97,7 @@ module akra.ui.graph {
 
 			//FIXME: unblock selection
 			// this.getHTMLElement().onselectstart = () => { return false };
-			this.el.disableSelection();
+			this.getElement().disableSelection();
 			this.handleEvent("mouseup mousemove keydown click");
 		}
 
@@ -134,7 +134,7 @@ module akra.ui.graph {
 
 			var pFrom: IUIGraphConnector = this._pTempRoute.left;
 
-			if (pFrom.node === pTo.node) {
+			if (pFrom.getNode() === pTo.getNode()) {
 				debug.log("connection to same node forbidden");
 				this.removeTempRoute();
 				return;
@@ -159,7 +159,7 @@ module akra.ui.graph {
 				height: "100%"
 			});
 
-			this.el.addClass("component-graph");
+			this.getElement().addClass("component-graph");
 		}
 
 

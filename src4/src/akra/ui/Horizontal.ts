@@ -30,7 +30,7 @@ module akra.ui {
 
 		toString(isRecursive: boolean = false, iDepth: int = 0): string {
 			if (!isRecursive) {
-		        return '<horizontal' + (this.name? " " + this.name: "") + '>';
+		        return '<horizontal' + (this.getName()? " " + this.getName(): "") + '>';
 		    }
 
 		    return super.toString(isRecursive, iDepth);

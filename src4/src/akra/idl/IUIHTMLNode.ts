@@ -8,7 +8,7 @@ module akra {
 	
 	export interface IUIHTMLNode extends IUINode {
 		$element: JQuery;
-		el: JQuery;
+		getElement(): JQuery;
 	
 		getHTMLElement(): HTMLElement;
 	

@@ -1,70 +1,64 @@
-#ifndef UI_TS
-#define UI_TS
+/// <reference parg="IUI.ts" />
 
-#include "IUI.ts"
+/// <reference parg="common.ts" />
+/// <reference parg="HTMLNode.ts" />
+/// <reference parg="DNDNode.ts" />
+/// <reference parg="Component.ts" />
+/// <reference parg="Panel.ts" />
+/// <reference parg="Popup.ts" />
+/// <reference parg="Tabs.ts" />
+/// <reference parg="Button.ts" />
+/// <reference parg="Menu.ts" />
+/// <reference parg="Switch.ts" />
+/// <reference parg="Label.ts" />
+/// <reference parg="Vector.ts" />
+/// <reference parg="Layout.ts" />
+/// <reference parg="Horizontal.ts" />
+/// <reference parg="Vertical.ts" />
+/// <reference parg="Slider.ts" />
+/// <reference parg="Checkbox.ts" />
+/// <reference parg="CheckboxList.ts" />
+/// <reference parg="Window.ts" />
+/// <reference parg="RenderTargetStats.ts" />
+/// <reference parg="Tree.ts" />
 
-#include "common.ts"
-#include "HTMLNode.ts"
-#include "DNDNode.ts"
-#include "Component.ts"
-#include "Panel.ts"
-#include "Popup.ts"
-#include "Tabs.ts"
-#include "Button.ts"
-#include "Menu.ts"
-#include "Switch.ts"
-#include "Label.ts"
-#include "Vector.ts"
-#include "Layout.ts"
-#include "Horizontal.ts"
-#include "Vertical.ts"
-#include "Slider.ts"
-#include "Checkbox.ts"
-#include "CheckboxList.ts"
-#include "Window.ts"
-#include "RenderTargetStats.ts"
-#include "Tree.ts"
 
-#define UI_GRAPH
-#define UI_ANIMATION
-#define UI_CODEEDITOR
+/// <reference parg="CodeEditor.ts" />
 
-#ifdef UI_CODEEDITOR
-#include "CodeEditor.ts"
-#endif
+/// <reference parg="graph/Graph.ts" />	
+/// <reference parg="graph/Node.ts" />
+/// <reference parg="graph/Connector.ts" />
+/// <reference parg="graph/Route.ts" />
+/// <reference parg="graph/Controls.ts" />
 
-#ifdef UI_GRAPH
-
-#include "graph/Graph.ts"	
-#include "graph/Node.ts"
-#include "graph/Connector.ts"
-#include "graph/Route.ts"
-#include "graph/Controls.ts"
-
-#endif
-
-#ifdef UI_ANIMATION
-
-#include "animation/Controls.ts"
-#include "animation/Graph.ts"
-
-#endif
+/// <reference parg="animation/Controls.ts" />
+/// <reference parg="animation/Graph.ts" />
 
 
 module akra.ui {
 
 	export class UI implements IUI {
-		name: string = null;
+		guid: uint = guid();
+
+		private _sUIName: string = null;
+
+		getName(): string {
+			return this._sUIName;
+		}
 
 		protected _pManager: ISceneManager;
 
-		 get type(): ESceneTypes { return ESceneTypes.TYPE_2D; }
+		getType(): ESceneTypes { return ESceneTypes.TYPE_2D; }
 
-		constructor (pManager: ISceneManager = null) {
+		constructor(pManager: ISceneManager = null) {
 			this._pManager = pManager;
 		}
 
-		 getManager(): ISceneManager {
+		protected setupSignals(): void {
+
+		}
+
+		getManager(): ISceneManager {
 			return this._pManager;
 		}
 
@@ -81,15 +75,15 @@ module akra.ui {
 				//console.log("Founded non-generic type: " + sType);
 				return new COMPONENTS[sType](this, pOptions);
 			}
-			
-			return new Component(this, mergeOptions(pOptions, {generic: sType}));
+
+			return new Component(this, mergeOptions(pOptions, { generic: sType }));
 		}
 
-		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN, pAttrs?: IUILayoutAttributes): IUILayout;
-		createLayout(sType: string = null, pAttrs?: IUILayoutAttributes): IUILayout;
+		createLayout(eType?: EUILayouts, pAttrs?: IUILayoutAttributes): IUILayout;
+		createLayout(sType?: string, pAttrs?: IUILayoutAttributes): IUILayout;
 		createLayout(type = null, pAttrs: IUILayoutAttributes = null): IUILayout {
 			var pLayout: IUILayout = null;
-			
+
 			if (isString(type)) {
 				type = type.toLowerCase();
 			}
@@ -113,9 +107,6 @@ module akra.ui {
 
 			return pLayout;
 		}
-
-		CREATE_EVENT_TABLE(UI);
 	}
 }
 
-#endif

@@ -11,10 +11,13 @@ module akra.ui.graph {
 
 			this.setDraggable();
 
-			this.el.css({"background": "red"});
+			this.getElement().css({"background": "red"});
 		}
 
-		mousedown(e: IUIEvent): void {}
+		protected setupSignals(): void {
+			this.mousedown = this.mousedown || new MuteSignal(<any>this);
+			super.setupSignals();
+		}
 
 		_onMouseMove(pGraph: IUIGraph, e: IUIEvent): void {
 			var pOffset = this.$element.offset();

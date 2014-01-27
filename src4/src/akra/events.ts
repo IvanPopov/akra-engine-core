@@ -390,4 +390,11 @@ module akra {
 			return this._eType;
 		}
 	}
+
+
+	export class MuteSignal<T extends Function, S> extends Signal<T, S> {
+		emit(): void {
+
+		}
+	}
 }

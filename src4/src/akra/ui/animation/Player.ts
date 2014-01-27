@@ -15,7 +15,7 @@ module akra.ui.animation {
 		private _pLoopBtn: IUICheckbox;
 		private _pReverseBtn: IUICheckbox;
 		private _pEnableBtn: IUISwitch;
-		
+
 		private _pLeftInf: IUICheckbox;
 		private _pRightInf: IUICheckbox;
 
@@ -25,38 +25,38 @@ module akra.ui.animation {
 
 		protected $time: JQuery;
 
-		 get animation(): IAnimationBase {
+		getAnimation(): IAnimationBase {
 			return this._pAnimation;
 		}
 
-		set animation(pAnim: IAnimationBase) {
+		setAnimation(pAnim: IAnimationBase) {
 			//logger.assert(isNull(this.animation), "animation container already setuped in player");
 			if (this._pAnimation.getAnimation() === pAnim) {
 				return;
 			}
-			
+
 			this._pAnimation.setAnimation(pAnim);
 			this.setup();
 		}
 
-		constructor (pGraph: IUIGraph, pContainer: IAnimationContainer = null) {
-			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_PLAYER);
+		constructor(pGraph: IUIGraph, pContainer: IAnimationContainer = null) {
+			super(pGraph, { init: false }, EUIGraphNodes.ANIMATION_PLAYER);
 
 			this.template("animation.Player.tpl");
 			this.linkAreas();
 
-			this._pSpeedLabel 	= <IUILabel>this.findEntity("speed");
-			this._pSlider 		= <IUISlider>this.findEntity("state");
-			this._pPlayBtn 		= <IUICheckbox>this.findEntity("play");
-			this._pLoopBtn 		= <IUICheckbox>this.findEntity("loop");
-			this._pReverseBtn 	= <IUICheckbox>this.findEntity("reverse");
-			this._pLeftInf 		= <IUICheckbox>this.findEntity("left-inf");
-			this._pRightInf 	= <IUICheckbox>this.findEntity("right-inf");
-			this._pNameLabel 	= <IUILabel>this.findEntity("name");
-			this._pEnableBtn	= <IUISwitch>this.findEntity("enabled");
+			this._pSpeedLabel = <IUILabel>this.findEntity("speed");
+			this._pSlider = <IUISlider>this.findEntity("state");
+			this._pPlayBtn = <IUICheckbox>this.findEntity("play");
+			this._pLoopBtn = <IUICheckbox>this.findEntity("loop");
+			this._pReverseBtn = <IUICheckbox>this.findEntity("reverse");
+			this._pLeftInf = <IUICheckbox>this.findEntity("left-inf");
+			this._pRightInf = <IUICheckbox>this.findEntity("right-inf");
+			this._pNameLabel = <IUILabel>this.findEntity("name");
+			this._pEnableBtn = <IUISwitch>this.findEntity("enabled");
 
 			this._pAnimation = pContainer = pContainer || akra.animation.createContainer();
-			this.graph.addAnimation(pContainer);
+			this.getGraph().addAnimation(pContainer);
 
 			//this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
 			//this.connect(pContainer, SIGNAL(durationUpdated), SLOT(_durationUpdated));
@@ -79,23 +79,23 @@ module akra.ui.animation {
 			this._pNameLabel.changed.connect(this, this._setName);
 			this._pLeftInf.changed.connect(this, this._setLeftInf);
 			this._pRightInf.changed.connect(this, this._setRightInf);
-			
 
 
-			this.$time = this.el.find(".time:first");
+
+			this.$time = this.getElement().find(".time:first");
 
 			this.setup();
 		}
 
 		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
 			super.connected(pArea, pFrom, pTo);
-			this.notifyDisabled(!this._pEnableBtn.value);
+			this.notifyDisabled(!this._pEnableBtn.getValue());
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
 
 			if (!isNull(this._pAnimation.getAnimation())) {
-				this.el.addClass("blocked");
+				this.getElement().addClass("blocked");
 			}
 			else {
 				super.onConnectionBegin(pGraph, pRoute);
@@ -105,19 +105,19 @@ module akra.ui.animation {
 		protected setup(): void {
 			var pAnimation = this._pAnimation;
 
-			this._pSlider.range = pAnimation.duration;
-			this._pPlayBtn.checked = !pAnimation.isPaused();
+			this._pSlider.setRange(pAnimation.getDuration());
+			this._pPlayBtn.setChecked(!pAnimation.isPaused());
 
-			this._pLoopBtn.checked = pAnimation.inLoop();
-			this._pReverseBtn.checked = pAnimation.isReversed();
+			this._pLoopBtn.setChecked(pAnimation.inLoop());
+			this._pReverseBtn.setChecked(pAnimation.isReversed());
 
-			this._pNameLabel.text = pAnimation.name;
-			this._pSpeedLabel.text = pAnimation.speed.toString();
+			this._pNameLabel.setText(pAnimation.getName());
+			this._pSpeedLabel.setText(pAnimation.getSpeed().toString());
 
-			this._pLeftInf.checked = pAnimation.inLeftInfinity();
-			this._pRightInf.checked = pAnimation.inRightInfinity();
+			this._pLeftInf.setChecked(pAnimation.inLeftInfinity());
+			this._pRightInf.setChecked(pAnimation.inRightInfinity());
 
-			this._pEnableBtn.value = pAnimation.isEnabled();
+			this._pEnableBtn.setValue(pAnimation.isEnabled());
 		}
 
 		_enabled(pSwc: IUISwitch, bValue: boolean): void {
@@ -125,20 +125,20 @@ module akra.ui.animation {
 		}
 
 		private notifyDisabled(bValue: boolean): void {
-			!bValue? this._pAnimation.enable(): this._pAnimation.disable();
+			!bValue ? this._pAnimation.enable() : this._pAnimation.disable();
 
 			if (!bValue) {
-				this.el.removeClass("disabled");
+				this.getElement().removeClass("disabled");
 			}
 			else {
-				this.el.addClass("disabled");
+				this.getElement().addClass("disabled");
 			}
 
 			for (var i in this._pAreas) {
-				var pConnectors: IUIGraphConnector[] = this._pAreas[i].connectors;
-				
-				for (var j = 0; j < pConnectors.length; ++ j) {
-					pConnectors[j].route.enabled = !bValue;
+				var pConnectors: IUIGraphConnector[] = this._pAreas[i].getConnectors();
+
+				for (var j = 0; j < pConnectors.length; ++j) {
+					pConnectors[j].getRoute().enabled = !bValue;
 				}
 			}
 		}
@@ -183,13 +183,13 @@ module akra.ui.animation {
 
 		_setTime(pSlider: IUISlider, fValue: float): void {
 			this._pAnimation.pause(false);
-			this._pAnimation.play(0);	
+			this._pAnimation.play(0);
 			this._pAnimation.apply(fValue);
 			this._pAnimation.pause(true);
 		}
 
 		_setName(pLabel: IUILabel, sName): void {
-			this._pAnimation.name = sName;
+			this._pAnimation.setName(sName);
 		}
 
 		_setSpeed(pLabel: IUILabel, x): void {
@@ -198,7 +198,7 @@ module akra.ui.animation {
 
 
 		_durationUpdated(pContainer: IAnimationContainer, fDuration: float): void {
-			this._pSlider.range = fDuration;
+			this._pSlider.setRange(fDuration);
 		}
 
 		_enterFrame(pContainer: IAnimationContainer, fRealTime: float, fTime: float): void {
@@ -207,23 +207,23 @@ module akra.ui.animation {
 			}
 			else {
 				if (this._pAnimation.inLoop()) {
-			        this._pSlider.value = 
-			            math.mod((fRealTime - this._pAnimation.getStartTime()), this._pAnimation.duration);
-			    }
-			    else if (fRealTime >= this._pAnimation.getStartTime()) {
-			        this._pSlider.value = math.min(fTime, this._pAnimation.duration);
-			    }
+					this._pSlider.setValue(
+					math.mod((fRealTime - this._pAnimation.getStartTime()), this._pAnimation.getDuration()));
+				}
+				else if (fRealTime >= this._pAnimation.getStartTime()) {
+					this._pSlider.setValue(math.min(fTime, this._pAnimation.getDuration()));
+				}
 
-			    this.$time.text(fTime.toFixed(1) + "/" + this._pAnimation.duration.toFixed(1) + "s");
-		    }
+				this.$time.text(fTime.toFixed(1) + "/" + this._pAnimation.getDuration().toFixed(1) + "s");
+			}
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationplayer");
+			this.getElement().addClass("component-animationplayer");
 		}
 	}
 
-	register("animation.Player", Player);
+	register("animation.Player", <any>Player);
 }
 

@@ -34,7 +34,7 @@ module akra.ui.model {
 		}
 
 		_useShadows(pSwc: IUISwitch, bValue: boolean): void {
-			this._pMesh.shadow = bValue;
+			this._pMesh.setShadow(bValue);
 		}
 
 		_useBoundingBox(pSwc: IUISwitch, bValue: boolean): void {
@@ -61,12 +61,12 @@ module akra.ui.model {
 		protected updateProperties(): void {
 			var pMesh: IMesh = this._pMesh;
 
-			this._pName.text = pMesh.name;
-			this._pShadows._setValue(pMesh.shadow);
+			this._pName.setText(pMesh.getName());
+			this._pShadows._setValue(pMesh.getShadow());
 			this._pBoundingBox._setValue(pMesh.isBoundingBoxVisible());
 			this._pBoundingSphere._setValue(pMesh.isBoundingSphereVisible());
 
-			for (var i = 0; i < pMesh.length; ++ i) {
+			for (var i = 0; i < pMesh.getLength(); ++ i) {
 				var pSubsetProperties: MeshSubsetProperties = null;
 
 				if (this._pSubsets.length > i) {
@@ -81,14 +81,14 @@ module akra.ui.model {
 				pSubsetProperties.setSubset(pMesh.getSubset(i));
 			}
 
-			for (var i = pMesh.length; i < this._pSubsets.length; ++ i) {
+			for (var i = pMesh.getLength(); i < this._pSubsets.length; ++ i) {
 				this._pSubsets[i].hide();
 			}
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-meshproperties");
+			this.getElement().addClass("component-meshproperties");
 		}
 	}
 

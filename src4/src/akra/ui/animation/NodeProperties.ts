@@ -14,12 +14,12 @@ module akra.ui.animation {
 		}
 
 		setNode(pNode: IUIAnimationNode): void {
-			this._pNameLb.text = pNode.animation.name;
+			this._pNameLb.setText(pNode.getAnimation().getName());
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationnodeproperties");
+			this.getElement().addClass("component-animationnodeproperties");
 		}
 	}
 

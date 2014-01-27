@@ -50,7 +50,7 @@ module akra.ui {
 				this._bDraggableInited = true;
 			}
 
-			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
+			if (!isNull(this.getParent()) && isDefAndNotNull(this.$element)) {
 				pOptions.containment = isDef(pOptions.containment) ? pOptions.containment : "parent";
 				// this.$element.draggable("option", "containment", "parent");
 			}
@@ -61,7 +61,7 @@ module akra.ui {
 		}
 
 		setDraggableOptions(pOptions: IUIDraggableOptions): void {
-			this.el.draggable(pOptions);
+			this.getElement().draggable(pOptions);
 		}
 
 		setDroppable(bValue: boolean = true): void {

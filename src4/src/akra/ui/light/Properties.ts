@@ -44,7 +44,7 @@ module akra.ui.light {
 		}
 
 		_ambientUpdated(pVec: IUIVector, pValue: IVec4): void {
-			var c4fAmbient: IColorValue = (<IProjectLight>this._pLight).params.ambient;
+			var c4fAmbient: IColorValue = (<IProjectLight>this._pLight).getParams().ambient;
 			c4fAmbient.r = pValue.x;
 			c4fAmbient.g = pValue.y;
 			c4fAmbient.b = pValue.z;
@@ -52,7 +52,7 @@ module akra.ui.light {
 		}
 
 		_diffuseUpdated(pVec: IUIVector, pValue: IVec4): void {
-			var c4fDiffuse: IColorValue = (<IProjectLight>this._pLight).params.diffuse;
+			var c4fDiffuse: IColorValue = (<IProjectLight>this._pLight).getParams().diffuse;
 			c4fDiffuse.r = pValue.x;
 			c4fDiffuse.g = pValue.y;
 			c4fDiffuse.b = pValue.z;
@@ -60,7 +60,7 @@ module akra.ui.light {
 		}
 
 		_specularUpdated(pVec: IUIVector, pValue: IVec4): void {
-			var c4fSpecular: IColorValue = (<IProjectLight>this._pLight).params.specular;
+			var c4fSpecular: IColorValue = (<IProjectLight>this._pLight).getParams().specular;
 			c4fSpecular.r = pValue.x;
 			c4fSpecular.g = pValue.y;
 			c4fSpecular.b = pValue.z;
@@ -68,14 +68,14 @@ module akra.ui.light {
 		}
 
 		_attenuationUpdated(pVec: IUIVector, pValue: IVec3): void {
-			(<IProjectLight>this._pLight).params.attenuation.set(pValue);
+			(<IProjectLight>this._pLight).getParams().attenuation.set(pValue);
 		}
 		_useShadows(pSwc: IUISwitch, bValue: boolean): void {
-			this._pLight.isShadowCaster = bValue;
+			this._pLight.setShadowCaster(bValue);
 		}
 
 		_enableLight(pSwc: IUISwitch, bValue: boolean): void {
-			this._pLight.enabled = bValue;
+			this._pLight.setEnabled(bValue);
 		}
 
 		setLight(pLight: ILightPoint): void {
@@ -86,18 +86,18 @@ module akra.ui.light {
 		protected updateProperties(): void {
 			var pLight: ILightPoint = this._pLight;
 
-			this._pShadows._setValue(pLight.isShadowCaster);
-			this._pEnabled._setValue(pLight.enabled);
+			this._pShadows._setValue(pLight.isShadowCaster());
+			this._pEnabled._setValue(pLight.isEnabled());
 
-			this._pDiffuse.setColor((<IProjectLight>this._pLight).params.diffuse);
-			this._pAmbient.setColor((<IProjectLight>this._pLight).params.ambient);
-			this._pSpecular.setColor((<IProjectLight>this._pLight).params.specular);
-			this._pAttenuation.setVec3((<IProjectLight>this._pLight).params.attenuation);
+			this._pDiffuse.setColor((<IProjectLight>this._pLight).getParams().diffuse);
+			this._pAmbient.setColor((<IProjectLight>this._pLight).getParams().ambient);
+			this._pSpecular.setColor((<IProjectLight>this._pLight).getParams().specular);
+			this._pAttenuation.setVec3((<IProjectLight>this._pLight).getParams().attenuation);
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-lightproperties");
+			this.getElement().addClass("component-lightproperties");
 		}
 	}
 

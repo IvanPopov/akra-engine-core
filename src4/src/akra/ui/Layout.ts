@@ -6,7 +6,7 @@ module akra.ui {
 		protected _eLayoutType: EUILayouts;
 		protected _pAttrs: IUILayoutAttributes = null;
 
-		get layoutType(): EUILayouts { return this._eLayoutType; }
+		getLayoutType(): EUILayouts { return this._eLayoutType; }
 
 		constructor (parent, pElement?: HTMLElement, eType?: EUILayouts);
 		constructor (parent, pElement?: JQuery, eType?: EUILayouts);
@@ -17,7 +17,7 @@ module akra.ui {
 
 		attachToParent(pParent: IUINode): boolean {
 			//layout must be a first child
-			if (isNull(pParent) || !isNull(pParent.child)) {
+			if (isNull(pParent) || !isNull(pParent.getChild())) {
 				//return false;
 				//logger.warn("Node: \n" + pParent.toString(true) + "\nalready has layout node as child.");
 			}
@@ -39,7 +39,7 @@ module akra.ui {
 
 		toString(isRecursive: boolean = false, iDepth: int = 0): string {
 			if (!isRecursive) {
-		        return '<layout' + (this.name? " " + this.name: "") + '>';
+				return '<layout' + (this.getName() ? " " + this.getName(): "") + '>';
 		    }
 
 		    return super.toString(isRecursive, iDepth);

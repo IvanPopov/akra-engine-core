@@ -13,6 +13,8 @@
 
 module akra.ui {
 
+	export var ide: IUIIDE = null;
+
 	import Vec2 = math.Vec2;
 	import Vec3 = math.Vec3;
 	import Vec4 = math.Vec4;
@@ -24,7 +26,7 @@ module akra.ui {
 	}
 
 	function getFuncBody(f: Function): string {
-		var s = f.toString(); 
+		var s = f.toString();
 		var sCode = s.slice(s.indexOf("{") + 1, s.lastIndexOf("}"));
 		if (sCode.match(/^\s*$/)) { sCode = ""; }
 		return sCode;
@@ -57,7 +59,9 @@ module akra.ui {
 	}
 
 	export class IDE extends Component implements IUIIDE {
-		protected _fnMainScript: Function = () => {};
+		created: ISignal<{ (pIDE: IUIIDE): void; }>;
+
+		protected _fnMainScript: Function = () => { };
 
 		protected _pEngine: IEngine = null;
 
@@ -70,7 +74,7 @@ module akra.ui {
 
 
 		//picking
-		protected _pSelectedObject: IRIDPair = {object: null, renderable: null};
+		protected _pSelectedObject: IRIDPair = { object: null, renderable: null };
 
 		//editing
 		protected _eEditMode: EEditModes = EEditModes.NONE;
@@ -79,36 +83,36 @@ module akra.ui {
 
 
 		//=======================================
-		
+
 		_apiEntry: any;
 
-		 get script(): Function {
+		getScript(): Function {
 			return this._fnMainScript;
 		}
 
-		 set script(fn: Function) {
+		setScript(fn: Function) {
 			this._fnMainScript = fn;
 		}
 
 		//-===============================
-		 get selectedObject(): ISceneObject {
+		getSelectedObject(): ISceneObject {
 			return this._pSelectedObject.object;
 		}
 
-		 get selectedRenderable(): IRenderableObject {
+		getSelectedRenderable(): IRenderableObject {
 			return this._pSelectedObject.renderable;
 		}
 
-		 get editMode(): EEditModes {
+		getEditMode(): EEditModes {
 			return this._eEditMode;
 		}
 
-		constructor (parent, options?) {
+		constructor(parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
 			//common setup
 
-			akra.ide = this;
+			ide = this;
 
 			this._pEngine = getUI(parent).getManager().getEngine();
 			debug.assert(!isNull(this._pEngine), "Engine required!");
@@ -119,7 +123,7 @@ module akra.ui {
 			this.template("IDE.tpl");
 
 			//viewport setup
-			
+
 			var pViewportProperties: ViewportProperties = this._pPreview = <ViewportProperties>this.findEntity("Preview");
 
 			//setup Node properties
@@ -144,8 +148,8 @@ module akra.ui {
 			(<IUICheckbox>p3DControls.findEntity("scale-control")).changed.connect(this, this._enableScaleMode);
 
 			//connect node properties to scene tree
-			//this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
-			pInspector.nodeNameChanged.connect(this, this._updateSceneNodeName);
+			//FIXME: Enter the interface IUIInspector and describe it signals.
+			(<any>pInspector).nodeNameChanged.connect(this, this._updateSceneNodeName);
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
 
@@ -159,14 +163,14 @@ module akra.ui {
 
 			// this._pModelBasis = pBasis;
 
-			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().loadModel(config.data + "/models/basis_translation.DAE", {shadows: false});
+			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().loadModel(config.data + "/models/basis_translation.DAE", { shadows: false });
 
 			pBasisTranslation.loaded.connect((pModel: ICollada): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
-				
+
 				pModelRoot.attachToParent(pScene.getRootNode());
 
-				var pEl: ISceneModel = <ISceneModel>pModelRoot.child;
+				var pEl: ISceneModel = <ISceneModel>pModelRoot.getChild();
 
 				/*while(!isNull(pEl)) {
 					var pMesh: IMesh = pEl.mesh;
@@ -196,12 +200,12 @@ module akra.ui {
 				var vO: IVec2 = new Vec2;
 				//basis model world position before dragging
 				var vStart: IVec3 = new Vec3;
-				
+
 				//axis modifiers info array
 				var am: IAxisModifier[] = [];
 
 				function createAxisModifier(pModelRoot: ISceneNode, pViewport: IViewport, iAx: IAxis): void {
-					
+
 					if (!isDef(am[iAx])) {
 						am[iAx] = {
 							dir: new Vec3,
@@ -223,13 +227,13 @@ module akra.ui {
 					}
 
 
-					iAxis |= iAx; 
+					iAxis |= iAx;
 
-					pModelRoot.worldMatrix.multiplyVec4(vAxisOrigin, vAxis);
+					pModelRoot.getWorldMatrix().multiplyVec4(vAxisOrigin, vAxis);
 
-					pViewport.projectPoint(vAxis.xyz, vDir);
+					pViewport.projectPoint(vAxis.clone('xyz'), vDir);
 
-					vDir.xy.subtract(vCenter.xy, vA);
+					vDir.clone('xy').subtract(vCenter.clone('xy'), vA);
 				}
 
 				function applyAxisModifier(m: IAxisModifier): IVec3 {
@@ -244,55 +248,55 @@ module akra.ui {
 					var vAx: IVec2 = Vec2.temp(vA.x * fX, vA.y * fX);
 					var vC: IVec2 = vO.add(vAx, Vec2.temp(0.));
 
-					var vC3d: IVec3 = vAxisOrigin.xyz.scale(fX);
+					var vC3d: IVec3 = vAxisOrigin.clone('xyz').scale(fX);
 
 					return vC3d.add(vStart);
 				}
 
 				var pNodes: ISceneObject[] = <ISceneObject[]>pModelRoot.children();
 
-				for (var i: int = 0; i < pNodes.length; ++ i) {
-					pNodes[i].onmouseover = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
-						var c: IColor = <IColor>pSubset.getRenderMethodDefault().material.emissive;
+				for (var i: int = 0; i < pNodes.length; ++i) {
+					pNodes[i].mouseover.connect((pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
+						var c: IColor = <IColor>pSubset.getRenderMethodDefault().getMaterial().emissive;
 						c.set(c.r / 2., c.g / 2., c.b / 2., c.a / 2.);
-					};
+					});
 
-					pNodes[i].onmouseout = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
-						var c: IColor = <IColor>pSubset.getRenderMethodDefault().material.emissive;
+					pNodes[i].mouseout.connect((pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
+						var c: IColor = <IColor>pSubset.getRenderMethodDefault().getMaterial().emissive;
 						c.set(c.r * 2., c.g * 2., c.b * 2., c.a * 2.);
-					};
+					});
 
 
-					pNodes[i].ondragstart = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
-						var c: IColor = <IColor>pSubset.getRenderMethodDefault().material.emissive;
-						
+					pNodes[i].dragstart.connect((pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
+						var c: IColor = <IColor>pSubset.getRenderMethodDefault().getMaterial().emissive;
+
 						vO.set(x, y);
-						vStart.set(pModelRoot.worldPosition);
-						pViewport.projectPoint(pModelRoot.worldPosition, vCenter);
-						
+						vStart.set(pModelRoot.getWorldPosition());
+						pViewport.projectPoint(pModelRoot.getWorldPosition(), vCenter);
+
 						//colors at basis model on Y and Z axis was swaped, FAIL :(
-						if (c.r > 0) { 
+						if (c.r > 0) {
 							createAxisModifier(pModelRoot, pViewport, IAxis.X);
 						}
 
-						if (c.g > 0) { 
+						if (c.g > 0) {
 							createAxisModifier(pModelRoot, pViewport, IAxis.Z);
 						}
 
-						if (c.b > 0) { 
+						if (c.b > 0) {
 							createAxisModifier(pModelRoot, pViewport, IAxis.Y);
 						}
-					}
+					});
 
-					pNodes[i].ondragstop = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
+					pNodes[i].dragstop.connect((pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
 						iAxis = 0;
-					}
+					});
 
-					pNodes[i].ondragging = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
+					pNodes[i].dragging.connect((pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
 						Vec2.temp(x, y).subtract(vO, vB);
 
 						var vPos: IVec3 = Vec3.temp(0.);
-						
+
 						if (iAxis & IAxis.X) {
 							vPos.add(applyAxisModifier(am[IAxis.X]));
 						}
@@ -309,36 +313,41 @@ module akra.ui {
 
 
 						pModelRoot.setPosition(vPos);
-						this.selectedObject.setWorldPosition(vPos);
-					}
+						this.getSelectedObject().setWorldPosition(vPos);
+					});
 				}
-				
+
 			});
 		}
 
+		protected setupSignals(): void {
+			this.created = this.created || new Signal(<any>this)
+			super.setupSignals();
+		}
+
 		_enablePickMode(pCb: IUICheckbox, bValue: boolean): void {
-			this._eEditMode = bValue? EEditModes.PICK: EEditModes.NONE;
+			this._eEditMode = bValue ? EEditModes.PICK : EEditModes.NONE;
 			this.updateEditting();
 		}
 
 		_enableTranslateMode(pCb: IUICheckbox, bValue: boolean): void {
-			this._eEditMode = bValue? EEditModes.MOVE: EEditModes.NONE;
+			this._eEditMode = bValue ? EEditModes.MOVE : EEditModes.NONE;
 			this.updateEditting();
 		}
 
 		_enableRotateMode(pCb: IUICheckbox, bValue: boolean): void {
-			this._eEditMode = bValue? EEditModes.ROTATE: EEditModes.NONE;
+			this._eEditMode = bValue ? EEditModes.ROTATE : EEditModes.NONE;
 			this.updateEditting();
 		}
 
 		_enableScaleMode(pCb: IUICheckbox, bValue: boolean): void {
-			this._eEditMode = bValue? EEditModes.SCALE: EEditModes.NONE;
+			this._eEditMode = bValue ? EEditModes.SCALE : EEditModes.NONE;
 			this.updateEditting();
 		}
 
 
 		_sceneUpdate(pScene: IScene3d): void {
-			
+
 		}
 
 
@@ -354,14 +363,14 @@ module akra.ui {
 			};
 		}
 
-		 getEngine(): IEngine { return this._pEngine; }
-		 getCanvas(): ICanvas3d { return this.getEngine().getRenderer().getDefaultCanvas(); }
-		 getScene(): IScene3d { return this.getEngine().getScene(); }
-		 getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
-		 getResourceManager(): IResourcePoolManager { return this.getEngine().getResourceManager(); }
-		 getViewport(): IViewport { return this._pPreview.viewport; }
-		 getCamera(): ICamera { return this.getViewport().getCamera(); }
-		 getComposer(): IAFXComposer { return this.getEngine().getComposer(); }
+		getEngine(): IEngine { return this._pEngine; }
+		getCanvas(): ICanvas3d { return this.getEngine().getRenderer().getDefaultCanvas(); }
+		getScene(): IScene3d { return this.getEngine().getScene(); }
+		getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
+		getResourceManager(): IResourcePoolManager { return this.getEngine().getResourceManager(); }
+		getViewport(): IViewport { return this._pPreview.getViewport(); }
+		getCamera(): ICamera { return this.getViewport().getCamera(); }
+		getComposer(): IAFXComposer { return this.getEngine().getComposer(); }
 
 		_updateSceneNodeName(pInspector: Inspector, pNode: ISceneNode): void {
 			this._pSceneTree.sync(pNode);
@@ -371,20 +380,20 @@ module akra.ui {
 			//this.disconnect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 			this.getCanvas().viewportAdded.disconnect(this, this._viewportAdded);
 
-			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK|E3DEventTypes.MOUSEOVER|E3DEventTypes.MOUSEOUT|
-				E3DEventTypes.DRAGSTART|E3DEventTypes.DRAGSTOP);
+			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT |
+				E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP);
 
-			this._pPreview.setViewport(pViewport);	
-			this.setupApiEntry();	
+			this._pPreview.setViewport(pViewport);
+			this.setupApiEntry();
 
 			//this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
 			this.getScene().beforeUpdate.connect(this, this._sceneUpdate);
 			this.created.emit();
 
 			pViewport.click.connect((pViewport: IDSViewport, x: uint, y: uint): void => {
-				if (this.editMode !== EEditModes.NONE) {
+				if (this.getEditMode() !== EEditModes.NONE) {
 					var pRes: IRIDPair = pViewport.pick(x, y);
-					
+
 					if (!this._pModelBasisTrans.isAChild(pRes.object)) {
 						this.selected(pRes.object, pRes.renderable);
 						this.inspectNode(pRes.object);
@@ -395,8 +404,8 @@ module akra.ui {
 
 		private updateEditting(pObjectPrev: ISceneObject = null, pRenderablePrev: IRenderableObject = null): void {
 			var pViewport: IDSViewport = <IDSViewport>this.getViewport();
-			var pObject: ISceneObject = this.selectedObject;
-			var pRenderable: IRenderableObject = this.selectedRenderable;
+			var pObject: ISceneObject = this.getSelectedObject();
+			var pRenderable: IRenderableObject = this.getSelectedRenderable();
 
 			if (isNull(pViewport)) {
 				return;
@@ -404,29 +413,29 @@ module akra.ui {
 
 			if (!isNull(pObjectPrev)) {
 				if (akra.scene.SceneModel.isModel(pObjectPrev)) {
-					(<ISceneModel>pObjectPrev).mesh.hideBoundingBox();
+					(<ISceneModel>pObjectPrev).getMesh().hideBoundingBox();
 				}
 			}
 
-			if (this.editMode === EEditModes.NONE) {
+			if (this.getEditMode() === EEditModes.NONE) {
 				pViewport.highlight(null, null);
 			}
 
-			if (this.editMode !== EEditModes.NONE) {
+			if (this.getEditMode() !== EEditModes.NONE) {
 				pViewport.highlight(pObject, pRenderable);
 
 				if (akra.scene.SceneModel.isModel(pObject)) {
-					(<ISceneModel>pObject).mesh.hideBoundingBox();
+					(<ISceneModel>pObject).getMesh().hideBoundingBox();
 				}
 			}
 
-			if (this.editMode === EEditModes.MOVE && !isNull(pObject)) {
+			if (this.getEditMode() === EEditModes.MOVE && !isNull(pObject)) {
 				if (akra.scene.SceneModel.isModel(pObject)) {
-					(<ISceneModel>pObject).mesh.showBoundingBox();
+					(<ISceneModel>pObject).getMesh().showBoundingBox();
 				}
 
 				this._pModelBasisTrans.hide(false);
-				this._pModelBasisTrans.setPosition(pObject.worldPosition);
+				this._pModelBasisTrans.setPosition(pObject.getWorldPosition());
 			}
 			else {
 				this._pModelBasisTrans.hide();
@@ -434,8 +443,8 @@ module akra.ui {
 		}
 
 		private selected(pObj: ISceneObject, pRenderable: IRenderableObject = null): void {
-			var pObjectPrev: ISceneObject = this.selectedObject;
-			var pRenderablePrev: IRenderableObject = this.selectedRenderable;
+			var pObjectPrev: ISceneObject = this.getSelectedObject();
+			var pRenderablePrev: IRenderableObject = this.getSelectedRenderable();
 
 			var p = this._pSelectedObject;
 
@@ -447,7 +456,7 @@ module akra.ui {
 
 		cmd(eCommand: ECMD, ...argv: any[]): boolean {
 			switch (eCommand) {
-				case ECMD.SET_PREVIEW_RESOLUTION: 
+				case ECMD.SET_PREVIEW_RESOLUTION:
 					return this.setPreviewResolution(parseInt(argv[0]), parseInt(argv[1]));
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					return this.setFullscreen();
@@ -455,7 +464,7 @@ module akra.ui {
 					this.selected(/*akra.scene.isSceneObject(argv[0])? argv[0]: null*/argv[0]);
 					return this.inspectNode(argv[0]);
 
-				case ECMD.EDIT_ANIMATION_CONTROLLER: 
+				case ECMD.EDIT_ANIMATION_CONTROLLER:
 					return this.editAnimationController(argv[0]);
 				case ECMD.INSPECT_ANIMATION_NODE:
 					return this.inspectAnimationNode(argv[0]);
@@ -516,18 +525,18 @@ module akra.ui {
 		protected editAnimationController(pController: IAnimationController): boolean {
 			var sName: string = "controller-" + pController.guid;
 			var iTab: int = this._pTabs.findTab(sName);
-			
+
 			if (iTab < 0) {
-				var pControls: IUIAnimationControls = 
+				var pControls: IUIAnimationControls =
 					<IUIAnimationControls>this._pTabs.createComponent("animation.Controls", {
-						title: "Edit controller: " + pController.guid, 
+						title: "Edit controller: " + pController.guid,
 						name: sName
 					});
 
 				pControls.graph.capture(pController);
 				iTab = this._pTabs.findTab(sName);
 			}
-		
+
 			this._pTabs.select(iTab);
 
 			return true;
@@ -540,8 +549,8 @@ module akra.ui {
 
 		protected changeAntiAliasing(bValue: boolean): boolean {
 			var pViewport: IViewport = this.getViewport();
-			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
-				(<render.DSViewport>this._pPreview.viewport).setFXAA(bValue);
+			if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+				(<render.DSViewport>this._pPreview.getViewport()).setFXAA(bValue);
 			}
 			return true;
 		}
@@ -557,9 +566,9 @@ module akra.ui {
 					template: "custom.LoadColladaDlg.tpl"
 				});
 
-				pDlg.bind(SIGNAL(closed), () => {
-					if (parseInt(pDlg.el.css("bottom")) == 0) {
-						pDlg.el.animate({bottom: -pDlg.el.height()}, 350, "easeInCirc", () => { pDlg.hide() });
+				pDlg.closed.connect(() => {
+					if (parseInt(pDlg.getElement().css("bottom")) == 0) {
+						pDlg.getElement().animate({ bottom: -pDlg.getElement().height() }, 350, "easeInCirc", () => { pDlg.hide() });
 					}
 					else {
 						pDlg.hide();
@@ -567,18 +576,18 @@ module akra.ui {
 				});
 
 				var pLoadBtn: IUIButton = <IUIButton>pDlg.findEntity("load");
-				var $input: JQuery = pDlg.el.find("input[name=url]");
+				var $input: JQuery = pDlg.getElement().find("input[name=url]");
 				var pRmgr: IResourcePoolManager = this.getResourceManager();
 				var pScene: IScene3d = this.getScene();
 
-				pLoadBtn.bind(SIGNAL(click), () => {
+				pLoadBtn.click.connect(() => {
 					var pModel: ICollada = <ICollada>pRmgr.loadModel($input.val());
 
 					if (pModel.isResourceLoaded()) {
 						var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 					}
-					
-					pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+
+					pModel.loaded.connect((pModel: ICollada) => {
 						var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 					});
 
@@ -586,11 +595,11 @@ module akra.ui {
 				});
 			}
 
-			var iHeight: int = pDlg.el.height();
+			var iHeight: int = pDlg.getElement().height();
 
-			pDlg.el.css('top', 'auto').css('left', 'auto').css({bottom: -iHeight, right: 10});
+			pDlg.getElement().css('top', 'auto').css('left', 'auto').css({ bottom: -iHeight, right: 10 });
 			pDlg.show();
-			pDlg.el.animate({bottom: 0}, 350, "easeOutCirc");
+			pDlg.getElement().animate({ bottom: 0 }, 350, "easeOutCirc");
 
 			return true;
 		}
@@ -606,13 +615,13 @@ module akra.ui {
 
 			if (iTab < 0) {
 				pListenerEditor = <IUIListenerEditor>this._pTabs.createComponent("ListenerEditor", {
-					title: "Project code", 
+					title: "Project code",
 					name: sName,
 				});
 
-				pListenerEditor.bind(SIGNAL(bindEvent), (pEditor: IUIListenerEditor, sCode: string) => {
-					pIDE.script = buildFuncByCodeWithSelfContext(sCode, self);
-					(pIDE.script)();
+				pListenerEditor.bindEvent.connect((pEditor: IUIListenerEditor, sCode: string) => {
+					pIDE.setScript(buildFuncByCodeWithSelfContext(sCode, self));
+					(pIDE.getScript())();
 				});
 
 				iTab = pListenerEditor.index;
@@ -622,8 +631,8 @@ module akra.ui {
 			}
 
 			this._pTabs.select(iTab);
-			
-			pListenerEditor.editor.value = sCode;
+
+			pListenerEditor.editor.setValue(sCode);
 
 			return true;
 		}
@@ -631,24 +640,24 @@ module akra.ui {
 		//предпологается, что мы редактируем любово листенера, и что, исполнитель команды сам укажет нам, 
 		//какой номер у листенера, созданного им.
 		protected editEvent(pTarget: IEventProvider, sEvent: string, iListener: int = 0, eType: EEventTypes = EEventTypes.BROADCAST): boolean {
-			var sName: string = "event-" + sEvent + pTarget.getGuid();
+			var sName: string = "event-" + sEvent + pTarget.guid;
 			var pListenerEditor: IUIListenerEditor;
 			var iTab: int = this._pTabs.findTab(sName);
 			var pEvtTable: IEventTable = pTarget.getEventTable();
-			var pEventSlots: IEventSlot[] = pEvtTable.findBroadcastSignalMap(pTarget.getGuid(), sEvent);
+			var pEventSlots: IEventSlot[] = pEvtTable.findBroadcastSignalMap(pTarget.guid, sEvent);
 			var pEventSlot: IEventSlot = null;
 			var sCode: string = "";
 			var self = this._apiEntry;
 
-			for (var i = 0; i < pEventSlots.length; ++ i) {
+			for (var i = 0; i < pEventSlots.length; ++i) {
 				if (isDefAndNotNull(pEventSlots[i].listener)) {
 					pEventSlot = pEventSlots[i];
 					break;
-				}	
+				}
 			}
 
 			if (!isDefAndNotNull(pEventSlot)) {
-				pTarget.bind(sEvent, () => {});
+				pTarget[sEvent].connect(() => { });
 				return this.editEvent(pTarget, sEvent);
 			}
 			// LOG(pEventSlots, pEventSlot);
@@ -662,11 +671,11 @@ module akra.ui {
 
 			if (iTab < 0) {
 				pListenerEditor = <IUIListenerEditor>this._pTabs.createComponent("ListenerEditor", {
-						title: "Ev.: " + sEvent + "(obj.: " + pTarget.getGuid() + ")", 
-						name: sName,
-					});
+					title: "Ev.: " + sEvent + "(obj.: " + pTarget.guid + ")",
+					name: sName,
+				});
 
-				pListenerEditor.bind(SIGNAL(bindEvent), (pEditor: IUIListenerEditor, sCode: string) => {
+				pListenerEditor.bindEvent.connect((pEditor: IUIListenerEditor, sCode: string) => {
 					pEventSlot.listener = buildFuncByCodeWithSelfContext(sCode, self);
 				});
 
@@ -677,13 +686,11 @@ module akra.ui {
 			}
 
 			this._pTabs.select(iTab);
-			
-			pListenerEditor.editor.value = sCode;
+
+			pListenerEditor.editor.setValue(sCode);
 
 			return true;
 		}
-
-		created: ISignal<{ (pIDE: IUIIDE): void; }> = new Signal(this);
 	}
 
 	register("IDE", IDE);

@@ -22,9 +22,9 @@ module akra {
 	
 	
 	export interface IUIGraphNode extends IUIComponent {
-		/** readonly */ graphNodeType: EUIGraphNodes;
-		/** readonly */ graph: IUIGraph;
-		/** readonly */ areas: IGraphNodeAreaMap;
+		getGraphNodeType(): EUIGraphNodes;
+		getGraph(): IUIGraph;
+		getAreas(): IGraphNodeAreaMap;
 	
 		getOutputConnector(): IUIGraphConnector;
 		getInputConnector(): IUIGraphConnector;

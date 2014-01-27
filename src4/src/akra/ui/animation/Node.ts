@@ -4,13 +4,14 @@
 
 module akra.ui.animation {
 	export class Node extends graph.Node implements IUIAnimationNode {
-		constructor (parent, options?, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN) {
+		constructor(parent, options?, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN) {
 			super(parent, options, eType);
 		}
 
 		attachToParent(pParent: IUIAnimationGraph): boolean {
 			if (super.attachToParent(pParent)) {
-				this.connect(pParent, SIGNAL(nodeSelected), SLOT(_selected));
+				//this.connect(pParent, SIGNAL(nodeSelected), SLOT(_selected));
+				pParent.nodeSelected.connect(this, this._selected);
 			}
 
 			return false;
@@ -18,24 +19,26 @@ module akra.ui.animation {
 
 		_selected(pGraph: IUIAnimationGraph, pNode: IUIAnimationNode, bPlay: boolean): void {
 			if (this === pNode) {
-				this.el.addClass("selected");
+				this.getElement().addClass("selected");
 			}
 			else {
-				this.el.removeClass("selected");
+				this.getElement().removeClass("selected");
 			}
 		}
 
-		 get animation(): IAnimationBase {
+		getAnimation(): IAnimationBase {
 			return null;
 		}
 
-		 get graph(): IUIAnimationGraph {
-			return <IUIAnimationGraph>this.parent;
+		setAnimation(pAnimation: IAnimationBase): void { }
+
+		getGraph(): IUIAnimationGraph {
+			return <IUIAnimationGraph>this.getParent();
 		}
 
 		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
-			if (pFrom.direction === EUIGraphDirections.IN) {
-				this.animation = (<IUIAnimationNode>pTo.node).animation;
+			if (pFrom.getDirection() === EUIGraphDirections.IN) {
+				this.setAnimation((<IUIAnimationNode>pTo.getNode()).getAnimation());
 			}
 		}
 	}

@@ -45,7 +45,7 @@ module akra.ui.scene {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-sceneevents");
+			this.getElement().addClass("component-sceneevents");
 		}
 	}
 

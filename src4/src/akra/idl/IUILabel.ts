@@ -12,8 +12,10 @@ module akra {
 	export interface IUILabel extends IUIComponent {
 		changed: ISignal<{ (pLabel: IUILabel, sValue: string): void; }>;
 
-		text: string;
-		postfix: string;
+		getText(): string;
+		setText(sValue: string): void;
+		getPostfix(): string;
+		setPostfix(sValue: string): void;
 	
 		editable(bValue?: boolean): void;
 		isEditable(): boolean;

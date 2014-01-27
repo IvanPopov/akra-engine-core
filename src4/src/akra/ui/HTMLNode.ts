@@ -42,11 +42,11 @@ module akra.ui {
 		public $element: JQuery = null;
 		protected _fnEventRedirector: Function = null;
 
-		 get el(): JQuery { return this.$element; }
+		getElement(): JQuery { return this.$element; }
 
-		constructor (parent, pElement?: HTMLElement, eNodeType?: EUINodeTypes);
-		constructor (parent, $element?: JQuery, eNodeType?: EUINodeTypes);
-		constructor (parent, pElement = null, eNodeType: EUINodeTypes = EUINodeTypes.HTML) {
+		constructor(parent, pElement?: HTMLElement, eNodeType?: EUINodeTypes);
+		constructor(parent, $element?: JQuery, eNodeType?: EUINodeTypes);
+		constructor(parent, pElement = null, eNodeType: EUINodeTypes = EUINodeTypes.HTML) {
 			super(getUI(parent), eNodeType);
 
 			var pNode: HTMLNode = this;
@@ -55,7 +55,7 @@ module akra.ui {
 					return;
 				}
 
-		     	return (<any>pNode)[e.type](e);
+				return (<any>pNode)[e.type](e);
 			}
 
 			this.$element = $(pElement || "<div />");
@@ -111,7 +111,7 @@ module akra.ui {
 			return this.$element;
 		}
 
-		 getHTMLElement(): HTMLElement {
+		getHTMLElement(): HTMLElement {
 			return this.$element.get()[0];
 		}
 
@@ -126,11 +126,11 @@ module akra.ui {
 
 			if (!isDef(to)) {
 				pTarget = this.findRenderTarget();
-				$to = isNull(pTarget)? $to: pTarget.renderTarget();
+				$to = isNull(pTarget) ? $to : pTarget.renderTarget();
 			}
 			else {
 				if (to instanceof Node) {
-					if (this.parent != <IUINode>to) {
+					if (this.getParent() != <IUINode>to) {
 						return this.attachToParent(<IUINode>to);
 					}
 
@@ -175,11 +175,11 @@ module akra.ui {
 			this.$element.remove();
 		}
 
-		 width(): uint {
+		width(): uint {
 			return this.$element.width();
 		}
 
-		 height(): uint {
+		height(): uint {
 			return this.$element.height();
 		}
 
@@ -188,11 +188,11 @@ module akra.ui {
 		}
 
 		hide(): void {
-			this.el.hide();
+			this.getElement().hide();
 		}
 
 		show(): void {
-			this.el.show();
+			this.getElement().show();
 		}
 
 		protected self(): JQuery {

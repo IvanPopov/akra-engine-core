@@ -60,13 +60,11 @@ module akra {
 	}
 	
 	export interface IUIComponent extends IUIDNDNode {
-	    /** readonly */ componentType: EUIComponents;
-	    /** readonly */ genericType: string;
-	
-	    /** readonly */ layout: IUILayout;
-	
+	    getComponentType(): EUIComponents;
+	    getGenericType(): string;
 	    isGeneric(): boolean;
 	
+	    getLayout(): IUILayout;	
 	    setLayout(eType: EUILayouts): boolean;
 	    setLayout(sType: string): boolean;
 	

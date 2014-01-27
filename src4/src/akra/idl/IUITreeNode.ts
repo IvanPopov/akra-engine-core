@@ -13,9 +13,10 @@ module akra {
 	
 		/** readonly */ expanded: boolean;
 	
-		/** readonly */ totalChildren: uint;
+		getTotalChildren(): uint;
 	
-		selected: boolean;
+		isSelected(): boolean;
+		setSelected(bValue: boolean): void;
 	
 		expand(bValue?: boolean): void;
 	

@@ -68,7 +68,7 @@ module akra.ui.graph {
 		}
 
 		 get canvas(): RaphaelPaper {
-			return this.left.graph.canvas;
+			return this.left.getGraph().canvas;
 		}
 
 		 set path(pPath: RaphaelPath) {
@@ -98,16 +98,16 @@ module akra.ui.graph {
 			this._pColor.a = .5;
 
 			if (!isNull(pLeft)) {
-				pLeft.route = this;
+				pLeft.setRoute(this);
 			}
 
 			if (!isNull(pRight)) {
-				pRight.route = this;
+				pRight.setRoute(this);
 			}
 		}
 
 		 isConnectedWithNode(pNode: IUIGraphNode): boolean {
-			return this.left.node === pNode || this.right.node === pNode;
+			 return this.left.getNode() === pNode || this.right.getNode() === pNode;
 		}
 
 		 isConnectedWith(pConnector: IUIGraphConnector): boolean {
@@ -164,14 +164,14 @@ module akra.ui.graph {
 			switch (e.type) {
 				case EUIGraphEvents.SHOW_MAP:
 					this._bHighlighted = true;
-					this.left.el.css("backgroundColor", this.color.html);
-					this.right.el.css("backgroundColor", this.color.html);
+					this.left.getElement().css("backgroundColor", this.color.getHtml());
+					this.right.getElement().css("backgroundColor", this.color.getHtml());
 					this.routing();
 					break;
 				case EUIGraphEvents.HIDE_MAP:
 					this._bHighlighted = false;
-					this.left.el.css("backgroundColor", "");
-					this.right.el.css("backgroundColor", "");
+					this.left.getElement().css("backgroundColor", "");
+					this.right.getElement().css("backgroundColor", "");
 					this.routing();
 					break;
 			}
@@ -204,7 +204,7 @@ module akra.ui.graph {
 			var pLeft: IPoint = Route.calcPosition(this.left);
 			var pRight: IPoint = Route.calcPosition(this.right);
 
-			this.drawRoute(pLeft, pRight, this.left.orient, this.right.orient);
+			this.drawRoute(pLeft, pRight, this.left.getOrient(), this.right.getOrient());
 		}
 
 		protected drawRoute(pFrom: IPoint, pTo: IPoint, 
@@ -297,7 +297,7 @@ module akra.ui.graph {
 				pTo.y,
 				]
 			];
-			var sColor: string = this._bHighlighted? this.color.htmlRgba: this.inactiveColor.htmlRgba;
+			var sColor: string = this._bHighlighted? this.color.getHtmlRgba(): this.inactiveColor.getHtmlRgba();
 			var fWeight: float = this._bHighlighted? 2. * this._fMaxWeight * this._fWeight: this._fMaxWeight * this._fWeight;
 
 			sColor = this.isBridge()? sColor : "rgba(255, 255, 255, 1.)";
@@ -373,7 +373,7 @@ module akra.ui.graph {
 		}
 
 		static calcPosition(pConnector: IUIGraphConnector): IPoint {
-			var pGraph: IUIGraph = pConnector.graph;
+			var pGraph: IUIGraph = pConnector.getGraph();
 
 			var pGraphOffset = pGraph.$element.offset();
 			var pPosition = pConnector.$element.offset();

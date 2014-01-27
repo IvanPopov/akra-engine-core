@@ -73,18 +73,18 @@ module akra.ui {
 		}
 
 		private updateProperties(): void {
-			this._pName.text = this._pMat.name;
+			this._pName.setText(this._pMat.name);
 			this._pDiffuse.setColor(this._pMat.diffuse);
 			this._pAmbient.setColor(this._pMat.ambient);
 			this._pSpecular.setColor(this._pMat.specular);
 			this._pEmissive.setColor(this._pMat.emissive);
-			this._pShininess.text = this._pMat.shininess.toFixed(2);
+			this._pShininess.setText(this._pMat.shininess.toFixed(2));
 			
 		}
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-material");
+			this.getElement().addClass("component-material");
 		}
 	}
 

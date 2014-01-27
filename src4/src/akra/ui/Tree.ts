@@ -18,20 +18,25 @@ module akra.ui {
 		protected _pNodeMap: IUITreeNodeMap = <IUITreeNodeMap>{};
 		protected $childrenNode: JQuery = null;
 
-		 get totalChildren(): uint {
+		getTotalChildren(): uint {
 			return Object.keys(this._pNodeMap).length;
 		}
 
-		 get selected(): boolean {
+		getElement(): JQuery {
+			return this.el;
+		}
+
+		/** Is this tree node currently selected? */
+		isSelected(): boolean {
 			return this.tree.isSelected(this);
 		}
 
-		set selected(bValue: boolean) {
-			if (!this.selected && !bValue) {
-				this.el.find("label:first").removeClass("selected");
+		setSelected(bValue: boolean): void {
+			if (!this.isSelected() && !bValue) {
+				this.getElement().find("label:first").removeClass("selected");
 			}
-			else if (this.selected && bValue) {
-				this.el.find("label:first").addClass("selected");
+			else if (this.isSelected() && bValue) {
+				this.getElement().find("label:first").addClass("selected");
 			}
 		}
 
@@ -43,8 +48,8 @@ module akra.ui {
 
 			var pNode: TreeNode = this;
 
-			this.el = $("<li><label  for=\""+ this.getID() + "\">" + this.sourceName() + "</label></li>");
-			this.el.find("label:first").click((e: IUIEvent) => {
+			this.el = $("<li><label  for=\"" + this.getID() + "\">" + this.sourceName() + "</label></li>");
+			this.getElement().find("label:first").click((e: IUIEvent) => {
 				e.stopPropagation();
 				pNode.select();
 			});
@@ -55,8 +60,8 @@ module akra.ui {
 		}
 
 		expand(bValue: boolean = true): void {
-			if (this.totalChildren) {
-				this.el.find("input").attr("checked", bValue);
+			if (this.getTotalChildren()) {
+				this.getElement().find("input").attr("checked", bValue);
 			}
 
 			this.expanded = bValue;
@@ -73,18 +78,18 @@ module akra.ui {
 
 
 		protected sync(bRecursive: boolean = true): void {
-			this.el.find("label:first").html(this.sourceName());
+			this.getElement().find("label:first").html(this.sourceName());
 
 			if (bRecursive) {
 
 				var pChildren: IEntity[] = this.source.children();
-				
+
 				var pChildMap: { [guid: int]: IEntity; } = <any>{};
-				
-				for (var i: int = 0; i < pChildren.length; ++ i) {
+
+				for (var i: int = 0; i < pChildren.length; ++i) {
 					var pChild: IEntity = pChildren[i];
 					pChildMap[pChild.guid] = pChild;
-					
+
 					if (!this.inChildren(pChild)) {
 						this.addChild(this.tree._createNode(pChild));
 					}
@@ -97,16 +102,16 @@ module akra.ui {
 						this._pNodeMap[iGuid].destroy();
 					}
 				}
-		
+
 			}
 		}
 
 		synced(): void {
-			this.el.find("label:first").removeClass("updating");
+			this.getElement().find("label:first").removeClass("updating");
 		}
 
 		waitForSync(): void {
-			this.el.find("label:first").addClass("updating");
+			this.getElement().find("label:first").addClass("updating");
 		}
 
 		protected removeChildren(): void {
@@ -122,17 +127,17 @@ module akra.ui {
 			return isDefAndNotNull(this._pNodeMap[pNode.guid]);
 		}
 
-		 protected sourceName(): string {
-			return this.source.name? this.source.name: "<span class=\"unnamed\">[unnamed]</span>"
+		protected sourceName(): string {
+			return this.source.getName() ? this.source.getName() : "<span class=\"unnamed\">[unnamed]</span>"
 		}
 
 		protected addChild(pNode: IUITreeNode): void {
 			if (isNull(this.$childrenNode)) {
-				this.el.append("<input " + (this.expanded? "checked": "") + 
+				this.getElement().append("<input " + (this.expanded ? "checked" : "") +
 					" type=\"checkbox\"  id=\"" + this.getID() + "\" />");
-				this.el.removeClass("file");
+				this.getElement().removeClass("file");
 				this.$childrenNode = $("<ol />");
-				this.el.append(this.$childrenNode);
+				this.getElement().append(this.$childrenNode);
 			}
 
 			this.$childrenNode.append(pNode.el);
@@ -146,9 +151,9 @@ module akra.ui {
 				this.tree._unlink(this);
 				this.tree = null;
 			}
-			
+
 			this.source = null;
-			this.el.remove();
+			this.getElement().remove();
 		}
 	}
 
@@ -165,20 +170,20 @@ module akra.ui {
 			this._pRootNode = this._createNode(pEntity);
 			this._pRootNode.sync();
 			this._pRootNode.expand();
-			this.el.append(this._pRootNode.el);
+			this.getElement().append(this._pRootNode.el);
 
 			this._pRootNode.select();
 		}
 
-		 get rootNode(): IUITreeNode {
+		getRootNode(): IUITreeNode {
 			return this._pRootNode;
 		}
 
-		 get selectedNode(): IEntity {
-			return !isNull(this._pSelectedNode)? this._pSelectedNode.source: null;
+		getSelectedNode(): IEntity {
+			return !isNull(this._pSelectedNode) ? this._pSelectedNode.source : null;
 		}
 
-		constructor (ui, options?, eType: EUIComponents = EUIComponents.TREE) {
+		constructor(ui, options?, eType: EUIComponents = EUIComponents.TREE) {
 			super(ui, options, eType, $("<ol class='tree'/>"));
 
 		}
@@ -189,13 +194,13 @@ module akra.ui {
 			this._pSelectedNode = null;
 
 			if (!isNull(pPrev)) {
-				pPrev.selected = false;
+				pPrev.setSelected(false);
 			}
 
 			this._pSelectedNode = pNode;
-			
+
 			if (!isNull(this._pSelectedNode)) {
-				this._pSelectedNode.selected = true;
+				this._pSelectedNode.setSelected(true);
 			}
 
 			return true;
@@ -223,7 +228,7 @@ module akra.ui {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-tree");
+			this.getElement().addClass("component-tree");
 		}
 
 		_createNode(pEntity: IEntity): IUITreeNode {
@@ -244,7 +249,7 @@ module akra.ui {
 				this._pNodeMap[pEntity.guid].sync(false);
 			}
 			else {
-				this.rootNode.sync();
+				this.getRootNode().sync();
 			}
 		}
 

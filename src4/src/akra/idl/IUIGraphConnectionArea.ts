@@ -11,12 +11,12 @@ module akra {
 	}
 	
 	export interface IUIGraphConnectionArea extends IUIPanel {
-		/** readonly */ connectors: IUIGraphConnector[];
-		/** readonly */ node: IUIGraphNode;
+		getConnectors(): IUIGraphConnector[];
+		getNode(): IUIGraphNode;
 
-		maxInConnections: uint;
-		maxOutConnections: uint;
-		maxConnections: uint;
+		setMaxInConnections(nValue: uint): void;
+		setMaxOutConnections(nValue: uint): void;
+		setMaxConnections(nValue: uint): void;
 
 		connectorsCount(eDir?: EUIGraphDirections): uint;
 

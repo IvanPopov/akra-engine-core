@@ -7,7 +7,7 @@ module akra.ui {
 	class MoveSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
 		emit(e?: IUIEvent): void {
 			super.emit(e);
-			this.el.css("bottom", "auto");
+			this.getSender().getElement().css("bottom", "auto");
 		}
 	}
 
@@ -21,36 +21,36 @@ module akra.ui {
 		protected $controls: JQuery;
 		protected $closeBtn: JQuery = null;
 
-		 get title(): string {
+		getTitle(): string {
 			return this.$title.html();
 		}
 
-		 set title(sTitle: string) {
+		setTitle(sTitle: string) {
 			this.$title.html(sTitle || "");
 		}
 
 
-		constructor (parent, options?, eType: EUIComponents = EUIComponents.POPUP) {
-			super(parent, mergeOptions({layout: EUILayouts.UNKNOWN}, options), eType, 
+		constructor(parent, options?, eType: EUIComponents = EUIComponents.POPUP) {
+			super(parent, mergeOptions({ layout: EUILayouts.UNKNOWN }, options), eType,
 				$("<div class=\"component-popup\"><div class='header'><div class=\"title\"/><div class=\"controls\"/></div></div>"));
 
 			var pPopup = this;
 
-			this.$header = this.el.find("div.header:first");
+			this.$header = this.getElement().find("div.header:first");
 			this.$title = this.$header.find("div.title");
 			this.$footer = $("<div class=\"footer\"/>");
 			this.$controls = this.$header.find("div.controls");
-			
-			this.el.append(this.$footer);
+
+			this.getElement().append(this.$footer);
 
 			if (isDefAndNotNull(options)) {
 				if (isString(options.title)) {
-					this.title = options.title;
+					this.setTitle(options.title);
 				}
 
 				if (isString(options.controls)) {
 					var pControls: string[] = options.controls.split(" ");
-					for (var i = 0; i < pControls.length; ++ i) {
+					for (var i = 0; i < pControls.length; ++i) {
 						switch (pControls[i]) {
 							case "close":
 								this.$closeBtn = $("<div class=\"close-btn\"/>");
@@ -66,7 +66,7 @@ module akra.ui {
 				handle: ".header"
 			});
 
-			this.el.offset({top: 0, left: 0});
+			this.getElement().offset({ top: 0, left: 0 });
 
 			if (this.$closeBtn) {
 				this.$closeBtn.click((e: IUIEvent) => { pPopup.close(); });
@@ -86,7 +86,7 @@ module akra.ui {
 
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
-			this.title = $comp.attr("title");
+			this.setTitle($comp.attr("title"));
 		}
 
 		static MoveSignal = MoveSignal;
@@ -95,4 +95,3 @@ module akra.ui {
 	register("Popup", Popup);
 }
 
-\

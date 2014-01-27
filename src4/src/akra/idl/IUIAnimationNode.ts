@@ -6,6 +6,7 @@
 
 module akra {
 	export interface IUIAnimationNode extends IUIGraphNode {
-		animation: IAnimationBase;
+		getAnimation(): IAnimationBase;
+		setAnimation(pAnimation: IAnimationBase): void;
 	}
 }

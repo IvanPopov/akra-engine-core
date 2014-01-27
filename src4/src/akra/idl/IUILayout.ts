@@ -14,7 +14,7 @@ module akra {
 	}
 	
 	export interface IUILayout extends IUIHTMLNode {
-		layoutType: EUILayouts;
+		getLayoutType(): EUILayouts;
 	
 		setAttributes(pAttrs: IUILayoutAttributes): void;
 		attr(sAttr: string): any;

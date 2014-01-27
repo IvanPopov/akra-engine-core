@@ -21,15 +21,18 @@ module akra {
 	}
 
 	export interface IUIGraphConnector extends IUIComponent {
-		route: IUIGraphRoute;
-		orient: EGraphConnectorOrient;
+		getRoute(): IUIGraphRoute;
+		setRoute(pValue: IUIGraphRoute): void;
+		getOrient(): EGraphConnectorOrient;
+		setOrient(eValue: EGraphConnectorOrient): void;
 
-		/** readonly */ area: IUIGraphConnectionArea;
-		/** readonly */ node: IUIGraphNode;
-		/** readonly */ graph: IUIGraph;
-		/** readonly */ direction: EUIGraphDirections;
+		getArea(): IUIGraphConnectionArea;
+		getNode(): IUIGraphNode;
+		getGraph(): IUIGraph;
+		getDirection(): EUIGraphDirections;
 
 		isActive(): boolean;
+		isConnected(): boolean;
 
 		activate(bValue?: boolean): void;
 

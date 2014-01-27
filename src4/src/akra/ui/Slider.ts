@@ -12,19 +12,14 @@ module akra.ui {
 		protected $progress: JQuery;
 		protected $text: JQuery;
 
-		get pin(): IUIComponent { return <IUIComponent>this.child; }
-		get value(): float { return this._fValue * this._fRange; }
-		get range(): float { return this._fRange; }
-		set range(fValue: float) { this._fRange = fValue; }
-		set text(s: string) {
-			this.$text.text(s);
-		}
+		getPin(): IUIComponent { return <IUIComponent>this.getChild(); }
+		getValue(): float { return this._fValue * this._fRange; }
+		getRange(): float { return this._fRange; }
+		setRange(fValue: float): void { this._fRange = fValue; }
+		getText(): string { return this.$text.text(); }
+		setText(s: string): void { this.$text.text(s); }
 
-		get text(): string {
-			return this.$text.text();
-		}
-
-		set value(fValue: float) {
+		setValue(fValue: float): void {
 			if (fValue == this._fValue) {
 				return;
 			}
@@ -33,30 +28,30 @@ module akra.ui {
 
 			var iElementOffset = this.$element.offset().left;
 
-			var iPixelTotal = this.$element.width() - this.pin.$element.width();
+			var iPixelTotal = this.$element.width() - this.getPin().$element.width();
 
 			var iPixelCurrent: int = iPixelTotal * fValue;
 			var iPinOffset: int = iPixelCurrent + iElementOffset + 1;
 
-			this.pin.$element.offset({ left: iPinOffset });
+			this.getPin().$element.offset({ left: iPinOffset });
 
 			this._fValue = fValue;
 
-			this.updated.emit(this.value);
+			this.updated.emit(this.getValue());
 		}
 
 		constructor(parent, options?, eType: EUIComponents = EUIComponents.SLIDER) {
 			super(parent, options, eType);
 
-			this.ui.createComponent("pin", { class: "component-pin" }).attachToParent(this);
-			this.el.append("<div class=\"slider-text\"></div>");
+			this.getUI().createComponent("pin", { class: "component-pin" }).attachToParent(this);
+			this.getElement().append("<div class=\"slider-text\"></div>");
 
 			//this.$progress = this.$element.find(".slider-progress");
 			this.$text = this.$element.find(".slider-text");
 
-			this.pin.setDraggable();
-			// this.connect(this.pin, SIGNAL(move), SLOT(_updated));
-			this.pin.move.connect(this, this._updated);
+			this.getPin().setDraggable();
+			// this.connect(this.getPin(), SIGNAL(move), SLOT(_updated));
+			this.getPin().move.connect(this, this._updated);
 		}
 
 		protected setupSignals(): void {
@@ -67,7 +62,7 @@ module akra.ui {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-slider");
+			this.getElement().addClass("component-slider");
 		}
 
 
@@ -76,17 +71,17 @@ module akra.ui {
 			var fValuePrev: float = this._fValue;
 			var fValue: float;
 
-			var iPinOffset: int = this.pin.$element.offset().left;
+			var iPinOffset: int = this.getPin().$element.offset().left;
 			var iElementOffset: int = this.$element.offset().left;
 
-			var iPixelTotal: int = this.$element.width() - this.pin.$element.width();
+			var iPixelTotal: int = this.$element.width() - this.getPin().$element.width();
 			//FIXME: white offsets not equals????
 			var iPixelCurrent: int = iPinOffset - iElementOffset - 1;
 
 			fValue = this._fValue = math.clamp(iPixelCurrent / iPixelTotal, 0., 1.);
 
 			if (fValue != fValuePrev) {
-				this.updated.emit(this.value);
+				this.updated.emit(this.getValue());
 				// console.log("updated", this.value);
 			}
 		}
@@ -97,19 +92,19 @@ module akra.ui {
 			var sRange: string = $comp.attr("range");
 
 			if (isString(sRange)) {
-				this.range = parseFloat(sRange);
+				this.setRange(parseFloat(sRange));
 			}
 
 			var sValue: string = $comp.attr("value");
 
 			if (isString(sValue)) {
-				this.value = parseFloat(sValue);
+				this.setValue(parseFloat(sValue));
 			}
 		}
 
 		toString(isRecursive: boolean = false, iDepth: int = 0): string {
 			if (!isRecursive) {
-				return '<slider' + (this.name ? " " + this.name : "") + '>';
+				return '<slider' + (this.getName() ? " " + this.getName() : "") + '>';
 			}
 
 			return super.toString(isRecursive, iDepth);

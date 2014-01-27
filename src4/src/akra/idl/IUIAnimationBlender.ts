@@ -4,14 +4,13 @@
 /// <reference path="IUIAnimationNode.ts" />
 
 module akra {
-export interface IUIAnimationBlender extends IUIAnimationNode {
-	totalMasks: int;
-	
-	getMaskNode(iAnim: int): IUIAnimationMask;
-	setMaskNode(iAnim: int, pNode: IUIAnimationMask): void;
+	export interface IUIAnimationBlender extends IUIAnimationNode {
+		getTotalMasks(): int;
 
-	setup(): void;
-}
+		getMaskNode(iAnim: int): IUIAnimationMask;
+		setMaskNode(iAnim: int, pNode: IUIAnimationMask): void;
+
+		setup(): void;
+	}
 }
 
-#endif

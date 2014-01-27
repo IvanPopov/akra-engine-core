@@ -3066,6 +3066,10 @@ module akra.pool.resources {
 			return pAnimationOutput;
 		}
 
+		static isColladaResource(pItem: IResourcePoolItem): boolean {
+			return isModelResource(pItem) && (<IModel>pItem).getModelFormat() === EModelFormats.COLLADA;
+		}
+
 	}
 
 	pSupportedVertexFormat = [
@@ -3270,9 +3274,5 @@ module akra.pool.resources {
 
 	export function isModelResource(pItem: IResourcePoolItem): boolean {
 		return pool.isVideoResource(pItem) && pItem.getResourceCode().getType() === EVideoResources.MODEL_RESOURCE;
-	}
-
-	export function isColladaResource(pItem: IResourcePoolItem): boolean {
-		return isModelResource(pItem) && (<IModel>pItem).getModelFormat() === EModelFormats.COLLADA;
 	}
 }

@@ -14,18 +14,18 @@ module akra.ui.animation {
 		private _pEditBtn: IUIButton = null;
 		private _pEditPanel: IUIPanel = null;
 
-		 get animation(): IAnimationBase {
+		getAnimation(): IAnimationBase {
 			return this._pAnimation;
 		}
 
-		 set animation(pAnim: IAnimationBase) {
+		setAnimation(pAnim: IAnimationBase) {
 			this._pAnimation = pAnim;
 			this._pMask = this._pMask || pAnim.createAnimationMask();
 			this.selected.emit(true);
 		}
 
-		constructor (pGraph: IUIGraph, pMask: IMap<float> = null) {
-			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
+		constructor(pGraph: IUIGraph, pMask: IMap<float> = null) {
+			super(pGraph, { init: false }, EUIGraphNodes.ANIMATION_MASK);
 
 			this.template("animation.Mask.tpl");
 			this.linkAreas();
@@ -37,19 +37,20 @@ module akra.ui.animation {
 
 		protected finalizeRender(): void {
 			super.finalizeRender();
-			this.el.addClass("component-animationmask");
+			this.getElement().addClass("component-animationmask");
 		}
 
 
-		 getMask(): IMap<float> {
+		getMask(): IMap<float> {
 			return this._pMask;
 		}
+
+		static isMaskNode(pNode: IUIAnimationNode): boolean {
+			return pNode.getGraphNodeType() === EUIGraphNodes.ANIMATION_MASK;
+		}
 	}
 
-	export  function isMaskNode(pNode: IUIAnimationNode): boolean {
-		return pNode.graphNodeType === EUIGraphNodes.ANIMATION_MASK;
-	}
 
-	register("animation.Mask", Mask);
+	register("animation.Mask", <any>Mask);
 }
 

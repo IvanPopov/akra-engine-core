@@ -6,7 +6,7 @@
 
 module akra {
 	export interface IUITabs extends IUIComponent {
-		active: IUIPanel;
+		getActiveTab(): IUIPanel;
 	
 		tab(iTab: int): IUIPanel;
 	

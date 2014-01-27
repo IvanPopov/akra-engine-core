@@ -30,8 +30,8 @@ module akra.ui {
 			super(ui, options, EUIComponents.VIEWPORT_STATS, 
 				$("<div class=\"component-fps\" ><div class=\"info\"></div><div class=\"graph\"></div></div>"));
 
-			var $graph: JQuery = this.el.find(".graph");
-			var pInfo: HTMLDivElement = this.el.find(".info").get()[0];
+			var $graph: JQuery = this.getElement().find(".graph");
+			var pInfo: HTMLDivElement = this.getElement().find(".info").get()[0];
 			var pTicks: HTMLSpanElement[] = [];
 			var pValues: uint[] = [];
 
@@ -85,7 +85,7 @@ module akra.ui {
 		}
 
 		protected finalizeRender(): void {
-			this.el.addClass("component-fps");
+			this.getElement().addClass("component-fps");
 		}
 	}
 
