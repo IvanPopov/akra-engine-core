@@ -25,14 +25,14 @@ module akra.pool {
 	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
 		guid: uint = guid();
 
-		created: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		destroyed: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		loaded: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		unloaded: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		restored: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		disabled: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		altered: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
-		saved: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		created: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		destroyed: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		loaded: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		unloaded: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		restored: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		disabled: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		altered: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		saved: ISignal<{ (pResource: IResourcePoolItem): void; }>;
 
 		//private pManager: IResourcePoolManager;
 		private _pResourceCode: IResourceCode;
@@ -43,6 +43,28 @@ module akra.pool {
 		private _pStateWatcher: IResourceWatcherFunc[];
 		private _pCallbackSlots: ICallbackSlot[][];
 
+		/** Constructor of ResourcePoolItem class */
+		constructor(/*pManager: IResourcePoolManager*/) {
+			super();
+			this.setupSignals();
+
+			//this.pManager = pManager;
+			this._pResourceCode = new ResourceCode(0);
+			this._pCallbackFunctions = [];
+			this._pStateWatcher = [];
+			this._pCallbackSlots = gen.array<ICallbackSlot[]>(<number>EResourceItemEvents.TOTALRESOURCEFLAGS);
+		}
+
+		protected setupSignals(): void {
+			this.created = this.created || new Signal(<any>this);
+			this.destroyed = this.destroyed || new Signal(<any>this);
+			this.loaded = this.loaded || new Signal(<any>this);
+			this.unloaded = this.unloaded || new Signal(<any>this);
+			this.restored = this.restored || new Signal(<any>this);
+			this.disabled = this.disabled || new Signal(<any>this);
+			this.altered = this.altered || new Signal(<any>this);
+			this.saved = this.saved || new Signal(<any>this);
+		}
 
 		getResourceCode(): IResourceCode {
 			return this._pResourceCode;
@@ -62,17 +84,6 @@ module akra.pool {
 
 		getAlteredFlag(): boolean {
 			return bf.testBit(this._iResourceFlags, <number>EResourceItemEvents.ALTERED);
-		}
-
-		/** Constructor of ResourcePoolItem class */
-		constructor(/*pManager: IResourcePoolManager*/) {
-			super();
-
-			//this.pManager = pManager;
-			this._pResourceCode = new ResourceCode(0);
-			this._pCallbackFunctions = [];
-			this._pStateWatcher = [];
-			this._pCallbackSlots = gen.array<ICallbackSlot[]>(<number>EResourceItemEvents.TOTALRESOURCEFLAGS);
 		}
 
 		getEngine(): IEngine {

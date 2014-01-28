@@ -2,7 +2,7 @@
 /// <reference path="../idl/IUIVector.ts" />
 /// <reference path="../idl/IUILabel.ts" />
 
-/// <reference "Component.ts" />
+/// <reference path="Component.ts" />
 
 module akra.ui {
 	export class Material extends Component {

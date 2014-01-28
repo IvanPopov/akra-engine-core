@@ -34,8 +34,8 @@ module akra.render {
 	var pColor: IColor = new Color(0);
 
 	export class DSViewport extends Viewport implements IDSViewport  {
-		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }> = new Signal(<any>this);
-		addedBackground: ISignal<{ (pViewport: IViewport, pTexture: ITexture): void; }> = new Signal(<any>this);
+		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
+		addedBackground: ISignal<{ (pViewport: IViewport, pTexture: ITexture): void; }>;
 
 		private _pDeferredEffect: IEffect = null;
 		private _pDeferredColorTextures: ITexture[] = [];
@@ -63,6 +63,17 @@ module akra.render {
 		private _pHighlightedObject: IRIDPair = {object: null, renderable: null};
 
 
+		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
+			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+		}
+
+		protected setupSignals(): void {
+			this.addedSkybox = this.addedSkybox || new Signal(<any>this);
+			this.addedBackground = this.addedBackground || new Signal(<any>this);
+
+			super.setupSignals();
+		}
+
 		getType(): EViewportTypes {
 			return EViewportTypes.DSVIEWPORT;
 		}
@@ -77,10 +88,6 @@ module akra.render {
 
 		getView(): IRenderableObject {
 			return this._pDeferredView;
-		}
-
-		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
-			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -555,7 +562,7 @@ module akra.render {
 					
 					pOmniLight = <IOmniLight>pLight;
 
-					if (pLight.getIsShadowCaster()) {
+					if (pLight.isShadowCaster()) {
 						pUniformData = UniformOmniShadow.temp();
 						(<UniformOmniShadow>pUniformData).setLightData(<IOmniParameters>pLight.getParams(), v3fLightTransformPosition);
 						
@@ -585,7 +592,7 @@ module akra.render {
 					pProjectLight = <IProjectLight>pLight;
 					pShadowCaster = pProjectLight.getShadowCaster();
 
-					if (pLight.getIsShadowCaster() && pShadowCaster.getIsShadowCasted()) {
+					if (pLight.isShadowCaster() && pShadowCaster.isShadowCasted()) {
 						pUniformData = UniformProjectShadow.temp();
 						(<UniformProjectShadow>pUniformData).setLightData(<IProjectParameters>pLight.getParams(), v3fLightTransformPosition);
 						
@@ -611,7 +618,7 @@ module akra.render {
 					pSunLight = <ISunLight>pLight;
 					pShadowCaster = pSunLight.getShadowCaster();
 
-					if (pLight.getIsShadowCaster()) {
+					if (pLight.isShadowCaster()) {
 						pUniformData = UniformSunShadow.temp();
 						var pSkyDome: ISceneModel = pSunLight.getSkyDome();
 						var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);

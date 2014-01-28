@@ -11,7 +11,7 @@ module akra.animation {
 	class PlaySignal extends Signal<{ (pController: IAnimationController, pAnimationNext: IAnimationBase, fRealTime: float): void; }, IAnimationController> {
 
 		constructor(pController: IAnimationController) {
-			super(pController, null, EEventTypes.BROADCAST);
+			super(pController, EEventTypes.BROADCAST);
 		}
 
 		emit(pAnimation?: string): void;
@@ -40,8 +40,8 @@ module akra.animation {
 	class Controller implements IAnimationController {
 		guid: uint = guid();
 
-		animationAdded: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase): void; }> = new Signal(<any>this);
-		play: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase, fRealTime: float): void; }> = new PlaySignal(this);
+		animationAdded: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase): void; }>;
+		play: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase, fRealTime: float): void; }>;
 
 		public name: string = null;
 
@@ -65,9 +65,16 @@ module akra.animation {
 		}
 
 		constructor(pEngine: IEngine, sName: string = null, iOptions: int = 0) {
+			this.setupSignals();
+
 			this._pEngine = pEngine;
 			this.setOptions(iOptions);
 			this.name = sName;
+		}
+
+		protected setupSignals(): void {
+			this.animationAdded = this.animationAdded || new Signal(<any>this);
+			this.play = this.play || new PlaySignal(this);
 		}
 
 		getEngine(): IEngine {
@@ -212,6 +219,8 @@ module akra.animation {
 
 			return null;
 		}
+
+		static PlaySignal = PlaySignal;
 	} 
 
 

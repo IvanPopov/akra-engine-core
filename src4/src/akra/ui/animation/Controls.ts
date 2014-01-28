@@ -9,7 +9,7 @@
 /// <reference path="Blender.ts" />
 /// <reference path="Mask.ts" />
 
-/// <reference path="../../io/Exporter.ts"
+/// <reference path="../../export/Exporter.ts" />
 
 module akra.ui.animation {
 	export class Controls extends graph.Controls implements IUIAnimationControls {
@@ -62,8 +62,8 @@ module akra.ui.animation {
 			return new Mask(this.graph);
 		}
 
-		protected createExporter(): io.Exporter {
-			var pExporter = new io.Exporter;
+		protected createExporter(): akra.export.Exporter {
+			var pExporter = new akra.export.Exporter;
 			var pController = this.graph.getController();
 			var pGraphOffset = this.graph.getElement().offset();
 

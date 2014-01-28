@@ -16,7 +16,7 @@
 module akra.pool {
 	export class ResourcePool<T extends IResourcePoolItem> extends util.ReferenceCounter implements IResourcePool<T> {
 		guid: uint = guid();
-		createdResource: ISignal<{ (pPool: IResourcePool<T>, pResource: T): void; }> = new Signal(<any>this);
+		createdResource: ISignal<{ (pPool: IResourcePool<T>, pResource: T): void; }>;
 
 		private _pManager: IResourcePoolManager = null;
 		/** Конструктор для создания данных в пуле ресурсов */
@@ -26,6 +26,18 @@ module akra.pool {
 		private _pNameMap: string[] = new Array<string>();
 		private _pDataPool: IDataPool = null;
 
+		constructor(pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
+			super();
+			this.setupSignals();
+
+			this._pManager = pManager;
+			this._tTemplate = tTemplate;
+			this._pDataPool = new DataPool(this._pManager, tTemplate);
+		}
+
+		protected setupSignals(): void {
+			this.createdResource = this.createdResource || new Signal(<any>this);
+		}
 
 		getFourcc(): int {
 			return (this._sExt.charCodeAt(3) << 24)
@@ -43,14 +55,6 @@ module akra.pool {
 
 		getManager(): IResourcePoolManager {
 			return this._pManager;
-		}
-
-		constructor (pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
-			super();
-
-			this._pManager = pManager;
-			this._tTemplate = tTemplate;
-			this._pDataPool = new DataPool(this._pManager, tTemplate);
 		}
 
 		/** Добавление данного пула в менеджер ресурсво по его коду */

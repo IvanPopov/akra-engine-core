@@ -1,4 +1,4 @@
-/// <reference path="idl/IEventProvider.ts" />
+п»ї/// <reference path="idl/IEventProvider.ts" />
 /// <reference path="common.ts" />
 
 
@@ -33,8 +33,8 @@ module akra {
 			//}
 		}
 
-		// Проверяем, существует ли функция в прототипе сендера, чтобы не подавались noname 
-		// функции в сигналы и в качестве fnForerunner
+		// РџСЂРѕРІРµСЂСЏРµРј, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С„СѓРЅРєС†РёСЏ РІ РїСЂРѕС‚РѕС‚РёРїРµ СЃРµРЅРґРµСЂР°, С‡С‚РѕР±С‹ РЅРµ РїРѕРґР°РІР°Р»РёСЃСЊ noname 
+		// С„СѓРЅРєС†РёРё РІ СЃРёРіРЅР°Р»С‹ Рё РІ РєР°С‡РµСЃС‚РІРµ fnForerunner
 		private isMethodExistsInSenderPrototype(fn: Function): boolean {
 			var pProto = (<any>this._pSender).constructor.prototype;
 

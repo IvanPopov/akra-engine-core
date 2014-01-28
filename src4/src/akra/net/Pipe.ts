@@ -17,10 +17,10 @@ module akra.net {
 	export class Pipe implements IPipe {
 		guid: uint = guid();
 
-		opened: ISignal<{ (pPipe: IPipe, e: Event): void; }> = new Signal(<any>this);
-		closed: ISignal<{ (pPipe: IPipe, e: CloseEvent): void; }> = new Signal(<any>this);
-		error: ISignal<{ (pPipe: IPipe, e: ErrorEvent): void; }> = new Signal(<any>this);
-		message: ISignal<{ (pPipe: IPipe, pData: any, eType: EPipeDataTypes): void; }> = new Signal(<any>this);   
+		opened: ISignal<{ (pPipe: IPipe, e: Event): void; }>;
+		closed: ISignal<{ (pPipe: IPipe, e: CloseEvent): void; }>;
+		error: ISignal<{ (pPipe: IPipe, e: ErrorEvent): void; }>;
+		message: ISignal<{ (pPipe: IPipe, pData: any, eType: EPipeDataTypes): void; }>;
 		
 
 		protected _pAddr: IURI = null;
@@ -29,14 +29,23 @@ module akra.net {
 		protected _pConnect: IVirualDescriptor = null;
 		protected _bSetupComplete: boolean = false;
 
-		getURI(): IURI {
-			return uri.parse(this._pAddr.toString());
-		}
-
 		constructor(sAddr: string = null) {
+			this.setupSignals();
+
 			if (!isNull(sAddr)) {
 				this.open(sAddr);
 			}
+		}
+
+		protected setupSignals(): void {
+			this.opened = this.opened || new Signal(<any>this);
+			this.closed = this.closed || new Signal(<any>this);
+			this.error = this.error || new Signal(<any>this);
+			this.message = this.message || new Signal(<any>this);
+		}
+
+		getURI(): IURI {
+			return uri.parse(this._pAddr.toString());
 		}
 
 		open(pAddr?: IURI): boolean;

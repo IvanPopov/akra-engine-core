@@ -19,7 +19,7 @@ module akra.model {
 	import VertexDeclaration = data.VertexDeclaration;
 
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
-		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }> = new Signal(<any>this);
+		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }>;
 
 		protected _sName: string = null;
 		protected _pMesh: IMesh = null;
@@ -52,6 +52,12 @@ module akra.model {
 		constructor(pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
 			super(ERenderableTypes.MESH_SUBSET);
 			this.setup(pMesh, pRenderData, sName);
+		}
+
+		protected setupSignals(): void {
+			this.skinAdded = this.skinAdded || new Signal(<any>this);
+
+			super.setupSignals();
 		}
 
 		protected setup(pMesh: IMesh, pRenderData: IRenderData, sName: string): void {

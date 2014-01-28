@@ -1,5 +1,5 @@
-/// <reference "IUINode.ts" />
-/// <reference "IUILayout.ts" />
+/// <reference path="../idl/IUINode.ts" />
+/// <reference path="../idl/IUILayout.ts" />
 
 /// <reference path="../util/Entity.ts" />
 

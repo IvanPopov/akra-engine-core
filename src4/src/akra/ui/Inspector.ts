@@ -145,7 +145,7 @@ module akra.ui {
 		_addController(pBtn: IUIButton): void {
 			var pController: IAnimationController = ide.getEngine().createAnimationController();
 			var pControllerUI = this.getControllerUI();
-			pControllerUI.controller = pController;
+			pControllerUI.setController(pController);
 			// this._pAddControllerBtn.getElement().append(pControllerUI.getElement().parent());
 			this._pNode.addController(pController);
 		}
@@ -156,7 +156,7 @@ module akra.ui {
 
 		_editCintroller(pControllerUI: ui.animation.Controller): void {
 			// LOG("inspect controller");
-			ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, pControllerUI.controller);
+			ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, pControllerUI.getController());
 		}
 
 		_updateName(pLabel: IUILabel, sName: string): void {
@@ -237,14 +237,14 @@ module akra.ui {
 
 			for (var i = 0; i < pNode.getTotalControllers(); ++ i) {
 				var pControllerUI = this.getControllerUI();
-				pControllerUI.controller = pNode.getController(i);
+				pControllerUI.setController(pNode.getController(i));
 			}
 
 			this.inspectAnimationController(null);
 		}
 
 		inspectAnimationNode(pNode: IUIAnimationNode): void {
-			if (isNull(pNode) || isNull(pNode.animation)) {
+			if (isNull(pNode) || isNull(pNode.getAnimation())) {
 				this.getElement().find("div[name=animation-node]").hide();
 				return;
 			}
@@ -252,7 +252,7 @@ module akra.ui {
 			this.getElement().find("div[name=animation-node]").show();
 			this._pAnimationNodeProperties.setNode(pNode);
 
-			if (animation.isMaskNode(pNode)) {
+			if (animation.Mask.isMaskNode(pNode)) {
 				this.getElement().find(".animation-mask-properties-row:first").show();
 				this._pAnimationMaskProperties.setMask(<IUIAnimationMask>pNode);
 			}

@@ -21,34 +21,49 @@ module akra.scene {
 	}
 
 	export class SceneObject extends SceneNode implements ISceneObject {
-		worldBoundsUpdated: ISignal<{ (pObject: ISceneObject): void; }> = new Signal(<any>this, EEventTypes.UNICAST);
+		worldBoundsUpdated: ISignal<{ (pObject: ISceneObject): void; }>;
 
-		click: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
+		click: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 
-		mousemove: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
-		mousedown: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
-		mouseup: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
-		mouseover: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
-		mouseout: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
+		mousemove: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
+		mousedown: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
+		mouseup: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
+		mouseover: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
+		mouseout: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 
 
-		dragstart: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
-		dragstop: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
-		dragging: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(<any>this);
+		dragstart: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
+		dragstop: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
+		dragging: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 
 		protected _iObjectFlags: int = 0;
 		protected _pLocalBounds: IRect3d = new geometry.Rect3d();
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
 		protected _iViewModes: int = 0;
+
+
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
+		}
+
+		protected setupSignals(): void {
+			this.worldBoundsUpdated = this.worldBoundsUpdated || new Signal(<any>this, EEventTypes.UNICAST);
+
+			this.click = this.click || new Signal(<any>this);
+
+			this.mousemove = this.mousemove || new Signal(<any>this);
+			this.mousedown = this.mousedown || new Signal(<any>this);
+			this.mouseup = this.mouseup || new Signal(<any>this);
+			this.mouseover = this.mouseover || new Signal(<any>this);
+			this.mouseout = this.mouseout || new Signal(<any>this);
+
+
+			this.dragstart = this.dragstart || new Signal(<any>this);
+			this.dragstop = this.dragstop || new Signal(<any>this);
+			this.dragging = this.dragging || new Signal(<any>this);
+
+			super.setupSignals();
+		}
 
 
 		getTotalRenderable(): uint {
@@ -144,10 +159,6 @@ module akra.scene {
 			fn: (pObject: ISceneObject, pViewport: IViewport,
 			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.dragging.connect(fn);
-		}
-
-		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
-			super(pScene, eType);
 		}
 
 		getRenderable(i?: uint): IRenderableObject {

@@ -24,6 +24,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="akra\import\Importer.ts" />
+    <None Include="akra\export\Exporter.ts" />
     <None Include="akra\ui\animation\Blender.ts" />
     <None Include="akra\ui\camera\Events.ts" />
     <None Include="akra\ui\graph\ConnectionArea.ts" />
@@ -530,6 +532,7 @@
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
     <TypeScriptCompile Include="akra\idl\3d-party\codemirror.d.ts" />
+    <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
     <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
@@ -596,6 +599,7 @@
     <TypeScriptCompile Include="akra\ui\Vertical.ts" />
     <TypeScriptCompile Include="akra\ui\ViewportProperties.ts" />
     <TypeScriptCompile Include="akra\ui\Window.ts" />
+    <TypeScriptCompile Include="akra\addons\navigation.ts" />
     <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
     <TypeScriptCompile Include="akra\model\Mesh.ts" />
     <TypeScriptCompile Include="akra\model\MeshSubset.ts" />

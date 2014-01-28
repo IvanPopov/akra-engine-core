@@ -14,7 +14,7 @@ module akra.filedrop {
 	export function addHandler(element: HTMLElement, options: IFileDropAreaOptions): boolean;
 	export function addHandler(element: HTMLElement, ondrop: IDropFunc): boolean;
 	export function addHandler(el, options): boolean {
-		if (!info.api.file) {
+		if (!info.api.getFile()) {
 			logger.warn("File drop area has not been created, because File API unsupported.");
 			return false;
 		}

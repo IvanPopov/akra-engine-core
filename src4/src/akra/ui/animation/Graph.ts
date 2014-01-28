@@ -12,7 +12,7 @@
 /// <reference path="Controls.ts" />
 /// <reference path="Blender.ts" />
 
-/// <reference path="io/Importer.ts" />
+/// <reference path="../../import/Importer.ts" />
 
 module akra.ui.animation {
 	class DropSignal extends Signal<{ (pGraph: IUIAnimationGraph, e: IUIEvent, pComponent: IUIComponent, pInfo?: any): void; }, IUIAnimationGraph> {
@@ -79,7 +79,7 @@ module akra.ui.animation {
 					}
 
 					if (sExt == "JSON") {
-						var pImporter = new io.Importer(ide.getEngine());
+						var pImporter = new akra.import.Importer(ide.getEngine());
 						pImporter.import(content);
 						this.createNodeByController(pImporter.getController());
 
@@ -324,7 +324,7 @@ module akra.ui.animation {
 			if (isComponent(pChild, EUIComponents.GRAPH_NODE)) {
 				var pNode: IUIGraphNode = <IUIGraphNode>pChild;
 				//this.connect(pNode, SIGNAL(selected), SLOT(selectNode));
-				pNode.selected.connect(this, this.selectNode);
+				pNode.selected.connect(this, <any>this.selectNode);
 			}
 
 			return pChild;

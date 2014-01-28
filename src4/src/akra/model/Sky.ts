@@ -73,6 +73,8 @@ module akra.model {
 
 
 		constructor(private _pEngine: IEngine, nCols: uint, nRows: uint, fR: float) {
+			this.setupSignals();
+
 			logger.assert(nCols > 2);
 			logger.assert(nRows > 1);
 			logger.assert(nCols * nRows < 65535);
@@ -96,6 +98,10 @@ module akra.model {
 
 			this.sun.attachToParent(this.skyDome);
 			this.sun.setSkyDome(this.skyDome);
+		}
+
+		protected setupSignals(): void {
+
 		}
 
 		getEngine(): IEngine {

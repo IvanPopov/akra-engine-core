@@ -1,5 +1,3 @@
-
-/// <reference path="AIUnique.ts" />
 /// <reference path="IMap.ts" />
 /// <reference path="IFrame.ts" />
 

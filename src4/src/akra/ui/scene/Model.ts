@@ -1,10 +1,8 @@
-#ifndef UISCENEMODEL_TS
-#define UISCENEMODEL_TS
+/// <reference path="../../idl/IUILabel.ts" />
+/// <reference path="../../idl/IUISwitch.ts" />
+/// <reference path="../../idl/ISceneModel.ts" />
 
-#include "../Component.ts"
-#include "IUILabel.ts"
-#include "IUISwitch.ts"
-#include "ISceneModel.ts"
+/// <reference path="../Component.ts" />
 
 module akra.ui.scene {
 	export class Model extends Component {
@@ -18,11 +16,12 @@ module akra.ui.scene {
 
 			this._pVisible = <IUISwitch>this.findEntity("visible");
 
-			this.connect(this._pVisible, SIGNAL(changed), SLOT(_changeVisibility));
+			//this.connect(this._pVisible, SIGNAL(changed), SLOT(_changeVisibility));
+			this._pVisible.changed.connect(this, this._changeVisibility);
 		}
 
 		_changeVisibility(pSwc: IUISwitch, bValue: boolean): void {
-			this._pModel.visible = bValue;
+			this._pModel.setVisible(bValue);
 		}
 
 		setModel(pModel: ISceneModel): void {
@@ -33,17 +32,17 @@ module akra.ui.scene {
 		protected updateProperties(): void {
 			var pModel: ISceneModel = this._pModel;
 
-			this._pVisible._setValue(pModel.visible);
+			this._pVisible._setValue(pModel.isVisible());
 		}
 
-		rendered(): void {
-			super.rendered();
-			this.el.addClass("component-scenemodel");
+		protected finalizeRender(): void {
+			super.finalizeRender();
+			this.getElement().addClass("component-scenemodel");
 		}
 	}
 
 	register("scene.Model", Model);
 }
 
-#endif
+
 

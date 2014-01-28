@@ -6,8 +6,8 @@
 
 module akra.animation {
 	export class Blend extends Base implements IAnimationBlend {
-		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }> = new Signal(<any>this);
-		durationUpdated: ISignal<{ (pBlend: IAnimationBlend, fDuration: float): void; }> = new Signal(<any>this);
+		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }>;
+		durationUpdated: ISignal<{ (pBlend: IAnimationBlend, fDuration: float): void; }>;
 
 		public duration: float = 0;
 
@@ -15,6 +15,13 @@ module akra.animation {
 
 		constructor(sName?: string) {
 			super(EAnimationTypes.BLEND, sName);
+		}
+
+		protected setupSignals(): void {
+			this.weightUpdated = this.weightUpdated || new Signal(<any>this);
+			this.durationUpdated = this.durationUpdated || new Signal(<any>this);
+
+			super.setupSignals();
 		}
 
 		getTotalAnimations(): int {

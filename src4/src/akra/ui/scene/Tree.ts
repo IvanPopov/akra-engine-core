@@ -1,8 +1,5 @@
-#ifndef UISCENETREE_TS
-#define UISCENETREE_TS
-
-#include "IScene3d.ts"
-#include "../Tree.ts"
+/// <reference path="../../idl/IScene3d.ts" />
+/// <reference path="../../debug.ts" />
 
 module akra.ui.scene {
 	export class CameraNode extends TreeNode {
@@ -10,7 +7,7 @@ module akra.ui.scene {
 			super(pTree, pSource);
 
 			this.el.bind("dblclick", () => {
-				LOG("look through");
+				logger.log("look through");
 			});
 
 			this.el.find("label:first").addClass("camera");
@@ -78,8 +75,10 @@ module akra.ui.scene {
 		fromScene(pScene: IScene3d): void {
 			this._pScene = pScene;
 
-			this.connect(pScene, SIGNAL(nodeAttachment), SLOT(updateTree));
-			this.connect(pScene, SIGNAL(nodeDetachment), SLOT(updateTree));
+			//this.connect(pScene, SIGNAL(nodeAttachment), SLOT(updateTree));
+			//this.connect(pScene, SIGNAL(nodeDetachment), SLOT(updateTree));
+			pScene.nodeAttachment.connect(this, this.updateTree);
+			pScene.nodeDetachment.connect(this, this.updateTree);
 
 			this.fromTree(pScene.getRootNode());
 		}
@@ -96,36 +95,36 @@ module akra.ui.scene {
 			clearTimeout(this._iUpdateTimer);
 
 			var pTree: IUITree = this;
-			pTree.rootNode.waitForSync();
+			pTree.getRootNode().waitForSync();
 
 			this._iUpdateTimer = setTimeout(() => { 
 				pTree.sync(); 
-				pTree.rootNode.synced(); 
+				pTree.getRootNode().synced(); 
 			}, 1000);
 		}
 
 		_createNode(pEntity: IEntity): IUITreeNode {
-			if (akra.scene.light.isShadowCaster(pEntity)) {
+			if (akra.scene.light.ShadowCaster.isShadowCaster(pEntity)) {
 				return new ShadowCasterNode(this, pEntity);
 			}
 
-			if (akra.scene.isModel(pEntity)) {
+			if (akra.scene.SceneModel.isModel(pEntity)) {
 				return new SceneModelNode(this, pEntity);
 			}
 
-			if (akra.scene.isJoint(pEntity)) {
+			if (akra.scene.Joint.isJoint(pEntity)) {
 				return new JointNode(this, pEntity);
 			}
 
-			if (akra.scene.light.isLightPoint(pEntity)) {
+			if (akra.scene.light.LightPoint.isLightPoint(pEntity)) {
 				return new LightPointNode(this, pEntity);
 			}
 
-			if (akra.scene.objects.isModelEntry(pEntity)) {
+			if (akra.scene.objects.ModelEntry.isModelEntry(pEntity)) {
 				return new ModelEntryNode(this, pEntity);
 			}
 
-			if (akra.scene.objects.isCamera(pEntity)) {
+			if (akra.scene.objects.Camera.isCamera(pEntity)) {
 				return new CameraNode(this, pEntity);
 			}
 
@@ -138,5 +137,4 @@ module akra.ui.scene {
 	register("SceneTree", SceneTree);
 }
 
-#endif
 

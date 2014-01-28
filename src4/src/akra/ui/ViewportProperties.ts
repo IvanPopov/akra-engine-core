@@ -6,7 +6,7 @@
 /// <reference path="../idl/IUIRenderTargetStats.ts" />
 
 /// <reference path="../render/DSViewport.ts" />
-/// <reference path="../util/navigation.ts" />
+/// <reference path="../addons/navigation.ts" />
 
 /// <reference path="Component.ts" />
 
@@ -169,7 +169,7 @@ module akra.ui {
 
 			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK);
 
-			util.navigation(pViewport);
+			addons.navigation(pViewport);
 		}
 		
 

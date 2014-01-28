@@ -11,6 +11,10 @@ module akra.scene {
 		private _pMesh: IMesh = null;
 		private _bShow: boolean = true;
 
+		constructor(pScene: IScene3d) {
+			super(pScene, EEntityTypes.MODEL);
+		}
+
 		getVisible(): boolean {
 			return this._bShow;
 		}
@@ -42,10 +46,6 @@ module akra.scene {
 
 		getTotalRenderable(): uint {
 			return isNull(this._pMesh) || !this._bShow ? 0 : this._pMesh.getLength();
-		}
-
-		constructor(pScene: IScene3d) {
-			super(pScene, EEntityTypes.MODEL);
 		}
 
 		getRenderable(i: uint = 0): IRenderableObject {

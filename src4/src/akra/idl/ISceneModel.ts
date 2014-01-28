@@ -4,7 +4,6 @@
 
 module akra {
 	export interface ISceneModel extends ISceneObject {
-		getVisible(): boolean;
 		setVisible(bValue: boolean): void;
 
 		getMesh(): IMesh;
@@ -12,7 +11,4 @@ module akra {
 
 		isVisible(): boolean;
 	}
-	
-	
-	
 }

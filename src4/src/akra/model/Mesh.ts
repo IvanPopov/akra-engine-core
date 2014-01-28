@@ -57,7 +57,7 @@ module akra.model {
 	class Mesh extends util.ReferenceCounter implements IMesh  {
 		guid: uint = guid();
 
-		shadowed: ISignal<{(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;}> = new ShadowedSignal(this);
+		shadowed: ISignal<{(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;}>;
 
 		private _sName: string;
 		private _pFlexMaterials: IMaterial[] = null;
@@ -71,6 +71,19 @@ module akra.model {
 		private _bShadow: boolean = true;
 		private _pSkinList: ISkin[] = [];
 		
+		constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
+			super();
+			this.setupSignals();
+
+			this._sName = sName || null;
+			this._pEngine = pEngine;
+			this.setup(sName, eOptions, pDataBuffer);
+		}
+
+		protected setupSignals(): void {
+			this.shadowed = this.shadowed || new ShadowedSignal(this);
+		}
+
 		getLength(): uint {
 			return this._pSubMeshes.length;
 		}
@@ -123,14 +136,6 @@ module akra.model {
 			for (var i: int = 0; i < this._pSubMeshes.length; ++i) {
 				this._pSubMeshes[i].setShadow(bValue);
 			}
-		}
-
-		constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
-			super();
-
-			this._sName = sName || null;
-			this._pEngine = pEngine;
-			this.setup(sName, eOptions, pDataBuffer);
 		}
 
 		getOptions(): int {
@@ -701,6 +706,8 @@ module akra.model {
 		_setShadow(bValue: boolean): void {
 			this._bShadow = bValue;
 		}
+
+		static ShadowedSignal = ShadowedSignal;
 	}
 
 	export function createMesh(pEngine: IEngine, sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {

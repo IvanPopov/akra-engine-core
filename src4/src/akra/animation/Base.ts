@@ -18,9 +18,9 @@ module akra.animation {
 	export class Base implements IAnimationBase {
 		guid: uint = guid();
 
-		played: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }> = new Signal(<any>this);
-		stoped: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }> = new Signal(<any>this);
-		renamed: ISignal<{ (pBase: IAnimationBase, sName: float): void; }> = new Signal(<any>this);
+		played: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }>;
+		stoped: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }>;
+		renamed: ISignal<{ (pBase: IAnimationBase, sName: float): void; }>;
 
 		protected _pTargetMap: IMap<IAnimationTarget> = {};
 		protected _pTargetList: IAnimationTarget[] = [];
@@ -33,6 +33,19 @@ module akra.animation {
 		protected _eType: EAnimationTypes;
 
 		public extra: any = null;
+
+		constructor(eType: EAnimationTypes, sName: string = null) {
+			this.setupSignals();
+
+			this._sName = sName || ("animation-" + "-" + this.guid);
+			this._eType = eType;
+		}
+
+		protected setupSignals(): void {
+			this.played = this.played || new Signal(<any>this);
+			this.stoped = this.stoped || new Signal(<any>this);
+			this.renamed = this.renamed || new Signal(<any>this);
+		}
 
 		getType(): EAnimationTypes {
 			return this._eType;
@@ -62,11 +75,6 @@ module akra.animation {
 
 			this._sName = sName;
 			this.renamed.emit(sName);
-		}
-
-		constructor(eType: EAnimationTypes, sName: string = null) {
-			this._sName = sName || ("animation-" + "-" + this.guid);
-			this._eType = eType;
 		}
 
 		play(fRealTime: float): void {

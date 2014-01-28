@@ -7,8 +7,8 @@
 module akra.animation {
 	export class Container extends Base implements IAnimationContainer {
 
-		durationUpdated: ISignal<{ (pContainer: IAnimationContainer, fDuration: float): void; }> = new Signal(<any>this);
-		enterFrame: ISignal<{ (pContainer: IAnimationContainer, fRealTime: float, fTime: float): void; }> = new Signal(<any>this);
+		durationUpdated: ISignal<{ (pContainer: IAnimationContainer, fDuration: float): void; }>;
+		enterFrame: ISignal<{ (pContainer: IAnimationContainer, fRealTime: float, fTime: float): void; }>;
 
 		private _bEnable: boolean = true;
 		private _fStartTime: float = 0;
@@ -37,6 +37,14 @@ module akra.animation {
 				this.setAnimation(pAnimation);
 			}
 		}
+
+		protected setupSignals(): void {
+			this.durationUpdated = this.durationUpdated || new Signal(<any>this);
+			this.enterFrame = this.enterFrame || new Signal(<any>this);
+
+			super.setupSignals();
+		}
+		
 
 		getAnimationName(): string{
 			return this._pAnimation.getName();

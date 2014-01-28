@@ -17,12 +17,25 @@ module akra.scene {
 	import Quat4 = math.Quat4;
 
 	export class SceneNode extends Node implements ISceneNode {
-		frozen: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }> = new Signal(<any>this);
-		hidden: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }> = new Signal(<any>this);
+		frozen: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }>;
+		hidden: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }>;
 
 		protected _pScene: IScene3d = null;
 		protected _pAnimationControllers: IAnimationController[] = null;
 		protected _iSceneNodeFlags: int = 0;
+
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
+			super(eType);
+
+			this._pScene = pScene;
+		}
+
+		protected setupSignals(): void {
+			this.frozen = this.frozen || new Signal(<any>this);
+			this.hidden = this.hidden || new Signal(<any>this);
+
+			super.setupSignals();
+		}
 
 		getScene(): IScene3d {
 			return this._pScene;
@@ -30,12 +43,6 @@ module akra.scene {
 
 		getTotalControllers(): uint {
 			return this._pAnimationControllers ? this._pAnimationControllers.length : 0;
-		}
-
-		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
-			super(eType);
-
-			this._pScene = pScene;
 		}
 
 		getController(i: uint = 0): IAnimationController {

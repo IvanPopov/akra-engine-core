@@ -1,38 +1,39 @@
-/// <reference parg="IUI.ts" />
+/// <reference path="../idl/IUI.ts" />
+				 
+/// <reference path="../common.ts" />
 
-/// <reference parg="common.ts" />
-/// <reference parg="HTMLNode.ts" />
-/// <reference parg="DNDNode.ts" />
-/// <reference parg="Component.ts" />
-/// <reference parg="Panel.ts" />
-/// <reference parg="Popup.ts" />
-/// <reference parg="Tabs.ts" />
-/// <reference parg="Button.ts" />
-/// <reference parg="Menu.ts" />
-/// <reference parg="Switch.ts" />
-/// <reference parg="Label.ts" />
-/// <reference parg="Vector.ts" />
-/// <reference parg="Layout.ts" />
-/// <reference parg="Horizontal.ts" />
-/// <reference parg="Vertical.ts" />
-/// <reference parg="Slider.ts" />
-/// <reference parg="Checkbox.ts" />
-/// <reference parg="CheckboxList.ts" />
-/// <reference parg="Window.ts" />
-/// <reference parg="RenderTargetStats.ts" />
-/// <reference parg="Tree.ts" />
-
-
-/// <reference parg="CodeEditor.ts" />
-
-/// <reference parg="graph/Graph.ts" />	
-/// <reference parg="graph/Node.ts" />
-/// <reference parg="graph/Connector.ts" />
-/// <reference parg="graph/Route.ts" />
-/// <reference parg="graph/Controls.ts" />
-
-/// <reference parg="animation/Controls.ts" />
-/// <reference parg="animation/Graph.ts" />
+/// <reference path="HTMLNode.ts" />
+/// <reference path="DNDNode.ts" />
+/// <reference path="Component.ts" />
+/// <reference path="Panel.ts" />
+/// <reference path="Popup.ts" />
+/// <reference path="Tabs.ts" />
+/// <reference path="Button.ts" />
+/// <reference path="Menu.ts" />
+/// <reference path="Switch.ts" />
+/// <reference path="Label.ts" />
+/// <reference path="Vector.ts" />
+/// <reference path="Layout.ts" />
+/// <reference path="Horizontal.ts" />
+/// <reference path="Vertical.ts" />
+/// <reference path="Slider.ts" />
+/// <reference path="Checkbox.ts" />
+/// <reference path="CheckboxList.ts" />
+/// <reference path="Window.ts" />
+/// <reference path="RenderTargetStats.ts" />
+/// <reference path="Tree.ts" />
+				 
+				 
+/// <reference path="CodeEditor.ts" />
+				 
+/// <reference path="graph/Graph.ts" />	
+/// <reference path="graph/Node.ts" />
+/// <reference path="graph/Connector.ts" />
+/// <reference path="graph/Route.ts" />
+/// <reference path="graph/Controls.ts" />
+				 
+/// <reference path="animation/Controls.ts" />
+/// <reference path="animation/Graph.ts" />
 
 
 module akra.ui {

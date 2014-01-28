@@ -47,7 +47,7 @@ module akra.render {
 				}
 			}
 
-			pShadowCaster.setIsShadowCasted((nShadowsCasted > 0) ? true : false);
+			pShadowCaster.setShadowCasted((nShadowsCasted > 0) ? true : false);
 		}
 
 		private prepareRenderableForShadows(pRenderable: IRenderableObject): void {
