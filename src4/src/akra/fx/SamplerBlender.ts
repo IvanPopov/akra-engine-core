@@ -36,7 +36,7 @@ module akra.fx {
 
 			this._nActiveSlots = 1;
 
-			this._pIdToSlotMap = <IMap<int>><any>{ 0: 0 };
+			this._pIdToSlotMap = <IMap<int>>{ 0: 0 };
 			this._pIdList = new Array(INIT_SLOT_SIZE);
 		}
 

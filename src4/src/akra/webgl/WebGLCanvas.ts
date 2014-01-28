@@ -75,7 +75,7 @@ module akra.webgl {
 
 		constructor(pRenderer: IRenderer) {
 			super(pRenderer);
-			this._pCanvas = (<any>pRenderer).getHTMLCanvas();
+			this._pCanvas = (<WebGLRenderer>pRenderer).getHTMLCanvas();
 			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
 		}
 

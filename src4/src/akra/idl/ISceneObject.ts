@@ -21,17 +21,6 @@ module akra {
 
 		getBillboard(): boolean;
 		setBillboard(bValue: boolean): void;
-
-		setOnClick(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnMouseMove(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnMouseDown(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnMouseUp(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnMouseOver(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnMouseOut(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnDragStart(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnDragStop(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-		setOnDragging(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
-
 		
 		isBillboard(): boolean;
 

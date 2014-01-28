@@ -278,8 +278,8 @@ var akra;
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        // loadManyModels(400, akra.DATA + "models/cube.dae");
-        loadManyModels(150, akra.DATA + "models/box/opened_box.dae");
+        loadManyModels(400, akra.DATA + "models/cube.dae");
+        //loadManyModels(150, akra.DATA + "models/box/opened_box.dae");
     }
     akra.pEngine.bind("depsLoaded", main);
     akra.pEngine.exec();

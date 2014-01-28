@@ -76,19 +76,6 @@ module akra.fx {
 	/** @const */
 	var TEMPLATE_TYPE = "template";
 
-
-	interface SystemTypeMap {
-		[sTypeName: string]: SystemTypeInstruction;
-	}
-
-	interface SystemFunctionMap {
-		[sFuncName: string]: SystemFunctionInstruction[];
-	}
-
-	interface TechniqueMap {
-		[sTechniqueName: string]: IAFXTechniqueInstruction;
-	}
-
 	export class Effect implements IAFXEffect {
 		private _pComposer: IAFXComposer = null;
 
@@ -104,8 +91,8 @@ module akra.fx {
 		private _sAnalyzedFileName: string = "";
 
 		private _pSystemMacros: IAFXSimpleInstructionMap = null;
-		private _pSystemTypes: SystemTypeMap = null;
-		private _pSystemFunctionsMap: SystemFunctionMap = null;
+		private _pSystemTypes: IMap<SystemTypeInstruction> = null;
+		private _pSystemFunctionsMap: IMap<SystemFunctionInstruction[]> = null;
 		private _pSystemFunctionHashMap: IMap<boolean> = null;
 		private _pSystemVariables: IAFXVariableDeclMap = null;
 
@@ -114,7 +101,7 @@ module akra.fx {
 		private _pFunctionWithImplementationList: IAFXFunctionDeclInstruction[] = null;
 
 		private _pTechniqueList: IAFXTechniqueInstruction[] = null;
-		private _pTechniqueMap: TechniqueMap = null;
+		private _pTechniqueMap: IMap<IAFXTechniqueInstruction> = null;
 
 		private _isAnalyzeInPass: boolean = false;
 
@@ -125,8 +112,8 @@ module akra.fx {
 		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
 		static pSystemMacros: IAFXSimpleInstructionMap = null;
-		static pSystemTypes: SystemTypeMap = null;
-		static pSystemFunctions: SystemFunctionMap = null;
+		static pSystemTypes: IMap<SystemTypeInstruction> = null;
+		static pSystemFunctions: IMap<SystemFunctionInstruction[]> = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
 		static pSystemVertexOut: ComplexTypeInstruction = null;
 
@@ -146,7 +133,7 @@ module akra.fx {
 
 			this._pFunctionWithImplementationList = [];
 			this._pTechniqueList = [];
-			this._pTechniqueMap = <TechniqueMap>{};
+			this._pTechniqueMap = <IMap<IAFXTechniqueInstruction>>{};
 
 			this.initSystemMacros();
 			this.initSystemTypes();
@@ -855,7 +842,7 @@ module akra.fx {
 			isForVertex: boolean = true, isForPixel: boolean = true): void {
 
 			var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator(sTranslationExpr);
-			var pSystemFunctions: SystemFunctionMap = this._pSystemFunctionsMap;
+			var pSystemFunctions: IMap<SystemFunctionInstruction[]> = this._pSystemFunctionsMap;
 			var pTypes: IAFXTypeInstruction[] = null;
 			var sFunctionHash: string = "";
 			var pReturnType: IAFXTypeInstruction = null;

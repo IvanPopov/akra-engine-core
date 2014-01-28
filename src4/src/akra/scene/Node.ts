@@ -198,6 +198,7 @@ module akra.scene {
 				m4fOrient.scaleRight(this._v3fScale);
 				m4fOrient.multiply(m4fLocal);
 
+				//console.log("recalc: " + this.toString() + " : " + this._eInheritance);
 				//console.error(m4fOrient.toString());
 
 				if (this._pParent && this._eInheritance !== ENodeInheritance.NONE) {

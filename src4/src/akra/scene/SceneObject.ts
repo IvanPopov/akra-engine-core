@@ -92,60 +92,6 @@ module akra.scene {
 			return (this._iViewModes & EObjectViewModes.k_Billboard) != 0;
 		}
 
-		setOnClick(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.click.connect(fn);
-		}
-
-		setOnMouseMove(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.mousemove.connect(fn);
-		}
-
-		setOnMouseDown(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.mousedown.connect(fn);
-		}
-
-		setOnMouseUp(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.mouseup.connect(fn);
-		}
-
-		setOnMouseOver(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.mouseover.connect(fn);
-		}
-
-		setOnMouseOut(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.mouseout.connect(fn);
-		}
-
-		setOnDragStart(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.dragstart.connect(fn);
-		}
-
-		setOnDragStop(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.dragstop.connect(fn);
-		}
-
-		setOnDragging(
-			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
-			this.dragging.connect(fn);
-		}
-
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
 			super(pScene, eType);
 		}
