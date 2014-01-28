@@ -77,15 +77,15 @@ module akra.fx {
 	var TEMPLATE_TYPE = "template";
 
 
-	interface SystemTypeMap {
+	export interface SystemTypeMap {
 		[sTypeName: string]: SystemTypeInstruction;
 	}
 
-	interface SystemFunctionMap {
+	export interface SystemFunctionMap {
 		[sFuncName: string]: SystemFunctionInstruction[];
 	}
 
-	interface TechniqueMap {
+	export interface TechniqueMap {
 		[sTechniqueName: string]: IAFXTechniqueInstruction;
 	}
 

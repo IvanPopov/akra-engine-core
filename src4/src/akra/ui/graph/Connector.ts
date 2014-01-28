@@ -63,13 +63,13 @@ module akra.ui.graph {
 
 			if (pRoute.isBridge()) {
 
-				if (this === pRoute.left) {
+				if (this === pRoute.getLeft()) {
 					this.output();
-					this.connected.emit(pRoute.right);
+					this.connected.emit(pRoute.getRight());
 				}
 				else {
 					this.input();
-					this.connected.emit(pRoute.left);
+					this.connected.emit(pRoute.getLeft());
 				}
 			}
 		}

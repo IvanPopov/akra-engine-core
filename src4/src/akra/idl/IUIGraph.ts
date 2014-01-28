@@ -29,9 +29,9 @@ module akra {
 	}
 	
 	export interface IUIGraph extends IUIComponent {
-		/** readonly */ graphType: EUIGraphTypes;
-		/** readonly */ nodes: IUIGraphNode[];
-		/** readonly */ canvas: RaphaelPaper;
+		getGraphType(): EUIGraphTypes;
+		getNodes(): IUIGraphNode[];
+		getCanvas(): RaphaelPaper;
 	
 		createRouteFrom(pConnector: IUIGraphConnector): void;
 		removeTempRoute(): void;

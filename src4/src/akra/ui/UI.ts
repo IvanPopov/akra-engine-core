@@ -1,6 +1,7 @@
+/// <reference path="../../../build/akra.d.ts" />
+
+
 /// <reference path="../idl/IUI.ts" />
-				 
-/// <reference path="../common.ts" />
 
 /// <reference path="HTMLNode.ts" />
 /// <reference path="DNDNode.ts" />
@@ -22,6 +23,7 @@
 /// <reference path="Window.ts" />
 /// <reference path="RenderTargetStats.ts" />
 /// <reference path="Tree.ts" />
+/// <reference path="IDE.ts" />
 				 
 				 
 /// <reference path="CodeEditor.ts" />
@@ -37,6 +39,8 @@
 
 
 module akra.ui {
+
+	config.UI = true;
 
 	export class UI implements IUI {
 		guid: uint = guid();
@@ -108,6 +112,10 @@ module akra.ui {
 
 			return pLayout;
 		}
+	}
+
+	export function createUI(pManager?: ISceneManager): IUI {
+		return new UI(pManager);
 	}
 }
 

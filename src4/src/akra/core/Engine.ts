@@ -33,11 +33,6 @@
 /// <reference path="../webgl/WebGLRenderer.ts" />
 // #endif
 
-
-/// <reference path="../ui/UI.ts" />
-/// <reference path="../ui/IDE.ts" />
-
-
 module akra.core {
 	export class Engine implements IEngine {
 

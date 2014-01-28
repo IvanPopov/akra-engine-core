@@ -1,5 +1,3 @@
-/// <reference path="../../idl/IMeshSubset.ts" />
-
 /// <reference path="../Panel.ts" />
 /// <reference path="../Material.ts" />
 

@@ -1,4 +1,6 @@
-/// <reference path="../idl/IRenderTarget.ts" />
+/// <reference path="../../../build/akra.d.ts" />
+
+
 /// <reference path="../idl/IUIRenderTargetStats.ts" />
 /// <reference path="Component.ts" />
 
@@ -10,10 +12,10 @@ module akra.ui {
 		protected _pTicks: HTMLSpanElement[];
 		protected _pUpdateInterval: int = -1;
 
-		 get info(): HTMLDivElement { return this._pInfoElement; }
-		 get target(): IRenderTarget { return this._pRenderTarget; }
+		getInfo(): HTMLDivElement { return this._pInfoElement; }
+		getTarget(): IRenderTarget { return this._pRenderTarget; }
 
-		set target(pRenderTarget: IRenderTarget) {
+		setTarget(pRenderTarget: IRenderTarget) {
 			if (!isNull(this._pRenderTarget)) {
 				//this.disconnect(this._pRenderTarget, SIGNAL(postUpdate), SLOT(updateStats));
 				clearInterval(this._pUpdateInterval);
@@ -26,8 +28,8 @@ module akra.ui {
 			}, 1000);
 		}
 
-		constructor (ui, options?, pRenderTarget?: IRenderTarget) {
-			super(ui, options, EUIComponents.VIEWPORT_STATS, 
+		constructor(ui, options?, pRenderTarget?: IRenderTarget) {
+			super(ui, options, EUIComponents.VIEWPORT_STATS,
 				$("<div class=\"component-fps\" ><div class=\"info\"></div><div class=\"graph\"></div></div>"));
 
 			var $graph: JQuery = this.getElement().find(".graph");
@@ -41,7 +43,7 @@ module akra.ui {
 			for (var i: int = 0; i < iTotal; ++i) {
 				var $tick: JQuery = $("<span class=\"tick\"/>");
 				$graph.append($tick);
-				
+
 				pTicks.push($tick.get()[0]);
 				pValues.push(0);
 			}
@@ -51,12 +53,12 @@ module akra.ui {
 			this._pTicks = pTicks;
 
 			if (isDefAndNotNull(pRenderTarget)) {
-				this.target = pRenderTarget;
+				this.setTarget(pRenderTarget);
 			}
 		}
 
 		private updateStats(): void {
-			var pTarget: IRenderTarget = this.target;
+			var pTarget: IRenderTarget = this.getTarget();
 			var pStat: IFrameStats = pTarget.getStatistics();
 			var fFPS: float = pStat.fps.last;
 			var v: uint[] = this._pValues;
@@ -64,20 +66,20 @@ module akra.ui {
 			var iMaxHeight: int = 27;
 			var sFps: string = fFPS.toFixed(2);
 
-			for (var i: int = 0, n: uint = iTotal - 1; i < n; ++ i) {
+			for (var i: int = 0, n: uint = iTotal - 1; i < n; ++i) {
 				v[i] = v[i + 1];
 			}
 
 			v[n] = fFPS;
 
-			this.info.textContent = "FPS: " + ((v[n] < 100? (v[n] < 10? "  " + sFps: " " + sFps): sFps));
-			
+			this.getInfo().textContent = "FPS: " + ((v[n] < 100 ? (v[n] < 10 ? "  " + sFps : " " + sFps) : sFps));
+
 			var max: int = math.max.apply(math, v);
 			var pTicks: HTMLSpanElement[] = this._pTicks;
 
-			for (var i: int = 0; i < iTotal; ++ i) {
+			for (var i: int = 0; i < iTotal; ++i) {
 				pTicks[i].style.height = math.floor(v[i] / max * iMaxHeight) + "px";
-				
+
 				var fColor: float = math.min(v[i], 60.) / 60.;
 
 				pTicks[i].style.backgroundColor = "rgb(" + (math.floor((1 - fColor) * 125) + 125) + ", " + (math.floor(fColor * 125) + 125) + ", 0)";

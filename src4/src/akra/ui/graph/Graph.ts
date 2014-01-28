@@ -11,7 +11,7 @@ module akra.ui.graph {
 	class KeydownSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void;}, IUIGraph> {
 		emit(e?: IUIEvent): void {
 			var pGraph: IUIGraph = this.getSender();
-			var pNodes: IUIGraphNode[] = pGraph.nodes;
+			var pNodes: IUIGraphNode[] = pGraph.getNodes();
 
 			for (var i: int = 0; i < pNodes.length; ++i) {
 				var iKeyCode: int = (<KeyboardEvent><any>e).keyCode;
@@ -28,7 +28,7 @@ module akra.ui.graph {
 		emit(e?: IUIEvent): void {
 			var pGraph: Graph = <Graph>this.getSender();
 
-			if (!isNull(pGraph.tempRoute)) {
+			if (!isNull(pGraph.getTempRoute())) {
 				pGraph.removeTempRoute();
 			}
 		}
@@ -38,9 +38,9 @@ module akra.ui.graph {
 		emit(e?: IUIEvent): void {
 			var pGraph: Graph = <Graph>this.getSender();
 
-			if (!isNull(pGraph.tempRoute)) {
+			if (!isNull(pGraph.getTempRoute())) {
 				var pOffset = pGraph.getElement().offset();
-				pGraph.tempRoute.routing({ x: e.pageX - pOffset.left, y: e.pageY - pOffset.top });
+				pGraph.getTempRoute().routing({ x: e.pageX - pOffset.left, y: e.pageY - pOffset.top });
 			}
 		}
 	}
@@ -52,7 +52,7 @@ module akra.ui.graph {
 
 			super.emit(e);
 
-			var pNodes: IUIGraphNode[] = pGraph.nodes;
+			var pNodes: IUIGraphNode[] = pGraph.getNodes();
 
 			for (var i: int = 0; i < pNodes.length; ++i) {
 				// LOG("deactivate node > ", pNodes[i]);
@@ -71,7 +71,7 @@ module akra.ui.graph {
 		protected _pTempRoute: IUITempGraphRoute = null;
 		protected $svg: JQuery = null;
 
-		 get nodes(): IUIGraphNode[] {
+		 getNodes(): IUIGraphNode[] {
 			var pNodes: IUIGraphNode[] = [];
 			var pChild: IEntity = this.getChild();
 			
@@ -83,12 +83,12 @@ module akra.ui.graph {
 			return pNodes;
 		 }
 
-		get tempRoute(): IUITempGraphRoute {
+		getTempRoute(): IUITempGraphRoute {
 			return this._pTempRoute;
 		}
 
-		 get graphType(): EUIGraphTypes { return this._eGraphType; }
-		 get canvas(): RaphaelPaper { return this._pCanvas; }
+		 getGraphType(): EUIGraphTypes { return this._eGraphType; }
+		 getCanvas(): RaphaelPaper { return this._pCanvas; }
 
 		constructor (parent, options?, eType: EUIGraphTypes = EUIGraphTypes.UNKNOWN) {
 			super(parent, options, EUIComponents.GRAPH);
@@ -132,7 +132,7 @@ module akra.ui.graph {
 				return;
 			}
 
-			var pFrom: IUIGraphConnector = this._pTempRoute.left;
+			var pFrom: IUIGraphConnector = this._pTempRoute.getLeft();
 
 			if (pFrom.getNode() === pTo.getNode()) {
 				debug.log("connection to same node forbidden");

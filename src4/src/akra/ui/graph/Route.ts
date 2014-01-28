@@ -2,8 +2,6 @@
 /// <reference path="../../idl/IUIGraphRoute.ts" />
 /// <reference path="../../idl/IUIGraphConnector.ts" />
 
-/// <reference path="../../color/colors.ts" />
-
 
 module akra.ui.graph {
 	export class Route implements IUIGraphRoute {
@@ -25,13 +23,13 @@ module akra.ui.graph {
 		protected _fWeight: float = 1.;
 		protected _fMaxWeight: float = 1.;
 
-		 get inactiveColor(): IColor { return this._pInactiveColor; }
-		 get color(): IColor { return this._pColor; }
-		 get left(): IUIGraphConnector { return this._pLeft; }
-		 get right(): IUIGraphConnector { return this._pRight; }
-		 get weight(): float { return this._fWeight; }
+		getInactiveColor(): IColor { return this._pInactiveColor; }
+		getColor(): IColor { return this._pColor; }
+		getLeft(): IUIGraphConnector { return this._pLeft; }
+		getRight(): IUIGraphConnector { return this._pRight; }
+		getWeight(): float { return this._fWeight; }
 
-		set left(pConnector: IUIGraphConnector) {
+		setLeft(pConnector: IUIGraphConnector) {
 			if (!isNull(this._pLeft)) {
 				this._pLeft.destroy();
 			}
@@ -39,7 +37,7 @@ module akra.ui.graph {
 			this._pLeft = pConnector;
 		}
 
-		set right(pConnector: IUIGraphConnector) {
+		setRight(pConnector: IUIGraphConnector) {
 			if (!isNull(this._pRight)) {
 				this._pRight.destroy();
 			}
@@ -47,11 +45,11 @@ module akra.ui.graph {
 			this._pRight = pConnector;
 		}
 
-		 get arrow(): RaphaelPath {
+		getArrow(): RaphaelPath {
 			return this._pArrow;
 		}
 
-		 set arrow(pPath: RaphaelPath) {
+		setArrow(pPath: RaphaelPath) {
 			var pRoute: Route = this;
 
 			(<RaphaelElement>pPath).click((e: IUIEvent) => { e.stopPropagation(); pRoute.activate(!pRoute.isActive()); });
@@ -59,19 +57,19 @@ module akra.ui.graph {
 			this._pArrow = pPath;
 		}
 
-		 set weight(fWeight: float) {
+		setWeight(fWeight: float) {
 			this._fWeight = fWeight;
 		}
 
-		 get path(): RaphaelPath {
+		getPath(): RaphaelPath {
 			return this._pPath;
 		}
 
-		 get canvas(): RaphaelPaper {
-			return this.left.getGraph().canvas;
+		getCanvas(): RaphaelPaper {
+			return this.getLeft().getGraph().getCanvas();
 		}
 
-		 set path(pPath: RaphaelPath) {
+		setPath(pPath: RaphaelPath) {
 
 			var pRoute: Route = this;
 
@@ -80,18 +78,18 @@ module akra.ui.graph {
 			this._pPath = pPath;
 		}
 
-		 get enabled(): boolean { return this._bEnabled; }
-		 set enabled(b: boolean) { 
+		isEnabled(): boolean { return this._bEnabled; }
+		setEnabled(b: boolean) {
 			if (b === this._bEnabled) {
 				return;
 			}
 
-			this._bEnabled = b; 
+			this._bEnabled = b;
 
 			this.routing();
 		}
 
-		constructor (pLeft: IUIGraphConnector, pRight: IUIGraphConnector) {
+		constructor(pLeft: IUIGraphConnector, pRight: IUIGraphConnector) {
 			this._pLeft = pLeft;
 			this._pRight = pRight;
 			this._pColor = color.random(true);
@@ -106,19 +104,19 @@ module akra.ui.graph {
 			}
 		}
 
-		 isConnectedWithNode(pNode: IUIGraphNode): boolean {
-			 return this.left.getNode() === pNode || this.right.getNode() === pNode;
+		isConnectedWithNode(pNode: IUIGraphNode): boolean {
+			return this.getLeft().getNode() === pNode || this.getRight().getNode() === pNode;
 		}
 
-		 isConnectedWith(pConnector: IUIGraphConnector): boolean {
-			return this.left === pConnector || this.right === pConnector;
+		isConnectedWith(pConnector: IUIGraphConnector): boolean {
+			return this.getLeft() === pConnector || this.getRight() === pConnector;
 		}
 
-		 isBridge(): boolean {
-			return !isNull(this.left) && !isNull(this.right);
+		isBridge(): boolean {
+			return !isNull(this.getLeft()) && !isNull(this.getRight());
 		}
 
-		 isActive(): boolean {
+		isActive(): boolean {
 			return this._bActive;
 		}
 
@@ -128,28 +126,28 @@ module akra.ui.graph {
 		}
 
 		remove(bRecirsive: boolean = false): void {
-			if (!isNull(this.left)) {
-				this.left.routeBreaked.emit(this);
-				bRecirsive && this.left.destroy();
+			if (!isNull(this.getLeft())) {
+				this.getLeft().routeBreaked.emit(this);
+				bRecirsive && this.getLeft().destroy();
 			}
 
-			if (!isNull(this.right)) {
-				this.left.routeBreaked.emit(this);
-				bRecirsive && this.right.destroy();
+			if (!isNull(this.getRight())) {
+				this.getLeft().routeBreaked.emit(this);
+				bRecirsive && this.getRight().destroy();
 			}
 
-			if (!isNull(this.path)) {
-				(<RaphaelElement>this.path).remove();
-				(<RaphaelElement>this.arrow).remove();
+			if (!isNull(this.getPath())) {
+				(<RaphaelElement>this.getPath()).remove();
+				(<RaphaelElement>this.getArrow()).remove();
 			}
 		}
 
 		sendEvent(e: IUIGraphEvent): void {
-			if (!this.enabled) {
+			if (!this.isEnabled()) {
 				return;
 			}
 
-			for (var i: int = 0; i < e.traversedRoutes.length; ++ i) {
+			for (var i: int = 0; i < e.traversedRoutes.length; ++i) {
 				if (e.traversedRoutes[i] === this) {
 					return;
 				}
@@ -157,21 +155,21 @@ module akra.ui.graph {
 
 			e.traversedRoutes.push(this);
 
-			if (!isNull(this.right)) {
-				this.right.sendEvent(e);
+			if (!isNull(this.getRight())) {
+				this.getRight().sendEvent(e);
 			}
 
 			switch (e.type) {
 				case EUIGraphEvents.SHOW_MAP:
 					this._bHighlighted = true;
-					this.left.getElement().css("backgroundColor", this.color.getHtml());
-					this.right.getElement().css("backgroundColor", this.color.getHtml());
+					this.getLeft().getElement().css("backgroundColor", this.getColor().getHtml());
+					this.getRight().getElement().css("backgroundColor", this.getColor().getHtml());
 					this.routing();
 					break;
 				case EUIGraphEvents.HIDE_MAP:
 					this._bHighlighted = false;
-					this.left.getElement().css("backgroundColor", "");
-					this.right.getElement().css("backgroundColor", "");
+					this.getLeft().getElement().css("backgroundColor", "");
+					this.getRight().getElement().css("backgroundColor", "");
 					this.routing();
 					break;
 			}
@@ -192,32 +190,32 @@ module akra.ui.graph {
 
 			this._bActive = bValue;
 
-			if (!isNull(this.path)) {
-				(<RaphaelElement>this.path).attr({"stroke-width": bValue? 3 : 1});
+			if (!isNull(this.getPath())) {
+				(<RaphaelElement>this.getPath()).attr({ "stroke-width": bValue ? 3 : 1 });
 			}
 
-			this.left && this.left.activate(bValue);
-			this.right && this.right.activate(bValue);
+			this.getLeft() && this.getLeft().activate(bValue);
+			this.getRight() && this.getRight().activate(bValue);
 		}
 
 		routing(): void {
-			var pLeft: IPoint = Route.calcPosition(this.left);
-			var pRight: IPoint = Route.calcPosition(this.right);
+			var pLeft: IPoint = Route.calcPosition(this.getLeft());
+			var pRight: IPoint = Route.calcPosition(this.getRight());
 
-			this.drawRoute(pLeft, pRight, this.left.getOrient(), this.right.getOrient());
+			this.drawRoute(pLeft, pRight, this.getLeft().getOrient(), this.getRight().getOrient());
 		}
 
-		protected drawRoute(pFrom: IPoint, pTo: IPoint, 
-				eFromOr: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN, 
-				eToOr: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN): void {
+		protected drawRoute(pFrom: IPoint, pTo: IPoint,
+			eFromOr: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN,
+			eToOr: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN): void {
 
-			var pFromAdd: IPoint = {x: 0, y: 0};
-			var pToAdd: IPoint = {x: 0, y: 0};
+			var pFromAdd: IPoint = { x: 0, y: 0 };
+			var pToAdd: IPoint = { x: 0, y: 0 };
 			var dY: float = pTo.y - pFrom.y;
 			var dX: float = pTo.x - pFrom.x;
 			var isVertF: boolean = false;
 			var isVertT: boolean = false;
-			
+
 			if (eFromOr == EGraphConnectorOrient.UP || eFromOr == EGraphConnectorOrient.DOWN) {
 				isVertF = true;
 			}
@@ -275,98 +273,98 @@ module akra.ui.graph {
 			}
 
 			var pPath: any = [
-				[<any>"M", pFrom.x, pFrom.y], [<any>"C", 
-				//output direction 
-				pFrom.x,
-				pFrom.y,
+				[<any>"M", pFrom.x, pFrom.y], [<any>"C",
+					//output direction 
+					pFrom.x,
+					pFrom.y,
 
-				isVertF? pFrom.x: ((pFrom.x + pFromAdd.x) * 7 + pTo.x * 3) / 10,  
-				isVertF? ((pFrom.y + pFromAdd.y) * 7 + pTo.y * 3) / 10: pFrom.y, 
+					isVertF ? pFrom.x : ((pFrom.x + pFromAdd.x) * 7 + pTo.x * 3) / 10,
+					isVertF ? ((pFrom.y + pFromAdd.y) * 7 + pTo.y * 3) / 10 : pFrom.y,
 
-				(pFrom.x + pTo.x) / 2, 
-				(pFrom.y + pTo.y) / 2, 
+					(pFrom.x + pTo.x) / 2,
+					(pFrom.y + pTo.y) / 2,
 
-				(pFrom.x + pTo.x) / 2, 
-				(pFrom.y + pTo.y) / 2, 
+					(pFrom.x + pTo.x) / 2,
+					(pFrom.y + pTo.y) / 2,
 
-				isVertT? pTo.x: (pFrom.x * 3 + (pTo.x + pToAdd.x) * 7) / 10, 
-				isVertT? (pFrom.y * 3 + (pTo.y + pToAdd.y) * 7) / 10: pTo.y, 
+					isVertT ? pTo.x : (pFrom.x * 3 + (pTo.x + pToAdd.x) * 7) / 10,
+					isVertT ? (pFrom.y * 3 + (pTo.y + pToAdd.y) * 7) / 10 : pTo.y,
 
-				//middle point
-				pTo.x,
-				pTo.y,
+					//middle point
+					pTo.x,
+					pTo.y,
 				]
 			];
-			var sColor: string = this._bHighlighted? this.color.getHtmlRgba(): this.inactiveColor.getHtmlRgba();
-			var fWeight: float = this._bHighlighted? 2. * this._fMaxWeight * this._fWeight: this._fMaxWeight * this._fWeight;
+			var sColor: string = this._bHighlighted ? this.getColor().getHtmlRgba() : this.getInactiveColor().getHtmlRgba();
+			var fWeight: float = this._bHighlighted ? 2. * this._fMaxWeight * this._fWeight : this._fMaxWeight * this._fWeight;
 
-			sColor = this.isBridge()? sColor : "rgba(255, 255, 255, 1.)";
+			sColor = this.isBridge() ? sColor : "rgba(255, 255, 255, 1.)";
 
-			if (!this.enabled) {
+			if (!this.isEnabled()) {
 				sColor = "rgba(55, 55, 55, .5)";
 				fWeight = this._fMaxWeight * this._fWeight;
 			}
-			
-			if (!isNull(this.path)) {
-				(<RaphaelElement>this.path).attr({
+
+			if (!isNull(this.getPath())) {
+				(<RaphaelElement>this.getPath()).attr({
 					path: pPath,
 					"stroke": sColor,
 					"stroke-width": fWeight
 				});
 			}
 			else {
-				this.path = <RaphaelPath>(<RaphaelElement>(<any>this.canvas).path(pPath)).attr({
-						"stroke": sColor, 
-						"stroke-width": fWeight, 
-						"stroke-linecap": "round"
-					});
-				
+				this.setPath(<RaphaelPath>(<RaphaelElement>(<any>this.getCanvas()).getPath()(pPath)).attr({
+					"stroke": sColor,
+					"stroke-width": fWeight,
+					"stroke-linecap": "round"
+				}));
+
 			}
 
 
-			var iLength: int = (<any>this.path).getTotalLength();
+			var iLength: int = (<any>this.getPath()).getTotalLength();
 			var iArrowHeight: int = 3;
 			var iArrowWidth: int = 10;
 
-			var pCenter: IPoint = (<any>this.path).getPointAtLength(math.max(iLength - iArrowWidth, 0));
-			var pArrowPos: IPoint = (<any>this.path).getPointAtLength(math.max(this.isBridge()? iLength - 5: iLength, 0));
+			var pCenter: IPoint = (<any>this.getPath()).getPointAtLength(math.max(iLength - iArrowWidth, 0));
+			var pArrowPos: IPoint = (<any>this.getPath()).getPointAtLength(math.max(this.isBridge() ? iLength - 5 : iLength, 0));
 
 			var fAngle: float = math.HALF_PI + math.atan2(pCenter.x - pTo.x, pTo.y - pCenter.y);
 			// fAngle = (fAngle / (math.TWO_PI)) * 360;
-			
 
-			var pA0: IPoint = {x: (0 - iArrowWidth), y: (0 - iArrowHeight)};
-			var pA1: IPoint = {x: (0 - iArrowWidth), y: (0 + iArrowHeight)};
+
+			var pA0: IPoint = { x: (0 - iArrowWidth), y: (0 - iArrowHeight) };
+			var pA1: IPoint = { x: (0 - iArrowWidth), y: (0 + iArrowHeight) };
 
 			var pA0n: IPoint = {
-				x: pA0.x * math.cos(fAngle) - pA0.y * math.sin(fAngle), 
+				x: pA0.x * math.cos(fAngle) - pA0.y * math.sin(fAngle),
 				y: pA0.x * math.sin(fAngle) + pA0.y * math.cos(fAngle)
 			};
-			
+
 			var pA1n: IPoint = {
-				x: pA1.x * math.cos(fAngle) - pA1.y * math.sin(fAngle), 
+				x: pA1.x * math.cos(fAngle) - pA1.y * math.sin(fAngle),
 				y: pA1.x * math.sin(fAngle) + pA1.y * math.cos(fAngle)
 			};
 
 			var pArrow: any = [
-				[<any>"M", pArrowPos.x, pArrowPos.y], 
-				[<any>"L", pArrowPos.x + pA0n.x, pArrowPos.y + pA0n.y], 
-				[<any>"L", pArrowPos.x + pA1n.x, pArrowPos.y + pA1n.y], 
+				[<any>"M", pArrowPos.x, pArrowPos.y],
+				[<any>"L", pArrowPos.x + pA0n.x, pArrowPos.y + pA0n.y],
+				[<any>"L", pArrowPos.x + pA1n.x, pArrowPos.y + pA1n.y],
 				[<any>"L", (pArrowPos.x), (pArrowPos.y)]
 			];
-			
-			if (!isNull(this.arrow)) {
-				(<RaphaelElement>this.arrow).attr({
+
+			if (!isNull(this.getArrow())) {
+				(<RaphaelElement>this.getArrow()).attr({
 					path: pArrow,
 					"fill": sColor
 				});
 			}
 			else {
-				this.arrow = (<any>(<RaphaelElement>(<any>this.canvas).path(pArrow)).attr({
-						"fill": sColor,
-						//"stroke": "#FF0", 
-						"stroke-width": 1
-					}));
+				this.setArrow((<any>(<RaphaelElement>(<any>this.getCanvas()).getPath()(pArrow)).attr({
+					"fill": sColor,
+					//"stroke": "#FF0", 
+					"stroke-width": 1
+				})));
 			}
 
 			// (<any>this.arrow).rotate(90 + fAngle, pTo.x, pTo.y);
@@ -377,7 +375,7 @@ module akra.ui.graph {
 
 			var pGraphOffset = pGraph.$element.offset();
 			var pPosition = pConnector.$element.offset();
-			var pOut: IPoint = {x: pPosition.left - pGraphOffset.left, y: pPosition.top - pGraphOffset.top};
+			var pOut: IPoint = { x: pPosition.left - pGraphOffset.left, y: pPosition.top - pGraphOffset.top };
 
 			pOut.x += pConnector.$element.width() / 2.;
 			pOut.y += pConnector.$element.height() / 2.;
@@ -391,8 +389,8 @@ module akra.ui.graph {
 			super(pLeft, null);
 		}
 
-		routing(pRight: IPoint = {x: 0, y: 0}): void {
-			var pLeft: IPoint = Route.calcPosition(this.left);
+		routing(pRight: IPoint = { x: 0, y: 0 }): void {
+			var pLeft: IPoint = Route.calcPosition(this.getLeft());
 
 			this.drawRoute(pLeft, pRight);
 		}

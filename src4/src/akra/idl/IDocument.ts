@@ -1,5 +1,6 @@
 /// <reference path="IMap.ts" />
 /// <reference path="IFrame.ts" />
+/// <reference path="IUnique.ts" />
 
 module akra {
 	export enum EDocumentEntry {
@@ -28,7 +29,7 @@ module akra {
 	}
 	
 	export interface ILibraryEntry extends IEntry {
-	    data: AIUnique;
+	    data: IUnique;
 	    entry: IDataEntry;
 	}
 	

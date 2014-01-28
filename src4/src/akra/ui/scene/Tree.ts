@@ -1,5 +1,5 @@
-/// <reference path="../../idl/IScene3d.ts" />
-/// <reference path="../../debug.ts" />
+/// <reference path="../Tree.ts" />
+
 
 module akra.ui.scene {
 	export class CameraNode extends TreeNode {

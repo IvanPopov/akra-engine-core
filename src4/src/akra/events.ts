@@ -328,7 +328,6 @@ module akra {
 			var pListener: IListener<T> = this.getEmptyListener();
 			pListener.reciever = pReciever;
 			pListener.callback = fnCallback;
-			//pListener.callbackName = sCallbackName;
 			pListener.type = eType;
 
 			return pListener;
@@ -380,6 +379,18 @@ module akra {
 			pListener.type = 0;
 
 			Signal._pEmptyListenersList[Signal._nEmptyListenersCount++] = pListener;
+		}
+
+		getListeners(eEventType: EEventTypes): IListener<T>[] {
+			if (eEventType == EEventTypes.BROADCAST) {
+				return this._pBroadcastListeners;
+			}
+
+			if (!isNull(this._pUnicastListener)) {
+				return  [this._pUnicastListener];
+			}
+
+			return [];
 		}
 
 		getSender(): S {

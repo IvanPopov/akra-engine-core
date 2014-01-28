@@ -6,7 +6,8 @@
 
 module akra {
 	export interface IUIRenderTargetStats extends IUIComponent {
-		target: IRenderTarget;
+		getTarget(): IRenderTarget;
+		setTarget(pTarget: IRenderTarget): void;
 	}
 }
 

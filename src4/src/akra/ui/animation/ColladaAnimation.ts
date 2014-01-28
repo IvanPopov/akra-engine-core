@@ -1,4 +1,3 @@
-/// <reference path="../../idl/ICollada.ts" />
 /// <reference path="../Component.ts" />
 
 module akra.ui.animation {

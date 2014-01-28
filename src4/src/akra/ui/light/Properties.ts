@@ -1,6 +1,5 @@
 /// <reference path="../../idl/IUILabel.ts" />
 /// <reference path="../../idl/IUISwitch.ts" />
-/// <reference path="../../idl/ILightPoint.ts" />
 /// <reference path="../Component.ts" />
 
 module akra.ui.light {

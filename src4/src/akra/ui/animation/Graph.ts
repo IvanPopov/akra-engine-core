@@ -5,14 +5,11 @@
 /// <reference path="../../idl/IUIAnimationPlayer.ts" />
 /// <reference path="../../idl/IUtilTimer.ts" />
 
-/// <reference path="../../animation/Animation.ts" />
-/// <reference path="../../filedrop/filedrop.ts" />
 
 /// <reference path="../graph/Graph.ts" />
 /// <reference path="Controls.ts" />
 /// <reference path="Blender.ts" />
 
-/// <reference path="../../import/Importer.ts" />
 
 module akra.ui.animation {
 	class DropSignal extends Signal<{ (pGraph: IUIAnimationGraph, e: IUIEvent, pComponent: IUIComponent, pInfo?: any): void; }, IUIAnimationGraph> {
@@ -31,6 +28,8 @@ module akra.ui.animation {
 	}
 
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
+		nodeSelected: ISignal<{ (pGraph: IUIAnimationGraph, pNode: IUIAnimationNode, bPlay: boolean): void; }>;
+
 		private _pSelectedNode: IUIAnimationNode = null;
 		private _pAnimationController: IAnimationController = null;
 
@@ -139,8 +138,6 @@ module akra.ui.animation {
 			this.nodeSelected.emit(pNode, bPlay);
 		}
 
-		nodeSelected: ISignal<{ (pGraph: IUIAnimationGraph, pNode: IUIAnimationNode, bPlay: boolean): void; }>;
-
 		//BROADCAST(nodeSelected, CALL(pNode, bPlay));
 
 		addAnimation(pAnimation: IAnimationBase): void {
@@ -158,7 +155,7 @@ module akra.ui.animation {
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 		findNodeByAnimation(animation): IUIAnimationNode {
 			var sName: string = !isString(animation) ? (<IAnimationBase>animation).getName() : <string>animation;
-			var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
+			var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.getNodes();
 
 			for (var i: int = 0; i < pNodes.length; i++) {
 				var pAnim: IAnimationBase = pNodes[i].getAnimation();

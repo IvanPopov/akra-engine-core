@@ -24,13 +24,16 @@ module akra {
 		hasListeners(): boolean;
 		getSender(): any;
 		getType(): EEventTypes;
+		getListeners(eEventType: EEventTypes): IListener<T>[];
 		setForerunner(fn: Function): void;
 	}
 
 	export interface IListener<T extends Function> {
+		/** Context of signal. */
 		reciever: any;
+		/** Callback function. */
 		callback: T;
-		callbackName?: string;
+		/** Event type. */
 		type: EEventTypes;
 	}
 	

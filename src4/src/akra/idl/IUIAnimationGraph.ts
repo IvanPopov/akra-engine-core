@@ -8,6 +8,8 @@
 
 module akra {
 	export interface IUIAnimationGraph extends IUIGraph {
+		nodeSelected: ISignal<{ (pGraph: IUIAnimationGraph, pNode: IUIAnimationNode, bPlay: boolean): void; }>;
+
 		getController(): IAnimationController;
 	
 		selectNode(pNode: IUIAnimationNode, bModified?: boolean): void;

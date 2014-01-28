@@ -1,6 +1,5 @@
 /// <reference path="../../idl/IUIGraphNode.ts" />
 /// <reference path="../../idl/IUIAnimationControls.ts" />
-/// <reference path="../../idl/IDocument.ts" />
 
 /// <reference path="../graph/Controls.ts" />
 
@@ -9,7 +8,6 @@
 /// <reference path="Blender.ts" />
 /// <reference path="Mask.ts" />
 
-/// <reference path="../../export/Exporter.ts" />
 
 module akra.ui.animation {
 	export class Controls extends graph.Controls implements IUIAnimationControls {

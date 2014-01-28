@@ -5,6 +5,16 @@
 /// <reference path="IUIHTMLNode.ts" />
 /// <reference path="IUIDNDNode.ts" />
 
+/// <reference path="IUIButton.ts" />
+/// <reference path="IUICheckbox.ts" />
+/// <reference path="IUICheckboxList.ts" />
+/// <reference path="IUILabel.ts" />
+/// <reference path="IUIPanel.ts" />
+/// <reference path="IUIPopup.ts" />
+/// <reference path="IUITabs.ts" />
+/// <reference path="IUIVector.ts" />
+/// <reference path="IUILayout.ts" />
+
 module akra {
 	export interface IUI extends IScene2d {
 		createHTMLNode(pElement: HTMLElement): IUIHTMLNode;

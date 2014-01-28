@@ -15,7 +15,7 @@ module akra {
 	
 		/** readonly */ totalComponents: uint;
 	
-		value: any;
+		getValue(): any;
 		
 		toVec2(): IVec2;
 		toVec3(): IVec3;

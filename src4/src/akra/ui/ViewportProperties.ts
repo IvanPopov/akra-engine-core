@@ -1,12 +1,9 @@
 /// <reference path="../idl/IUILabel.ts" />
 /// <reference path="../idl/IUIButton.ts" />
 /// <reference path="../idl/IUISwitch.ts" />
-/// <reference path="../idl/IViewport.ts" />
 /// <reference path="../idl/IUICheckboxList.ts" />
 /// <reference path="../idl/IUIRenderTargetStats.ts" />
 
-/// <reference path="../render/DSViewport.ts" />
-/// <reference path="../addons/navigation.ts" />
 
 /// <reference path="Component.ts" />
 
@@ -155,7 +152,7 @@ module akra.ui {
 			this.getElement().find("div[name=preview]").append(this.getCanvasElement());
 
 			var pStats: IUIRenderTargetStats = this._pStats;
-			pStats.target = pViewport.getTarget();
+			pStats.setTarget(pViewport.getTarget());
 
 			ide.cmd(akra.ECMD.CHANGE_AA, this._pFXAASwh.getValue());
 

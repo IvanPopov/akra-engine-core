@@ -1,8 +1,4 @@
 /// <reference path="../../idl/IUIGraphNode.ts" />
-/// <reference path="../../idl/IKeyMap.ts" />
-
-/// <reference path="../../ajax.ts" />
-
 /// <reference path="../Component.ts" />
 
 /// <reference path="Connector.ts" />
@@ -151,7 +147,7 @@ module akra.ui.graph {
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
-			if (pRoute.left.getNode() === this) {
+			if (pRoute.getLeft().getNode() === this) {
 				return;
 			}
 

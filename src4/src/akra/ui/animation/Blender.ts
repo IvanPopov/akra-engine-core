@@ -3,8 +3,6 @@
 /// <reference path="../../idl/IUISlider.ts" />
 /// <reference path="../../idl/IUILabel.ts" />
 
-/// <reference path="../../animation/Blend.ts" />
-
 /// <reference path="Node.ts" />
 /// <reference path="Mask.ts" />
 
@@ -54,11 +52,11 @@ module akra.ui.animation {
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
-			if (pRoute.left.getNode() === this) {
+			if (pRoute.getLeft().getNode() === this) {
 				return;
 			}
 
-			if (!this.isConnectedWith(pRoute.left.getNode())) {
+			if (!this.isConnectedWith(pRoute.getLeft().getNode())) {
 				super.onConnectionBegin(pGraph, pRoute);
 				return;
 			}
@@ -101,7 +99,7 @@ module akra.ui.animation {
 			var pSlider: IUISlider = this._pSliders[iAnim].slider;
 			var pRoute: IUIGraphRoute = this.getAreas()["in"].getConnectors()[iAnim].getRoute();
 
-			pRoute.enabled = fWeight !== 0;
+			pRoute.setEnabled(fWeight !== 0);
 			pSlider.setText(<any>fWeight.toFixed(2));
 		}
 

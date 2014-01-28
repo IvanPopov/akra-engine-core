@@ -1,5 +1,3 @@
-/// <reference path="../../idl/IAnimationController.ts" />
-/// <reference path="../../idl/IResourcePoolItem.ts" />
 /// <reference path="../../idl/IUILabel.ts" />
 /// <reference path="../Component.ts" />
 

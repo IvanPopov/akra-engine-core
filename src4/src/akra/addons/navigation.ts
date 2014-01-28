@@ -1,8 +1,8 @@
-/// <reference path="../scene/light/LightPoint.ts" />
-/// <reference path="../scene/Scene3d.ts" />
+/// <reference path="../../../build/akra.d.ts" />
 
-/// <reference path="../config/config.ts" />
-
+declare module akra.ui {
+	var ide: any;
+}
 
 module akra.addons {
 	import Vec3 = math.Vec3;
@@ -47,7 +47,7 @@ module akra.addons {
 			var fUnprojDist: float;
 			var pCamera: ICamera = pGeneralViewport.getCamera();
 
-			if (ui.ide && ui.ide.getSelectedObject()) {
+			if (config.UI && ui.ide && ui.ide.getSelectedObject()) {
 				vDest.set(ui.ide.getSelectedObject().getWorldPosition());
 				return vDest;
 			}

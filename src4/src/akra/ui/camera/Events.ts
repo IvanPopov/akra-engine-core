@@ -1,5 +1,5 @@
+
 /// <reference path="../../idl/IUIButton.ts" />
-/// <reference path="../../idl/ICamera.ts" />
 
 /// <reference path="../Component.ts" />
 

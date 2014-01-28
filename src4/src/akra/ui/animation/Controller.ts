@@ -1,5 +1,3 @@
-/// <reference path="../../idl/IAnimationController.ts" />
-
 /// <reference path="../Component.ts" />
 
 module akra.ui.animation {

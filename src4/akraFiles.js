@@ -18,18 +18,21 @@ akraFiles = {
     // 'ngAnimate': [
     //   'src/ngAnimate/animate.js'
     // ],
+  },
+
+  'akraUI': [
+    'src/akra/ui/UI.ts',
+    'src/akra/ui/IDE.ts'
+  ],
+
+  'akraAddons': {
+      'navigation': [
+        'src/akra/addons/navigation.ts'
+      ]
   }
 };
 
-akraFiles['akraSrcModules'] = [].concat(
-  // akraFiles['akraPlugins']['ngAnimate'],
-  // akraFiles['akraPlugins']['ngCookies'],
-  // akraFiles['akraPlugins']['ngResource'],
-  // akraFiles['akraPlugins']['ngRoute'],
-  // akraFiles['akraPlugins']['ngSanitize'],
-  // akraFiles['akraPlugins']['ngMock'],
-  // akraFiles['akraPlugins']['ngTouch']
-);
+akraFiles['akraSrcModules'] = [].concat();
 
 //TODO
 akraFiles["all"] = [].concat(

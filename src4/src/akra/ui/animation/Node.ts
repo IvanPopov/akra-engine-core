@@ -1,5 +1,4 @@
 /// <reference path="../../idl/IUIAnimationNode.ts" />
-/// <reference path="../../idl/IAnimationBase.ts" />
 /// <reference path="../graph/Node.ts" />
 
 module akra.ui.animation {
@@ -10,8 +9,7 @@ module akra.ui.animation {
 
 		attachToParent(pParent: IUIAnimationGraph): boolean {
 			if (super.attachToParent(pParent)) {
-				//this.connect(pParent, SIGNAL(nodeSelected), SLOT(_selected));
-				pParent.nodeSelected.connect(this, this._selected);
+				pParent.nodeSelected.connect(this, <any>this._selected);
 			}
 
 			return false;

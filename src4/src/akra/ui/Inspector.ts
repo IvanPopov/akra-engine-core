@@ -1,7 +1,7 @@
-/// <reference path="../idl/IUILabel.ts" />
-/// <reference path="../idl/IModelEntry.ts" />
+/// <reference path="../../../build/akra.d.ts" />
 
-/// <reference path="../animation/Controller.ts" />
+
+/// <reference path="../idl/IUILabel.ts" />
 
 /// <reference path="Component.ts" />
 /// <reference path="resource/Properties.ts" />
@@ -11,6 +11,7 @@
 /// <reference path="scene/Model.ts" />
 /// <reference path="animation/NodeProperties.ts" />
 /// <reference path="animation/MaskProperties.ts" />
+/// <reference path="animation/Controller.ts" />
 /// <reference path="camera/Events.ts" />
 /// <reference path="scene/Events.ts" />
 

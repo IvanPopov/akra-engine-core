@@ -1,9 +1,6 @@
-/// <reference path="../../IDL/IAnimation.ts" />
-/// <reference path="../../IDL/IAnimationContainer.ts" />
 /// <reference path="../../IDL/IUIAnimationGraph.ts" />
 /// <reference path="../../IDL/IUIAnimationPlayer.ts" />
 
-/// <reference path="../../animation/Container.ts" />
 
 /// <reference path="Node.ts" />
 
@@ -138,7 +135,7 @@ module akra.ui.animation {
 				var pConnectors: IUIGraphConnector[] = this._pAreas[i].getConnectors();
 
 				for (var j = 0; j < pConnectors.length; ++j) {
-					pConnectors[j].getRoute().enabled = !bValue;
+					pConnectors[j].getRoute().setEnabled(!bValue);
 				}
 			}
 		}

@@ -836,21 +836,21 @@ module akra.render {
 			return this._p3DEventDragTarget;
 		}
 
-		static RenderSignal = RenderSignal;
+		static RenderSignal = <typeof Signal><any>RenderSignal;
 
-		static DraggingSignal = DraggingSignal;
-		static DragstartSignal = DragstartSignal;
-		static DragstopSignal = DragstopSignal;
+		static DraggingSignal = <typeof Signal><any>DraggingSignal;
+		static DragstartSignal = <typeof Signal><any>DragstartSignal;
+		static DragstopSignal = <typeof Signal><any>DragstopSignal;
 
-		static MousedownSignal = MousedownSignal;
-		static MouseupSignal = MouseupSignal;
+		static MousedownSignal = <typeof Signal><any>MousedownSignal;
+		static MouseupSignal = <typeof Signal><any>MouseupSignal;
 
-		static MouseoverSignal = MouseoverSignal;
-		static MouseoutSignal = MouseoutSignal;
+		static MouseoverSignal = <typeof Signal><any>MouseoverSignal;
+		static MouseoutSignal = <typeof Signal><any>MouseoutSignal;
 
-		static MousewheelSignal = MousewheelSignal;
-		static MousemoveSignal = MousemoveSignal;
+		static MousewheelSignal = <typeof Signal><any>MousewheelSignal;
+		static MousemoveSignal = <typeof Signal><any>MousemoveSignal;
 
-		static ClickSignal = ClickSignal;
+		static ClickSignal = <typeof Signal><any>ClickSignal;
 	}
 }

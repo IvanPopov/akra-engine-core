@@ -1,11 +1,12 @@
+/// <reference path="../../../build/akra.d.ts" />
+
 /// <reference path="../idl/IUIComponent.ts" />
-/// <reference path="../ajax.ts" />
+
 /// <reference path="DNDNode.ts" />
 
 /// <reference path="../idl/3d-party/raphael.d.ts" />
 /// <reference path="../idl/3d-party/swig.d.ts" />
 
-/// <reference path="../filedrop/filedrop.ts" />
 
 /// @: {data}/ui/3d-party/raphael/raphael-min.js|location()|script()|data_location({data},DATA)
 /// @: {data}/ui/3d-party/swig/swig.pack.min.js|location()|script()|data_location({data},DATA)

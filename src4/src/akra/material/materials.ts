@@ -1,5 +1,4 @@
-﻿/// <reference path="Material.ts" />       
-/// <reference path="FlexMaterial.ts" />       
+﻿/// <reference path="Material.ts" />           
 /// <reference path="../data/VertexDeclaration.ts" /> 
 /// <reference path="../data/Usage.ts" /> 
 
@@ -22,10 +21,5 @@ module akra.material {
 
 	export function create(sName: string = null, pMat: IMaterialBase = null): IMaterial {
 		return new Material(sName, pMat);
-	}
-
-	/** @deprecated Flex material will be removed from core with closest release.*/
-	export function _createFlex(sName: string, pData: IVertexData): IMaterial {
-		return new FlexMaterial(sName, pData);
 	}
 }

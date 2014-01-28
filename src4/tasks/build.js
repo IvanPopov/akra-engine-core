@@ -3,6 +3,8 @@
 var spawn = require('child_process').spawn;
 var path = require('path');
 
+var TYPESCRIPT = "typescript-0.9.5";
+
 //TODO: add all available TS options
 
 module.exports = function (grunt) {
@@ -36,7 +38,7 @@ module.exports = function (grunt) {
             tsBin = path.normalize(__dirname + '/tscc/tscc.js');
         }
         else {
-            tsBin = path.normalize(__dirname + '/typescript/tsc.js');
+            tsBin = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
         }
         
         var argv = [tsBin].concat(sourcePaths);

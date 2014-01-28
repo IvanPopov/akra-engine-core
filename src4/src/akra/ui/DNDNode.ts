@@ -1,6 +1,8 @@
+/// <reference path="../../../build/akra.d.ts" />
+
 /// <reference path="../idl/IUIDNDNode.ts" />
 /// <reference path="HTMLNode.ts" />
-/// <reference path="../math/math.ts" />
+
 
 module akra.ui {
 

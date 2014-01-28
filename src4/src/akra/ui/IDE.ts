@@ -637,37 +637,36 @@ module akra.ui {
 			return true;
 		}
 
-		//предпологается, что мы редактируем любово листенера, и что, исполнитель команды сам укажет нам, 
+		//предпологается, что мы редактируем любого листенера, и что, исполнитель команды сам укажет нам, 
 		//какой номер у листенера, созданного им.
 		protected editEvent(pTarget: IEventProvider, sEvent: string, iListener: int = 0, eType: EEventTypes = EEventTypes.BROADCAST): boolean {
 			var sName: string = "event-" + sEvent + pTarget.guid;
 			var pListenerEditor: IUIListenerEditor;
 			var iTab: int = this._pTabs.findTab(sName);
-			var pEvtTable: IEventTable = pTarget.getEventTable();
-			var pEventSlots: IEventSlot[] = pEvtTable.findBroadcastSignalMap(pTarget.guid, sEvent);
-			var pEventSlot: IEventSlot = null;
+
+			var pSign: ISignal<any> = pTarget[sEvent];
+			var pListeners: IListener<any>[] = pSign.getListeners(EEventTypes.BROADCAST);
+			//editable listener
+			var pListener: IListener<any> = null;
+
 			var sCode: string = "";
 			var self = this._apiEntry;
 
-			for (var i = 0; i < pEventSlots.length; ++i) {
-				if (isDefAndNotNull(pEventSlots[i].listener)) {
-					pEventSlot = pEventSlots[i];
+			for (var i = 0; i < pListeners.length; ++i) {
+				if (isNull(pListeners[i].reciever)) {
+					pListener = pListeners[i];
 					break;
 				}
 			}
 
-			if (!isDefAndNotNull(pEventSlot)) {
-				pTarget[sEvent].connect(() => { });
+			if (isNull(pListener.callback)) {
+				pSign.connect(() => { });
 				return this.editEvent(pTarget, sEvent);
 			}
-			// LOG(pEventSlots, pEventSlot);
-			if (!isNull(pEventSlot.target)) {
-				logger.error("modifications of target's connectics not allowed!");
-			}
 
-			if (!isNull(pEventSlot.listener)) {
-				sCode = getFuncBody(pEventSlot.listener);
-			}
+
+			sCode = getFuncBody(pListener.callback);
+			
 
 			if (iTab < 0) {
 				pListenerEditor = <IUIListenerEditor>this._pTabs.createComponent("ListenerEditor", {
@@ -676,7 +675,7 @@ module akra.ui {
 				});
 
 				pListenerEditor.bindEvent.connect((pEditor: IUIListenerEditor, sCode: string) => {
-					pEventSlot.listener = buildFuncByCodeWithSelfContext(sCode, self);
+					pListener.callback = buildFuncByCodeWithSelfContext(sCode, self);
 				});
 
 				iTab = pListenerEditor.index;

@@ -1,4 +1,3 @@
-/// <reference path="../../idl/IAnimation.ts" />
 /// <reference path="../../idl/IUIAnimationData.ts" />
 /// <reference path="../../idl/IUILabel.ts" />
 

@@ -5,11 +5,16 @@
 
 module akra {
 	export interface IUIGraphRoute {
-		left: IUIGraphConnector;
-		right: IUIGraphConnector;
-		path: RaphaelPath;
-		color: IColor;
-		enabled: boolean;
+		getPath(): RaphaelPath;
+		setPath(pPath: RaphaelPath): void;
+
+		getLeft(): IUIGraphConnector;
+		setLeft(pConnector: IUIGraphConnector): void;
+		getRight(): IUIGraphConnector;
+		setRight(pConnector: IUIGraphConnector): void;
+		getColor(): IColor;
+		isEnabled(): boolean;
+		setEnabled(bValue: boolean): void;
 	
 		isConnectedWithNode(pNode: IUIGraphNode): boolean;
 		isConnectedWith(pConnector: IUIGraphConnector): boolean;

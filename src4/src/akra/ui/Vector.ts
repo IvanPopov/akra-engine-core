@@ -30,7 +30,7 @@ module akra.ui {
 				pVector.w.setText(sValue);
 			}
 
-			super.emit(pVector.value);
+			super.emit(pVector.getValue());
 		}
 	}
 
@@ -48,17 +48,7 @@ module akra.ui {
 		protected _bEditable: boolean = false;
 		protected $lock: JQuery;
 
-		 get value(): any {
-			switch(this.totalComponents) {
-				case 2: return this.toVec2();
-				case 3: return this.toVec3();
-				case 4: return this.toVec4();
-			}
-
-			return null;
-		}
-
-		constructor (ui, options?, eType: EUIComponents = EUIComponents.VECTOR) {
+		constructor(ui, options?, eType: EUIComponents = EUIComponents.VECTOR) {
 			super(ui, options, eType);
 
 			this.template("Vector.tpl");
@@ -89,6 +79,17 @@ module akra.ui {
 			super.setupSignals();
 		}
 
+
+		getValue(): any {
+			switch (this.totalComponents) {
+				case 2: return this.toVec2();
+				case 3: return this.toVec3();
+				case 4: return this.toVec4();
+			}
+
+			return null;
+		}
+
 		_createdFrom($comp: JQuery): void {
 			var bValue: boolean = isDefAndNotNull($comp.attr("editable")) || false;
 			var sPostfix: string = $comp.attr("postfix") || null;
@@ -110,7 +111,7 @@ module akra.ui {
 				this.getElement().removeClass("editable");
 				this.$lock.hide();
 			}
-			
+
 			this.x.editable(bValue);
 			this.y.editable(bValue);
 			this.z.editable(bValue);
@@ -119,7 +120,7 @@ module akra.ui {
 			this._bEditable = bValue;
 		}
 
-		 isEditable(): boolean {
+		isEditable(): boolean {
 			return this._bEditable;
 		}
 
@@ -135,7 +136,7 @@ module akra.ui {
 					$(pSpanList[3]).css("display", "none");
 					$(pSpanList[2]).css("display", "none");
 					break;
-				case 3: 
+				case 3:
 					$(pSpanList[3]).css("display", "none");
 					$(pSpanList[2]).css("display", "-block");
 					break;
@@ -184,23 +185,23 @@ module akra.ui {
 
 		toVec2(): IVec2 {
 			return Vec2.temp(
-					parseFloat(this.x.getText()), 
-					parseFloat(this.y.getText()));
+				parseFloat(this.x.getText()),
+				parseFloat(this.y.getText()));
 		}
 
 		toVec3(): IVec3 {
 			return Vec3.temp(
-					parseFloat(this.x.getText()), 
-					parseFloat(this.y.getText()), 
-					parseFloat(this.z.getText()));
+				parseFloat(this.x.getText()),
+				parseFloat(this.y.getText()),
+				parseFloat(this.z.getText()));
 		}
 
 		toVec4(): IVec4 {
 			return Vec4.temp(
-					parseFloat(this.x.getText()), 
-					parseFloat(this.y.getText()), 
-					parseFloat(this.z.getText()), 
-					parseFloat(this.w.getText()));
+				parseFloat(this.x.getText()),
+				parseFloat(this.y.getText()),
+				parseFloat(this.z.getText()),
+				parseFloat(this.w.getText()));
 		}
 
 		protected finalizeRender(): void {

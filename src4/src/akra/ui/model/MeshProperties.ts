@@ -1,6 +1,6 @@
 /// <reference path="../../idl/IUILabel.ts" />
 /// <reference path="../../idl/IUISwitch.ts" />
-/// <reference path="../../idl/IMesh.ts" />
+
 
 /// <reference path="../Component.ts" />
 /// <reference path="MeshSubsetProperties.ts" />

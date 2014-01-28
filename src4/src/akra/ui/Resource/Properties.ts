@@ -1,8 +1,7 @@
 /// <reference path="../../idl/IUILabel.ts" />
-/// <reference path="../../idl/IResourcePoolItem.ts" />
+
 /// <reference path="../animation/ColladaAnimation.ts" />
 /// <reference path="../Component.ts" />
-/// <reference path="../../pool/resources/Collada.ts" />
 
 module akra.ui.resource {
 	export class Properties extends Component {

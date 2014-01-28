@@ -1,7 +1,7 @@
+/// <reference path="../../../build/akra.d.ts" />
+
 /// <reference path="../idl/IUINode.ts" />
 /// <reference path="../idl/IUILayout.ts" />
-
-/// <reference path="../util/Entity.ts" />
 
 /// <reference path="../idl/3d-party/jquery.d.ts" />
 /// <reference path="../idl/3d-party/jqueryui.d.ts" />

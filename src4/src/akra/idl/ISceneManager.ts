@@ -1,18 +1,16 @@
-
 /// <reference path="IManager.ts" />
 /// <reference path="IScene.ts" />
 /// <reference path="IEngine.ts" />
 /// <reference path="IEngine.ts" />
 /// <reference path="IScene3d.ts" />
 /// <reference path="IScene2d.ts" />
-/// <reference path="IUI.ts" />
 
 module akra {
 	export interface ISceneManager extends IManager {
 		createScene3D(sName?: string): IScene3d;
 		// createScene2D(): IScene2d;
 	
-		createUI(): IUI;
+		createUI(): IScene2d;
 	
 		getEngine(): IEngine;
 	
