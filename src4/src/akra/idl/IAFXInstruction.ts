@@ -1,4 +1,3 @@
-/// <reference path="../math/Vec3.ts" />
 /// <reference path="parser/IParser.ts" />
 /// <reference path="IAFXComponent.ts" />
 /// <reference path="IUnique.ts" />

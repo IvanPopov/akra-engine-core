@@ -21,13 +21,16 @@ akraFiles = {
   },
 
   'akraUI': [
-    'src/akra/ui/UI.ts',
-    'src/akra/ui/IDE.ts'
+    'src/akra-ui/ui/UI.ts',
+    'src/akra-ui/ui/IDE.ts'
   ],
 
   'akraAddons': {
       'navigation': [
-        'src/akra/addons/navigation.ts'
+        'src/akra-addons/addons/navigation.ts'
+      ],
+      'filedrop': [
+        'src/akra-addons/addons/filedrop/filedrop.ts'
       ]
   }
 };

@@ -77,6 +77,15 @@ module.exports = function (grunt) {
                         removeComments: true,
                         propagateEnumConstants: true
                     }
+                },
+                "addon-filedrop": {
+                    src: files.akraAddons.filedrop,
+                    dest: "build/addons/filedrop.addon.js",
+                    options: {
+                        target: "es3",
+                        removeComments: true,
+                        propagateEnumConstants: true
+                    }
                 }
             //}
         },

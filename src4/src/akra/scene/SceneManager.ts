@@ -6,9 +6,6 @@
 
 /// <reference path="Scene3d.ts" />
 
-declare module akra.ui {
-	function createUI(pManager?: ISceneManager): any;
-}
 
 module akra.scene {
 	export class SceneManager implements ISceneManager {
@@ -94,7 +91,7 @@ module akra.scene {
 
 		createUI(): IScene2d {
 			if (config.UI) {
-				return ui.createUI(this);
+				return akra["ui"].createUI(this);
 			}
 			else {
 				return null;

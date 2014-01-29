@@ -243,8 +243,8 @@ module akra.scene.objects {
 		}
 
 		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray<ISceneObject> {
-			var pObjects: IObjectArray<ISceneObject> = this._pDLTechniques[iList].
-				findObjects(this._pDLResultStorage[iList], !this.isUpdated());
+			var pObjects: IObjectArray<ISceneObject> =
+				this._pDLTechniques[iList].findObjects(this._pDLResultStorage[iList], !this.isUpdated());
 
 			return pObjects;
 		}

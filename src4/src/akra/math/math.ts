@@ -30,18 +30,15 @@ module akra.math {
 
     //matrix 3x3 elements
 
-    export var __a11 = 0;
-    export var __a12 = 3;
-    export var __a13 = 6;
-    export var __a21 = 1;
-    export var __a22 = 4;
-    export var __a23 = 7;
-    export var __a31 = 2;
-    export var __a32 = 5;
-    export var __a33 = 8;
-
-
-
+    export var __a11: uint8 = 0;
+    export var __a12: uint8 = 3;
+    export var __a13: uint8 = 6;
+    export var __a21: uint8 = 1;
+    export var __a22: uint8 = 4;
+    export var __a23: uint8 = 7;
+    export var __a31: uint8 = 2;
+    export var __a32: uint8 = 5;
+    export var __a33: uint8 = 8;
 
 
     export var E: float = <float>Math.E;

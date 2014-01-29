@@ -20,7 +20,7 @@ module akra.render {
 
 
 	//NOTE: This signal is not called directly from the viewport, call derives from render technique.
-	export class RenderSignal
+	class RenderSignal
 		extends Signal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
@@ -836,7 +836,7 @@ module akra.render {
 			return this._p3DEventDragTarget;
 		}
 
-		static RenderSignal = <typeof Signal><any>RenderSignal;
+		static RenderSignal = <any>RenderSignal;
 
 		static DraggingSignal = <typeof Signal><any>DraggingSignal;
 		static DragstartSignal = <typeof Signal><any>DragstartSignal;
