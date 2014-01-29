@@ -14,8 +14,8 @@ module akra.addons {
 
 		//scene with cube backend
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(config.data + "/models/ocube/cube.DAE", {shadows: false});
-
 		var pCamera: ICamera = pScene.createCamera();
+
 		pCamera.attachToParent(pScene.getRootNode());
 
 		var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);

@@ -2,6 +2,8 @@
 
 var spawn = require('child_process').spawn;
 var path = require('path');
+var fs = require('fs');
+var xml2js = require('xml2js');
 
 var TYPESCRIPT = "typescript-0.9.5";
 
@@ -83,16 +85,75 @@ module.exports = function (grunt) {
 
         tsc.on("close", function (code) {
             if (code === 0) {
-                if(minimizationLevel > 0){
-                    minimize(dest, minimizationLevel, cb);
-                }
-                else {
-                    cb();
+                packResources(sourcePaths, dest, options, function () {
+                    if(minimizationLevel > 0){
+                        minimize(dest, minimizationLevel, cb);
+                    }
+                    else {
+                        cb();
+                    }
+                });
+            }
+            else {
+               //grunt.log.errorlns("Compilation failed. Exited with code " + code);
+               grunt.fail.fatal(new Error("Compilation failed."));
+               // cb(false);
+            }
+        });
+    }
+
+    function packResources(sourcePaths, dest, options, cb) {
+        var srcFiles = [];
+        var shortestPath = null;
+        var resourceFolder = null;
+
+        //normalize all pathes
+        for (var i = 0; i < sourcePaths.length; ++ i) {
+            var srcFile = sourcePaths[i];
+
+            srcFiles.push(path.resolve(path.dirname(srcFile)));
+        }
+
+        //sort > shortest path will be first
+        srcFiles.sort(function (a, b) {return a.length < b.length? -1: 1 });
+        
+            resourceFolder = srcFiles[0];
+        
+        if (srcFiles.length > 1) {
+            var dirs1 = srcFiles[0].split(path.sep);
+            var dirs2 = srcFiles[1].split(path.sep);
+
+            for (var i = 0; i < dirs1.length; ++ i) {
+                if (dirs1[i] != dirs2[i]) {
+                    resourceFolder = dirs1.slice(0, i - 1).join(path.sep);
                 }
             }
-            //else {
-            //    grunt.log.errorlns("Compilation failed. Exited with code " + code);
-            //}
+        }
+
+        grunt.log.debug("Automaticly detected resource folder:", resourceFolder);
+
+        var resourceFile = path.join(resourceFolder, "resources.xml");
+
+        if (!fs.existsSync(resourceFile)) {
+            grunt.log.debug("Could not find resoure.xml");
+            cb();
+        }
+
+        grunt.log.debug("Resources:", resourceFile);
+        
+        var parser = new xml2js.Parser();
+
+        fs.readFile(resourceFile, function(err, data) {
+            parser.parseString(data, function (err, xml) {
+               //if (!xml.Project)
+                for (var i = 0; i < xml.AkraResources.Project.length; ++ i) {
+                    var Project = xml.AkraResources.Project[i];
+                    //if (Project.$.Name)
+                    console.log(Project.$.Name, xml.AkraResources.Project[i]);
+                }
+
+                cb();
+            });
         });
     }
 
@@ -128,6 +189,9 @@ module.exports = function (grunt) {
         closure.on("close", function (code) {
             if (code === 0) {
                 cb();
+            }
+            else {
+                grunt.fail.fatal(new Error("Closure minimization failed."));
             }
             //else {
             //    grunt.log.errorlns("Compilation failed. Exited with code " + code);

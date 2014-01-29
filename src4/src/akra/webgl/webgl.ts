@@ -16,7 +16,7 @@ module akra.webgl {
 	export var maxTextureSize: uint = 0;
 	export var maxCubeMapTextureSize: uint = 0;
 	export var maxViewPortSize: uint = 0;
-
+	
 	export var maxTextureImageUnits: uint = 0;
 	export var maxVertexAttributes: uint = 0;
 	export var maxVertexTextureImageUnits: uint = 0;

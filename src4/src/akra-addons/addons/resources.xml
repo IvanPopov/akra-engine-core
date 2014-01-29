@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AkraResources>
+  <Project Name="addon-navigation">
+    <!-- Model of cube to control scene with mouse. -->
+    <Resource Name="orientation_cube">
+      <!--<PropertyGroup Condition="'$(Configuration)' == 'Debug'">-->
+      <PropertyGroup>
+        <!-- Pack into Zip archive with ARA extension. -->
+        <Archive>True</Archive>
+        <!-- Convert archive to base64 encoded string followed by data_uri conversion.  -->
+        <UseInlining>True</UseInlining>
+        <MapFile>navigation/navigation.map</MapFile>
+        <OutDir>navigation/data</OutDir>
+      </PropertyGroup>
+    </Resource>  
+  </Project>
+</AkraResources>

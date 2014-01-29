@@ -1,8 +1,6 @@
 module akra {
-	export interface AIOffset {
+	export interface IOffset {
 		x: float;
 		y: float;
 	}
-	
-	
 }
