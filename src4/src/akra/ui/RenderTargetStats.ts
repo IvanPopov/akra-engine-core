@@ -1,6 +1,3 @@
-/// <reference path="../../../build/akra.d.ts" />
-
-
 /// <reference path="../idl/IUIRenderTargetStats.ts" />
 /// <reference path="Component.ts" />
 

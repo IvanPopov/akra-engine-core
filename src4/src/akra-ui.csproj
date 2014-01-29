@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{8ACE5F3C-53F5-4A78-9727-7C6649896AD0}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>0.9</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="akra\idl\3d-party\angular.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\codemirror.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\FileSaver.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\fixes.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\gamepad.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\has.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\jquery.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\jqueryui.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\raphael.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\swig.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\webgl.d.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\zip.d.ts" />
+    <TypeScriptCompile Include="akra\idl\IUI.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationBlender.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationControls.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationData.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationGraph.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationMask.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationNode.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIAnimationPlayer.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIButton.ts" />
+    <TypeScriptCompile Include="akra\idl\IUICheckbox.ts" />
+    <TypeScriptCompile Include="akra\idl\IUICheckboxList.ts" />
+    <TypeScriptCompile Include="akra\idl\IUICodeEditor.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIComponent.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIDNDNode.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIGraph.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIGraphConnectionArea.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIGraphConnector.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIGraphControls.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIGraphNode.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIGraphRoute.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIHTMLNode.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIIDE.ts" />
+    <TypeScriptCompile Include="akra\idl\IUILabel.ts" />
+    <TypeScriptCompile Include="akra\idl\IUILayout.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIList.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIListenerEditor.ts" />
+    <TypeScriptCompile Include="akra\idl\IUINode.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIPanel.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIPopup.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIRenderTargetStats.ts" />
+    <TypeScriptCompile Include="akra\idl\IUISlider.ts" />
+    <TypeScriptCompile Include="akra\idl\IUISwitch.ts" />
+    <TypeScriptCompile Include="akra\idl\IUITabs.ts" />
+    <TypeScriptCompile Include="akra\idl\IUITree.ts" />
+    <TypeScriptCompile Include="akra\idl\IUITreeNode.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIVector.ts" />
+    <TypeScriptCompile Include="akra\idl\IUIWindow.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Blender.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\ColladaAnimation.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Controller.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\ControllerProperties.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Controls.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Data.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Graph.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Mask.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\MaskProperties.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Node.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\NodeProperties.ts" />
+    <TypeScriptCompile Include="akra\ui\animation\Player.ts" />
+    <TypeScriptCompile Include="akra\ui\Button.ts" />
+    <TypeScriptCompile Include="akra\ui\camera\Events.ts" />
+    <TypeScriptCompile Include="akra\ui\Checkbox.ts" />
+    <TypeScriptCompile Include="akra\ui\CheckboxList.ts" />
+    <TypeScriptCompile Include="akra\ui\CodeEditor.ts" />
+    <TypeScriptCompile Include="akra\ui\Component.ts" />
+    <TypeScriptCompile Include="akra\ui\DNDNode.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\ConnectionArea.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\Connector.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\Controls.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\Graph.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\MouseConnector.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\Node.ts" />
+    <TypeScriptCompile Include="akra\ui\graph\Route.ts" />
+    <TypeScriptCompile Include="akra\ui\Horizontal.ts" />
+    <TypeScriptCompile Include="akra\ui\HTMLNode.ts" />
+    <TypeScriptCompile Include="akra\ui\IDE.ts" />
+    <TypeScriptCompile Include="akra\ui\Inspector.ts" />
+    <TypeScriptCompile Include="akra\ui\Label.ts" />
+    <TypeScriptCompile Include="akra\ui\Layout.ts" />
+    <TypeScriptCompile Include="akra\ui\light\Properties.ts" />
+    <TypeScriptCompile Include="akra\ui\ListenerEditor.ts" />
+    <TypeScriptCompile Include="akra\ui\Material.ts" />
+    <TypeScriptCompile Include="akra\ui\Menu.ts" />
+    <TypeScriptCompile Include="akra\ui\model\MeshProperties.ts" />
+    <TypeScriptCompile Include="akra\ui\model\MeshSubsetProperties.ts" />
+    <TypeScriptCompile Include="akra\ui\Node.ts" />
+    <TypeScriptCompile Include="akra\ui\Panel.ts" />
+    <TypeScriptCompile Include="akra\ui\Popup.ts" />
+    <TypeScriptCompile Include="akra\ui\RenderTargetStats.ts" />
+    <TypeScriptCompile Include="akra\ui\resource\Properties.ts" />
+    <TypeScriptCompile Include="akra\ui\scene\Events.ts" />
+    <TypeScriptCompile Include="akra\ui\scene\Model.ts" />
+    <TypeScriptCompile Include="akra\ui\scene\Tree.ts" />
+    <TypeScriptCompile Include="akra\ui\Slider.ts" />
+    <TypeScriptCompile Include="akra\ui\Switch.ts" />
+    <TypeScriptCompile Include="akra\ui\Tabs.ts" />
+    <TypeScriptCompile Include="akra\ui\Tree.ts" />
+    <TypeScriptCompile Include="akra\ui\UI.ts" />
+    <TypeScriptCompile Include="akra\ui\Vector.ts" />
+    <TypeScriptCompile Include="akra\ui\Vertical.ts" />
+    <TypeScriptCompile Include="akra\ui\ViewportProperties.ts" />
+    <TypeScriptCompile Include="akra\ui\Window.ts" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>akra_ui</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>19738</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:19632/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
+</Project>

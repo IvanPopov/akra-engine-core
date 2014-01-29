@@ -1,5 +1,3 @@
-/// <reference path="../../../build/akra.d.ts" />
-
 /// <reference path="../idl/IUIComponent.ts" />
 
 /// <reference path="DNDNode.ts" />

@@ -14,7 +14,7 @@ module akra.addons {
 		var pSceneMgr: ISceneManager = pEngine.getSceneManager();
 		var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
 		var pGeneralScene: IScene3d = pEngine.getScene();
-		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+		var pRmgr: IResourcePoolManager = pEngine.getResourceManager(); 
 
 		//scene with cube backend
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(config.data + "/models/ocube/cube.DAE", {shadows: false});

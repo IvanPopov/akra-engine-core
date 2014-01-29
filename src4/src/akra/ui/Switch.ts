@@ -1,6 +1,3 @@
-/// <reference path="../../../build/akra.d.ts" />
-
-
 /// <reference path="../idl/IUISwitch.ts" />
 /// <reference path="Component.ts" />
 
