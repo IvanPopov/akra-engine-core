@@ -46,7 +46,7 @@ var akra;
         pOmniLight.getParams().diffuse.set(0.5);
         pOmniLight.getParams().specular.set(1, 1, 1, 1);
         pOmniLight.getParams().attenuation.set(1, 0, 0);
-        pOmniLight.setIsShadowCaster(false);
+        pOmniLight.setShadowCaster(false);
 
         pOmniLight.addPosition(1, 5, 3);
     }

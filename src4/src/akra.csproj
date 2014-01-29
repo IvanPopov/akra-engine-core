@@ -24,8 +24,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="akra\import\Importer.ts" />
-    <None Include="akra\export\Exporter.ts" />
+    <None Include="akra\exchange\Importer.ts" />
+    <None Include="akra\exchange\Exporter.ts" />
     <None Include="akra\animation\Clip.ts" />
     <None Include="akra\pool\resources\HardwareBuffer.ts" />
     <None Include="akra\pixelUtil\DDSCodec.ts" />

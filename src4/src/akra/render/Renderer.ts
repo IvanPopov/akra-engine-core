@@ -73,6 +73,8 @@ module  akra.render {
 		protected _bLockRenderTarget: boolean = false;
 
 		constructor(pEngine: IEngine) {
+			this.setupSignals();
+
 			this._pEngine = pEngine;
 
 			pEngine.active.connect(this.active);

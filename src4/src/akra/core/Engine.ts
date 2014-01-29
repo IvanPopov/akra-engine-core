@@ -67,14 +67,6 @@ module akra.core {
 
 		private _fElapsedAppTime: float = 0.0;
 
-		getTime(): float {
-			return this._pTimer.getAppTime();
-		}
-
-		getElapsedTime(): float {
-			return this._fElapsedAppTime;
-		}
-
 		constructor(pOptions: IEngineOptions = null) {
 			this.setupSignals();
 
@@ -123,6 +115,16 @@ module akra.core {
 			this.inactive.setForerunner(this._inactivate);
 			this.active.setForerunner(this._activate);
 		}
+
+
+		getTime(): float {
+			return this._pTimer.getAppTime();
+		}
+
+		getElapsedTime(): float {
+			return this._fElapsedAppTime;
+		}
+
 
 		enableGamepads(): boolean {
 			if (!isNull(this._pGamepads)) {

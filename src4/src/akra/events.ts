@@ -50,7 +50,7 @@ module akra {
 
 		/** @param fn Must be method of signal sender */
 		public setForerunner(fn: Function): void {
-			debug.assert(this.isMethodExistsInSenderPrototype(fn), "Callback must be a part of sender proto.");
+			//debug.assert(this.isMethodExistsInSenderPrototype(fn), "Callback must be a part of sender proto.");
 			this._fnForerunnerTrigger = fn;
 		}
 
@@ -322,8 +322,8 @@ module akra {
 				return null;
 			}
 
-			debug.assert(!isNull(pSignal) || this.isMethodExistsInSenderPrototype(fnCallback),
-				"Callback must be a part of sender proto.");
+			// debug.assert(!isNull(pSignal) || this.isMethodExistsInSenderPrototype(fnCallback),
+			// 	"Callback must be a part of sender proto.");
 
 			var pListener: IListener<T> = this.getEmptyListener();
 			pListener.reciever = pReciever;

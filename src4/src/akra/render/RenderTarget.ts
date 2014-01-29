@@ -62,7 +62,7 @@ module akra.render {
 		private _i3DEvents: int = 0;
 
 		constructor(pRenderer: IRenderer) {
-			this.setupSignals
+			this.setupSignals();
 			this._pRenderer = pRenderer;
 			this._pTimer = pRenderer.getEngine().getTimer();
 			this._pFrameStats = {

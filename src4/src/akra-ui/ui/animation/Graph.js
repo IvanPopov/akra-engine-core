@@ -1,4 +1,4 @@
-/// <reference path="../../../../build/addons/filedrop.addon.d.ts" />
+﻿/// <reference path="../../../../build/addons/filedrop.addon.d.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -82,7 +82,7 @@ var akra;
                             }
 
                             if (sExt == "JSON") {
-                                var pImporter = new akra.import.Importer(akra.ui.ide.getEngine());
+                                var pImporter = new akra.exchange.Importer(akra.ui.ide.getEngine());
                                 pImporter.import(content);
                                 _this.createNodeByController(pImporter.getController());
                             }

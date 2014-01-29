@@ -80,7 +80,7 @@ module akra.ui.animation {
 					}
 
 					if (sExt == "JSON") {
-						var pImporter = new akra.import.Importer(ide.getEngine());
+						var pImporter = new exchange.Importer(ide.getEngine());
 						pImporter.import(content);
 						this.createNodeByController(pImporter.getController());
 

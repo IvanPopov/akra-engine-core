@@ -60,8 +60,8 @@ module akra.ui.animation {
 			return new Mask(this.graph);
 		}
 
-		protected createExporter(): akra.export.Exporter {
-			var pExporter = new akra.export.Exporter;
+		protected createExporter(): akra.exchange.Exporter {
+			var pExporter = new akra.exchange.Exporter;
 			var pController = this.graph.getController();
 			var pGraphOffset = this.graph.getElement().offset();
 

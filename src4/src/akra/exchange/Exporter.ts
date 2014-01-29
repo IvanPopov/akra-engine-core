@@ -13,7 +13,7 @@
 /// <reference path="../io/io.ts" />
 /// <reference path="../info/info.ts" />
 
-module akra.export {
+module akra.exchange {
 
 	export class Exporter {
 		static VERSION = "0.0.1";

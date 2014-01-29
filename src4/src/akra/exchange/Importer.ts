@@ -15,7 +15,7 @@
 /// <reference path="../animation/Blend.ts" />
 /// <reference path="../animation/Container.ts" />
 
-module akra.import {
+module akra.exchange {
 	import Mat4 = math.Mat4;
 
 	export class Importer {
