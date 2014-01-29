@@ -27,6 +27,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-tslint');
     grunt.loadNpmTasks('grunt-gjslint');
 
+    require('time-grunt')(grunt);
 
     //TODO: util.getVersion() from package.json
     var VERSION = {
@@ -50,13 +51,43 @@ module.exports = function (grunt) {
                 src: files.akraCore,
                 dest: "build/akra.js",
                 options: {
-                    target: "es5",
+                    target: "es3",
                     //module: "commonjs",
                     removeComments: false,
                     //sourceMap: true,
-                    //propagateEnumConstants: true
+                    propagateEnumConstants: true
                 }
-            }
+            },
+            ui: {
+                src: files.akraUI,
+                dest: "build/akra-ui.js",
+                options: {
+                    target: "es3",
+                    removeComments: false,
+                    //sourceMap: true,
+                    propagateEnumConstants: true
+                }
+            },
+            //addons: {
+                "addon-navigation": {
+                    src: files.akraAddons.navigation,
+                    dest: "build/addons/navigation.addon.js",
+                    options: {
+                        target: "es3",
+                        removeComments: true,
+                        propagateEnumConstants: true
+                    }
+                },
+                "addon-filedrop": {
+                    src: files.akraAddons.filedrop,
+                    dest: "build/addons/filedrop.addon.js",
+                    options: {
+                        target: "es3",
+                        removeComments: true,
+                        propagateEnumConstants: true
+                    }
+                }
+            //}
         },
         clean: {
             build: {
@@ -93,8 +124,15 @@ module.exports = function (grunt) {
         }
     });
 
+    var target = grunt.option('module') || 'core';
+    grunt.registerTask("compile", ["build:" + target]);
+
+    grunt.registerTask('decl', 'Build declaration.', function(n) {
+      grunt.config("build." + target + ".options.declaration", true);
+      grunt.task.run("compile");
+    });
+
     grunt.registerTask("lint", ["tslint"]);
-    grunt.registerTask("compile", ["build:core"]);
     grunt.registerTask("default", ["compile"]);
     //grunt.registerTask("build", ["compile", "concat", "uglify"]);
     //grunt.registerTask("generate", ["compile", "build", "copy:public"]);

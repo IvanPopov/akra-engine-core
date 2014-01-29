@@ -27,11 +27,21 @@ module akra.scene.light {
 		protected _pLightParameters: IOmniParameters = new OmniParameters;
 		protected _pShadowCasterCube: IShadowCaster[] = null;
 
+		constructor(pScene: IScene3d) {
+			super(pScene, ELightTypes.OMNI);
+
+			this._pShadowCasterCube = new Array(6);
+
+			for (var i: int = 0; i < 6; i++) {
+				this._pShadowCasterCube[i] = pScene._createShadowCaster(this, i);
+			}
+		}
+
 		getParams(): IOmniParameters {
 			return this._pLightParameters;
 		}
 
-		getIsShadowCaster(): boolean {
+		isShadowCaster(): boolean {
 			return this._isShadowCaster;
 		}
 
@@ -39,7 +49,7 @@ module akra.scene.light {
 		 * overridden setter isShadow caster,
 		 * if depth textures don't created then create depth textures
 		 */
-		setIsShadowCaster(bValue: boolean): void {
+		setShadowCaster(bValue: boolean): void {
 			this._isShadowCaster = bValue;
 			if (bValue && isNull(this._pDepthTextureCube)) {
 				this.initializeTextures();
@@ -68,16 +78,6 @@ module akra.scene.light {
 
 		getShadowCaster(): IShadowCaster[] {
 			return this._pShadowCasterCube;
-		}
-
-		constructor(pScene: IScene3d) {
-			super(pScene, ELightTypes.OMNI);
-
-			this._pShadowCasterCube = new Array(6);
-
-			for (var i: int = 0; i < 6; i++) {
-				this._pShadowCasterCube[i] = pScene._createShadowCaster(this, i);
-			}
 		}
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
@@ -142,7 +142,7 @@ module akra.scene.light {
 					0, 0, 0, 1
 				]));
 
-			if (this.getIsShadowCaster()) {
+			if (this.isShadowCaster()) {
 				this.initializeTextures();
 			}
 
@@ -186,7 +186,7 @@ module akra.scene.light {
 		}
 
 		_calculateShadows(): void {
-			if (this.getEnabled() && this.getIsShadowCaster()) {
+			if (this.isEnabled() && this.isShadowCaster()) {
 				for (var i: uint = 0; i < 6; i++) {
 					this.getRenderTarget(i).update();
 					// this.getRenderTarget(i).getRenderer()._setViewport(this.getRenderTarget(i).getViewport(0));
@@ -196,7 +196,7 @@ module akra.scene.light {
 		}
 
 		_prepareForLighting(pCamera: ICamera): boolean {
-			if (!this.getEnabled()) {
+			if (!this.isEnabled()) {
 				return false;
 			}
 			else {
@@ -214,7 +214,7 @@ module akra.scene.light {
 				/*************************************************************/
 
 				var haveInfluence: boolean = false;
-				if (!this.getIsShadowCaster()) {
+				if (!this.isShadowCaster()) {
 					for (var i = 0; i < 6; i++) {
 						var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera, i);
 						if (pResult.getLength() !== 0) {

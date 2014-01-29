@@ -27,7 +27,7 @@ module akra.scene.light {
 			return this._pOptimizedCameraFrustum;
 		}
 
-		getEnabled(): boolean {
+		isEnabled(): boolean {
 			return this._isEnabled;
 		}
 
@@ -35,11 +35,11 @@ module akra.scene.light {
 			this._isEnabled = bValue;
 		}
 
-		getIsShadowCaster(): boolean {
+		isShadowCaster(): boolean {
 			return this._isShadowCaster;
 		}
 
-		setIsShadowCaster(bValue: boolean): void {
+		setShadowCaster(bValue: boolean): void {
 			this._isShadowCaster = bValue;
 		}
 

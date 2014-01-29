@@ -20,7 +20,7 @@ module akra.render {
 
 
 	//NOTE: This signal is not called directly from the viewport, call derives from render technique.
-	export class RenderSignal
+	class RenderSignal
 		extends Signal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
@@ -213,27 +213,27 @@ module akra.render {
 	export class Viewport implements IViewport {
 		guid: uint = guid();
 
-		viewportDimensionsChanged: ISignal<{ (pViewport: IViewport): void; }> = new Signal(<any>this);
-		viewportCameraChanged: ISignal<{ (pViewport: IViewport): void; }> = new Signal(<any>this);
+		viewportDimensionsChanged: ISignal<{ (pViewport: IViewport): void; }>;
+		viewportCameraChanged: ISignal<{ (pViewport: IViewport): void; }>;
 
 		render: ISignal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}> = new RenderSignal(<any>this);
+		}>;
 
-		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(<any>this);
-		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(<any>this);
-		dragging: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DraggingSignal(<any>this);
+		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragging: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }>;
 
-		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new ClickSignal(<any>this);
-		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new MousemoveSignal(<any>this);
+		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }>;
+		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }>;
 
-		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(<any>this);
-		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MouseupSignal(<any>this);
+		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }>;
 
-		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoverSignal(<any>this);
-		mouseout: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoutSignal(<any>this);
-		mousewheel: ISignal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }> = new MousewheelSignal(<any>this);
+		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }>;
+		mouseout: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }>;
+		mousewheel: ISignal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }>;
 
 		protected _pCamera: ICamera = null;
 		protected _pTarget: IRenderTarget = null;
@@ -288,6 +288,46 @@ module akra.render {
 		private _p3DEventPickLast: IRIDPair = { object: null, renderable: null }
 		private _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
 
+		/**
+		 * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
+		 */
+		constructor(pCamera: ICamera, csRenderMethod: string = null,
+			fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
+			this.setupSignals();
+
+			this._fRelLeft = fLeft;
+			this._fRelTop = fTop;
+			this._fRelWidth = fWidth;
+			this._fRelHeight = fHeight;
+
+			this._iZIndex = iZIndex;
+
+			this._csDefaultRenderMethod = csRenderMethod;
+
+			this._setCamera(pCamera);
+		}
+
+		protected setupSignals(): void {
+			this.viewportDimensionsChanged = this.viewportDimensionsChanged || new Signal(<any>this);
+			this.viewportCameraChanged = this.viewportCameraChanged || new Signal(<any>this);
+
+			this.render = this.render || new RenderSignal(<any>this);
+
+			this.dragstart = this.dragstart || new DragstartSignal(<any>this);
+			this.dragstop = this.dragstop || new DragstopSignal(<any>this);
+			this.dragging = this.dragging || new DraggingSignal(<any>this);
+
+			this.click = this.click || new ClickSignal(<any>this);
+			this.mousemove = this.mousemove || new MousemoveSignal(<any>this);
+
+			this.mousedown = this.mousedown || new MousedownSignal(<any>this);
+			this.mouseup = this.mouseup || new MouseupSignal(<any>this);
+
+			this.mouseover = this.mouseover || new MouseoverSignal(<any>this);
+			this.mouseout = this.mouseout || new MouseoutSignal(<any>this);
+			this.mousewheel = this.mousewheel || new MousewheelSignal(<any>this);
+		}
+
 		getLeft(): float {
 			return this._fRelLeft;
 		}
@@ -326,7 +366,7 @@ module akra.render {
 
 		getType(): EViewportTypes {
 			return EViewportTypes.DEFAULT;
-		}	
+		}
 
 		getBackgroundColor(): IColor {
 			return this._pViewportState.clearColor;
@@ -343,24 +383,7 @@ module akra.render {
 		setDepthClear(fDepthClearValue: float): void {
 			this._pViewportState.clearDepth = fDepthClearValue;
 		}
-	
-		/**
-		 * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
-		 */ 
-		constructor(pCamera: ICamera, csRenderMethod: string = null,
-			fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 
-			this._fRelLeft = fLeft;
-			this._fRelTop = fTop;
-			this._fRelWidth = fWidth;
-			this._fRelHeight = fHeight;
-
-			this._iZIndex = iZIndex;
-
-			this._csDefaultRenderMethod = csRenderMethod;
-
-			this._setCamera(pCamera);
-		}
 
 		destroy(): void {
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
@@ -812,5 +835,22 @@ module akra.render {
 		_get3DEventDragTarget(): IRIDPair {
 			return this._p3DEventDragTarget;
 		}
+
+		static RenderSignal = <any>RenderSignal;
+
+		static DraggingSignal = <typeof Signal><any>DraggingSignal;
+		static DragstartSignal = <typeof Signal><any>DragstartSignal;
+		static DragstopSignal = <typeof Signal><any>DragstopSignal;
+
+		static MousedownSignal = <typeof Signal><any>MousedownSignal;
+		static MouseupSignal = <typeof Signal><any>MouseupSignal;
+
+		static MouseoverSignal = <typeof Signal><any>MouseoverSignal;
+		static MouseoutSignal = <typeof Signal><any>MouseoutSignal;
+
+		static MousewheelSignal = <typeof Signal><any>MousewheelSignal;
+		static MousemoveSignal = <typeof Signal><any>MousemoveSignal;
+
+		static ClickSignal = <typeof Signal><any>ClickSignal;
 	}
 }

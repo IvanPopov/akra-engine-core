@@ -28,7 +28,7 @@ module akra.terrain {
 	export class MegaTexture implements IMegaTexture {
 		public guid: uint = guid();
 
-		protected minLevelLoaded: ISignal<{ (pMegaTexture: IMegaTexture): void; }> = new Signal(<any>this);
+		protected minLevelLoaded: ISignal<{ (pMegaTexture: IMegaTexture): void; }>;
 
 		private _pEngine: IEngine = null;
 		// private _pDevice = null;
@@ -85,16 +85,21 @@ module akra.terrain {
 
 		private _bStreaming: boolean = false;
 
+		constructor(pEngine: IEngine) {
+			this.setupSignals();
+			this._pEngine = pEngine;
+		}
+
+		protected setupSignals(): void {
+			this.minLevelLoaded = this.minLevelLoaded || new Signal(<any>this);
+		}
+
 		getManualMinLevelLoad(): boolean {
 			return this._bManualMinLevelLoad;
 		}
 
 		setManualMinLevelLoad(bManual: boolean): void {
 			this._bManualMinLevelLoad = bManual;
-		}
-
-		constructor(pEngine: IEngine) {
-			this._pEngine = pEngine;
 		}
 
 		init(pObject: ISceneObject, sSurfaceTextures: string): void {

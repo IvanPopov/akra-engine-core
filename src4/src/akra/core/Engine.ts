@@ -33,20 +33,14 @@
 /// <reference path="../webgl/WebGLRenderer.ts" />
 // #endif
 
-// #ifdef GUI
-///// <reference path="../ui/UI.ts" />
-///// <reference path="../ui/IDE.ts" />
-// #endif
-
-
 module akra.core {
 	export class Engine implements IEngine {
 
-		frameStarted: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
-		frameEnded: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
-		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }> = new Signal(<any>this);
-		inactive: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivate);
-		active: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._activate);
+		frameStarted: ISignal<{ (pEngine: IEngine): void; }>;
+		frameEnded: ISignal<{ (pEngine: IEngine): void; }>;
+		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }>;
+		inactive: ISignal<{ (pEngine: IEngine): void; }>;
+		active: ISignal<{ (pEngine: IEngine): void; }>;
 
 		public guid: uint = guid();
 
@@ -73,16 +67,11 @@ module akra.core {
 
 		private _fElapsedAppTime: float = 0.0;
 
-		getTime(): float {
-			return this._pTimer.getAppTime();
-		}
+		constructor(pOptions: IEngineOptions = null) {
+			this.setupSignals();
 
-		getElapsedTime(): float {
-			return this._fElapsedAppTime;
-		}
-
-		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
+
 			if (!this._pResourceManager.initialize()) {
 				debug.error('cannot initialize ResourcePoolManager');
 			}
@@ -95,7 +84,7 @@ module akra.core {
 
 			this._pParticleManager = null;
 			this._pSpriteManager = new scene.SpriteManager(this);
-			this._pTimer = util.UtilTimer.start(); 
+			this._pTimer = util.UtilTimer.start();
 
 			if (config.WEBGL) {
 				var pRendererOptions: IRendererOptions = pOptions ? pOptions.renderer : null;
@@ -109,12 +98,33 @@ module akra.core {
 
 			// Register image codecs
 			pixelUtil.DDSCodec.startup();
-			
-			
+
+
 			this.pause(false);
 
 			this.parseOptions(pOptions);
 		}
+
+		protected setupSignals(): void {
+			this.frameStarted = this.frameStarted || new Signal(<any>this);
+			this.frameEnded = this.frameEnded || new Signal(<any>this);
+			this.depsLoaded = this.depsLoaded || new Signal(<any>this);
+			this.inactive = this.inactive || new Signal(<any>this);
+			this.active = this.active || new Signal(<any>this);
+
+			this.inactive.setForerunner(this._inactivate);
+			this.active.setForerunner(this._activate);
+		}
+
+
+		getTime(): float {
+			return this._pTimer.getAppTime();
+		}
+
+		getElapsedTime(): float {
+			return this._fElapsedAppTime;
+		}
+
 
 		enableGamepads(): boolean {
 			if (!isNull(this._pGamepads)) {
@@ -122,12 +132,12 @@ module akra.core {
 			}
 
 			var pGamepads: IGamepadMap = control.createGamepadMap();
-			
+
 			if (pGamepads.init()) {
 				this._pGamepads = pGamepads;
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -141,7 +151,7 @@ module akra.core {
 
 		private parseOptions(pOptions: IEngineOptions): void {
 			//== Depends Managment ====================================
-			
+
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
 
@@ -152,7 +162,7 @@ module akra.core {
 					}
 					debug.log("[ALL DEPTS LOADED]");
 					this._isDepsLoaded = true;
-					
+
 					this.depsLoaded.emit(pDep);
 				},
 				(pDep: IDep, pProgress: any): void => {
@@ -200,7 +210,7 @@ module akra.core {
 		getComposer(): IAFXComposer {
 			return this._pComposer;
 		}
-	
+
 		isActive(): boolean {
 			return this._isActive;
 		}
@@ -215,91 +225,91 @@ module akra.core {
 
 			logger.assert(!isNull(pRenderer));
 
-	        pRenderer._initRenderTargets();
+			pRenderer._initRenderTargets();
 
-	        // Infinite loop, until broken out of by frame listeners
-	        // or break out by calling queueEndRendering()
-	        bValue? this.active.emit(): this.inactive.emit();	        
+			// Infinite loop, until broken out of by frame listeners
+			// or break out by calling queueEndRendering()
+			bValue ? this.active.emit() : this.inactive.emit();
 
-	        function render(iTime: uint): void {
+			function render(iTime: uint): void {
 				if (config.DEBUG && !pRenderer.isValid()) {
 					logger.error(pRenderer.getError());
 				}
 
-	        	if (pEngine.isActive() && pEngine.isDepsLoaded()) {
+				if (pEngine.isActive() && pEngine.isDepsLoaded()) {
 					if (!pEngine.renderFrame()) {
-		                debug.error("Engine::exec() error.");
-		                return;
-		            }
-	            }
+						debug.error("Engine::exec() error.");
+						return;
+					}
+				}
 
-	            requestAnimationFrame(render); 
-	        } 
+				requestAnimationFrame(render);
+			}
 
-	        render(0);
+			render(0);
 		}
 
 		getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): boolean {
-		    this._fElapsedAppTime = this._pTimer.getElapsedTime();
+			this._fElapsedAppTime = this._pTimer.getElapsedTime();
 
-		    if (0. == this._fElapsedAppTime && this._isFrameMoving) {
-		        return true;
-		    }
+			if (0. == this._fElapsedAppTime && this._isFrameMoving) {
+				return true;
+			}
 
-		    // FrameMove (animate) the scene
-		    if (this._isFrameMoving) {
-		    	if (!isNull(this._pGamepads)) {
-		    		this._pGamepads.update();
-		    	}
-		    	this._pSceneManager.update();
-		    }
+			// FrameMove (animate) the scene
+			if (this._isFrameMoving) {
+				if (!isNull(this._pGamepads)) {
+					this._pGamepads.update();
+				}
+				this._pSceneManager.update();
+			}
 
-	        // Render the scene as normal
-	    	this.frameStarted.emit();
-		    this._pRenderer._updateAllRenderTargets();
-		    this.frameEnded.emit();
+			// Render the scene as normal
+			this.frameStarted.emit();
+			this._pRenderer._updateAllRenderTargets();
+			this.frameEnded.emit();
 
-		    // this._pSceneManager.preUpdate();
+			// this._pSceneManager.preUpdate();
 
-		    // LOG("frame rendered();");
+			// LOG("frame rendered();");
 			return true;
 		}
 
 		play(): boolean {
-			if (!this.isActive()) { 
+			if (!this.isActive()) {
 				this._iAppPausedCount = 0;
 				this.active.emit();
 
 				if (this._isFrameMoving) {
-		            this._pTimer.start();
-		        }
-	        }
+					this._pTimer.start();
+				}
+			}
 
-	        return this.isActive();
+			return this.isActive();
 		}
 
 		pause(isPause: boolean = false): boolean {
-			this._iAppPausedCount += ( isPause ? +1 : -1 );
-		   (this._iAppPausedCount ? this.inactive.emit() : this.active.emit());
+			this._iAppPausedCount += (isPause ? +1 : -1);
+			(this._iAppPausedCount ? this.inactive.emit() : this.active.emit());
 
-		    // Handle the first pause request (of many, nestable pause requests)
-		    if (isPause && ( 1 == this._iAppPausedCount )) {
-		        // Stop the scene from animating
-		        if (this._isFrameMoving) {
-		            this._pTimer.stop();
-		        }
-		    }
+			// Handle the first pause request (of many, nestable pause requests)
+			if (isPause && (1 == this._iAppPausedCount)) {
+				// Stop the scene from animating
+				if (this._isFrameMoving) {
+					this._pTimer.stop();
+				}
+			}
 
-		    if (0 == this._iAppPausedCount) {
-		        // Restart the timers
-		        if (this._isFrameMoving) {
-		            this._pTimer.start();
-		        }
-		    }
+			if (0 == this._iAppPausedCount) {
+				// Restart the timers
+				if (this._isFrameMoving) {
+					this._pTimer.start();
+				}
+			}
 
-		    return !this.isActive();
+			return !this.isActive();
 		}
 
 		createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
@@ -343,7 +353,7 @@ module akra.core {
 			}
 
 			if (isString(pData)) {
-				pDeps.files = [{path: pData}];
+				pDeps.files = [{ path: pData }];
 			}
 			else {
 				pDeps.deps = pData;
@@ -351,52 +361,52 @@ module akra.core {
 		}
 
 		static DEPS_ROOT: string = config.data;
-		static DEPS: IDependens = 
-			//RELEASE
-			//engine core dependences
-			{
+		static DEPS: IDependens =
+		//RELEASE
+		//engine core dependences
+		{
+			files: [
+				{ path: "grammars/HLSL.gr" }
+				//{
+				//	path: "../../../src2/data/core.map", 
+				//	type: "map",
+				//	name: "core resources" 
+				//}
+			],
+			deps: {
 				files: [
-					{ path: "grammars/HLSL.gr" }
-					//{
-					//	path: "../../../src2/data/core.map", 
-					//	type: "map",
-					//	name: "core resources" 
-					//}
+					{ path: "effects/SystemEffects.afx" },
+					{ path: "effects/Plane.afx" },
+					{ path: "effects/fxaa.afx" },
+					{ path: "effects/skybox.afx" },
+					{ path: "effects/TextureToScreen.afx" },
+					{ path: "effects/mesh_geometry.afx" },
+					{ path: "effects/prepare_shadows.afx" },
+					{ path: "effects/terrain.afx" },
+					{ path: "effects/prepareDeferredShading.afx" },
+					{ path: "effects/generate_normal_map.afx" },
+					{ path: "effects/sky.afx" },
+					{ path: "effects/motion_blur.afx" },
+					{ path: "effects/edge_detection.afx" },
+					{ path: "effects/wireframe.afx" },
+					{ path: "effects/sprite.afx" }
 				],
 				deps: {
 					files: [
-						{ path: "effects/SystemEffects.afx" },
-						{ path: "effects/Plane.afx" },
-						{ path: "effects/fxaa.afx" },
-						{ path: "effects/skybox.afx" },
-						{ path: "effects/TextureToScreen.afx" },
-						{ path: "effects/mesh_geometry.afx" },
-						{ path: "effects/prepare_shadows.afx" },
-						{ path: "effects/terrain.afx" },
-						{ path: "effects/prepareDeferredShading.afx" },
-						{ path: "effects/generate_normal_map.afx" },
-						{ path: "effects/sky.afx" },
-						{ path: "effects/motion_blur.afx" },
-						{ path: "effects/edge_detection.afx" },
-						{ path: "effects/wireframe.afx" },
-						{ path: "effects/sprite.afx" }
+						{ path: "effects/mesh_texture.afx" },
+						{ path: "effects/deferredShading.afx" },
+						{ path: "effects/apply_lights_and_shadows.afx" }
 					],
 					deps: {
 						files: [
-							{ path: "effects/mesh_texture.afx" },
-							{ path: "effects/deferredShading.afx" },
-							{ path: "effects/apply_lights_and_shadows.afx" }
-						],
-						deps: {
-							files: [
-								{ path: "effects/color_maps.afx" }
-							]
-						}
+							{ path: "effects/color_maps.afx" }
+						]
 					}
-				},
-				root: "../../../src2/data/"
-			};			
-			
+				}
+			},
+			root: "../../../src2/data/"
+		};
+
 
 	}
 

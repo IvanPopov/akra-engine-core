@@ -22,10 +22,10 @@ module akra.data {
 	export class VertexData implements IVertexData {
 		guid: uint = guid();
 			  
-		resized: ISignal<{ (pData: IVertexData, iByteLength: uint): void; }> = new Signal(<any>this);
-		relocated: ISignal<{ (pData: IVertexData, iFrom: uint, iTo: uint): void; }> = new Signal(<any>this);
-		declarationChanged: ISignal<{ (pData: IVertexData, pDecl: IVertexDeclaration): void; }> = new Signal(<any>this);
-		updated: ISignal<{ (pData: IVertexData): void; }> = new Signal(<any>this);
+		resized: ISignal<{ (pData: IVertexData, iByteLength: uint): void; }>;
+		relocated: ISignal<{ (pData: IVertexData, iFrom: uint, iTo: uint): void; }>;
+		declarationChanged: ISignal<{ (pData: IVertexData, pDecl: IVertexDeclaration): void; }>;
+		updated: ISignal<{ (pData: IVertexData): void; }>;
 
 		private _pVertexBuffer: IVertexBuffer;
 		private _iOffset: uint;
@@ -68,6 +68,7 @@ module akra.data {
 		constructor(pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, nSize: uint);
 		constructor(pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: IVertexDeclaration);
 		constructor(pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: any) {
+			this.setupSignals();
 
 			this._pVertexBuffer = pVertexBuffer;
 			this._iOffset = iOffset;
@@ -86,6 +87,13 @@ module akra.data {
 
 			logger.assert(pVertexBuffer.getByteLength() >= this.getByteLength() + this.getByteOffset(),
 				"vertex data out of array limits");
+		}
+
+		protected setupSignals(): void {
+			this.resized = this.resized || new Signal(<any>this);
+			this.relocated = this.relocated || new Signal(<any>this);
+			this.declarationChanged = this.declarationChanged || new Signal(<any>this);
+			this.updated = this.updated || new Signal(<any>this);
 		}
 
 

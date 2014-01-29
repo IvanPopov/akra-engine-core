@@ -14,8 +14,8 @@ module akra {
 		getOptimizedProjection(): IMat4;
 
 		/** casted shadows in the last frame*/
-		getIsShadowCasted(): boolean;
-		setIsShadowCasted(bValue: boolean): void;
+		isShadowCasted(): boolean;
+		setShadowCasted(bValue: boolean): void;
 
 		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum): void;
 	}

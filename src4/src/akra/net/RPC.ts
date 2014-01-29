@@ -50,8 +50,8 @@ module akra.net {
 	class RPC implements IRPC {
 		guid: uint = guid();
 
-		joined: ISignal<{ (pRpc: IRPC): void; }> = new Signal(<any>this);
-		error: ISignal<{ (pRpc: IRPC, e: Error): void; }> = new Signal(<any>this);
+		joined: ISignal<{ (pRpc: IRPC): void; }>;
+		error: ISignal<{ (pRpc: IRPC, e: Error): void; }>;
 
 		protected _pOption: IRPCOptions;
 
@@ -85,6 +85,8 @@ module akra.net {
 
 		constructor(sAddr?: string, pOption?: IRPCOptions);
 		constructor(pAddr: any = null, pOption: IRPCOptions = {}) {
+			this.setupSignals();
+
 			for (var i in OPTIONS) {
 				if (!isDef(pOption[i])) {
 					pOption[i] = OPTIONS[i];
@@ -116,6 +118,11 @@ module akra.net {
 			if (isDefAndNotNull(pAddr)) {
 				this.join(<string>pAddr);
 			}
+		}
+
+		protected setupSignals(): void {
+			this.joined = this.joined || new Signal(<any>this);
+			this.error = this.error || new Signal(<any>this);
 		}
 
 		join(sAddr: string = null): void {

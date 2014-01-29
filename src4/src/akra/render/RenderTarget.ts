@@ -20,17 +20,17 @@ module akra.render {
 	export class RenderTarget implements IRenderTarget {
 		guid: uint = guid();
 
-		preUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(<any>this);
-		postUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(<any>this);
+		preUpdate: ISignal<{ (pTarget: IRenderTarget): void; }>;
+		postUpdate: ISignal<{ (pTarget: IRenderTarget): void; }>;
 
-		viewportPreUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
-		viewportPostUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
-		viewportAdded: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
-		viewportRemoved: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
+		viewportPreUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }>;
+		viewportPostUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }>;
+		viewportAdded: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }>;
+		viewportRemoved: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }>;
 
-		resized: ISignal<{ (pTarget: IRenderTarget, iWidth: uint, iHeight: uint): void; }> = new Signal(<any>this);
+		resized: ISignal<{ (pTarget: IRenderTarget, iWidth: uint, iHeight: uint): void; }>;
 
-		cameraRemoved: ISignal<{ (pTarget: IRenderTarget, pCamera: ICamera): void; }> = new Signal(<any>this);
+		cameraRemoved: ISignal<{ (pTarget: IRenderTarget, pCamera: ICamera): void; }>;
 
 		protected _sName: string;
 		protected _pRenderer: IRenderer;
@@ -60,6 +60,40 @@ module akra.render {
 
 		//3d event handing
 		private _i3DEvents: int = 0;
+
+		constructor(pRenderer: IRenderer) {
+			this.setupSignals();
+			this._pRenderer = pRenderer;
+			this._pTimer = pRenderer.getEngine().getTimer();
+			this._pFrameStats = {
+				fps: {
+					last: 0.,
+					avg: 0.,
+					best: 0.,
+					worst: 0.
+				},
+				time: {
+					best: 0.,
+					worst: 0.
+				},
+				polygonsCount: 0
+			}
+
+			this.resetStatistics();
+		}
+
+		protected setupSignals(): void {
+			this.preUpdate = this.preUpdate || new Signal(<any>this);
+			this.postUpdate = this.postUpdate || new Signal(<any>this);
+			
+			this.viewportPreUpdate = this.viewportPreUpdate || new Signal(<any>this);
+			this.viewportPostUpdate = this.viewportPostUpdate || new Signal(<any>this);
+			this.viewportAdded = this.viewportAdded || new Signal(<any>this);
+			this.viewportRemoved = this.viewportRemoved || new Signal(<any>this);
+
+			this.resized = this.resized || new Signal(<any>this);
+			this.cameraRemoved = this.cameraRemoved || new Signal(<any>this);
+		}
 
 		getWidth(): uint {
 			return this._iWidth;
@@ -91,25 +125,6 @@ module akra.render {
 
 		setName(sName: string) {
 			this._sName = sName;
-		}
-
-		constructor(pRenderer: IRenderer) {
-			this._pRenderer = pRenderer;
-			this._pTimer = pRenderer.getEngine().getTimer();
-			this._pFrameStats = {
-				fps: {
-					last: 0.,
-					avg: 0.,
-					best: 0.,
-					worst: 0.
-				},
-				time: {
-					best: 0.,
-					worst: 0.
-				},
-				polygonsCount: 0
-			}
-			this.resetStatistics();
 		}
 
 		enableSupportFor3DEvent(iType: int): int {

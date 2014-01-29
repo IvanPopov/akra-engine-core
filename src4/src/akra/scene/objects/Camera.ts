@@ -50,8 +50,8 @@ module akra.scene.objects {
 	}
 
 	export class Camera extends SceneNode implements ICamera {
-		preRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(<any>this);		
-		postRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(<any>this);
+		preRenderScene: ISignal<{ (pCamera: ICamera): void; }>;
+		postRenderScene: ISignal<{ (pCamera: ICamera): void; }>;
 
 		/** camera type */
 		protected _eCameraType: ECameraTypes = ECameraTypes.PERSPECTIVE;
@@ -104,8 +104,16 @@ module akra.scene.objects {
 		protected _pDLTechniques: DLTechnique<ISceneObject>[] = [];
 		protected _pDLResultStorage: IObjectArray<ISceneObject>[] = [];
 
-		// protected _pPrevObjects: ISceneNode[] = null;
-		// protected _p
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
+			super(pScene, eType);
+		}
+
+		protected setupSignals(): void {
+			this.preRenderScene = this.preRenderScene || new Signal(<any>this);
+			this.postRenderScene = this.postRenderScene || new Signal(<any>this);
+
+			super.setupSignals();
+		}
 
 		getViewMatrix(): IMat4 {
 			return this._m4fView;
@@ -169,10 +177,6 @@ module akra.scene.objects {
 		setFarPlane(fFarPlane: float): void {
 			this._fFarPlane = fFarPlane;
 			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
-		}
-
-		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
-			super(pScene, eType);
 		}
 
 		create(): boolean {
@@ -239,8 +243,8 @@ module akra.scene.objects {
 		}
 
 		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray<ISceneObject> {
-			var pObjects: IObjectArray<ISceneObject> = this._pDLTechniques[iList].
-				findObjects(this._pDLResultStorage[iList], !this.isUpdated());
+			var pObjects: IObjectArray<ISceneObject> =
+				this._pDLTechniques[iList].findObjects(this._pDLResultStorage[iList], !this.isUpdated());
 
 			return pObjects;
 		}

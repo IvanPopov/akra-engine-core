@@ -18,18 +18,18 @@ module akra.render {
 	export class RenderableObject implements IRenderableObject {
 		guid: uint = guid();
 
-		shadowed: ISignal<{ (bValue: boolean): void; }> = new Signal(<any>this);
-		beforeRender: ISignal<{ (pViewport, pMethod): void; }> = new Signal(<any>this);
+		shadowed: ISignal<{ (bValue: boolean): void; }>;
+		beforeRender: ISignal<{ (pViewport, pMethod): void; }>;
 
-		click: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		mousemove: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		mousedown: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		mouseup: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		mouseover: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		mouseout: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		dragstart: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		dragstop: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
-		dragging: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }> = new Signal(<any>this);
+		click: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		mousemove: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		mousedown: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		mouseup: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		mouseover: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		mouseout: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		dragstart: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		dragstop: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		dragging: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 
 		protected _pRenderData: IRenderData = null;
 		protected _pRenderer: IRenderer;
@@ -40,6 +40,27 @@ module akra.render {
 		protected _bVisible: boolean = true;
 		protected _bFrozen: boolean = false;
 		protected _bWireframeOverlay: boolean = false;
+
+		constructor(eType: ERenderableTypes = ERenderableTypes.UNKNOWN) {
+			this.setupSignals();
+
+			this._eRenderableType = eType;
+		}
+
+		protected setupSignals(): void {
+			this.shadowed = this.shadowed || new Signal(<any>this);
+			this.beforeRender = this.beforeRender || new Signal(<any>this);
+
+			this.click = this.click || new Signal(<any>this);
+			this.mousemove = this.mousemove || new Signal(<any>this);
+			this.mousedown = this.mousedown || new Signal(<any>this);
+			this.mouseup = this.mouseup || new Signal(<any>this);
+			this.mouseover = this.mouseover || new Signal(<any>this);
+			this.mouseout = this.mouseout || new Signal(<any>this);
+			this.dragstart = this.dragstart || new Signal(<any>this);
+			this.dragstop = this.dragstop || new Signal(<any>this);
+			this.dragging = this.dragging || new Signal(<any>this);
+		}
 
 		getType(): ERenderableTypes {
 			return this._eRenderableType;
@@ -78,10 +99,6 @@ module akra.render {
 				this._bShadow = bShadow;
 				this.shadowed.emit(bShadow);
 			}
-		}
-
-		constructor(eType: ERenderableTypes = ERenderableTypes.UNKNOWN) {
-			this._eRenderableType = eType;
 		}
 
 		_setRenderData(pData: IRenderData): void {

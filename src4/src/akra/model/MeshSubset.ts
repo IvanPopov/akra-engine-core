@@ -19,7 +19,7 @@ module akra.model {
 	import VertexDeclaration = data.VertexDeclaration;
 
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
-		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }> = new Signal(<any>this);
+		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }>;
 
 		protected _sName: string = null;
 		protected _pMesh: IMesh = null;
@@ -52,6 +52,12 @@ module akra.model {
 		constructor(pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
 			super(ERenderableTypes.MESH_SUBSET);
 			this.setup(pMesh, pRenderData, sName);
+		}
+
+		protected setupSignals(): void {
+			this.skinAdded = this.skinAdded || new Signal(<any>this);
+
+			super.setupSignals();
 		}
 
 		protected setup(pMesh: IMesh, pRenderData: IRenderData, sName: string): void {
@@ -119,13 +125,6 @@ module akra.model {
 				this.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 
 				this.getData().index(iData, DeclUsages.INDEX0);
-
-				// this.applyFlexMaterial(".MaterialBoundingBox");
-
-				//       //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
-				// pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
-				// pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
-				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
 				this.getData()._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
@@ -207,12 +206,6 @@ module akra.model {
 
 				this.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 				this.getData().index(iData, DeclUsages.INDEX0);
-
-				// this.applyFlexMaterial(".MaterialBoundingSphere");
-
-				// pMaterial = this.getFlexMaterial(".MaterialBoundingSphere");
-				// pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
-				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
 				this.getData()._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
@@ -323,66 +316,6 @@ module akra.model {
 
 		isOptimizedSkinned(): boolean {
 			return this.isSkinned() && this._isOptimizedSkinned;
-		}
-
-		applyFlexMaterial(sMaterial: string, pMaterialData: IMaterial = null): boolean {
-			if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
-				return this.setFlexMaterial(sMaterial);
-			}
-
-			return false;
-		}
-
-		getFlexMaterial(csName: string): IMaterial;
-		getFlexMaterial(iMaterial: int): IMaterial;
-		getFlexMaterial(iMaterial): IMaterial {
-			return this._pMesh.getFlexMaterial(<int>iMaterial);
-		}
-
-		hasFlexMaterial(): boolean {
-			return this._pRenderData.hasSemantics(DeclUsages.MATERIAL);
-		}
-
-		setFlexMaterial(iMaterial: int): boolean;
-		setFlexMaterial(csName: string): boolean;
-		setFlexMaterial(iMaterial): boolean {
-			var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
-
-			if (isNull(pMaterial)) {
-				logger.warn("could not find material <" + iMaterial + "> in sub mesh <" + this.getName() + ">");
-				return false;
-			}
-
-			var pRenderData: IRenderData = this._pRenderData;
-			var pIndexData: IBufferData = pRenderData.getIndices();
-			var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
-			var eSemantics: string = DeclUsages.INDEX10;
-			var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
-			var iMatFlow: int;
-			var iMat: int = (<IFlexMaterial>pMaterial).data.getByteOffset();
-
-			if (pMatFlow) {
-				iMatFlow = pMatFlow.flow;
-				eSemantics = pMatFlow.mapper.semantics;
-				pIndexData = pMatFlow.mapper.data;
-
-				pRenderData._addData((<IFlexMaterial>pMaterial).data, iMatFlow);
-
-				return pRenderData.index(iMat, eSemantics, true);
-			}
-
-			pIndexDecl = VertexDeclaration.normalize([VE.float(eSemantics)]);
-			pFloatArray = new Float32Array((<IVertexData>pIndexData).getLength());
-			iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
-
-			debug.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
-
-			if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
-				logger.warn("cannot allocate index for material!!!");
-				return false;
-			}
-
-			return pRenderData.index(iMat, eSemantics, true);
 		}
 
 		_draw(): void {

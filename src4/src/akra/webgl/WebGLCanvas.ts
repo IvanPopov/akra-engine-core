@@ -16,17 +16,17 @@ module akra.webgl {
 	}
 
 	export class WebGLCanvas extends render.Canvas3d implements IClickable {
-		click: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }> = new Signal(<any>this, this._onClick);
-		mousemove: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }> = new Signal(<any>this, this._onMousemove);
-		mousedown: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }> = new Signal(<any>this, this._onMousedown);
-		mouseup: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }> = new Signal(<any>this, this._onMouseup);
-		mouseover: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }> = new Signal(<any>this, this._onMouseover);
-		mouseout: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }> = new Signal(<any>this, this._onMouseout);
-		mousewheel: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint, fDelta: float): void; }> = new Signal(<any>this, this._onMousewheel);
+		click: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }>;
+		mousemove: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }>;
+		mousedown: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		mouseup: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		mouseover: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }>;
+		mouseout: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }>;
+		mousewheel: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint, fDelta: float): void; }>;
 
-		dragstart: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }> = new Signal(<any>this, this._onDragstart);
-		dragstop: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }> = new Signal(<any>this, this._onDragstop);
-		dragging: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }> = new Signal(<any>this, this._onDragging);
+		dragstart: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragstop: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragging: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
 
 		protected _pCanvas: HTMLCanvasElement;
 		protected _pCanvasCreationInfo: ICanvasInfo;
@@ -48,6 +48,40 @@ module akra.webgl {
 		//так как драггинг заканчивается вместе с событием отжатия мыши, которое в свою очередь всегда приходит раньше 
 		//клика
 		protected _b3DEventSkipNextClick: boolean = false;
+
+		constructor(pRenderer: IRenderer) {
+			super(pRenderer);
+			this._pCanvas = (<WebGLRenderer>pRenderer).getHTMLCanvas();
+			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
+		}
+
+		protected setupSignals(): void {
+			this.click = this.click || new Signal(<any>this);
+			this.mousemove = this.mousemove || new Signal(<any>this);
+			this.mousedown = this.mousedown || new Signal(<any>this);
+			this.mouseup = this.mouseup || new Signal(<any>this);
+			this.mouseover = this.mouseover || new Signal(<any>this);
+			this.mouseout = this.mouseout || new Signal(<any>this);
+			this.mousewheel = this.mousewheel || new Signal(<any>this);
+
+			this.dragstart = this.dragstart || new Signal(<any>this);
+			this.dragstop = this.dragstop || new Signal(<any>this);
+			this.dragging = this.dragging || new Signal(<any>this);
+
+			this.click.setForerunner(this._onClick);
+			this.mousemove.setForerunner(this._onMousemove);
+			this.mousedown.setForerunner(this._onMousedown);
+			this.mouseup.setForerunner(this._onMouseup);
+			this.mouseover.setForerunner(this._onMouseover);
+			this.mouseout.setForerunner(this._onMouseout);
+			this.mousewheel.setForerunner(this._onMousewheel);
+
+			this.dragstart.setForerunner(this._onDragstart);
+			this.dragstop.setForerunner(this._onDragstop);
+			this.dragging.setForerunner(this._onDragging);
+
+			super.setupSignals();
+		}
 
 		getLeft(): int {
 			var el: HTMLElement = this._pCanvas;
@@ -71,12 +105,6 @@ module akra.webgl {
 
 		getElement(): HTMLCanvasElement {
 			return this._pCanvas;
-		}
-
-		constructor(pRenderer: IRenderer) {
-			super(pRenderer);
-			this._pCanvas = (<WebGLRenderer>pRenderer).getHTMLCanvas();
-			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
 		}
 
 		hideCursor(bHide: boolean = true): void {

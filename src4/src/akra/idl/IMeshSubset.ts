@@ -35,17 +35,6 @@ module akra {
 		isOptimizedSkinned(): boolean;
 		setSkin(pSkin: ISkin): boolean;
 
-		/** @deprecated */
-		applyFlexMaterial(csMaterial: string, pMaterial?: IMaterial): boolean;
-		/** @deprecated */
-		getFlexMaterial(iMaterial: int): IMaterial;
-		/** @deprecated */
-		getFlexMaterial(csName: string): IMaterial;
-		/** @deprecated */
-		setFlexMaterial(iMaterial: int): boolean;
-		/** @deprecated */
-		setFlexMaterial(csName: string): boolean;
-
 		show(): void;
 		hide(): void;
 		isRenderable(): boolean;

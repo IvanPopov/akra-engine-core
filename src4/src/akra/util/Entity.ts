@@ -25,11 +25,10 @@ module akra.util {
 	export class Entity extends ReferenceCounter implements IEntity {
 		guid: uint = guid();
 
-		attached: ISignal<{ (pEntity: IEntity): void; }> =  new Signal(<any>this);
-		detached: ISignal<{ (pEntity: IEntity): void; }> =  new Signal(<any>this);
-		childAdded: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> =  new Signal(<any>this);
-		childRemoved: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> =  new Signal(<any>this);
-
+		attached: ISignal<{ (pEntity: IEntity): void; }>;
+		detached: ISignal<{ (pEntity: IEntity): void; }>;
+		childAdded: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }>;
+		childRemoved: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }>;
 
 		protected _sName: string = null;
 		protected _pParent: IEntity = null;
@@ -94,14 +93,23 @@ module akra.util {
 			return iDepth;
 		}
 
+		constructor(eType: EEntityTypes) {
+			super();
+			this.setupSignals();
+
+			this._eType = eType;
+		}
+
+		protected setupSignals(): void {
+			this.attached = this.attached || new Signal(<any>this);
+			this.detached = this.detached || new Signal(<any>this);
+			this.childAdded = this.childAdded || new Signal(<any>this);
+			this.childRemoved = this.childRemoved || new Signal(<any>this);
+		}
+
 		getRoot(): IEntity {
 			for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.getParent(); pEntity = pEntity.getParent(), ++iDepth) { };
 			return pEntity;
-		}
-
-		constructor(eType: EEntityTypes) {
-			super();
-			this._eType = eType;
 		}
 
 		destroy(bRecursive: boolean = false, bPromoteChildren: boolean = true): void {
@@ -171,7 +179,7 @@ module akra.util {
 
 			return false;
 		}
-		
+
 		children(): IEntity[] {
 			var pChildren: IEntity[] = [];
 			var pChild: IEntity = this.getChild();
@@ -218,7 +226,7 @@ module akra.util {
 			return iCount;
 		}
 
-		
+
 		descCount(): uint {
 			var n: uint = this.childCount();
 			var pChild: IEntity = this.getChild();
@@ -460,7 +468,7 @@ module akra.util {
 				this._pChild = pNextSibling;
 			}
 		}
-		
+
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
 		attachToParent(pParent: IEntity): boolean {
 

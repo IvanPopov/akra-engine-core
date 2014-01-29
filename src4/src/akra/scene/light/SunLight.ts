@@ -50,11 +50,11 @@ module akra.scene.light {
 			this._pShadowCaster.setFarPlane(fDistance);
 		}
 
-		getIsShadowCaster(): boolean {
+		isShadowCaster(): boolean {
 			return this._isShadowCaster;
 		}
 
-		setIsShadowCaster(bValue: boolean): void {
+		setShadowCaster(bValue: boolean): void {
 			this._isShadowCaster = bValue;
 			if (bValue && isNull(this._pDepthTexture)) {
 				this.initializeTextures();
@@ -89,7 +89,7 @@ module akra.scene.light {
 			pCaster.setInheritance(ENodeInheritance.ALL);
 			pCaster.attachToParent(this);
 
-			if (this.getIsShadowCaster()) {
+			if (this.isShadowCaster()) {
 				this.initializeTextures();
 			}
 
@@ -97,7 +97,7 @@ module akra.scene.light {
 		}
 
 		_calculateShadows(): void {
-			if (this.getEnabled() && this.getIsShadowCaster()) {
+			if (this.isEnabled() && this.isShadowCaster()) {
 
 				// LOG(this._pShadowCaster.affectedObjects);
 				this.getRenderTarget().update();
@@ -114,7 +114,7 @@ module akra.scene.light {
 			// }
 
 			// return true;
-			if(!this.getEnabled()){
+			if(!this.isEnabled()){
 				return false;
 			}
 			else{
@@ -130,7 +130,7 @@ module akra.scene.light {
 				this.getPptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
 				/*************************************************************/
 
-				if(!this.getIsShadowCaster()){
+				if(!this.isShadowCaster()){
 					var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera);
 					return (pResult.getLength() === 0) ? false : true;
 				}

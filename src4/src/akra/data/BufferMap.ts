@@ -33,7 +33,7 @@ module akra.data {
 	export class BufferMap extends util.ReferenceCounter implements IBufferMap {
 		guid: uint = guid();
 
-		modified: ISignal<{ (pMap: IBufferMap): void; }> = new Signal(<any>this);
+		modified: ISignal<{ (pMap: IBufferMap): void; }>;
 
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
@@ -53,12 +53,18 @@ module akra.data {
 
 		constructor(pEngine: IEngine) {
 			super();
+			this.setupSignals();
+
 			this._pEngine = pEngine;
 			this.reset();
 
 			this.modified.connect(() => {
 				this._nUpdates++;
 			});
+		}
+
+		protected setupSignals(): void {
+			this.modified = this.modified || new Signal(<any>this);
 		}
 
 

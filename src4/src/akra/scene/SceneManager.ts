@@ -6,6 +6,7 @@
 
 /// <reference path="Scene3d.ts" />
 
+
 module akra.scene {
 	export class SceneManager implements ISceneManager {
 		private _pEngine: IEngine = null;
@@ -88,14 +89,13 @@ module akra.scene {
 			return null;
 		}
 
-		createUI(): IUI {
-			//if (config.GUI) {
-			//	var pUI: IUI = new ui.UI(this);
-			//	return pUI;
-			//}
-			//else {
+		createUI(): IScene2d {
+			if (config.UI) {
+				return akra["ui"].createUI(this);
+			}
+			else {
 				return null;
-			//}
+			}
 		}
 
 		getScene3D(): IScene3d;

@@ -12,7 +12,7 @@ module akra.config {
 	//global
 	export var DEBUG: boolean = true;
 	export var WEBGL: boolean = true;
-	export var GUI: boolean = false;
+	export var UI: boolean = false;
 
 	//temporary 
 	export var DEBUG_PARSER: boolean = false;
@@ -39,7 +39,7 @@ module akra.config {
 	export var data = "";
 
 	//current version
-	export var version = "0.1.1";
+	export var version = "0.4.1";
 
 	//default <any> name
 	export var defaultName: string = "default";

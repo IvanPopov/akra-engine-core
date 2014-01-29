@@ -24,6 +24,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="akra\exchange\Importer.ts" />
+    <None Include="akra\exchange\Exporter.ts" />
     <None Include="akra\animation\Clip.ts" />
     <None Include="akra\pool\resources\HardwareBuffer.ts" />
     <None Include="akra\pixelUtil\DDSCodec.ts" />
@@ -107,7 +109,6 @@
     <None Include="akra\fx\WhileStmtInstruction.ts" />
     <None Include="akra\guid.ts" />
     <None Include="akra\idl\IAjaxParams.ts" />
-    <None Include="akra\material\FlexMaterial.ts" />
     <None Include="akra\net\Pipe.ts" />
     <None Include="akra\parser\Parser.ts" />
     <None Include="akra\util\ObjectArray.ts" />
@@ -143,7 +144,6 @@
     <None Include="akra\types.ts" />
     <None Include="akra\debug.ts" />
     <None Include="akra\deps\deps.ts" />
-    <None Include="akra\filedrop\filedrop.ts" />
     <None Include="akra\fx\fx.ts" />
     <None Include="akra\gen\generate.ts" />
     <None Include="akra\geometry\geometry.ts" />
@@ -153,8 +153,6 @@
     <None Include="akra\idl\3d-party\FileSaver.d.ts" />
     <None Include="akra\idl\3d-party\gamepad.d.ts" />
     <None Include="akra\idl\3d-party\has.d.ts" />
-    <None Include="akra\idl\3d-party\jquery.d.ts" />
-    <None Include="akra\idl\3d-party\jqueryui.d.ts" />
     <None Include="akra\idl\3d-party\webgl.d.ts" />
     <None Include="akra\idl\3d-party\zip.d.ts" />
     <None Include="akra\idl\parser\IItem.ts" />
@@ -337,43 +335,6 @@
     <None Include="akra\idl\IThread.ts" />
     <None Include="akra\idl\IThreadManager.ts" />
     <None Include="akra\idl\ITriTreeNode.ts" />
-    <None Include="akra\idl\IUI.ts" />
-    <None Include="akra\idl\IUIAnimationBlender.ts" />
-    <None Include="akra\idl\IUIAnimationControls.ts" />
-    <None Include="akra\idl\IUIAnimationData.ts" />
-    <None Include="akra\idl\IUIAnimationGraph.ts" />
-    <None Include="akra\idl\IUIAnimationMask.ts" />
-    <None Include="akra\idl\IUIAnimationNode.ts" />
-    <None Include="akra\idl\IUIAnimationPlayer.ts" />
-    <None Include="akra\idl\IUIButton.ts" />
-    <None Include="akra\idl\IUICheckbox.ts" />
-    <None Include="akra\idl\IUICheckboxList.ts" />
-    <None Include="akra\idl\IUICodeEditor.ts" />
-    <None Include="akra\idl\IUIComponent.ts" />
-    <None Include="akra\idl\IUIDNDNode.ts" />
-    <None Include="akra\idl\IUIGraph.ts" />
-    <None Include="akra\idl\IUIGraphConnectionArea.ts" />
-    <None Include="akra\idl\IUIGraphConnector.ts" />
-    <None Include="akra\idl\IUIGraphControls.ts" />
-    <None Include="akra\idl\IUIGraphNode.ts" />
-    <None Include="akra\idl\IUIGraphRoute.ts" />
-    <None Include="akra\idl\IUIHTMLNode.ts" />
-    <None Include="akra\idl\IUIIDE.ts" />
-    <None Include="akra\idl\IUILabel.ts" />
-    <None Include="akra\idl\IUILayout.ts" />
-    <None Include="akra\idl\IUIList.ts" />
-    <None Include="akra\idl\IUIListenerEditor.ts" />
-    <None Include="akra\idl\IUINode.ts" />
-    <None Include="akra\idl\IUIPanel.ts" />
-    <None Include="akra\idl\IUIPopup.ts" />
-    <None Include="akra\idl\IUIRenderTargetStats.ts" />
-    <None Include="akra\idl\IUISlider.ts" />
-    <None Include="akra\idl\IUISwitch.ts" />
-    <None Include="akra\idl\IUITabs.ts" />
-    <None Include="akra\idl\IUITree.ts" />
-    <None Include="akra\idl\IUITreeNode.ts" />
-    <None Include="akra\idl\IUIVector.ts" />
-    <None Include="akra\idl\IUIWindow.ts" />
     <None Include="akra\idl\IUnique.ts" />
     <None Include="akra\idl\IUnPacker.ts" />
     <None Include="akra\idl\IURI.ts" />
@@ -522,6 +483,7 @@
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
+    <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
     <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />

@@ -35,6 +35,13 @@ module akra.scene.light {
 		protected _m4fOptimizedProj: IMat4 = new Mat4();
 		protected _isShadowCasted: boolean = false;
 
+		constructor(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X) {
+			super(pLightPoint.getScene(), EEntityTypes.SHADOW_CASTER);
+
+			this._pLightPoint = pLightPoint;
+			this._iFace = iFace;
+		}
+
 		getLightPoint(): ILightPoint {
 			return this._pLightPoint;
 		}
@@ -51,19 +58,12 @@ module akra.scene.light {
 			return this._m4fOptimizedProj;
 		}
 
-		getIsShadowCasted(): boolean {
+		isShadowCasted(): boolean {
 			return this._isShadowCasted;
 		}
 
-		setIsShadowCasted(isShadowCasted: boolean): void {
+		setShadowCasted(isShadowCasted: boolean): void {
 			this._isShadowCasted = isShadowCasted;
-		}
-
-		constructor(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X) {
-			super(pLightPoint.getScene(), EEntityTypes.SHADOW_CASTER);
-
-			this._pLightPoint = pLightPoint;
-			this._iFace = iFace;
 		}
 
 		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum): void {
@@ -267,9 +267,9 @@ module akra.scene.light {
 
 			return pDestination;
 		}
-	}
 
-	export function isShadowCaster(pEntity: IEntity): boolean {
-		return !isNull(pEntity) && pEntity.getType() === EEntityTypes.SHADOW_CASTER;
+		static isShadowCaster(pEntity: IEntity): boolean {
+			return !isNull(pEntity) && pEntity.getType() === EEntityTypes.SHADOW_CASTER;
+		}
 	}
 }

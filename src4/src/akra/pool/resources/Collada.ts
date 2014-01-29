@@ -2130,10 +2130,6 @@ module akra.pool.resources {
 					if (pSubMesh.getMaterial().name === sMaterial) {
 						//setup materials
 						pSubMesh.getMaterial().set(pMaterial);
-						//FIXME: remove flex material setup(needs only demo with flexmats..)
-						// pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
-
-
 						pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 						
 						//setup textures
@@ -2341,9 +2337,6 @@ module akra.pool.resources {
 				
 				pSubMesh.getMaterial().name = pPolygons.material;
 			}
-
-			// logger.assert(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
-			// logger.assert(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
 			pMesh.setShadow(this.isShadowsEnabled());
 
@@ -3066,6 +3059,10 @@ module akra.pool.resources {
 			return pAnimationOutput;
 		}
 
+		static isColladaResource(pItem: IResourcePoolItem): boolean {
+			return isModelResource(pItem) && (<IModel>pItem).getModelFormat() === EModelFormats.COLLADA;
+		}
+
 	}
 
 	pSupportedVertexFormat = [
@@ -3270,9 +3267,5 @@ module akra.pool.resources {
 
 	export function isModelResource(pItem: IResourcePoolItem): boolean {
 		return pool.isVideoResource(pItem) && pItem.getResourceCode().getType() === EVideoResources.MODEL_RESOURCE;
-	}
-
-	export function isColladaResource(pItem: IResourcePoolItem): boolean {
-		return isModelResource(pItem) && (<IModel>pItem).getModelFormat() === EModelFormats.COLLADA;
 	}
 }

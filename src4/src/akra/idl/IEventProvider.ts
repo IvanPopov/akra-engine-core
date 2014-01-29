@@ -24,16 +24,27 @@ module akra {
 		hasListeners(): boolean;
 		getSender(): any;
 		getType(): EEventTypes;
+		getListeners(eEventType: EEventTypes): IListener<T>[];
+		setForerunner(fn: Function): void;
 	}
 
 	export interface IListener<T extends Function> {
+		/** Context of signal. */
 		reciever: any;
+		/** Callback function. */
 		callback: T;
-		callbackName?: string;
+		/** Event type. */
 		type: EEventTypes;
 	}
 	
 	export interface IEventProvider extends IUnique {
-		
+		/**
+		 * Special function which should be defined and redefined signals.
+		 * Must be defined immediately after the constructor.
+		 * Must be called immediately after the super() call in costructor or
+		 * called first.
+		 */
+		//FIXME: will be removed from interface.
+		setupSignals(): void;
 	}
 }

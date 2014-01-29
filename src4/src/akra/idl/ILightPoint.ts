@@ -27,11 +27,11 @@ module akra {
 		/** optimized camera frustum for better shadow casting */
 		getPptimizedCameraFrustum(): IFrustum;
 		
-		getEnabled(): boolean;
+		isEnabled(): boolean;
 		setEnabled(bValue: boolean): void;
 
-		getIsShadowCaster(): boolean;
-		setIsShadowCaster(bValue: boolean): void;
+		isShadowCaster(): boolean;
+		setShadowCaster(bValue: boolean): void;
 
 		getLightingDistance(): float;
 		setLightingDistance(fValue: float): void;		

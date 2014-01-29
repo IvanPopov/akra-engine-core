@@ -28,11 +28,16 @@ module akra.scene.light {
 		protected _pLightParameters: IProjectParameters = new ProjectParameters;
 		protected _pShadowCaster: IShadowCaster;
 
+		constructor(pScene: IScene3d) {
+			super(pScene, ELightTypes.PROJECT);
+			this._pShadowCaster = pScene._createShadowCaster(this);
+		}
+
 		getParams(): IProjectParameters {
 			return this._pLightParameters;
 		}
 
-		getIsShadowCaster(): boolean {
+		isShadowCaster(): boolean {
 			return this._isShadowCaster;
 		}
 
@@ -40,7 +45,7 @@ module akra.scene.light {
 		 * overridden setter isShadow caster,
 		 * if depth texture don't created then create depth texture
 		 */
-		setIsShadowCaster(bValue: boolean): void {
+		setShadowCaster(bValue: boolean): void {
 			this._isShadowCaster = bValue;
 			if (bValue && isNull(this._pDepthTexture)) {
 				this.initializeTextures();
@@ -68,11 +73,6 @@ module akra.scene.light {
 			return this._pColorTexture.getBuffer().getRenderTarget();
 		}
 
-		constructor(pScene: IScene3d) {
-			super(pScene, ELightTypes.PROJECT);
-			this._pShadowCaster = pScene._createShadowCaster(this);
-		}
-
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
 			var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
 
@@ -82,7 +82,7 @@ module akra.scene.light {
 			pCaster.setInheritance(ENodeInheritance.ALL);
 			pCaster.attachToParent(this);
 
-			if (this.getIsShadowCaster()) {
+			if (this.isShadowCaster()) {
 				this.initializeTextures();
 			}
 
@@ -126,13 +126,13 @@ module akra.scene.light {
 		}
 
 		_calculateShadows(): void {
-			if (this.getEnabled() && this.getIsShadowCaster()) {
+			if (this.isEnabled() && this.isShadowCaster()) {
 				this.getRenderTarget().update();
 			}
 		}
 
 		_prepareForLighting(pCamera: ICamera): boolean {
-			if (!this.getEnabled()) {
+			if (!this.isEnabled()) {
 				return false;
 			}
 			else {
@@ -148,7 +148,7 @@ module akra.scene.light {
 				this.getPptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
 				/*************************************************************/
 
-				if (!this.getIsShadowCaster()) {
+				if (!this.isShadowCaster()) {
 					var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera);
 					return (pResult.getLength() === 0) ? false : true;
 				}

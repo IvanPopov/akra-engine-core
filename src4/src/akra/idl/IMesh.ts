@@ -27,7 +27,6 @@ module akra {
 	}
 	
 	export interface IMesh extends IEventProvider {
-		getFlexMaterials(): IMaterial[];
 		getName(): string;
 		getData(): IRenderDataCollection;
 		getLength(): uint; /*<! number of submeshes in. */
@@ -46,17 +45,6 @@ module akra {
 		//setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): boolean;
 		destroy(): void;
 		clone(iCloneOptions: int): IMesh;
-
-		/** @deprecated */
-		replaceFlexMaterials(pFlexMaterials): void;
-		/** @deprecated */
-		getFlexMaterial(iMaterial: uint): IMaterial;
-		getFlexMaterial(csName: string): IMaterial;
-		/** @deprecated */
-		addFlexMaterial(sName: string, pMaterial?: IMaterial): boolean;
-		/** @deprecated */
-		setFlexMaterial(iMaterial: int): boolean;
-		setFlexMaterial(csName: string): boolean;
 
 		createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions?: int);
 		freeSubset(sName: string): boolean;

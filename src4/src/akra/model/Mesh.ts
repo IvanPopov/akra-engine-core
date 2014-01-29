@@ -32,7 +32,7 @@ module akra.model {
 		}, IMesh> {
 
 		constructor(pViewport: IMesh) {
-			super(pViewport, null, EEventTypes.UNICAST);
+			super(pViewport, EEventTypes.UNICAST);
 		}
 
 		emit(pSubMesh?: IMeshSubset, bShadow?: boolean): void {
@@ -57,10 +57,9 @@ module akra.model {
 	class Mesh extends util.ReferenceCounter implements IMesh  {
 		guid: uint = guid();
 
-		shadowed: ISignal<{(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;}> = new ShadowedSignal(this);
+		shadowed: ISignal<{(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;}>;
 
 		private _sName: string;
-		private _pFlexMaterials: IMaterial[] = null;
 		private _pBuffer: IRenderDataCollection = null;
 		private _pEngine: IEngine;
 		private _eOptions: int = 0;
@@ -71,12 +70,21 @@ module akra.model {
 		private _bShadow: boolean = true;
 		private _pSkinList: ISkin[] = [];
 		
-		getLength(): uint {
-			return this._pSubMeshes.length;
+		constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
+			super();
+			this.setupSignals();
+
+			this._sName = sName || null;
+			this._pEngine = pEngine;
+			this.setup(sName, eOptions, pDataBuffer);
 		}
 
-		getFlexMaterials(): IMaterial[] {
-			return this._pFlexMaterials;
+		protected setupSignals(): void {
+			this.shadowed = this.shadowed || new ShadowedSignal(this);
+		}
+
+		getLength(): uint {
+			return this._pSubMeshes.length;
 		}
 
 		getName(): string{
@@ -123,14 +131,6 @@ module akra.model {
 			for (var i: int = 0; i < this._pSubMeshes.length; ++i) {
 				this._pSubMeshes[i].setShadow(bValue);
 			}
-		}
-
-		constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
-			super();
-
-			this._sName = sName || null;
-			this._pEngine = pEngine;
-			this.setup(sName, eOptions, pDataBuffer);
 		}
 
 		getOptions(): int {
@@ -218,90 +218,13 @@ module akra.model {
 			this._pSkinList.push(pSkin);
 		}
 
-		replaceFlexMaterials(pFlexMaterials: IMaterial[]): void {
-			this._pFlexMaterials = pFlexMaterials;
-		}
 
 		freeSubset(sName: string): boolean {
 			debug.error("Метод freeSubset не реализован");
 			return false;
 		}
 
-		getFlexMaterial(iMaterial: uint): IMaterial;
-		getFlexMaterial(sName: string): IMaterial;
-		getFlexMaterial(arg) {
-			if (!this._pFlexMaterials) {
-				return null;
-			}
-
-			if (typeof arguments[0] === 'number') {
-				return this._pFlexMaterials[arguments[0]] || null;
-			}
-			else {
-				for (var i = 0, pMaterials = this._pFlexMaterials; i < pMaterials.length; ++ i) {
-					if (pMaterials[i].name === <string>arguments[0]) {
-						return pMaterials[i];
-					}
-				}
-			}
-
-			return null;
-		}
-
-		addFlexMaterial(sName: string = 'unknown', pMaterialData: IMaterial = null): boolean {
-			var pMaterial: IMaterial;
-			var pMaterialId: int;
-
-			debug.assert(arguments.length < 7, "only base material supported now...");
-			//debug.assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
-
-			pMaterial = this.getFlexMaterial(sName);
-
-			if (pMaterial) {
-				if (pMaterialData) {
-				   pMaterial.set(pMaterialData); 
-				}
-				return true;
-			}
-
-			if (!this._pFlexMaterials) {
-				this._pFlexMaterials = [];
-			}
-		    
-			pMaterialId = this._pFlexMaterials.length;
-			pMaterial = material._createFlex(
-				sName, 
-				this._pBuffer._allocateData(material.VERTEX_DECL, null)
-			);
-
-			if (!pMaterialData) {
-				pMaterialData = material.create(null, <IMaterialBase><any>config.material.default);
-			}
-
-			pMaterial.set(pMaterialData);   
-			//pMaterial.id = pMaterialId;
-			this._pFlexMaterials.push(pMaterial);
-
-			return true;
-		}
-
-		setFlexMaterial(iMaterial: int): boolean;
-		setFlexMaterial(csName: string): boolean;
-		setFlexMaterial(iMaterial): boolean {
-			var bResult: boolean = true;
-			for (var i: int = 0; i < this.getLength(); ++ i) {
-				if (!this._pSubMeshes[i].setFlexMaterial(<int>iMaterial)) {
-					logger.warn("cannot set material<" + iMaterial + "> for mesh<" + this.getName() + 
-						"> subset<" + this._pSubMeshes[i].getName() + ">");
-					bResult = false;
-				}
-			}
-
-			return bResult;
-		}
-
 		destroy(): void {
-			this._pFlexMaterials = null;
 			this._pSubMeshes = null;
 			this._pBuffer.destroy(/*this*/);
 		}
@@ -348,9 +271,6 @@ module akra.model {
 					pClone.appendSubset(this._pSubMeshes[i].getName(), pRenderData);
 					pClone.getSubset(i).getMaterial().name = this._pSubMeshes[i].getMaterial().name;
 				}
-
-				pClone.replaceFlexMaterials(this.getFlexMaterials());
-
 				//trace('created clone', pClone);
 			}
 			else {
@@ -489,8 +409,7 @@ module akra.model {
 
 				pSubMesh.getData().index(iData, DeclUsages.INDEX0);
 
-				// pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
-				pMaterial = pSubMesh.getMaterial();/*getFlexMaterial(".MaterialBoundingBox");*/
+				pMaterial = pSubMesh.getMaterial();
 				pMaterial.emissive = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.diffuse = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.ambient = new Color(1.0, 1.0, 1.0, 1.0);
@@ -620,8 +539,6 @@ module akra.model {
 				pSubMesh.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 				pSubMesh.getData().index(iData, DeclUsages.INDEX0);
 
-				// pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
-				// //pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
 				pMaterial = pSubMesh.getMaterial();
 				pMaterial.emissive = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.diffuse  = new Color(1.0, 1.0, 1.0, 1.0);
@@ -701,6 +618,8 @@ module akra.model {
 		_setShadow(bValue: boolean): void {
 			this._bShadow = bValue;
 		}
+
+		static ShadowedSignal = ShadowedSignal;
 	}
 
 	export function createMesh(pEngine: IEngine, sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {

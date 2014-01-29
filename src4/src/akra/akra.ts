@@ -1,5 +1,6 @@
-/// <reference path="idl/EDataTypes.ts" />
-/// <reference path="idl/IEngine.ts" />
+/// <reference path="ajax.ts" />
+/// <reference path="exchange/Exporter.ts" />
+/// <reference path="exchange/Importer.ts" />
 /// <reference path="core/Engine.ts" />
 
 module akra {

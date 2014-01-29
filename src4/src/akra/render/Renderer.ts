@@ -58,8 +58,8 @@ module  akra.render {
 	export class Renderer implements IRenderer {
 		guid: uint = guid();
 
-		active: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }> = new Signal(<any>this, this._activated);
-		inactive: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivated);
+		active: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }>;
+		inactive: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }>;
 
 		protected _isActive: boolean = false;
 		protected _pEngine: IEngine;
@@ -73,12 +73,22 @@ module  akra.render {
 		protected _bLockRenderTarget: boolean = false;
 
 		constructor(pEngine: IEngine) {
+			this.setupSignals();
+
 			this._pEngine = pEngine;
 
 			pEngine.active.connect(this.active);
 			pEngine.inactive.connect(this.inactive);
 
 			this._pRenderQueue = new RenderQueue(this);
+		}
+
+		protected setupSignals(): void {
+			this.active = this.active || new Signal(<any>this);
+			this.inactive = this.inactive || new Signal(<any>this);
+
+			this.active.setForerunner(this._activated);
+			this.inactive.setForerunner(this._inactivated);
 		}
 
 		getType(): ERenderers {

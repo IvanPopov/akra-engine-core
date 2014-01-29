@@ -16,8 +16,7 @@ module akra.render {
 	export class RenderTechnique implements IRenderTechnique {
 		guid: uint = guid();
 
-		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>
-			= new Signal(<any>this);
+		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>;
 
 		private _pMethod: IRenderMethod = null;
 
@@ -37,15 +36,9 @@ module akra.render {
 
 		protected static pRenderMethodPassStatesPool: IObjectArray<IAFXPassInputStateInfo> = new util.ObjectArray<IAFXPassInputStateInfo>();
 
-		getModified(): uint {
-			return this.guid;
-		}
-
-		getTotalPasses(): uint {
-			return this._pComposer.getTotalPassesForTechnique(this);
-		}
-
 		constructor(pMethod: IRenderMethod = null) {
+			this.setupSignals();
+
 			this._pPassList = [];
 			this._pPassBlackList = [];
 
@@ -56,6 +49,17 @@ module akra.render {
 			this._pRenderMethodPassStateList = new util.ObjectArray<IAFXPassInputStateInfo>();
 		}
 
+		protected setupSignals(): void {
+			this.render = this.render || new Signal(<any>this);
+		}
+
+		getModified(): uint {
+			return this.guid;
+		}
+
+		getTotalPasses(): uint {
+			return this._pComposer.getTotalPassesForTechnique(this);
+		}
 
 		destroy(): void {
 
