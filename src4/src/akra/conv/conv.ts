@@ -98,7 +98,7 @@ module akra.conv {
 		return string2Array<string>(sData, ppData, parseString, iFrom);
 	}
 
-	export function stoa<T extends any[]>(sData: string, n: number, sType: string, isArray?: boolean): T {
+	export function stoa<T extends any[]>(sData: string, n: number, sType: string, isArray: boolean = false): T {
 		var pRow: IConvertionTableRow<T> = conversionFormats[sType];
 		var ppData: T = new (pRow.type)(n);
 		pRow.converter(sData, ppData);

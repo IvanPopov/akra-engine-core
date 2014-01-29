@@ -25,6 +25,16 @@ module akra.math {
 	import __43 = math.__43;
 	import __44 = math.__44; 
 
+	import __a11 = math.__a11;
+	import __a12 = math.__a12;
+	import __a13 = math.__a13;
+	import __a21 = math.__a21;
+	import __a22 = math.__a22;
+	import __a23 = math.__a23;
+	import __a31 = math.__a31;
+	import __a32 = math.__a32;
+	import __a33 = math.__a33;
+
 	var pBuffer: IMat4[];
 	var iElement: uint;
 

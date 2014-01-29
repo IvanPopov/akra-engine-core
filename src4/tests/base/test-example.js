@@ -141,7 +141,7 @@ var akra;
         createLighting();
         createSkyBox();
 
-        loadManyModels(400, "../../../src2/data/" + "models/cube.dae");
+        loadManyModels(300, "../../../src2/data/" + "models/cube.dae");
 
         ///loadManyModels(150, "../../../src2/data/" + "models/box/opened_box.dae");
         pEngine.exec();
