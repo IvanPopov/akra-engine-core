@@ -82,7 +82,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
+		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.setEnabled(true);

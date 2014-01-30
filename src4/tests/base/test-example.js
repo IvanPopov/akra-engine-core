@@ -82,7 +82,7 @@ var akra;
     }
 
     function createLighting() {
-        var pOmniLight = akra.pScene.createLightPoint(2 /* OMNI */, false, 0, "test-omni-0");
+        var pOmniLight = akra.pScene.createLightPoint(2 /* OMNI */, true, 512, "test-omni-0");
 
         pOmniLight.attachToParent(akra.pScene.getRootNode());
         pOmniLight.setEnabled(true);

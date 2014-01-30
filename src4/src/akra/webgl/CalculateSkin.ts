@@ -10,7 +10,6 @@ module akra.webgl {
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");
 
-		return false;
 		if (!isOk) {
 			return false;
 		}
@@ -292,7 +291,7 @@ module akra.webgl {
 		///////////////////////////////////////////////
 
 		pWebGLContext.flush();
-
+		
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFrameBuffer);
 		pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
 
