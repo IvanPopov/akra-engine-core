@@ -270,15 +270,15 @@ var akra;
         // 	// pMesh.createBoundingBox();h
         // 	// pMesh.showBoundingBox();
         // }).scale(2.);
-        // // loadHero();
-        // loadModel(DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadHero();
+        // loadModel(akra.DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         // var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube.setPosition(2., 0.8, -3.);
         // pCube.scale(0.1);
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        loadManyModels(300, akra.DATA + "models/cube.dae");
+        //loadManyModels(300, akra.DATA + "models/cube.dae");
         //loadManyModels(150, akra.DATA + "models/box/opened_box.dae");
     }
     akra.pEngine.bind("depsLoaded", main);

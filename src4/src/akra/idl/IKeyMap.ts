@@ -41,7 +41,7 @@ module akra {
 	
 		getMouse(): IPoint;
 		/*get offset from last frame*/
-		getMouseShift(): AIOffset;
+		getMouseShift(): IOffset;
 		isMouseMoved(): boolean;
 		isMousePress(): boolean;
 	

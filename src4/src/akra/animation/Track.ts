@@ -65,7 +65,7 @@ module akra.animation {
 					break;
 				default:
 					//bind by <Skeleton skeleton>
-					if (!isDef(arguments[0].type)) {
+					if (!isDef(arguments[0].getType())) {
 						
 						if (this._sTarget == null) {
 							return false;

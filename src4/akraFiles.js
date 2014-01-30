@@ -31,6 +31,9 @@ akraFiles = {
       ],
       'filedrop': [
         'src/akra-addons/addons/filedrop/filedrop.ts'
+      ],
+      'base3dObjects': [
+        'src/akra-addons/addons/base3dObjects.ts'
       ]
   }
 };

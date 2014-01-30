@@ -170,7 +170,11 @@ module akra {
 							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
 						break;
 					default:
-						this._fnForerunnerTrigger.apply(this._pSender, arguments);
+						var args:any[] = [];
+						for (var _i = 0; _i < (arguments.length); _i++) {
+							args[_i] = arguments[_i];
+						}
+						this._fnForerunnerTrigger.apply(this._pSender, args);
 				}
 
 			}
@@ -239,7 +243,7 @@ module akra {
 							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
 						break;
 					default:
-						var args = [this._pSender];
+						var args:any[] = [this._pSender];
 						for (var _i = 0; _i < (arguments.length); _i++) {
 							args[_i + 1] = arguments[_i];
 						}

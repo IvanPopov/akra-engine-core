@@ -86,6 +86,15 @@ module.exports = function (grunt) {
                         removeComments: true,
                         propagateEnumConstants: true
                     }
+                },
+                 "addon-base3dObjects": {
+                    src: files.akraAddons.base3dObjects,
+                    dest: "build/addons/base3dObjects.addon.js",
+                    options: {
+                        target: "es3",
+                        removeComments: true,
+                        propagateEnumConstants: true
+                    }
                 }
             //}
         },

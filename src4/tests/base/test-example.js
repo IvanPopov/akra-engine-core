@@ -1,4 +1,5 @@
 /// <reference path="../../build/akra.d.ts" />
+/// <reference path="../../build/addons/base3dObjects.addon.d.ts" />
 var akra;
 (function (akra) {
     akra.pEngine = akra.createEngine();
@@ -6,6 +7,8 @@ var akra;
     akra.pCanvas = akra.pEngine.getRenderer().getDefaultCanvas();
     akra.pCamera = null;
     akra.pViewport = null;
+    akra.pRmgr = akra.pEngine.getResourceManager();
+    var data = "../../../src2/data/";
 
     function setup(pCanvas) {
         var pCanvasElement = pCanvas._pCanvas;
@@ -14,6 +17,16 @@ var akra;
         document.body.appendChild(pDiv);
         pDiv.appendChild(pCanvasElement);
         pDiv.style.position = "fixed";
+    }
+
+    function createSceneEnvironment() {
+        var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
+        pSceneQuad.attachToParent(akra.pScene.getRootNode());
+
+        var pSceneSurface = akra.addons.createSceneSurface(akra.pScene, 40);
+        pSceneSurface.addPosition(0, 0.01, 0);
+        pSceneSurface.scale(5.);
+        pSceneSurface.attachToParent(akra.pScene.getRootNode());
     }
 
     function createCamera() {
@@ -26,6 +39,37 @@ var akra;
         pCamera.update();
 
         return pCamera;
+    }
+
+    function createKeymap(pCamera) {
+        var pKeymap = akra.control.createKeymap();
+        pKeymap.captureMouse(akra.pCanvas._pCanvas);
+        pKeymap.captureKeyboard(document);
+
+        akra.pScene.beforeUpdate.connect(function () {
+            if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
+                var v2fMouseShift = pKeymap.getMouseShift();
+
+                var fdX = v2fMouseShift.x / akra.pViewport.getActualWidth() * 10.0;
+                var fdY = v2fMouseShift.y / akra.pViewport.getActualHeight() * 10.0;
+
+                pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+
+                var fSpeed = 0.1 * 1 / 5;
+                if (pKeymap.isKeyPress(87 /* W */)) {
+                    pCamera.addRelPosition(0, 0, -fSpeed);
+                }
+                if (pKeymap.isKeyPress(83 /* S */)) {
+                    pCamera.addRelPosition(0, 0, fSpeed);
+                }
+                if (pKeymap.isKeyPress(65 /* A */)) {
+                    pCamera.addRelPosition(-fSpeed, 0, 0);
+                }
+                if (pKeymap.isKeyPress(68 /* D */)) {
+                    pCamera.addRelPosition(fSpeed, 0, 0);
+                }
+            }
+        });
     }
 
     function createViewport() {
@@ -132,18 +176,65 @@ var akra;
         });
     }
 
+    function loadHero() {
+        var pModelRoot = akra.pScene.createNode();
+        var pController = akra.pEngine.createAnimationController("movie");
+        var pHeroData = akra.pRmgr.loadModel(data + "models/hero/movie.DAE");
+
+        pModelRoot.attachToParent(akra.pScene.getRootNode());
+
+        pHeroData.loaded.connect(function () {
+            pHeroData.attachToScene(pModelRoot);
+
+            var pMovieData = akra.pRmgr.loadModel(data + "models/hero/movie_anim.DAE");
+
+            pMovieData.loaded.connect(function () {
+                var pAnim = pMovieData.extractAnimation(0);
+                var pMovie = akra.animation.createContainer(pAnim, "movie");
+
+                pMovie.useLoop(true);
+
+                // LOG(pMovieData);
+                // window["movieData"] = pMovieData;
+                // pController.addAnimation(pMovie);
+                // pMovie.rightInfinity(false);
+                // pController.stop();
+                var pWalkData = akra.pRmgr.loadModel(data + "models/hero/walk.DAE");
+                pWalkData.loaded.connect(function () {
+                    var pAnim = pWalkData.extractAnimation(0);
+                    var pWalk = akra.animation.createContainer(pAnim, "walk");
+
+                    pWalk.useLoop(true);
+
+                    var pBlender = akra.animation.createBlend();
+
+                    // pBlender.addAnimation(pMovie, 1);
+                    pBlender.addAnimation(pWalk, 1);
+
+                    pController.addAnimation(pBlender);
+                    pModelRoot.addController(pController);
+                });
+            });
+        });
+    }
+
     function main(pEngine) {
         setup(akra.pCanvas);
 
         akra.pCamera = createCamera();
         akra.pViewport = createViewport();
 
+        createKeymap(akra.pCamera);
+
+        //createSceneEnvironment();
         createLighting();
         createSkyBox();
 
-        loadManyModels(300, "../../../src2/data/" + "models/cube.dae");
+        //loadHero();
+        //loadManyModels(400, data + "models/cube.dae");
+        //loadManyModels(150, data + "models/box/opened_box.dae");
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
-        ///loadManyModels(150, "../../../src2/data/" + "models/box/opened_box.dae");
         pEngine.exec();
         //pEngine.renderFrame();
     }

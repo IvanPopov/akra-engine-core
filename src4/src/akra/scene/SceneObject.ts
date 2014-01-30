@@ -107,10 +107,6 @@ module akra.scene {
 			return (this._iViewModes & EObjectViewModes.k_Billboard) != 0;
 		}
 
-		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
-			super(pScene, eType);
-		}
-
 		getRenderable(i?: uint): IRenderableObject {
 			return null;
 		}

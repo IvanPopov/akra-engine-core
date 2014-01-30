@@ -57,6 +57,7 @@ module akra.fx {
 		type: EAFXShaderVariableType;
 		length: uint;
 		applyFunction: Function;
+		//applyFunctionName: string;
 		defaultValue: any;
 	}
 
@@ -108,6 +109,7 @@ module akra.fx {
 			length: 0,
 
 			applyFunction: null,
+			//applyFunctionName: "",
 			defaultValue: null
 		};
 	}
@@ -353,11 +355,17 @@ module akra.fx {
 					this._pShaderUniformInfoList[iLocation].applyFunction.call(this._pShaderProgram,
 						this._pShaderUniformInfoList[iLocation].webGLLocation,
 						pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
+
+					//this._pShaderProgram[this._pShaderUniformInfoList[iLocation].applyFunctionName](this._pShaderUniformInfoList[iLocation].webGLLocation,
+					//	pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
 				}
 				else {
 					this._pShaderUniformInfoList[iLocation].applyFunction.call(this._pShaderProgram,
 						this._pShaderUniformInfoList[iLocation].name,
 						pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
+
+					//this._pShaderProgram[this._pShaderUniformInfoList[iLocation].applyFunctionName](this._pShaderUniformInfoList[iLocation].name,
+					//	pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
 				}
 			}
 		}
@@ -724,6 +732,7 @@ module akra.fx {
 		private prepareApplyFunctionForUniform(pUniform: IShaderUniformInfo): void {
 			if (pUniform.type !== EAFXShaderVariableType.k_NotVar) {
 				pUniform.applyFunction = this.getUniformApplyFunction(pUniform.type, (pUniform.length > 0));
+				//pUniform.applyFunctionName = this.getUniformApplyFunctionName(pUniform.type, (pUniform.length > 0));
 				pUniform.defaultValue = this.getUnifromDefaultValue(pUniform.type, (pUniform.length > 0));
 			}
 		}
@@ -914,6 +923,199 @@ module akra.fx {
 							return this._pShaderProgram.setSampler;
 						case EAFXShaderVariableType.k_SamplerVertexTexture:
 							return this._pShaderProgram.setVertexBuffer;
+						default:
+							logger.critical("Wrong uniform type (" + eType + ")");
+					}
+				}
+			}
+		}
+
+		private getUniformApplyFunctionName(eType: EAFXShaderVariableType, isArray: boolean): string {
+			if (config.WEBGL) {
+				var pProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram>this._pShaderProgram;
+				if (isArray) {
+					switch (eType) {
+						case EAFXShaderVariableType.k_Float:
+							return "_setFloat32Array";
+						case EAFXShaderVariableType.k_Int:
+							return "_setInt32Array";
+						case EAFXShaderVariableType.k_Bool:
+							return "_setInt32Array";
+
+						case EAFXShaderVariableType.k_Float2:
+							return "_setVec2Array";
+						case EAFXShaderVariableType.k_Int2:
+							return "_setVec2iArray";
+						// case EAFXShaderVariableType.k_Bool2:
+						// 	return "_setBool2Array";
+
+						case EAFXShaderVariableType.k_Float3:
+							return "_setVec3Array";
+						case EAFXShaderVariableType.k_Int3:
+							return "_setVec3iArray";
+						// case EAFXShaderVariableType.k_Bool3:
+						// 	return "_setBool3Array";
+
+						case EAFXShaderVariableType.k_Float4:
+							return "_setVec4Array";
+						case EAFXShaderVariableType.k_Int4:
+							return "_setVec4iArray";
+						// case EAFXShaderVariableType.k_Bool4:
+						// 	return "_setBool4Array";
+
+						// case EAFXShaderVariableType.k_Float2x2:
+						// 	return "_setMat2Array";
+						case EAFXShaderVariableType.k_Float3x3:
+							return "_setMat3Array";
+						case EAFXShaderVariableType.k_Float4x4:
+							return "_setMat4Array";
+
+						case EAFXShaderVariableType.k_Sampler2D:
+							return "_setSamplerArray";
+						case EAFXShaderVariableType.k_SamplerCUBE:
+							return "_setSamplerArray";
+						default:
+							logger.critical("Wrong uniform array type (" + eType + ")");
+					}
+				}
+				else {
+					switch (eType) {
+						case EAFXShaderVariableType.k_Float:
+							return "_setFloat";
+						case EAFXShaderVariableType.k_Int:
+							return "_setInt";
+						case EAFXShaderVariableType.k_Bool:
+							return "_setInt";
+
+						case EAFXShaderVariableType.k_Float2:
+							return "_setVec2";
+						case EAFXShaderVariableType.k_Int2:
+							return "_setVec2i";
+						// case EAFXShaderVariableType.k_Bool2:
+						// 	return "_setBool2"
+
+						case EAFXShaderVariableType.k_Float3:
+							return "_setVec3";
+						case EAFXShaderVariableType.k_Int3:
+							return "_setVec3i";
+						// case EAFXShaderVariableType.k_Bool3:
+						// 	return "_setBool3"
+
+						case EAFXShaderVariableType.k_Float4:
+							return "_setVec4";
+						case EAFXShaderVariableType.k_Int4:
+							return "_setVec4i";
+						// case EAFXShaderVariableType.k_Bool4:
+						// 	return "_setBool4"
+
+						// case EAFXShaderVariableType.k_Float2x2:
+						// 	return "_setMat2"
+						case EAFXShaderVariableType.k_Float3x3:
+							return "_setMat3";
+						case EAFXShaderVariableType.k_Float4x4:
+							return "_setMat4";
+
+						case EAFXShaderVariableType.k_Sampler2D:
+							return "_setSampler";
+						case EAFXShaderVariableType.k_SamplerCUBE:
+							return "_setSampler";
+						case EAFXShaderVariableType.k_SamplerVertexTexture:
+							return "_setVertexBuffer";
+						default:
+							logger.critical("Wrong uniform type (" + eType + ")");
+					}
+				}
+
+			}
+			else {
+				if (isArray) {
+					switch (eType) {
+						case EAFXShaderVariableType.k_Float:
+							return "setFloat32Array";
+						case EAFXShaderVariableType.k_Int:
+							return "setInt32Array";
+						// case EAFXShaderVariableType.k_Bool:
+						// 	return "setBoolArray";
+
+						case EAFXShaderVariableType.k_Float2:
+							return "setVec2Array";
+						case EAFXShaderVariableType.k_Int2:
+							return "setVec2iArray";
+						// case EAFXShaderVariableType.k_Bool2:
+						// 	return "setBool2Array";
+
+						case EAFXShaderVariableType.k_Float3:
+							return "setVec3Array";
+						case EAFXShaderVariableType.k_Int3:
+							return "setVec3iArray";
+						// case EAFXShaderVariableType.k_Bool3:
+						// 	return "setBool3Array";
+
+						case EAFXShaderVariableType.k_Float4:
+							return "setVec4Array";
+						case EAFXShaderVariableType.k_Int4:
+							return "setVec4iArray";
+						// case EAFXShaderVariableType.k_Bool4:
+						// 	return "setBool4Array";
+
+						// case EAFXShaderVariableType.k_Float2x2:
+						// 	return "setMat2Array";
+						case EAFXShaderVariableType.k_Float3x3:
+							return "setMat3Array";
+						case EAFXShaderVariableType.k_Float4x4:
+							return "setMat4Array";
+
+						case EAFXShaderVariableType.k_Sampler2D:
+							return "setSamplerArray";
+						case EAFXShaderVariableType.k_SamplerCUBE:
+							return "setSamplerArray";
+						default:
+							logger.critical("Wrong uniform array type (" + eType + ")");
+					}
+				}
+				else {
+					switch (eType) {
+						case EAFXShaderVariableType.k_Float:
+							return "setFloat";
+						case EAFXShaderVariableType.k_Int:
+							return "setInt";
+						case EAFXShaderVariableType.k_Bool:
+							return "setInt";
+
+						case EAFXShaderVariableType.k_Float2:
+							return "setVec2";
+						case EAFXShaderVariableType.k_Int2:
+							return "setVec2i";
+						// case EAFXShaderVariableType.k_Bool2:
+						// 	return "setBool2"
+
+						case EAFXShaderVariableType.k_Float3:
+							return "setVec3";
+						case EAFXShaderVariableType.k_Int3:
+							return "setVec3i";
+						// case EAFXShaderVariableType.k_Bool3:
+						// 	return "setBool3"
+
+						case EAFXShaderVariableType.k_Float4:
+							return "setVec4";
+						case EAFXShaderVariableType.k_Int4:
+							return "setVec4i";
+						// case EAFXShaderVariableType.k_Bool4:
+						// 	return "setBool4"
+
+						// case EAFXShaderVariableType.k_Float2x2:
+						// 	return "setMat2"
+						case EAFXShaderVariableType.k_Float3x3:
+							return "setMat3";
+						case EAFXShaderVariableType.k_Float4x4:
+							return "setMat4";
+
+						case EAFXShaderVariableType.k_Sampler2D:
+							return "setSampler";
+						case EAFXShaderVariableType.k_SamplerCUBE:
+							return "setSampler";
+						case EAFXShaderVariableType.k_SamplerVertexTexture:
+							return "setVertexBuffer";
 						default:
 							logger.critical("Wrong uniform type (" + eType + ")");
 					}

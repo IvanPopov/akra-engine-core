@@ -188,8 +188,9 @@ module akra.animation {
 
 		static temp(): IFrame {
 			iPositionElement = (iPositionElement === pPositionBuffer.length - 1 ? 0 : iPositionElement);
-			var p = pPositionBuffer[iPositionElement++];
-			return p.set.apply(p, arguments);
+			//var p = pPositionBuffer[iPositionElement++];
+			//return p.set.apply(p, arguments);
+			return pPositionBuffer[iPositionElement++].reset();
 		}
 	} 
 
@@ -272,8 +273,9 @@ module akra.animation {
 
 		static temp(): IFrame {
 			iMatrixElement = (iMatrixElement === pMatrixBuffer.length - 1 ? 0 : iMatrixElement);
-			var p = pMatrixBuffer[iMatrixElement++];
-			return p.set.apply(p, arguments);
+			//var p = pMatrixBuffer[iMatrixElement++];
+			//return p.set.apply(p, arguments);
+			return pMatrixBuffer[iMatrixElement++].reset();
 		}
 	}
 

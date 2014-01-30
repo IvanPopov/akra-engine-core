@@ -279,6 +279,9 @@ module akra.scene {
 				this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix);
 				this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
 
+				this._iUpdateFlags = bf.clearAll(this._iUpdateFlags, bf.flag(ENodeUpdateFlags.k_NewLocalMatrix) |
+					bf.flag(ENodeUpdateFlags.k_NewOrientation));
+
 				return true;
 			}
 

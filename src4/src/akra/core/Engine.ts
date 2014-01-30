@@ -53,8 +53,6 @@ module akra.core {
 
 		/** stop render loop?*/
 		private _pTimer: IUtilTimer;
-		private _iAppPausedCount: int = 0;
-
 
 		/** is paused? */
 		private _isActive: boolean = false;
@@ -279,7 +277,6 @@ module akra.core {
 
 		play(): boolean {
 			if (!this.isActive()) {
-				this._iAppPausedCount = 0;
 				this.active.emit();
 
 				if (this._isFrameMoving) {
@@ -290,20 +287,21 @@ module akra.core {
 			return this.isActive();
 		}
 
-		pause(isPause: boolean = false): boolean {
-			this._iAppPausedCount += (isPause ? +1 : -1);
-			(this._iAppPausedCount ? this.inactive.emit() : this.active.emit());
+		pause(isPause: boolean = true): boolean {
+			if (this.isActive() !== isPause) {
+				return !this.isActive();
+			}
 
-			// Handle the first pause request (of many, nestable pause requests)
-			if (isPause && (1 == this._iAppPausedCount)) {
-				// Stop the scene from animating
+			if (isPause) {
+				this.inactive.emit();
+
 				if (this._isFrameMoving) {
 					this._pTimer.stop();
 				}
 			}
+			else {
+				this.active.emit();
 
-			if (0 == this._iAppPausedCount) {
-				// Restart the timers
 				if (this._isFrameMoving) {
 					this._pTimer.start();
 				}
@@ -329,7 +327,7 @@ module akra.core {
 		}
 
 		final protected _inactivate(): void {
-			this._isActive = true;
+			this._isActive = false;
 		}
 
 		final protected _activate(): void {
