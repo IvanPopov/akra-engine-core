@@ -8,6 +8,7 @@ module akra {
 	export var pCamera: ICamera = null;
 	export var pViewport: IViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+	export var pSky: model.Sky = null;
 	var data = "../../../src2/data/";
 
 	function setup(pCanvas: ICanvas3d): void {
@@ -22,6 +23,7 @@ module akra {
 	function createSceneEnvironment(): void {
 		var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
 		pSceneQuad.attachToParent(pScene.getRootNode());
+		//pSceneQuad.addPosition(0., 1., 0.);
 
 		var pSceneSurface: ISceneModel = addons.createSceneSurface(pScene, 40);
 		pSceneSurface.addPosition(0, 0.01, 0);
@@ -93,6 +95,16 @@ module akra {
 		pOmniLight.setShadowCaster(false);
 
 		pOmniLight.addPosition(1, 5, 3);
+	}
+
+	function createSky(): void {
+		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
+		pSky.setTime(13.);
+
+		pSky.sun.setShadowCaster(false);
+
+		var pSceneModel: ISceneModel = pSky.skyDome;
+		pSceneModel.attachToParent(pScene.getRootNode());
 	}
 
 	function createSkyBox(): void {
@@ -232,11 +244,12 @@ module akra {
 		//createSceneEnvironment();
 		createLighting();
 		createSkyBox();
+		//createSky();
 
 		//loadHero();
-		//loadManyModels(400, data + "models/cube.dae");
+		loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(150, data + "models/box/opened_box.dae");
-		loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
 		pEngine.exec();
 		//pEngine.renderFrame();

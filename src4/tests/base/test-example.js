@@ -8,6 +8,7 @@ var akra;
     akra.pCamera = null;
     akra.pViewport = null;
     akra.pRmgr = akra.pEngine.getResourceManager();
+    akra.pSky = null;
     var data = "../../../src2/data/";
 
     function setup(pCanvas) {
@@ -23,6 +24,7 @@ var akra;
         var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
         pSceneQuad.attachToParent(akra.pScene.getRootNode());
 
+        //pSceneQuad.addPosition(0., 1., 0.);
         var pSceneSurface = akra.addons.createSceneSurface(akra.pScene, 40);
         pSceneSurface.addPosition(0, 0.01, 0);
         pSceneSurface.scale(5.);
@@ -93,6 +95,16 @@ var akra;
         pOmniLight.setShadowCaster(false);
 
         pOmniLight.addPosition(1, 5, 3);
+    }
+
+    function createSky() {
+        akra.pSky = new akra.model.Sky(akra.pEngine, 32, 32, 1000.0);
+        akra.pSky.setTime(13.);
+
+        akra.pSky.sun.setShadowCaster(false);
+
+        var pSceneModel = akra.pSky.skyDome;
+        pSceneModel.attachToParent(akra.pScene.getRootNode());
     }
 
     function createSkyBox() {
@@ -230,11 +242,12 @@ var akra;
         createLighting();
         createSkyBox();
 
+        //createSky();
         //loadHero();
-        //loadManyModels(400, data + "models/cube.dae");
-        //loadManyModels(150, data + "models/box/opened_box.dae");
-        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadManyModels(400, data + "models/cube.dae");
 
+        //loadManyModels(150, data + "models/box/opened_box.dae");
+        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }

@@ -11,7 +11,9 @@ module akra {
 		private _pSender: S = null;
 		private _eType: EEventTypes = EEventTypes.BROADCAST;
 		private _fnForerunnerTrigger: Function = null;
+		private _pSyncSignal: Signal<T, S> = null;
 
+		private _sForerunnerTriggerName: string = null;
 
 		private static _pEmptyListenersList: IListener<T>[] = [];
 		private static _nEmptyListenersCount: uint = 0;
@@ -33,33 +35,43 @@ module akra {
 			//}
 		}
 
-		// Проверяем, существует ли функция в прототипе сендера, чтобы не подавались noname 
-		// функции в сигналы и в качестве fnForerunner
-		private isMethodExistsInSenderPrototype(fn: Function): boolean {
-			var pProto = (<any>this._pSender).constructor.prototype;
-
-			for (var p in pProto) {
-				if (pProto.hasOwnProperty(p)) {
-					if (pProto[p] === fn)
-						return true;
-				}
+		getListeners(eEventType: EEventTypes): IListener<T>[] {
+			if (eEventType == EEventTypes.BROADCAST) {
+				return this._pBroadcastListeners;
 			}
 
-			return false;
+			if (!isNull(this._pUnicastListener)) {
+				return [this._pUnicastListener];
+			}
+
+			return [];
+		}
+
+		getSender(): S {
+			return this._pSender;
+		}
+
+		getType(): EEventTypes {
+			return this._eType;
 		}
 
 		/** @param fn Must be method of signal sender */
-		public setForerunner(fn: Function): void {
+		setForerunner(fn: Function): void {
 			//debug.assert(this.isMethodExistsInSenderPrototype(fn), "Callback must be a part of sender proto.");
 			this._fnForerunnerTrigger = fn;
+
+			if (this._pSender !== null) {
+				this._sForerunnerTriggerName = this.findCallbacknameForListener(this._pSender, fn);
+			}
+
 		}
 
-		public connect(pSignal: ISignal<any>): boolean;
-		public connect(fnCallback: T, eType?: EEventTypes): boolean;
-		public connect(fnCallback: string, eType?: EEventTypes): boolean;
-		public connect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
-		public connect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
-		public connect(): boolean {
+		connect(pSignal: ISignal<any>): boolean;
+		connect(fnCallback: T, eType?: EEventTypes): boolean;
+		connect(fnCallback: string, eType?: EEventTypes): boolean;
+		connect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
+		connect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
+		connect(): boolean {
 			var pListener: IListener<T> = this.fromParamsToListener(arguments);
 
 			if (pListener === null) {
@@ -86,12 +98,12 @@ module akra {
 			return true;
 		}
 
-		public disconnect(pSignal: ISignal<any>): boolean;
-		public disconnect(fnCallback: T, eType?: EEventTypes): boolean;
-		public disconnect(fnCallback: string, eType?: EEventTypes): boolean;
-		public disconnect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
-		public disconnect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
-		public disconnect(): boolean {
+		disconnect(pSignal: ISignal<any>): boolean;
+		disconnect(fnCallback: T, eType?: EEventTypes): boolean;
+		disconnect(fnCallback: string, eType?: EEventTypes): boolean;
+		disconnect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
+		disconnect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
+		disconnect(): boolean {
 			var pTmpListener: IListener<T> = this.fromParamsToListener(arguments);
 			var bResult: boolean = false;
 
@@ -120,141 +132,1118 @@ module akra {
 			return bResult;
 		}
 
-		public emit(...pArgs: any[]);
-		public emit() {
-			if (!isNull(this._fnForerunnerTrigger)) {
-				switch (arguments.length) {
-					case 0:
-						this._fnForerunnerTrigger.call(this._pSender);
-						break;
-					case 1:
-						this._fnForerunnerTrigger.call(this._pSender, arguments[0]);
-						break;
-					case 2:
-						this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1]);
-						break;
-					case 3:
-						this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1], arguments[2]);
-						break;
-					case 4:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3]);
-						break;
-					case 5:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
-						break;
-					case 6:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5]);
-						break;
-					case 7:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6]);
-						break;
-					case 8:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7]);
-						break;
-					case 9:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7], arguments[8]);
-						break;
-					case 10:
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
-						break;
-					default:
-						var args:any[] = [];
-						for (var _i = 0; _i < (arguments.length); _i++) {
-							args[_i] = arguments[_i];
-						}
-						this._fnForerunnerTrigger.apply(this._pSender, args);
-				}
-
-			}
-
+		emit(...pArgs: any[]);
+		emit() {
 			var pListener: IListener<T> = null;
 			var nListeners: uint = this._eType === EEventTypes.BROADCAST ? this._nBroadcastListenersCount : 1;
-			for (var i: int = 0; i < nListeners; i++) {
-				if (this._eType === EEventTypes.UNICAST) {
-					pListener = this._pUnicastListener;
-				}
-				else {
-					pListener = this._pBroadcastListeners[i];
-				}
 
-				if (pListener === null) {
-					continue;
-				}
+			switch (arguments.length) {
+				case 0:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
 
-				switch (arguments.length) {
-					case 0:
-						pListener.callback.call(pListener.reciever, this._pSender);
-						break;
-					case 1:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0]);
-						break;
-					case 2:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1]);
-						break;
-					case 3:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2]);
-						break;
-					case 4:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3]);
-						break;
-					case 5:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
-						break;
-					case 6:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5]);
-						break;
-					case 7:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6]);
-						break;
-					case 8:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7]);
-						break;
-					case 9:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7], arguments[8]);
-						break;
-					case 10:
-						pListener.callback.call(pListener.reciever, this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
-						break;
-					default:
-						var args:any[] = [this._pSender];
-						for (var _i = 0; _i < (arguments.length); _i++) {
-							args[_i + 1] = arguments[_i];
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
 						}
 
-						pListener.callback.apply(pListener.reciever, args);
-				}
+						this._pSyncSignal.emit();
 
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger();
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName]();
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender);
+						}
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (pListener.reciever === null) {
+							pListener.callback(this._pSender);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if (pListener.reciever === null) {
+								pListener.callback(this._pSender);
+							}
+							else if (pListener.callbackName !== null) {
+								pListener.reciever[pListener.callbackName](this._pSender);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender);
+							}
+						}
+					}
+
+					return;
+				case 1:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(arguments[0]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](arguments[0]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender, arguments[0]);
+						}
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if (this._pSender === null) {
+								pListener.callback(this._pSender,
+									arguments[0]);
+							}
+							else if (pListener.callbackName !== null) {
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0]);
+							}
+						}
+					}
+
+					return;
+				case 2:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(arguments[0], arguments[1]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](arguments[0], arguments[1]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1]);
+						}
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if (this._pSender === null) {
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1]);
+							}
+							else if (pListener.callbackName !== null) {
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1]);
+							}
+						}
+					}
+
+					return;
+				case 3:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(arguments[0], arguments[1], arguments[2]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](arguments[0], arguments[1], arguments[2]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1], arguments[2]);
+						}
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if (this._pSender === null) {
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2]);
+							}
+							else if (pListener.callbackName !== null) {
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2]);
+							}
+						}
+					}
+
+					return;
+				case 4:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if (this._pSender === null) {
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3]);
+							}
+							else if (pListener.callbackName !== null) {
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3]);
+							}
+						}
+					}
+
+					return;
+				case 5:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if (this._pSender === null) {
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+							}
+							else if (pListener.callbackName !== null) {
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+							}
+						}
+					}
+
+					return;
+				case 6:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if(this._pSender === null){
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5]);	
+							}
+							else if(pListener.callbackName !== null){
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5]);
+							}
+						}
+					}
+
+					return;
+				case 7:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if(this._pSender === null){
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6]);	
+							}
+							else if(pListener.callbackName !== null){
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6]);
+							}
+						}
+					}
+
+					return;
+				case 8:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if(this._pSender === null){
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7]);	
+							}
+							else if(pListener.callbackName !== null){
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7]);
+							}
+						}
+					}
+
+					return;
+				case 9:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7], arguments[8]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7], arguments[8]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if(this._pSender === null){
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7], arguments[8]);	
+							}
+							else if(pListener.callbackName !== null){
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7], arguments[8]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7], arguments[8]);
+							}
+						}
+					}
+
+					return;
+				case 10:
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+					}
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						if (this._pSender === null) {
+							pListener.callback(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						}
+						else if (pListener.callbackName !== null) {
+							pListener.reciever[pListener.callbackName](this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						}
+						else {
+							pListener.callback.call(pListener.reciever, this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						}
+					}
+					else {
+						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							if(this._pSender === null){
+								pListener.callback(this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);	
+							}
+							else if(pListener.callbackName !== null){
+								pListener.reciever[pListener.callbackName](this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+							}
+							else {
+								pListener.callback.call(pListener.reciever, this._pSender,
+									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+							}
+						}
+					}
+
+					return;
+				default:
+					var args: any[] = [];
+					for (var _i = 0; _i < (arguments.length); _i++) {
+						args[_i] = arguments[_i];
+					}
+
+					if (this._pSyncSignal !== null) {
+						var pOriginalSender: S = this._pSyncSignal.getSender();
+
+						if (this._pSyncSignal.getSender() !== null) {
+							this._pSyncSignal._setSender(this._pSender);
+						}
+
+						this._pSyncSignal.emit.apply(this._pSyncSignal, args);
+
+						this._pSyncSignal._setSender(pOriginalSender);
+					}
+
+					if (this._fnForerunnerTrigger !== null) {
+						this._fnForerunnerTrigger.apply(this._pSender, args);
+					}
+
+					args.unshift(this._pSender);
+
+					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+						pListener = this._pUnicastListener;
+						pListener.callback.apply(pListener.reciever, args);
+					}
+					else {
+						for (var i: int = 0; i < nListeners; i++) {
+							pListener = this._pBroadcastListeners[i];
+							if (pListener === null) continue;
+							pListener.callback.apply(pListener.reciever, args);
+						}
+					}
+
+					return;
 			}
+
+			//var pListener: IListener<T> = null;
+			//var nListeners: uint = this._eType === EEventTypes.BROADCAST ? this._nBroadcastListenersCount : 1;
+
+			//switch (arguments.length) {
+			//	case 0:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit();
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender);
+			//			}
+			//		}
+
+			//		return;
+			//	case 1:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender, arguments[0]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 2:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 3:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1], arguments[2]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 4:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 5:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 6:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//					arguments[5]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 7:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//					arguments[5], arguments[6]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 8:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//					arguments[5], arguments[6], arguments[7]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 9:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7], arguments[8]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7], arguments[8]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7], arguments[8]);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//					arguments[5], arguments[6], arguments[7], arguments[8]);
+			//			}
+			//		}
+
+			//		return;
+			//	case 10:
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.call(this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+			//		}
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.call(pListener.reciever, this._pSender,
+			//				arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//				arguments[5], arguments[6], arguments[7], arguments[8], arguments[9])
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.call(pListener.reciever, this._pSender,
+			//					arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+			//					arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+			//			}
+			//		}
+
+			//		return;
+			//	default:
+			//		var args: any[] = [];
+			//		for (var _i = 0; _i < (arguments.length); _i++) {
+			//			args[_i] = arguments[_i];
+			//		}
+
+			//		if (this._pSyncSignal !== null) {
+			//			var pOriginalSender: S = this._pSyncSignal.getSender();
+
+			//			if (this._pSyncSignal.getSender() !== null) {
+			//				this._pSyncSignal._setSender(this._pSender);
+			//			}
+
+			//			this._pSyncSignal.emit.apply(this._pSyncSignal, args);
+
+			//			this._pSyncSignal._setSender(pOriginalSender);
+			//		}
+
+			//		if (this._fnForerunnerTrigger !== null) {
+			//			this._fnForerunnerTrigger.apply(this._pSender, args);
+			//		}
+
+			//		args.unshift(this._pSender);
+
+			//		if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
+			//			pListener = this._pUnicastListener;
+			//			pListener.callback.apply(pListener.reciever, args);
+			//		}
+			//		else {
+			//			for (var i: int = 0; i < nListeners; i++) {
+			//				pListener = this._pBroadcastListeners[i];
+			//				if (pListener === null) continue;
+			//				pListener.callback.apply(pListener.reciever, args);
+			//			}
+			//		}
+
+			//		return;
+			//}
 		}
 
-		public clear(): void {
+		clear(): void {
 			for (var i: uint = 0; i < this._nBroadcastListenersCount; i++) {
 				this.clearListener(this._pBroadcastListeners[i]);
 				this._pBroadcastListeners[i] = null;
@@ -266,14 +1255,22 @@ module akra {
 			this._pUnicastListener = null;
 		}
 
-		public hasListeners(): boolean {
+		hasListeners(): boolean {
 			return this._nBroadcastListenersCount > 0 || this._pUnicastListener !== null;
+		}
+
+		_syncSignal(pSignal: ISignal<T>): void {
+			this._pSyncSignal = <Signal<T, S>>pSignal;
+		}
+
+		protected _setSender(pSender: S): void {
+			this._pSender = pSender;
 		}
 
 		private fromParamsToListener(pArguments: IArguments): IListener<T> {
 			var pReciever: any = null;
 			var fnCallback: any = null;
-			var sCallbackName: string = "";
+			var sCallbackName: string = null;
 			var pSignal: ISignal<T> = null;
 			var eType: any = this._eType;
 
@@ -311,28 +1308,23 @@ module akra {
 					return null;
 				}
 
-				if (pReciever.constructor.prototype[fnCallback]) {
-					fnCallback = pReciever.constructor.prototype[fnCallback];
-				}
-				else {
-					fnCallback = pReciever[fnCallback]
-				}
+				fnCallback = pReciever[fnCallback];
+				sCallbackName = fnCallback;
 			}
-			//else if(!isNull(pReciever)){
-			//	sCallbackName = this.findCallbacknameForListener(pReciever, fnCallback);
-			//}
+			else if (!isNull(pReciever)) {
+				sCallbackName = this.findCallbacknameForListener(pReciever, fnCallback);
+			}
 
 			if (eType !== this._eType || fnCallback === undefined || fnCallback === null) {
 				return null;
 			}
 
-			// debug.assert(!isNull(pSignal) || this.isMethodExistsInSenderPrototype(fnCallback),
-			// 	"Callback must be a part of sender proto.");
-
 			var pListener: IListener<T> = this.getEmptyListener();
 			pListener.reciever = pReciever;
 			pListener.callback = fnCallback;
 			pListener.type = eType;
+
+			pListener.callbackName = sCallbackName;
 
 			return pListener;
 		}
@@ -346,7 +1338,7 @@ module akra {
 				}
 			}
 
-			return "";
+			return null;
 		}
 		private indexOfBroadcastListener(pReciever: any, fnCallback: T): int {
 			for (var i: uint = 0; i < this._nBroadcastListenersCount; i++) {
@@ -368,7 +1360,9 @@ module akra {
 				return <IListener<T>>{
 					reciever: null,
 					callback: null,
-					type: 0
+					type: 0,
+
+					callbackName: null
 				};
 			}
 		}
@@ -382,28 +1376,27 @@ module akra {
 			pListener.callback = null;
 			pListener.type = 0;
 
+			pListener.callbackName = null;
+
 			Signal._pEmptyListenersList[Signal._nEmptyListenersCount++] = pListener;
 		}
 
-		getListeners(eEventType: EEventTypes): IListener<T>[] {
-			if (eEventType == EEventTypes.BROADCAST) {
-				return this._pBroadcastListeners;
+		// Проверяем, существует ли функция в прототипе сендера, чтобы не подавались noname 
+		// функции в сигналы и в качестве fnForerunner
+		private isMethodExistsInSenderPrototype(fn: Function): boolean {
+			if (isNull(this._pSender)) {
+				return true;
 			}
 
-			if (!isNull(this._pUnicastListener)) {
-				return  [this._pUnicastListener];
+			for (var p in this._pSender) {
+				if (this._pSender[p] === fn) {
+					return true;
+				}
 			}
 
-			return [];
+			return false;
 		}
 
-		getSender(): S {
-			return this._pSender;
-		}
-
-		getType(): EEventTypes {
-			return this._eType;
-		}
 	}
 
 

@@ -33,6 +33,8 @@
 /// <reference path="../webgl/WebGLRenderer.ts" />
 // #endif
 
+/// <reference path="../model/Sky.ts" />
+
 module akra.core {
 	export class Engine implements IEngine {
 
