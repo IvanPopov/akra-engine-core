@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "id",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IColladaEntry",
+"type" : "akra.IColladaEntry",
 "isInline" : false}}}

@@ -8,8 +8,8 @@
 "format" : { "location" : "akra.IColladaImage",
 "type" : "string"},
 "depth" : { "location" : "akra.IColladaImage",
-"type" : "number"},
+"type" : "int"},
 "height" : { "location" : "akra.IColladaImage",
-"type" : "number"},
+"type" : "int"},
 "width" : { "location" : "akra.IColladaImage",
-"type" : "number"}}}}
+"type" : "int"}}}}

@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "controller" : { "location" : "akra.IColladaInstanceController",
-"type" : "IColladaController"},
+"type" : "akra.IColladaController"},
 "material" : { "location" : "akra.IColladaInstanceController",
-"type" : "IColladaBindMaterial"},
+"type" : "akra.IColladaBindMaterial"},
 "skeletons" : { "location" : "akra.IColladaInstanceController",
-"type" : "string[  ]"}}}}
+"type" : "string"}}}}

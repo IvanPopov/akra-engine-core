@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "number"} ],
-"type" : "StringMap",
+"type" : "akra.StringMap",
 "isInline" : false}}}

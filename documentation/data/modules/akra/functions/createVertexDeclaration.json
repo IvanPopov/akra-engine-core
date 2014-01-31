@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "pData",
 "isOptional" : true,
 "type" : "any"} ],
-"type" : "data.VertexDeclaration",
+"type" : "akra.data.VertexDeclaration",
 "isInline" : false}

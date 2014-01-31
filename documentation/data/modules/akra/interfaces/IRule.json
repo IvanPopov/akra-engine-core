@@ -2,6 +2,6 @@
 "variables" : { "public" : { "left" : { "location" : "akra.IRule",
 "type" : "string"},
 "right" : { "location" : "akra.IRule",
-"type" : "string[  ]"},
+"type" : "string"},
 "index" : { "location" : "akra.IRule",
-"type" : "number"}}}}
+"type" : "uint"}}}}

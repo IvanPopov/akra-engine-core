@@ -2,6 +2,6 @@
 "location" : "akra.math",
 "arguments" : [ { "name" : "nPixels",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "[  ]",
+"type" : "uint"} ],
+"type" : "uint",
 "isInline" : false}

@@ -5,6 +5,6 @@
 "type" : "any"},
 { "name" : "eOptions",
 "isOptional" : true,
-"type" : "number"} ],
-"type" : "ISceneModel",
+"type" : "int"} ],
+"type" : "akra.ISceneModel",
 "isInline" : false}

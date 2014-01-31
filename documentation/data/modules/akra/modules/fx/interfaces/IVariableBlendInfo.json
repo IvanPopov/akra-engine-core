@@ -1,9 +1,9 @@
 { "location" : "akra.fx",
 "variables" : { "public" : { "varList" : { "location" : "akra.fx.IVariableBlendInfo",
-"type" : "IAFXVariableDeclInstruction[  ]"},
+"type" : "akra.IAFXVariableDeclInstruction"},
 "blendType" : { "location" : "akra.fx.IVariableBlendInfo",
-"type" : "IAFXVariableTypeInstruction"},
+"type" : "akra.IAFXVariableTypeInstruction"},
 "name" : { "location" : "akra.fx.IVariableBlendInfo",
 "type" : "string"},
 "nameIndex" : { "location" : "akra.fx.IVariableBlendInfo",
-"type" : "number"}}}}
+"type" : "uint"}}}}

@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "bVarious",
 "isOptional" : true,
 "type" : "bool"} ],
-"type" : "IColor",
+"type" : "akra.IColor",
 "isInline" : false}

@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "animation" : { "location" : "akra.IAnimationBlendElementEntry",
-"type" : "number"},
+"type" : "int"},
 "weight" : { "location" : "akra.IAnimationBlendElementEntry",
-"type" : "number"},
+"type" : "float"},
 "mask" : { "location" : "akra.IAnimationBlendElementEntry",
-"type" : "FloatMap"}}}}
+"type" : "akra.FloatMap"}}}}

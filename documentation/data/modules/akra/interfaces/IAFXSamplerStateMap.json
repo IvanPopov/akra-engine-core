@@ -3,6 +3,6 @@
 "location" : "akra.IAFXSamplerStateMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IAFXSamplerState",
+"type" : "uint"} ],
+"type" : "akra.IAFXSamplerState",
 "isInline" : false}}}

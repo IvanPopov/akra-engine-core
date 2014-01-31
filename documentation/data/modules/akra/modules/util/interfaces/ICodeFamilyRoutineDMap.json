@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "familyName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "ILogRoutineMap",
+"type" : "akra.util.ILogRoutineMap",
 "isInline" : false}}}

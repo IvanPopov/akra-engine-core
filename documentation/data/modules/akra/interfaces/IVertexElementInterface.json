@@ -1,9 +1,9 @@
 { "location" : "akra",
 "variables" : { "public" : { "count" : { "location" : "akra.IVertexElementInterface",
-"type" : "number"},
+"type" : "uint"},
 "type" : { "location" : "akra.IVertexElementInterface",
-"type" : "EDataTypes"},
+"type" : "akra.EDataTypes"},
 "usage" : { "location" : "akra.IVertexElementInterface",
 "type" : "string"},
 "offset" : { "location" : "akra.IVertexElementInterface",
-"type" : "number"}}}}
+"type" : "uint"}}}}

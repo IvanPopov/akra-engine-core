@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "animations" : { "location" : "akra.IControllerEntry",
-"type" : "number[  ]"},
+"type" : "int"},
 "options" : { "location" : "akra.IControllerEntry",
-"type" : "number"},
+"type" : "int"},
 "name" : { "location" : "akra.IControllerEntry",
 "type" : "string"}}}}

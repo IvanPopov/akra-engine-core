@@ -2,9 +2,9 @@
 "location" : "akra.render",
 "arguments" : [ { "name" : "pFrom",
 "isOptional" : false,
-"type" : "IRenderStateMap"},
+"type" : "akra.IRenderStateMap"},
 { "name" : "pTo",
 "isOptional" : false,
-"type" : "IRenderStateMap"} ],
+"type" : "akra.IRenderStateMap"} ],
 "type" : "void",
 "isInline" : false}

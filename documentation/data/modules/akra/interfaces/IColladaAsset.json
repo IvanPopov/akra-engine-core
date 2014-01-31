@@ -1,6 +1,6 @@
 { "location" : "akra",
 "variables" : { "public" : { "unit" : { "location" : "akra.IColladaAsset",
-"type" : "IColladaUnit"},
+"type" : "akra.IColladaUnit"},
 "upAxis" : { "location" : "akra.IColladaAsset",
 "type" : "string"},
 "title" : { "location" : "akra.IColladaAsset",
@@ -12,6 +12,6 @@
 "modified" : { "location" : "akra.IColladaAsset",
 "type" : "string"},
 "keywords" : { "location" : "akra.IColladaAsset",
-"type" : "string[  ]"},
+"type" : "string"},
 "contributor" : { "location" : "akra.IColladaAsset",
-"type" : "IColladaContributor"}}}}
+"type" : "akra.IColladaContributor"}}}}

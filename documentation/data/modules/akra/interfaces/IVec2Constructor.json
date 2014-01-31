@@ -3,9 +3,9 @@
 "location" : "akra.IVec2Constructor",
 "arguments" : [ { "name" : "fValue1",
 "isOptional" : false,
-"type" : "number"},
+"type" : "float"},
 { "name" : "fValue2",
 "isOptional" : false,
-"type" : "number"} ],
+"type" : "float"} ],
 "type" : "any",
 "isInline" : false}}}

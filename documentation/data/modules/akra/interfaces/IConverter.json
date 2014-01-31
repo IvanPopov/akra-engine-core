@@ -6,9 +6,9 @@
 "type" : "string"},
 { "name" : "output",
 "isOptional" : false,
-"type" : "[  ]"},
+"type" : "any"},
 { "name" : "from",
 "isOptional" : true,
-"type" : "number"} ],
-"type" : "number",
+"type" : "int"} ],
+"type" : "uint",
 "isInline" : false}}}

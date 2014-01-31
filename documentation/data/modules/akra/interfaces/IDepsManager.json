@@ -3,7 +3,7 @@
 "location" : "akra.IDepsManager",
 "arguments" : [ { "name" : "pDeps",
 "isOptional" : false,
-"type" : "IDependens"},
+"type" : "akra.IDependens"},
 { "name" : "sRoot",
 "isOptional" : true,
 "type" : "string"} ],

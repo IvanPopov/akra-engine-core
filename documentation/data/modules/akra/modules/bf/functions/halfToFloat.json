@@ -1,7 +1,10 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [ [ "/**",
+"* Convert a float16 (NV_half_float) to a float32",
+"* Courtesy of OpenEXR",
+"*/" ] ],
 "location" : "akra.bf",
 "arguments" : [ { "name" : "y",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
-"isInline" : false}
+"type" : "uint"} ],
+"type" : "float",
+"isInline" : true}

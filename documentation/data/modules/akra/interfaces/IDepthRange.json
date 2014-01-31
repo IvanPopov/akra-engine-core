@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "min" : { "location" : "akra.IDepthRange",
-"type" : "number"},
+"type" : "float"},
 "max" : { "location" : "akra.IDepthRange",
-"type" : "number"}}}}
+"type" : "float"}}}}

@@ -5,7 +5,7 @@
 "type" : "string"},
 { "name" : "n",
 "isOptional" : false,
-"type" : "number"},
+"type" : "uint"},
 { "name" : "sType",
 "isOptional" : false,
 "type" : "string"},

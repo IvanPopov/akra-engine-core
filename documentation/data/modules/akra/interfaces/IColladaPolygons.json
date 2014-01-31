@@ -2,12 +2,12 @@
 "variables" : { "public" : { "name" : { "location" : "akra.IColladaPolygons",
 "type" : "string"},
 "inputs" : { "location" : "akra.IColladaPolygons",
-"type" : "IColladaInput[  ]"},
+"type" : "akra.IColladaInput"},
 "p" : { "location" : "akra.IColladaPolygons",
-"type" : "number[  ]"},
+"type" : "uint"},
 "material" : { "location" : "akra.IColladaPolygons",
 "type" : "string"},
 "type" : { "location" : "akra.IColladaPolygons",
-"type" : "EPrimitiveTypes"},
+"type" : "akra.EPrimitiveTypes"},
 "count" : { "location" : "akra.IColladaPolygons",
-"type" : "number"}}}}
+"type" : "uint"}}}}

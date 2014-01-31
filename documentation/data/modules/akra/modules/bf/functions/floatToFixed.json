@@ -1,10 +1,13 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [ [ "/**",
+"* Convert floating point colour channel value between 0.0 and 1.0 (otherwise clamped)",
+"* to integer of a certain number of bits. Works for any value of bits between 0 and 31.",
+"*/" ] ],
 "location" : "akra.bf",
 "arguments" : [ { "name" : "value",
 "isOptional" : false,
-"type" : "number"},
+"type" : "float"},
 { "name" : "bits",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
-"isInline" : false}
+"type" : "uint"} ],
+"type" : "uint",
+"isInline" : true}

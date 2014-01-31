@@ -3,6 +3,6 @@
 "location" : "akra.util.IOperationMap",
 "arguments" : [ { "name" : "stateIndex",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IOperation",
+"type" : "uint"} ],
+"type" : "akra.util.IOperation",
 "isInline" : false}}}

@@ -5,6 +5,6 @@
 "type" : "any"},
 { "name" : "nSize",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "[  ]",
+"type" : "uint"} ],
+"type" : "any",
 "isInline" : false}

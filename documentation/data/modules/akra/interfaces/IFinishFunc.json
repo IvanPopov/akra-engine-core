@@ -3,7 +3,7 @@
 "location" : "akra.IFinishFunc",
 "arguments" : [ { "name" : "eCode",
 "isOptional" : false,
-"type" : "EParserCode"},
+"type" : "akra.EParserCode"},
 { "name" : "sFileName",
 "isOptional" : false,
 "type" : "string"} ],

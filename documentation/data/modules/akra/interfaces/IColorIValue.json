@@ -1,9 +1,9 @@
 { "location" : "akra",
 "variables" : { "public" : { "r" : { "location" : "akra.IColorIValue",
-"type" : "number"},
+"type" : "uint"},
 "g" : { "location" : "akra.IColorIValue",
-"type" : "number"},
+"type" : "uint"},
 "b" : { "location" : "akra.IColorIValue",
-"type" : "number"},
+"type" : "uint"},
 "a" : { "location" : "akra.IColorIValue",
-"type" : "number"}}}}
+"type" : "uint"}}}}

@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "info",
 "isOptional" : true,
 "type" : "any"} ],
-"type" : "IPathinfo",
+"type" : "akra.IPathinfo",
 "isInline" : false}

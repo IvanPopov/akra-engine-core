@@ -8,6 +8,6 @@
 "location" : "akra.IAFXType",
 "arguments" : [ { "name" : "pInstruction",
 "isOptional" : false,
-"type" : "IAFXTypeDeclInstruction"} ],
+"type" : "akra.IAFXTypeDeclInstruction"} ],
 "type" : "bool",
 "isInline" : false}}}

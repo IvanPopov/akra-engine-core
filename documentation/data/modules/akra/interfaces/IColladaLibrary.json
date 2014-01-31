@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "element",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IColladaEntryMap",
+"type" : "akra.IColladaEntryMap",
 "isInline" : false}}}

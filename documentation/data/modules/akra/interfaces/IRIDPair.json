@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "renderable" : { "location" : "akra.IRIDPair",
-"type" : "IRenderableObject"},
+"type" : "akra.IRenderableObject"},
 "object" : { "location" : "akra.IRIDPair",
-"type" : "ISceneObject"}}}}
+"type" : "akra.ISceneObject"}}}}

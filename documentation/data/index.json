@@ -11,6 +11,12 @@
 ,
 "utf8_decode":{ }
 ,
+"crc32":{ }
+,
+"md5":{ }
+,
+"sha1":{ }
+,
 "createTriTreeNode":{ }
 ,
 "processInitTerrain":{ }

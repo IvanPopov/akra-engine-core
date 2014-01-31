@@ -2,6 +2,6 @@
 "location" : "akra.util",
 "arguments" : [ { "name" : "pJoint",
 "isOptional" : false,
-"type" : "IJoint"} ],
-"type" : "ISceneModel",
+"type" : "akra.IJoint"} ],
+"type" : "akra.ISceneModel",
 "isInline" : false}

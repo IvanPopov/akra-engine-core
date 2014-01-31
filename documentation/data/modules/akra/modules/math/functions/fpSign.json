@@ -2,6 +2,6 @@
 "location" : "akra.math",
 "arguments" : [ { "name" : "f",
 "isOptional" : false,
-"type" : "number"} ],
+"type" : "int"} ],
 "type" : "number",
 "isInline" : true}

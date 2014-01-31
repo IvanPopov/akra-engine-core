@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "id",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "ICanvasInfo",
+"type" : "akra.ICanvasInfo",
 "isInline" : false}

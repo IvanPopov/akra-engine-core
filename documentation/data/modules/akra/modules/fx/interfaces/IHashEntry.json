@@ -1,5 +1,5 @@
 { "location" : "akra.fx",
 "variables" : { "public" : { "hash" : { "location" : "akra.fx.IHashEntry",
-"type" : "number"},
+"type" : "uint"},
 "modifyMark" : { "location" : "akra.fx.IHashEntry",
-"type" : "number"}}}}
+"type" : "uint"}}}}

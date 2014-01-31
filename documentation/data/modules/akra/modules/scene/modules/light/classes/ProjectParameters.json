@@ -1,9 +1,9 @@
 { "location" : "akra.scene.light",
 "variables" : { "public" : { "ambient" : { "location" : "akra.scene.light.ProjectParameters",
-"type" : "IColor"},
+"type" : "akra.IColor"},
 "diffuse" : { "location" : "akra.scene.light.ProjectParameters",
-"type" : "IColor"},
+"type" : "akra.IColor"},
 "specular" : { "location" : "akra.scene.light.ProjectParameters",
-"type" : "IColor"},
+"type" : "akra.IColor"},
 "attenuation" : { "location" : "akra.scene.light.ProjectParameters",
-"type" : "IVec3"}}}}
+"type" : "akra.IVec3"}}}}

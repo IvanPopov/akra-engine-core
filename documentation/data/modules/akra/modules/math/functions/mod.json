@@ -2,9 +2,9 @@
 "location" : "akra.math",
 "arguments" : [ { "name" : "e",
 "isOptional" : false,
-"type" : "number"},
+"type" : "int"},
 { "name" : "divisor",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
+"type" : "int"} ],
+"type" : "int",
 "isInline" : true}

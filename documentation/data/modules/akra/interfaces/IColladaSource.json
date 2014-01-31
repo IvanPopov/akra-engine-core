@@ -4,4 +4,4 @@
 "array" : { "location" : "akra.IColladaSource",
 "type" : "Object"},
 "techniqueCommon" : { "location" : "akra.IColladaSource",
-"type" : "IColladaTechniqueCommon"}}}}
+"type" : "akra.IColladaTechniqueCommon"}}}}

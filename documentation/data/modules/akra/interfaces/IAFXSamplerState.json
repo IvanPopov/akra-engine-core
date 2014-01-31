@@ -2,12 +2,12 @@
 "variables" : { "public" : { "textureName" : { "location" : "akra.IAFXSamplerState",
 "type" : "string"},
 "texture" : { "location" : "akra.IAFXSamplerState",
-"type" : "ITexture"},
+"type" : "akra.ITexture"},
 "wrap_s" : { "location" : "akra.IAFXSamplerState",
-"type" : "ETextureWrapModes"},
+"type" : "akra.ETextureWrapModes"},
 "wrap_t" : { "location" : "akra.IAFXSamplerState",
-"type" : "ETextureWrapModes"},
+"type" : "akra.ETextureWrapModes"},
 "mag_filter" : { "location" : "akra.IAFXSamplerState",
-"type" : "ETextureFilters"},
+"type" : "akra.ETextureFilters"},
 "min_filter" : { "location" : "akra.IAFXSamplerState",
-"type" : "ETextureFilters"}}}}
+"type" : "akra.ETextureFilters"}}}}

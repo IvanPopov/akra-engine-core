@@ -1,5 +1,5 @@
 { "comments" : [  ],
 "location" : "akra.controls",
 "arguments" : [  ],
-"type" : "IGamepadMap",
+"type" : "akra.IGamepadMap",
 "isInline" : false}

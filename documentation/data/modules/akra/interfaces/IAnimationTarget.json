@@ -1,9 +1,9 @@
 { "location" : "akra",
 "variables" : { "public" : { "target" : { "location" : "akra.IAnimationTarget",
-"type" : "ISceneNode"},
+"type" : "akra.ISceneNode"},
 "index" : { "location" : "akra.IAnimationTarget",
-"type" : "number"},
+"type" : "int"},
 "name" : { "location" : "akra.IAnimationTarget",
 "type" : "string"},
 "track" : { "location" : "akra.IAnimationTarget",
-"type" : "IAnimationTrack"}}}}
+"type" : "akra.IAnimationTrack"}}}}

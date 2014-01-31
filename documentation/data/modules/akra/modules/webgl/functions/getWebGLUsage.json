@@ -2,6 +2,6 @@
 "location" : "akra.webgl",
 "arguments" : [ { "name" : "iFlags",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
+"type" : "int"} ],
+"type" : "int",
 "isInline" : false}

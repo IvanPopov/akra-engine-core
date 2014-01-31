@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "sFuncName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "[  ]",
+"type" : "akra.fx.SystemFunctionInstruction",
 "isInline" : false}}}

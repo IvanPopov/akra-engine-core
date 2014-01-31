@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "uniforms" : { "location" : "akra.IShaderInput",
-"type" : "{  [ index :  number ] :  any; }"},
+"type" : "_anonymous"},
 "attrs" : { "location" : "akra.IShaderInput",
-"type" : "{  [ index :  number ] :  any; }"},
+"type" : "_anonymous"},
 "renderStates" : { "location" : "akra.IShaderInput",
-"type" : "IRenderStateMap"}}}}
+"type" : "akra.IRenderStateMap"}}}}

@@ -2,6 +2,6 @@
 "variables" : { "public" : { "name" : { "location" : "akra.IColladaController",
 "type" : "string"},
 "skin" : { "location" : "akra.IColladaController",
-"type" : "IColladaSkin"},
+"type" : "akra.IColladaSkin"},
 "morph" : { "location" : "akra.IColladaController",
-"type" : "IColladaMorph"}}}}
+"type" : "akra.IColladaMorph"}}}}

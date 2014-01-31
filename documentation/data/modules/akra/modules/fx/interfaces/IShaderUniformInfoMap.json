@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "name",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IShaderUniformInfo",
+"type" : "akra.fx.IShaderUniformInfo",
 "isInline" : false}}}

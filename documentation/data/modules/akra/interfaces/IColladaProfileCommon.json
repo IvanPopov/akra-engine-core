@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "technique" : { "location" : "akra.IColladaProfileCommon",
-"type" : "IColladaEffectTechnique"},
+"type" : "akra.IColladaEffectTechnique"},
 "newParam" : { "location" : "akra.IColladaProfileCommon",
-"type" : "IColladaNewParamMap"}}}}
+"type" : "akra.IColladaNewParamMap"}}}}

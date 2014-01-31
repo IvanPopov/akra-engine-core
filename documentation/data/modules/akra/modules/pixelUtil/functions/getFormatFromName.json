@@ -19,5 +19,5 @@
 { "name" : "isCaseSensitive",
 "isOptional" : true,
 "type" : "bool"} ],
-"type" : "EPixelFormats",
+"type" : "akra.EPixelFormats",
 "isInline" : false}

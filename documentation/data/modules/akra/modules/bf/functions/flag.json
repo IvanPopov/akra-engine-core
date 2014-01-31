@@ -2,6 +2,6 @@
 "location" : "akra.bf",
 "arguments" : [ { "name" : "x",
 "isOptional" : false,
-"type" : "number"} ],
+"type" : "int"} ],
 "type" : "number",
 "isInline" : true}

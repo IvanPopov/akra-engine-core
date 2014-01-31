@@ -2,6 +2,6 @@
 "location" : "akra.webgl",
 "arguments" : [ { "name" : "eType",
 "isOptional" : false,
-"type" : "EPrimitiveTypes"} ],
-"type" : "number",
+"type" : "akra.EPrimitiveTypes"} ],
+"type" : "int",
 "isInline" : false}

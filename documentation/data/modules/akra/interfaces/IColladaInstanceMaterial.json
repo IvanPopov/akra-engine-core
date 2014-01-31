@@ -4,6 +4,6 @@
 "target" : { "location" : "akra.IColladaInstanceMaterial",
 "type" : "string"},
 "vertexInput" : { "location" : "akra.IColladaInstanceMaterial",
-"type" : "IColladaBindVertexInputMap"},
+"type" : "akra.IColladaBindVertexInputMap"},
 "material" : { "location" : "akra.IColladaInstanceMaterial",
-"type" : "IColladaMaterial"}}}}
+"type" : "akra.IColladaMaterial"}}}}

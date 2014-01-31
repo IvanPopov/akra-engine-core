@@ -3,6 +3,6 @@
 "location" : "akra.IColladaArray",
 "arguments" : [ { "name" : "i",
 "isOptional" : false,
-"type" : "number"} ],
+"type" : "uint"} ],
 "type" : "any",
 "isInline" : false}}}

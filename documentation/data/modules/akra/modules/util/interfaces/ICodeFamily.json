@@ -2,6 +2,6 @@
 "variables" : { "public" : { "familyName" : { "location" : "akra.util.ICodeFamily",
 "type" : "string"},
 "codeMin" : { "location" : "akra.util.ICodeFamily",
-"type" : "number"},
+"type" : "uint"},
 "codeMax" : { "location" : "akra.util.ICodeFamily",
-"type" : "number"}}}}
+"type" : "uint"}}}}

@@ -2,6 +2,6 @@
 "location" : "akra.util",
 "arguments" : [ { "name" : "pMeshSubset",
 "isOptional" : false,
-"type" : "IMeshSubset"} ],
+"type" : "akra.IMeshSubset"} ],
 "type" : "bool",
 "isInline" : false}

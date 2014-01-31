@@ -1,12 +1,12 @@
 { "location" : "akra.util",
 "variables" : { "private" : { "_pMinMap" : { "location" : "akra.util.StringMinifier",
-"type" : "IntMap"},
+"type" : "akra.IntMap"},
 "_nCount" : { "location" : "akra.util.StringMinifier",
-"type" : "number"}}},
-"functions" : { "minify" : { "comments" : [ [ "/**@inline*/" ] ],
+"type" : "uint"}}},
+"functions" : { "minify" : { "comments" : [  ],
 "location" : "akra.util.StringMinifier",
 "arguments" : [ { "name" : "sValue",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "number",
-"isInline" : false}}}
+"type" : "uint",
+"isInline" : true}}}

@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "pElement",
 "isOptional" : false,
 "type" : "any"} ],
-"type" : "number",
+"type" : "int",
 "isInline" : false}}}

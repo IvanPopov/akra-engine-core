@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "type",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IPackerCodec",
+"type" : "akra.IPackerCodec",
 "isInline" : false}}}

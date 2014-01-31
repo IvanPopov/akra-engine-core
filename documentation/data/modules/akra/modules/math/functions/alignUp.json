@@ -2,9 +2,9 @@
 "location" : "akra.math",
 "arguments" : [ { "name" : "value",
 "isOptional" : false,
-"type" : "number"},
+"type" : "int"},
 { "name" : "alignment",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
+"type" : "int"} ],
+"type" : "int",
 "isInline" : false}

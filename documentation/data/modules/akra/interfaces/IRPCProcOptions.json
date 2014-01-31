@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "lifeTime" : { "location" : "akra.IRPCProcOptions",
-"type" : "number"},
+"type" : "int"},
 "priority" : { "location" : "akra.IRPCProcOptions",
-"type" : "number"}}}}
+"type" : "uint"}}}}

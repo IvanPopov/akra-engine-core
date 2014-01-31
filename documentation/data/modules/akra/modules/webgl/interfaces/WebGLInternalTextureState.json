@@ -2,6 +2,6 @@
 "variables" : { "public" : { "isUsed" : { "location" : "akra.webgl.WebGLInternalTextureState",
 "type" : "bool"},
 "texture" : { "location" : "akra.webgl.WebGLInternalTextureState",
-"type" : "WebGLInternalTexture"},
+"type" : "akra.webgl.WebGLInternalTexture"},
 "states" : { "location" : "akra.webgl.WebGLInternalTextureState",
-"type" : "IntMap"}}}}
+"type" : "akra.IntMap"}}}}

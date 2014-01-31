@@ -7,5 +7,5 @@
 "getId" : { "comments" : [  ],
 "location" : "akra.IAFXObject",
 "arguments" : [  ],
-"type" : "IAFXIdInstruction",
+"type" : "akra.IAFXIdInstruction",
 "isInline" : false}}}

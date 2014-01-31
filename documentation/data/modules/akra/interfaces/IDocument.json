@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "asset" : { "location" : "akra.IDocument",
-"type" : "IAsset"},
+"type" : "akra.IAsset"},
 "library" : { "location" : "akra.IDocument",
-"type" : "IDataEntry[  ]"},
+"type" : "akra.IDataEntry"},
 "scenes" : { "location" : "akra.IDocument",
-"type" : "number[  ]"}}}}
+"type" : "int"}}}}

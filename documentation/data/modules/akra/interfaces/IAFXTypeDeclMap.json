@@ -3,6 +3,6 @@
 "location" : "akra.IAFXTypeDeclMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IAFXTypeDeclInstruction",
+"type" : "uint"} ],
+"type" : "akra.IAFXTypeDeclInstruction",
 "isInline" : false}}}

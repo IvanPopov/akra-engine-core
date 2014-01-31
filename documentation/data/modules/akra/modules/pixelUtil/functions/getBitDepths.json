@@ -8,6 +8,6 @@
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
-"type" : "EPixelFormats"} ],
-"type" : "[  ]",
+"type" : "akra.EPixelFormats"} ],
+"type" : "int",
 "isInline" : false}

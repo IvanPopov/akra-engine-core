@@ -5,9 +5,9 @@
 "type" : "any"},
 { "name" : "eOptions",
 "isOptional" : true,
-"type" : "number"},
+"type" : "int"},
 { "name" : "fSize",
 "isOptional" : true,
-"type" : "number"} ],
-"type" : "ISceneModel",
+"type" : "float"} ],
+"type" : "akra.ISceneModel",
 "isInline" : false}

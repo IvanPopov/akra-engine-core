@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "meshMap" : { "location" : "akra.IColladaCache",
-"type" : "IMeshMap"},
+"type" : "akra.IMeshMap"},
 "sharedBuffer" : { "location" : "akra.IColladaCache",
-"type" : "IRenderDataCollection"}}}}
+"type" : "akra.IRenderDataCollection"}}}}

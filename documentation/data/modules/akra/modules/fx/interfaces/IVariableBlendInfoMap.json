@@ -3,6 +3,6 @@
 "location" : "akra.fx.IVariableBlendInfoMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IVariableBlendInfo",
+"type" : "uint"} ],
+"type" : "akra.fx.IVariableBlendInfo",
 "isInline" : false}}}

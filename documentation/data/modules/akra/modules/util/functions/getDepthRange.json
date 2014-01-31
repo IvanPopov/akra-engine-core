@@ -2,6 +2,6 @@
 "location" : "akra.util",
 "arguments" : [ { "name" : "pDepthTexture",
 "isOptional" : false,
-"type" : "ITexture"} ],
-"type" : "IDepthRange",
+"type" : "akra.ITexture"} ],
+"type" : "akra.IDepthRange",
 "isInline" : false}

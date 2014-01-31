@@ -1,7 +1,7 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra.core.pool.resources",
 "arguments" : [ { "name" : "pBuffer",
 "isOptional" : false,
-"type" : "IVertexBuffer"} ],
+"type" : "akra.IVertexBuffer"} ],
 "type" : "bool",
-"isInline" : false}
+"isInline" : true}

@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "name",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "EAFXShaderVariableType",
+"type" : "akra.EAFXShaderVariableType",
 "isInline" : false}}}

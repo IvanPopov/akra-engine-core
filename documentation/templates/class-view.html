@@ -2,11 +2,10 @@
 			<div class="b-intro">
 				<div class="menu">
 					<ul class="wrap">
-						<li class="item"><a class="link functions j-content-chapter-button" data-name="functions" href="javasript:void(0);">Functions</a></li>
+						<li class="item"><a class="link methods j-content-chapter-button" data-name="methods" href="javasript:void(0);">Methods</a></li>
 						<li class="item"><a class="link members j-content-chapter-button" data-name="members" href="javasript:void(0);">Members</a></li>
-						<li class="item"><a class="link accessors j-content-chapter-button" data-name="accessors" href="javasript:void(0);">Accessors</a></li>
-						<li class="item"><a class="link signals j-content-chapter-button" data-name="signals" href="javasript:void(0);">Signals</a></li>
-						<li class="item"><a class="link static j-content-chapter-button" data-name="static" href="javasript:void(0);">Statics</a></li>
+						<li class="item"><a class="link accessors j-content-chapter-button" data-name="getters" href="javasript:void(0);">Getters</a></li>
+						<li class="item"><a class="link accessors j-content-chapter-button" data-name="setters" href="javasript:void(0);">Setters</a></li>
 					</ul>
 				</div>
 				<div class="title">
@@ -21,8 +20,8 @@
 			</div>
 			<div class="b-intro-sep"></div>
 			<div class="b-description">
-			<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key | toStyleType}}" ng-switch="key">
-					<h2 class="b-description-title {{key | toStyleType}}">{{key | toStyleType}}</h2>
+			<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key | toStyleType | toClassStyleType}}" ng-switch="key">
+					<h2 class="b-description-title {{key | toStyleType | toClassStyleType}}">{{key | toStyleType | toClassStyleType}}</h2>
 					<div ng-switch-when="variables">
 						<div ng-repeat="(subkey,subval) in val">
 							<h2 class="b-description-title2 {{subkey}}-{{key|toStyleType}}">{{subkey}} {{key|toStyleType}}</h2>
@@ -31,7 +30,7 @@
 									<div class="top-row">
 										<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 										<div class="type"></div>
-										<div class="title">{{subsubkey}}<span ng-if="subval[subsubkey].type"> : <span class="blue"><a href='#{{subval[subsubkey].type|systemTypeToLoc}}'>{{subval[subsubkey].type|getNameFromLoc}}</a></span></span></div>
+										<div class="title">{{subsubkey}}<span ng-if="subval[subsubkey].type"> : <span class="blue" ng-if="subval[subsubkey].type|systemTypeToLoc"><a href='#{{subval[subsubkey].type|systemTypeToLoc}}'>{{subval[subsubkey].type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval[subsubkey].type|systemTypeToLoc)">{{subval[subsubkey].type}}</span></span></div>
 										<div class="intro">{{subval.comments[0][1]}}</div>
 									</div>
 									<div class="bottom-row">
@@ -51,7 +50,7 @@
 							<div class="top-row">
 								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 								<div class="type"></div>
-								<div class="title">{{subkey}} (<span ng-repeat="arg in subval.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue"><a href='#{{arg.type|systemTypeToLoc}}'>{{arg.type|getNameFromLoc}}</a></span><span ng-if="$index < subval.arguments.length-1">,</span><br ng-if="$index %3 == 2 && $index != subval.arguments.length-1"></span>) : <span class="blue"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span></div>
+								<div class="title">{{subkey}} (<span ng-repeat="arg in subval.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue" ng-if="arg.type|systemTypeToLoc"><a href='#{{arg.type|systemTypeToLoc}}'>{{arg.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(arg.type|systemTypeToLoc)">{{arg.type}}</span><span ng-if="$index < subval.arguments.length-1">,</span><br ng-if="$index%3==2 && $index != subval.arguments.length-1"></span>) : <span class="blue" ng-if="subval.type|systemTypeToLoc"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval.type|systemTypeToLoc)">{{subval.type}}</span></div>
 								<div class="intro">{{subval.comments[0][1]}}</div>
 							</div>
 							<div class="bottom-row">
@@ -69,7 +68,7 @@
 							<div class="top-row">
 								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 								<div class="type"></div>
-								<div class="title">{{subkey}}<span ng-if="subval.type"> : <span class="blue"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span></span></div>
+								<div class="title">{{subkey}}<span ng-if="subval.type"> : <span class="blue" ng-if="subval.type|systemTypeToLoc"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval.type|systemTypeToLoc)">{{subval.type}}</span></span></div>
 								<div class="intro">{{subval.comments[0][1]}}</div>
 							</div>
 							<div class="bottom-row">

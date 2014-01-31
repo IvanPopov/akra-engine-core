@@ -1,11 +1,11 @@
 { "location" : "akra",
 "variables" : { "public" : { "shapeMatrix" : { "location" : "akra.IColladaSkin",
-"type" : "IMat4"},
+"type" : "akra.IMat4"},
 "sources" : { "location" : "akra.IColladaSkin",
-"type" : "IColladaSource[  ]"},
+"type" : "akra.IColladaSource"},
 "geometry" : { "location" : "akra.IColladaSkin",
-"type" : "IColladaGeometrie"},
+"type" : "akra.IColladaGeometrie"},
 "joints" : { "location" : "akra.IColladaSkin",
-"type" : "IColladaJoints"},
+"type" : "akra.IColladaJoints"},
 "vertexWeights" : { "location" : "akra.IColladaSkin",
-"type" : "IColladaVertexWeights"}}}}
+"type" : "akra.IColladaVertexWeights"}}}}

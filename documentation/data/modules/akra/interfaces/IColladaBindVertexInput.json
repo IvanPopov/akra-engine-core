@@ -4,4 +4,4 @@
 "inputSemantic" : { "location" : "akra.IColladaBindVertexInput",
 "type" : "string"},
 "inputSet" : { "location" : "akra.IColladaBindVertexInput",
-"type" : "number"}}}}
+"type" : "int"}}}}

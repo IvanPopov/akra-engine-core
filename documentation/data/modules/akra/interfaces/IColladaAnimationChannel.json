@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "target" : { "location" : "akra.IColladaAnimationChannel",
-"type" : "IColladaTarget"},
+"type" : "akra.IColladaTarget"},
 "sampler" : { "location" : "akra.IColladaAnimationChannel",
-"type" : "IColladaAnimationSampler"}}}}
+"type" : "akra.IColladaAnimationSampler"}}}}

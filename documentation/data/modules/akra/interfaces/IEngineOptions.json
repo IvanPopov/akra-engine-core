@@ -2,13 +2,10 @@
 "variables" : { "public" : { "depsRoot" : { "location" : "akra.IEngineOptions",
 "type" : "string"},
 "deps" : { "location" : "akra.IEngineOptions",
-"type" : "IDependens"},
+"type" : "akra.IDependens"},
 "gamepads" : { "location" : "akra.IEngineOptions",
 "type" : "bool"},
 "renderer" : { "location" : "akra.IEngineOptions",
-"type" : "IRendererOptions"},
+"type" : "akra.IRendererOptions"},
 "loader" : { "location" : "akra.IEngineOptions",
-"type" : "{  loaded? :  (manager :  IDepsManager,
- pDeps :  IDependens) => void; changed? :  (manager :  IDepsManager,
- pFile :  IDep,
- pInfo :  any) => void; }"}}}}
+"type" : "_anonymous"}}}}

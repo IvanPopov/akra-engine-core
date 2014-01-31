@@ -3,6 +3,6 @@
 "location" : "akra.util.IRuleFunctionDMap",
 "arguments" : [ { "name" : "stateIndex",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IRuleFunctionMap",
+"type" : "uint"} ],
+"type" : "akra.util.IRuleFunctionMap",
 "isInline" : false}}}

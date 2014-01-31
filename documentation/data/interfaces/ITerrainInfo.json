@@ -24,7 +24,7 @@
 "triNodePool" : { "location" : "ITerrainInfo",
 "type" : "TriangleNodePool"},
 "sections" : { "location" : "ITerrainInfo",
-"type" : "ITerrainSectionInfo[  ]"},
+"type" : "ITerrainSectionInfo"},
 "sectorTotalDetailLevels" : { "location" : "ITerrainInfo",
 "type" : "number"},
 "sectorTotalVariances" : { "location" : "ITerrainInfo",

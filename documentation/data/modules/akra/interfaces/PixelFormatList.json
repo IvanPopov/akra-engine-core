@@ -3,6 +3,6 @@
 "location" : "akra.PixelFormatList",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "EPixelFormats",
+"type" : "int"} ],
+"type" : "akra.EPixelFormats",
 "isInline" : false}}}

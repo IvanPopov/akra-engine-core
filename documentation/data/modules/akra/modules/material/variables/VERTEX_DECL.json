@@ -1,2 +1,2 @@
 { "location" : "akra.material",
-"type" : "IVertexDeclaration"}
+"type" : "akra.IVertexDeclaration"}

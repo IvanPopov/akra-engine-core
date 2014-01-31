@@ -6,5 +6,5 @@
 { "name" : "flip",
 "isOptional" : false,
 "type" : "number"} ],
-"type" : "number",
+"type" : "int",
 "isInline" : true}

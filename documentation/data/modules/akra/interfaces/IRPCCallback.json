@@ -1,9 +1,9 @@
 { "location" : "akra",
 "variables" : { "public" : { "n" : { "location" : "akra.IRPCCallback",
-"type" : "number"},
+"type" : "uint"},
 "fn" : { "location" : "akra.IRPCCallback",
 "type" : "Function"},
 "timestamp" : { "location" : "akra.IRPCCallback",
-"type" : "number"},
+"type" : "uint"},
 "procInfo" : { "location" : "akra.IRPCCallback",
 "type" : "string"}}}}

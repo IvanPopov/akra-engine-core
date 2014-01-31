@@ -1,11 +1,11 @@
 { "location" : "akra",
 "variables" : { "public" : { "eyePosition" : { "location" : "akra.ISunParameters",
-"type" : "IVec3"},
+"type" : "akra.IVec3"},
 "sunDir" : { "location" : "akra.ISunParameters",
-"type" : "IVec3"},
+"type" : "akra.IVec3"},
 "groundC0" : { "location" : "akra.ISunParameters",
-"type" : "IVec3"},
+"type" : "akra.IVec3"},
 "groundC1" : { "location" : "akra.ISunParameters",
-"type" : "IVec3"},
+"type" : "akra.IVec3"},
 "hg" : { "location" : "akra.ISunParameters",
-"type" : "IVec3"}}}}
+"type" : "akra.IVec3"}}}}

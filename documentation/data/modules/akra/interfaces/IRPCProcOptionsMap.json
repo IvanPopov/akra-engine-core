@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "proc",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IRPCProcOptions",
+"type" : "akra.IRPCProcOptions",
 "isInline" : false}}}

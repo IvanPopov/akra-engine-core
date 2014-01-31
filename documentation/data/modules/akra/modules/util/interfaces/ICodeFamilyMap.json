@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "familyName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "ICodeFamily",
+"type" : "akra.util.ICodeFamily",
 "isInline" : false}}}

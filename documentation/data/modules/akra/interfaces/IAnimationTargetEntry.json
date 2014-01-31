@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "target" : { "location" : "akra.IAnimationTargetEntry",
-"type" : "number"},
+"type" : "int"},
 "name" : { "location" : "akra.IAnimationTargetEntry",
 "type" : "string"}}}}

@@ -3,6 +3,6 @@
 "location" : "akra.IRIDMap",
 "arguments" : [ { "name" : "rid",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IRIDPair",
+"type" : "int"} ],
+"type" : "akra.IRIDPair",
 "isInline" : false}}}

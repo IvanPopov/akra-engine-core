@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "ICodec",
+"type" : "akra.ICodec",
 "isInline" : false}}}

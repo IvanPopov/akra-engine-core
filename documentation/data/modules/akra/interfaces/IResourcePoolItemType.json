@@ -3,6 +3,6 @@
 "location" : "akra.IResourcePoolItemType",
 "arguments" : [ { "name" : "pManager",
 "isOptional" : false,
-"type" : "IResourcePoolManager"} ],
-"type" : "IResourcePoolItem",
+"type" : "akra.IResourcePoolManager"} ],
+"type" : "akra.IResourcePoolItem",
 "isInline" : false}}}

@@ -3,6 +3,6 @@
 "location" : "akra.webgl.IWebGLAttachments",
 "arguments" : [ { "name" : "webGLAttachment",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "WebGLPixelBuffer",
+"type" : "uint"} ],
+"type" : "akra.webgl.WebGLPixelBuffer",
 "isInline" : false}}}

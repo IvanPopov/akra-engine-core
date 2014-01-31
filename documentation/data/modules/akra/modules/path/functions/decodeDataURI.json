@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sUri",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IDataURI",
+"type" : "akra.IDataURI",
 "isInline" : false}

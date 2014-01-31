@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IEventSlotListMap",
+"type" : "akra.IEventSlotListMap",
 "isInline" : false}}}

@@ -3,6 +3,6 @@
 "location" : "akra.IAFXMakerMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IAFXMaker",
+"type" : "uint"} ],
+"type" : "akra.IAFXMaker",
 "isInline" : false}}}

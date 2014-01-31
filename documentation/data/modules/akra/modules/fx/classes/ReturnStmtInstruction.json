@@ -14,7 +14,7 @@
 "location" : "akra.fx.ReturnStmtInstruction",
 "arguments" : [ { "name" : "eUsedMode",
 "isOptional" : false,
-"type" : "EFunctionType"} ],
+"type" : "akra.EFunctionType"} ],
 "type" : "void",
 "isInline" : false},
 "toFinalCode" : { "comments" : [  ],

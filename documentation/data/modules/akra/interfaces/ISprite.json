@@ -3,6 +3,6 @@
 "location" : "akra.ISprite",
 "arguments" : [ { "name" : "pTex",
 "isOptional" : false,
-"type" : "ITexture"} ],
+"type" : "akra.ITexture"} ],
 "type" : "void",
 "isInline" : false}}}

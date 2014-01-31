@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sUri",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IURI",
+"type" : "akra.IURI",
 "isInline" : true}

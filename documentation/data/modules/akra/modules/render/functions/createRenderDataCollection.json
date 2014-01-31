@@ -2,9 +2,9 @@
 "location" : "akra.render",
 "arguments" : [ { "name" : "pEngine",
 "isOptional" : false,
-"type" : "IEngine"},
+"type" : "akra.IEngine"},
 { "name" : "eOptions",
 "isOptional" : true,
-"type" : "ERenderDataBufferOptions"} ],
-"type" : "IRenderDataCollection",
+"type" : "akra.ERenderDataBufferOptions"} ],
+"type" : "akra.IRenderDataCollection",
 "isInline" : false}

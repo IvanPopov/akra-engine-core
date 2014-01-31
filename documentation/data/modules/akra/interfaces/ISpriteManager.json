@@ -3,6 +3,6 @@
 "location" : "akra.ISpriteManager",
 "arguments" : [ { "name" : "pSprite",
 "isOptional" : false,
-"type" : "ISprite"} ],
-"type" : "IRenderData",
+"type" : "akra.ISprite"} ],
+"type" : "akra.IRenderData",
 "isInline" : false}}}

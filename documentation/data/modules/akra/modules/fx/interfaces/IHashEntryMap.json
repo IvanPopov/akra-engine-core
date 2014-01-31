@@ -3,6 +3,6 @@
 "location" : "akra.fx.IHashEntryMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IHashEntry",
+"type" : "uint"} ],
+"type" : "akra.fx.IHashEntry",
 "isInline" : false}}}

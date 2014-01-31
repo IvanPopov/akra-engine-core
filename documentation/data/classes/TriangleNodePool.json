@@ -4,7 +4,7 @@
 "_iMaxCount" : { "location" : "TriangleNodePool",
 "type" : "number"},
 "_pPool" : { "location" : "TriangleNodePool",
-"type" : "ITriTreeNode[  ]"}}},
+"type" : "ITriTreeNode"}}},
 "constructors" : [ { "comments" : [  ],
 "location" : "TriangleNodePool",
 "arguments" : [ { "name" : "iCount",

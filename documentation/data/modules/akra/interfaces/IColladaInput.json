@@ -2,12 +2,12 @@
 "variables" : { "public" : { "semantics" : { "location" : "akra.IColladaInput",
 "type" : "string"},
 "source" : { "location" : "akra.IColladaInput",
-"type" : "IColladaSource"},
+"type" : "akra.IColladaSource"},
 "offset" : { "location" : "akra.IColladaInput",
-"type" : "number"},
+"type" : "int"},
 "set" : { "location" : "akra.IColladaInput",
 "type" : "string"},
 "array" : { "location" : "akra.IColladaInput",
-"type" : "any[  ]"},
+"type" : "any"},
 "accessor" : { "location" : "akra.IColladaInput",
-"type" : "IColladaAccessor"}}}}
+"type" : "akra.IColladaAccessor"}}}}

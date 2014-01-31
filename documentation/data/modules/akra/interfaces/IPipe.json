@@ -1,6 +1,6 @@
 { "location" : "akra",
 "variables" : { "public" : { "uri" : { "location" : "akra.IPipe",
-"type" : "IURI"}}},
+"type" : "akra.IURI"}}},
 "functions" : { "open" : { "comments" : [  ],
 "location" : "akra.IPipe",
 "arguments" : [ { "name" : "sAddr",
@@ -63,6 +63,6 @@
 "type" : "any"},
 { "name" : "eType",
 "isOptional" : false,
-"type" : "EPipeDataTypes"} ],
+"type" : "akra.EPipeDataTypes"} ],
 "type" : "void",
 "isInline" : false}}}

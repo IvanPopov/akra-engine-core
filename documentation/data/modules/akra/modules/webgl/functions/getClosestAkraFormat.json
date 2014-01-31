@@ -4,9 +4,9 @@
 "location" : "akra.webgl",
 "arguments" : [ { "name" : "iGLFormat",
 "isOptional" : false,
-"type" : "number"},
+"type" : "int"},
 { "name" : "iGLDataType",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "EPixelFormats",
+"type" : "int"} ],
+"type" : "akra.EPixelFormats",
 "isInline" : false}

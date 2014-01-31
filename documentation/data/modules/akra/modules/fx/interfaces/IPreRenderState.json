@@ -2,12 +2,12 @@
 "variables" : { "public" : { "isClear" : { "location" : "akra.fx.IPreRenderState",
 "type" : "bool"},
 "primType" : { "location" : "akra.fx.IPreRenderState",
-"type" : "EPrimitiveTypes"},
+"type" : "akra.EPrimitiveTypes"},
 "offset" : { "location" : "akra.fx.IPreRenderState",
-"type" : "number"},
+"type" : "uint"},
 "length" : { "location" : "akra.fx.IPreRenderState",
-"type" : "number"},
+"type" : "uint"},
 "index" : { "location" : "akra.fx.IPreRenderState",
-"type" : "IIndexData"},
+"type" : "akra.IIndexData"},
 "flows" : { "location" : "akra.fx.IPreRenderState",
-"type" : "ObjectArray"}}}}
+"type" : "akra.util.ObjectArray"}}}}

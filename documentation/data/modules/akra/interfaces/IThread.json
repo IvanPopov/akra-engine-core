@@ -4,7 +4,7 @@
 "onerror" : { "location" : "akra.IThread",
 "type" : "Function"},
 "id" : { "location" : "akra.IThread",
-"type" : "number"}}},
+"type" : "int"}}},
 "functions" : { "send" : { "comments" : [  ],
 "location" : "akra.IThread",
 "arguments" : [ { "name" : "pData",
@@ -12,6 +12,6 @@
 "type" : "ArrayBufferView"},
 { "name" : "pTransferables",
 "isOptional" : true,
-"type" : "[  ]"} ],
+"type" : "any"} ],
 "type" : "void",
 "isInline" : false}}}

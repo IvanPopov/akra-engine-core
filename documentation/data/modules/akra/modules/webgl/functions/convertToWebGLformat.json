@@ -2,9 +2,9 @@
 "location" : "akra.webgl",
 "arguments" : [ { "name" : "pSource",
 "isOptional" : false,
-"type" : "IPixelBox"},
+"type" : "akra.IPixelBox"},
 { "name" : "pDest",
 "isOptional" : false,
-"type" : "IPixelBox"} ],
+"type" : "akra.IPixelBox"} ],
 "type" : "void",
 "isInline" : false}

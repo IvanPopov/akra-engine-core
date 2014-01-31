@@ -6,7 +6,7 @@
 "arguments" : [ { "name" : "..."},
 { "name" : "values",
 "isOptional" : false,
-"type" : "[  ]"} ],
+"type" : "number"} ],
 "variableArgList" : true,
 "type" : "number",
 "isInline" : false}

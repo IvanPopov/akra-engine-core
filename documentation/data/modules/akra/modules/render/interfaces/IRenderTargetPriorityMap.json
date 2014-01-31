@@ -3,6 +3,6 @@
 "location" : "akra.render.IRenderTargetPriorityMap",
 "arguments" : [ { "name" : "priority",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "[  ]",
+"type" : "int"} ],
+"type" : "akra.IRenderTarget",
 "isInline" : false}}}

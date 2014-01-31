@@ -2,6 +2,6 @@
 "variables" : { "public" : { "bState" : { "location" : "akra.core.pool.ICallbackSlot",
 "type" : "bool"},
 "fn" : { "location" : "akra.core.pool.ICallbackSlot",
-"type" : "IResourceNotifyRoutineFunc"},
+"type" : "akra.IResourceNotifyRoutineFunc"},
 "pResourceItem" : { "location" : "akra.core.pool.ICallbackSlot",
-"type" : "IResourcePoolItem"}}}}
+"type" : "akra.IResourcePoolItem"}}}}

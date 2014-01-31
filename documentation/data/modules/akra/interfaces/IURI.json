@@ -6,7 +6,7 @@
 "host" : { "location" : "akra.IURI",
 "type" : "string"},
 "port" : { "location" : "akra.IURI",
-"type" : "number"},
+"type" : "uint"},
 "path" : { "location" : "akra.IURI",
 "type" : "string"},
 "query" : { "location" : "akra.IURI",

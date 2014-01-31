@@ -3,6 +3,6 @@
 "location" : "akra.webgl.WebGLInternalTextureStateMap",
 "arguments" : [ { "name" : "guid",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "WebGLInternalTextureState",
+"type" : "uint"} ],
+"type" : "akra.webgl.WebGLInternalTextureState",
 "isInline" : false}}}

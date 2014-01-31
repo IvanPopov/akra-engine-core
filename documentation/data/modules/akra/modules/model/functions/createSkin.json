@@ -2,6 +2,6 @@
 "location" : "akra.model",
 "arguments" : [ { "name" : "pMesh",
 "isOptional" : false,
-"type" : "IMesh"} ],
-"type" : "ISkin",
+"type" : "akra.IMesh"} ],
+"type" : "akra.ISkin",
 "isInline" : false}

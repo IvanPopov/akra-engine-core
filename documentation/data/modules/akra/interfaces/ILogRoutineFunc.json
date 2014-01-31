@@ -3,6 +3,6 @@
 "location" : "akra.ILogRoutineFunc",
 "arguments" : [ { "name" : "pEntity",
 "isOptional" : false,
-"type" : "ILoggerEntity"} ],
+"type" : "akra.ILoggerEntity"} ],
 "type" : "void",
 "isInline" : false}}}

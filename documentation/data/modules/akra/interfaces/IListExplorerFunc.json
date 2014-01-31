@@ -6,6 +6,6 @@
 "type" : "any"},
 { "name" : "index",
 "isOptional" : true,
-"type" : "number"} ],
+"type" : "uint"} ],
 "type" : "bool",
 "isInline" : false}}}

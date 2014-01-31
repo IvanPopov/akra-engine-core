@@ -1,7 +1,7 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra.scene.objects",
 "arguments" : [ { "name" : "pNode",
 "isOptional" : false,
-"type" : "IEntity"} ],
+"type" : "akra.IEntity"} ],
 "type" : "bool",
-"isInline" : false}
+"isInline" : true}

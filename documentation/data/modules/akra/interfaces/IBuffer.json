@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "length" : { "location" : "akra.IBuffer",
-"type" : "number"},
+"type" : "int"},
 "byteLength" : { "location" : "akra.IBuffer",
-"type" : "number"}}}}
+"type" : "int"}}}}

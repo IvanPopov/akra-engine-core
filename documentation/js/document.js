@@ -7,6 +7,10 @@
  * http://свирский.рф
  */
 
+var timeout_id_last_search;
+var last_search_response = {};
+var searchblock_template = '<div id="searchblock" class="searchblock"> </div>';
+
 jQuery(document).ready(function($){
 
 	//Hide/show sidebar
@@ -54,6 +58,7 @@ jQuery(document).ready(function($){
 	});
 
 	enableSideScroll(sidebar);
+	bindSearchBar();
 
 	$(window).resize(function(){
 		enableSideScroll(sidebar);
@@ -199,3 +204,78 @@ function alphabeticColumnSort() {
 		}
 	}
 }
+
+function try_search() {
+		if(timeout_id_last_search) {
+			clearTimeout(timeout_id_last_search);
+			timeout_id_last_search = null;
+		}
+
+		if($("#search").val().length<3) {
+			$("#searchblock").remove();
+			return;
+		}
+
+		timeout_id_last_search = setTimeout('search_string($("#search").val())',300);
+}
+
+function bindSearchBar() {
+	$("#search").bind('change keyup', function(e) {
+		try_search();
+	});
+}
+
+function search_string(request) {
+
+	if($("#searchblock").length==0) {
+		$(".b-navigate-row").after($(searchblock_template));
+	}
+
+	$.getJSON('http://localhost:3000/search/'+request, function(data) {
+		last_search_response = data;
+		$("#searchblock").empty();
+
+		var response_check=1;
+		for(i in data) {
+			if(data[i].length>0) {
+				response_check=0;
+				break;
+			}
+		}
+
+		var categories = $('<ul class="results"></ul>');
+		$("#searchblock").append(categories);
+
+		if(response_check>0) {
+			categories.append($("<li class='section'><h3 class='name'>Nothing found</h3><p class='entry'><span class='entry-name'>Be more specific, would you kindly?</span></p></li>"));
+			return;
+		}
+
+		for(type_name in last_search_response) {
+			var section = $("<li class='section'><h3 class='name "+type_name+"'>"+type_name+"</h3></li>");
+			var section_elems = last_search_response[type_name];
+			if(section_elems.length==0)
+				continue;
+
+			categories.append(section);
+			for(i in section_elems) {
+				var entry;
+				if(['interfaceMembers','classMembers','enumKeys'].indexOf(type_name)<0) {
+					entry = section_elems[i].location.length!=0 ?
+					$("<p class='entry'><a href='#/"+section_elems[i].location.replace(/\./g,'/')+'/'+section_elems[i].name+"'><span class='entry-name'>"+
+						section_elems[i].name+"</span></a><br><span class='entry-info'>"+section_elems[i].kind+" @ <a href='#/"+
+						section_elems[i].location.replace(/\./g,'/')+"'>"+section_elems[i].location+"</a></span></p>") :
+					$("<p class='entry'><a href='#/"+section_elems[i].name+"'><span class='entry-name'>"+
+						section_elems[i].name+"</span></a><br><span class='entry-info'>global "+section_elems[i].kind+"</span></p>");
+				}
+				else {
+					entry = $("<p class='entry'><a href='#/"+section_elems[i].location.replace(/\./g,'/')+"'><span class='entry-name'>"+
+						section_elems[i].name+"</span></a><br><span class='entry-info'>"+section_elems[i].kind+" @ <a href='#/"+
+						section_elems[i].location.replace(/\./g,'/')+"'>"+section_elems[i].location+"</a></span></p>")
+				}
+				section.append(entry);
+				if(i>4) break;
+			}
+		}
+	});
+};

@@ -2,4 +2,4 @@
 "variables" : { "public" : { "name" : { "location" : "akra.IUnit",
 "type" : "string"},
 "meter" : { "location" : "akra.IUnit",
-"type" : "number"}}}}
+"type" : "float"}}}}

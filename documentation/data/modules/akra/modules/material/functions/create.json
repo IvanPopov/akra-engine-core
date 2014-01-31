@@ -5,6 +5,6 @@
 "type" : "string"},
 { "name" : "pMat",
 "isOptional" : true,
-"type" : "IMaterial"} ],
-"type" : "IMaterial",
+"type" : "akra.IMaterial"} ],
+"type" : "akra.IMaterial",
 "isInline" : false}

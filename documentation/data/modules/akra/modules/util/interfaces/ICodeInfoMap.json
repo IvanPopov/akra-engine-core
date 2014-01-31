@@ -3,6 +3,6 @@
 "location" : "akra.util.ICodeInfoMap",
 "arguments" : [ { "name" : "code",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "ICodeInfo",
+"type" : "uint"} ],
+"type" : "akra.util.ICodeInfo",
 "isInline" : false}}}

@@ -2,6 +2,6 @@
 "location" : "akra.scene.objects",
 "arguments" : [ { "name" : "pEntity",
 "isOptional" : false,
-"type" : "IEntity"} ],
+"type" : "akra.IEntity"} ],
 "type" : "bool",
 "isInline" : false}

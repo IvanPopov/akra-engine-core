@@ -3,6 +3,6 @@
 "location" : "akra.IAFXInitExprInstruction",
 "arguments" : [ { "name" : "pType",
 "isOptional" : false,
-"type" : "IAFXVariableTypeInstruction"} ],
+"type" : "akra.IAFXVariableTypeInstruction"} ],
 "type" : "bool",
 "isInline" : false}}}

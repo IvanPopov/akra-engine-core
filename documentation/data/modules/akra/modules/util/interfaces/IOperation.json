@@ -1,7 +1,7 @@
 { "location" : "akra.util",
 "variables" : { "public" : { "type" : { "location" : "akra.util.IOperation",
-"type" : "EOperationType"},
+"type" : "akra.EOperationType"},
 "rule" : { "location" : "akra.util.IOperation",
-"type" : "IRule"},
+"type" : "akra.IRule"},
 "index" : { "location" : "akra.util.IOperation",
-"type" : "number"}}}}
+"type" : "uint"}}}}

@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IAFXPassBlend",
+"type" : "akra.IAFXPassBlend",
 "isInline" : false}}}

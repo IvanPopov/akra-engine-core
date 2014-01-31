@@ -2,6 +2,6 @@
 "variables" : { "public" : { "value" : { "location" : "akra.IColladaTarget",
 "type" : "number"},
 "object" : { "location" : "akra.IColladaTarget",
-"type" : "IColladaEntry"},
+"type" : "akra.IColladaEntry"},
 "source" : { "location" : "akra.IColladaTarget",
-"type" : "IColladaEntry"}}}}
+"type" : "akra.IColladaEntry"}}}}

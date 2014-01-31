@@ -2,10 +2,10 @@
 "variables" : { "public" : { "source" : { "location" : "akra.IColladaAccessor",
 "type" : "string"},
 "data" : { "location" : "akra.IColladaAccessor",
-"type" : "IColladaArray"},
+"type" : "akra.IColladaArray"},
 "count" : { "location" : "akra.IColladaAccessor",
-"type" : "number"},
+"type" : "int"},
 "stride" : { "location" : "akra.IColladaAccessor",
-"type" : "number"},
+"type" : "int"},
 "params" : { "location" : "akra.IColladaAccessor",
-"type" : "IColladaParam[  ]"}}}}
+"type" : "akra.IColladaParam"}}}}

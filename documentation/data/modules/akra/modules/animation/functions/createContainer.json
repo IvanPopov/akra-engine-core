@@ -2,9 +2,9 @@
 "location" : "akra.animation",
 "arguments" : [ { "name" : "pAnimation",
 "isOptional" : true,
-"type" : "IAnimationBase"},
+"type" : "akra.IAnimationBase"},
 { "name" : "sName",
 "isOptional" : true,
 "type" : "string"} ],
-"type" : "IAnimationContainer",
+"type" : "akra.IAnimationContainer",
 "isInline" : false}

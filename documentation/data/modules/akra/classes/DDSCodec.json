@@ -2,7 +2,7 @@
 "variables" : { "private" : { "_sType" : { "location" : "akra.DDSCodec",
 "type" : "string"}},
 "static" : { "_pInstance" : { "location" : "akra.DDSCodec",
-"type" : "IDDSCodec"}}},
+"type" : "akra.IDDSCodec"}}},
 "functions" : { "magicNumberToFileExt" : { "comments" : [  ],
 "location" : "akra.DDSCodec",
 "arguments" : [ { "name" : "pMagicNumber",
@@ -32,6 +32,6 @@
 "type" : "Uint8Array"},
 { "name" : "pImgData",
 "isOptional" : false,
-"type" : "IImgData"} ],
+"type" : "akra.IImgData"} ],
 "type" : "Uint8Array",
 "isInline" : false}}}

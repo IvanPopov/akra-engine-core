@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "type",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "[  ]",
+"type" : "any",
 "isInline" : false}}}

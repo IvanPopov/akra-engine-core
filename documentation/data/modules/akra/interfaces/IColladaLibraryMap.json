@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "library",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IColladaLibrary",
+"type" : "akra.IColladaLibrary",
 "isInline" : false}}}

@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sName",
 "isOptional" : true,
 "type" : "string"} ],
-"type" : "ISkeleton",
+"type" : "akra.ISkeleton",
 "isInline" : false}

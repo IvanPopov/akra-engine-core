@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "accessor" : { "location" : "akra.IColladaTechniqueCommon",
-"type" : "IColladaAccessor"},
+"type" : "akra.IColladaAccessor"},
 "perspective" : { "location" : "akra.IColladaTechniqueCommon",
-"type" : "IColladaPerspective"}}}}
+"type" : "akra.IColladaPerspective"}}}}

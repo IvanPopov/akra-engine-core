@@ -2,5 +2,5 @@
 "functions" : { "getGuid" : { "comments" : [  ],
 "location" : "akra.IUnique",
 "arguments" : [  ],
-"type" : "number",
+"type" : "uint",
 "isInline" : false}}}

@@ -3,6 +3,6 @@
 "location" : "akra.util.ILogRoutineMap",
 "arguments" : [ { "name" : "eLogLevel",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "ILogRoutineFunc",
+"type" : "uint"} ],
+"type" : "akra.ILogRoutineFunc",
 "isInline" : false}}}

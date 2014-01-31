@@ -1,5 +1,5 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra.animation",
 "arguments" : [  ],
-"type" : "PositionFrame",
-"isInline" : false}
+"type" : "akra.animation.PositionFrame",
+"isInline" : true}

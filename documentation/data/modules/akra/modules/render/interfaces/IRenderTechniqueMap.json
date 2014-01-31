@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "key",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IRenderTechnique",
+"type" : "akra.IRenderTechnique",
 "isInline" : false}}}

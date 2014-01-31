@@ -3,6 +3,6 @@
 "location" : "akra.IAFXIdExprInstruction",
 "arguments" : [ { "name" : "pRelationMap",
 "isOptional" : true,
-"type" : "IAFXInstructionMap"} ],
-"type" : "IAFXIdExprInstruction",
+"type" : "akra.IAFXInstructionMap"} ],
+"type" : "akra.IAFXIdExprInstruction",
 "isInline" : false}}}

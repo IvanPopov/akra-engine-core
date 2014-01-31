@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "technique" : { "location" : "akra.IAFXImportedTechniqueInfo",
-"type" : "IAFXTechniqueInstruction"},
+"type" : "akra.IAFXTechniqueInstruction"},
 "component" : { "location" : "akra.IAFXImportedTechniqueInfo",
-"type" : "IAFXComponent"},
+"type" : "akra.IAFXComponent"},
 "shift" : { "location" : "akra.IAFXImportedTechniqueInfo",
-"type" : "number"}}}}
+"type" : "int"}}}}

@@ -1,5 +1,5 @@
 { "comments" : [  ],
 "location" : "akra.io",
 "arguments" : [  ],
-"type" : "IThreadManager",
+"type" : "akra.IThreadManager",
 "isInline" : true}

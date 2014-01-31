@@ -2,7 +2,7 @@
 "functions" : { "request" : { "comments" : [  ],
 "location" : "akra.ITriangleNodePool",
 "arguments" : [  ],
-"type" : "ITriTreeNode",
+"type" : "akra.ITriTreeNode",
 "isInline" : false},
 "reset" : { "comments" : [  ],
 "location" : "akra.ITriangleNodePool",

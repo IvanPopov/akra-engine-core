@@ -2,9 +2,9 @@
 "location" : "akra.bf",
 "arguments" : [ { "name" : "value",
 "isOptional" : false,
-"type" : "number"},
+"type" : "int"},
 { "name" : "set",
 "isOptional" : false,
-"type" : "number"} ],
+"type" : "int"} ],
 "type" : "bool",
 "isInline" : true}

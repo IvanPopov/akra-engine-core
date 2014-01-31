@@ -30,7 +30,7 @@
 "type" : "Uint8Array"},
 { "name" : "pData",
 "isOptional" : false,
-"type" : "ICodecData"} ],
+"type" : "akra.ICodecData"} ],
 "type" : "Uint8Array",
 "isInline" : false},
 "decode" : { "comments" : [  ],
@@ -40,6 +40,6 @@
 "type" : "Uint8Array"},
 { "name" : "pCodecData",
 "isOptional" : false,
-"type" : "ICodecData"} ],
+"type" : "akra.ICodecData"} ],
 "type" : "Uint8Array",
 "isInline" : false}}}

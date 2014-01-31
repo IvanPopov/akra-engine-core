@@ -2,6 +2,6 @@
 "location" : "akra.webgl",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
-"type" : "EPixelFormats"} ],
-"type" : "number",
+"type" : "akra.EPixelFormats"} ],
+"type" : "int",
 "isInline" : false}

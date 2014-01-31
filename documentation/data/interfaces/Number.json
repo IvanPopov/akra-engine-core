@@ -3,7 +3,7 @@
 "location" : "Number",
 "arguments" : [ { "name" : "length",
 "isOptional" : false,
-"type" : "number"} ],
+"type" : "int"} ],
 "type" : "string",
 "isInline" : false},
 "printBinary" : { "comments" : [  ],

@@ -2,5 +2,5 @@
 "functions" : { "_call" : { "comments" : [  ],
 "location" : "akra.IRuleFunction",
 "arguments" : [  ],
-"type" : "EOperationType",
+"type" : "akra.EOperationType",
 "isInline" : false}}}

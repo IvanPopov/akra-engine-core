@@ -5,6 +5,6 @@
 "type" : "string"},
 { "name" : "pData",
 "isOptional" : false,
-"type" : "IVertexData"} ],
-"type" : "IMaterial",
+"type" : "akra.IVertexData"} ],
+"type" : "akra.IMaterial",
 "isInline" : false}

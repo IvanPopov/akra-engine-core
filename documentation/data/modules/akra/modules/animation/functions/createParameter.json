@@ -1,5 +1,5 @@
 { "comments" : [  ],
 "location" : "akra.animation",
 "arguments" : [  ],
-"type" : "IAnimationParameter",
+"type" : "akra.IAnimationParameter",
 "isInline" : false}

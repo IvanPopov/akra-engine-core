@@ -6,5 +6,5 @@
 { "name" : "pMode",
 "isOptional" : true,
 "type" : "any"} ],
-"type" : "IFile",
+"type" : "akra.IFile",
 "isInline" : false}

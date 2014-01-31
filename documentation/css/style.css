@@ -128,7 +128,7 @@ b {
 	margin:0;
 	padding:0 35px 0 18px;
 	height:23px;
-	width:261px;
+	width:296px;
 	background:#ece9ff;
 	border:1px solid #6b6598;
 	outline:0;
@@ -278,13 +278,14 @@ b {
 	display:block;
 	position:relative;
 	margin:7px 0;
-	padding:0
+	padding:0;
 }
 .b-side-menu .item .wrap {
 	position:relative;
 	z-index:10;
 	min-height:17px;
-	margin:0 9px 0 15px
+	margin:0 9px 0 15px;
+	height: 17px;
 }
 .b-side-menu .item .wrap:hover {
 	background-color:#e1e0e0!important
@@ -331,6 +332,18 @@ b {
 .b-side-menu .item .wrap .icon.classes {
 	background-image:url(../images/sm-classes-icon.png)
 }
+.b-side-menu .item .wrap .icon.interfaces {
+	background-image:url(../images/sm-interfaces-icon.png)
+}
+.b-side-menu .item .wrap .icon.enums {
+	background-image:url(../images/sm-enums-icon.png)
+}
+.b-side-menu .item .wrap .icon.members {
+	background-image:url(../images/sm-members-icon.png)
+}
+.b-side-menu .item .wrap .icon.functions {
+	background-image:url(../images/sm-functions-icon.png)
+}
 .b-side-menu .item .wrap .text {
 	display:block;
 	padding:0 5px 0 7px;
@@ -340,7 +353,8 @@ b {
 	line-height:17px;
 	color:#4c4c4c;
 	text-decoration:none;
-	background:#f2f2f4
+	background:#f2f2f4;
+	max-width: 220px;
 }
 .b-side-menu .item .wrap .tree {
 	display:block;
@@ -434,6 +448,12 @@ b {
 .b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link.accessors {
 	background:url(../images/sm-accessors-icon.png) 0 center no-repeat
 }
+.b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link.getters {
+	background:url(../images/sm-accessors-icon.png) 0 center no-repeat
+}
+.b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link.setters {
+	background:url(../images/sm-accessors-icon.png) 0 center no-repeat
+}
 .b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link.signals {
 	background:url(../images/sm-signals-icon.png) 0 center no-repeat
 }
@@ -454,6 +474,9 @@ b {
 }
 .b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link.classes {
 	background:url(../images/sm-classes-icon.png) 0 center no-repeat
+}
+.b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link.namespaces {
+	background:url(../images/sm-namespaces-icon.png) 0 center no-repeat
 }
 .b-side-menu .item .sub-menu .sub-wrap .sep {
 	display:block;
@@ -856,6 +879,12 @@ b {
 .b-description-title.functions {
 	background:url(../images/title-functions.png) -1px 0 no-repeat
 }
+.b-description-title.classes {
+	background:url(../images/title-classes.png) -1px 0 no-repeat
+}
+.b-description-title.namespaces {
+	background:url(../images/title-namespaces.png) -1px 0 no-repeat
+}
 .b-description-title.enums {
 	background:url(../images/title-enums.png) -1px 0 no-repeat
 }
@@ -1186,4 +1215,104 @@ b {
 }
 .clr {
 	clear:both
+}
+
+.searchblock {
+	width: 300px;
+	min-height: 240px;
+	max-height: 500px;
+	overflow-y: auto;
+	border: 1px solid grey;
+	border-radius: 8px;
+	padding: 5px;
+	position: fixed;
+	top: 45px;
+	right: 15px;
+	background: white;
+	box-shadow: #333 0px 0px 10px;
+	z-index: 40;
+}
+
+.searchblock .results {
+	list-style: none;
+	margin:0px;
+}
+
+.searchblock .results .section {
+
+}
+
+.searchblock .results .section .name {
+	padding-left:22px;
+	/*font-family: 'MagistralC',sans-serif;*/
+	font-size: 22px;
+	font-weight: bold;
+	color: #6a6782;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #CECDDA;
+}
+
+.searchblock .results .section .name.modules {
+	background: url(../images/sm-namespaces-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.enums {
+	background: url(../images/sm-enums-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.enumKeys {
+	background: url(../images/sm-enums-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.interfaces {
+	background: url(../images/sm-interfaces-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.interfaceMembers {
+	background: url(../images/sm-methods-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.variables {
+	background: url(../images/sm-members-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.functions {
+	background: url(../images/sm-functions-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.classes {
+	background: url(../images/sm-classes-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .name.classMembers {
+	background: url(../images/sm-accessors-icon.png) 1px 0 no-repeat;
+}
+
+.searchblock .results .section .entry {
+	margin:0px;
+	padding: 5px;
+	padding-left: 10px;
+	border-radius: 4px;
+}
+
+.searchblock .results .section .entry-name {
+	/*font-family: 'MagistralC',sans-serif;*/
+	font-size: 14px;
+	font-weight: bold;
+	color: #6B97DA;
+}
+
+.searchblock .results .section .entry-info {
+	/*font-family: 'MagistralC',sans-serif;*/
+	font-size: 12px;
+	/*font-weight: bold;*/
+	margin:0px;
+	padding-left: 5px;
+}
+
+.searchblock .results .section .entry:hover {
+	background-color: #E6E4F5;
+
 }

@@ -3,6 +3,6 @@
 "location" : "akra.IRenderStateMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "ERenderStateValues",
+"type" : "uint"} ],
+"type" : "akra.ERenderStateValues",
 "isInline" : false}}}

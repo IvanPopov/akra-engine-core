@@ -3,6 +3,6 @@
 "location" : "akra.IAFXShaderVarTypeMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "EAFXShaderVariableType",
+"type" : "uint"} ],
+"type" : "akra.EAFXShaderVariableType",
 "isInline" : false}}}

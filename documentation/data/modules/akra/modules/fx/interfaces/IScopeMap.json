@@ -3,6 +3,6 @@
 "location" : "akra.fx.IScopeMap",
 "arguments" : [ { "name" : "scopeIndex",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IScope",
+"type" : "uint"} ],
+"type" : "akra.fx.IScope",
 "isInline" : false}}}

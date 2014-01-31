@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "functionName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "[  ]",
+"type" : "akra.IAFXFunctionDeclInstruction",
 "isInline" : false}}}

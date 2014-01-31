@@ -1,10 +1,10 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra",
 "arguments" : [ { "name" : "sUsage",
 "isOptional" : false,
 "type" : "string"},
 { "name" : "iOffset",
 "isOptional" : true,
-"type" : "number"} ],
-"type" : "IVertexElementInterface",
-"isInline" : false}
+"type" : "uint"} ],
+"type" : "akra.IVertexElementInterface",
+"isInline" : true}

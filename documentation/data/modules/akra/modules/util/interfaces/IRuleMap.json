@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "ruleName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IRule",
+"type" : "akra.IRule",
 "isInline" : false}}}

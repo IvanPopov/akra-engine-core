@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "semantics",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IColladaBindVertexInput",
+"type" : "akra.IColladaBindVertexInput",
 "isInline" : false}}}

@@ -1,7 +1,7 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra.render",
 "arguments" : [ { "name" : "pObject",
 "isOptional" : false,
-"type" : "IRenderableObject"} ],
+"type" : "akra.IRenderableObject"} ],
 "type" : "bool",
-"isInline" : false}
+"isInline" : true}

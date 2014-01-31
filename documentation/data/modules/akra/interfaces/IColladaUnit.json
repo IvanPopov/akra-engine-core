@@ -2,4 +2,4 @@
 "variables" : { "public" : { "name" : { "location" : "akra.IColladaUnit",
 "type" : "string"},
 "meter" : { "location" : "akra.IColladaUnit",
-"type" : "number"}}}}
+"type" : "float"}}}}

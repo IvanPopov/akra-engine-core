@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "data" : { "location" : "akra.ILibraryEntry",
-"type" : "IUnique"},
+"type" : "akra.IUnique"},
 "entry" : { "location" : "akra.ILibraryEntry",
-"type" : "IDataEntry"}}}}
+"type" : "akra.IDataEntry"}}}}

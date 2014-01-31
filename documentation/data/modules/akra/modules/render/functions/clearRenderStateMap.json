@@ -2,6 +2,6 @@
 "location" : "akra.render",
 "arguments" : [ { "name" : "pMap",
 "isOptional" : false,
-"type" : "IRenderStateMap"} ],
+"type" : "akra.IRenderStateMap"} ],
 "type" : "void",
 "isInline" : false}

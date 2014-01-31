@@ -5,9 +5,9 @@
 "type" : "string"},
 { "name" : "ppData",
 "isOptional" : false,
-"type" : "[  ]"},
+"type" : "string"},
 { "name" : "iFrom",
 "isOptional" : true,
-"type" : "number"} ],
-"type" : "number",
+"type" : "uint"} ],
+"type" : "uint",
 "isInline" : false}

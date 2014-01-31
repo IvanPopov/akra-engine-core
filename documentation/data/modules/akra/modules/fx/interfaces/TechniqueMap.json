@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "sTechniqueName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IAFXTechniqueInstruction",
+"type" : "akra.IAFXTechniqueInstruction",
 "isInline" : false}}}

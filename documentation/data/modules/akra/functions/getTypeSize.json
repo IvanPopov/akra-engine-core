@@ -2,6 +2,6 @@
 "location" : "akra",
 "arguments" : [ { "name" : "eType",
 "isOptional" : false,
-"type" : "EDataTypes"} ],
-"type" : "number",
+"type" : "akra.EDataTypes"} ],
+"type" : "uint",
 "isInline" : false}

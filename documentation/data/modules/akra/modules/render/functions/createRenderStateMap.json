@@ -1,5 +1,5 @@
 { "comments" : [  ],
 "location" : "akra.render",
 "arguments" : [  ],
-"type" : "IRenderStateMap",
+"type" : "akra.IRenderStateMap",
 "isInline" : false}

@@ -1,11 +1,11 @@
 { "location" : "akra",
 "variables" : { "public" : { "diffuse" : { "location" : "akra.IMaterialBase",
-"type" : "IColorValue"},
+"type" : "akra.IColorValue"},
 "ambient" : { "location" : "akra.IMaterialBase",
-"type" : "IColorValue"},
+"type" : "akra.IColorValue"},
 "specular" : { "location" : "akra.IMaterialBase",
-"type" : "IColorValue"},
+"type" : "akra.IColorValue"},
 "emissive" : { "location" : "akra.IMaterialBase",
-"type" : "IColorValue"},
+"type" : "akra.IColorValue"},
 "shininess" : { "location" : "akra.IMaterialBase",
-"type" : "number"}}}}
+"type" : "float"}}}}

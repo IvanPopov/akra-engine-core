@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "geometry" : { "location" : "akra.IColladaInstanceGeometry",
-"type" : "IColladaGeometrie"},
+"type" : "akra.IColladaGeometrie"},
 "material" : { "location" : "akra.IColladaInstanceGeometry",
-"type" : "IColladaBindMaterial"}}}}
+"type" : "akra.IColladaBindMaterial"}}}}

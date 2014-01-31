@@ -4,4 +4,4 @@
 "type" : { "location" : "akra.IColladaEffectTechnique",
 "type" : "string"},
 "value" : { "location" : "akra.IColladaEffectTechnique",
-"type" : "IColladaEntry"}}}}
+"type" : "akra.IColladaEntry"}}}}

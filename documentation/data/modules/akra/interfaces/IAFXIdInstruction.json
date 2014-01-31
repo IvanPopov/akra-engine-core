@@ -34,6 +34,6 @@
 "location" : "akra.IAFXIdInstruction",
 "arguments" : [ { "name" : "pRelationMap",
 "isOptional" : true,
-"type" : "IAFXInstructionMap"} ],
-"type" : "IAFXIdInstruction",
+"type" : "akra.IAFXInstructionMap"} ],
+"type" : "akra.IAFXIdInstruction",
 "isInline" : false}}}

@@ -2,12 +2,12 @@
 "variables" : { "public" : { "name" : { "location" : "akra.fx.IInputUniformInfo",
 "type" : "string"},
 "nameIndex" : { "location" : "akra.fx.IInputUniformInfo",
-"type" : "number"},
+"type" : "uint"},
 "isComplex" : { "location" : "akra.fx.IInputUniformInfo",
 "type" : "bool"},
 "isCollapsedArray" : { "location" : "akra.fx.IInputUniformInfo",
 "type" : "bool"},
 "shaderVarInfo" : { "location" : "akra.fx.IInputUniformInfo",
-"type" : "IShaderUniformInfo"},
+"type" : "akra.fx.IShaderUniformInfo"},
 "structVarInfo" : { "location" : "akra.fx.IInputUniformInfo",
-"type" : "IUniformStructInfo"}}}}
+"type" : "akra.fx.IUniformStructInfo"}}}}

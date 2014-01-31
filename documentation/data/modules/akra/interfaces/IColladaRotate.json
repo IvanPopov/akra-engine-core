@@ -1,3 +1,3 @@
 { "location" : "akra",
 "variables" : { "public" : { "value" : { "location" : "akra.IColladaRotate",
-"type" : "IVec4"}}}}
+"type" : "akra.IVec4"}}}}

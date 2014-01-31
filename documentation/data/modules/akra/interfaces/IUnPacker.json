@@ -1,6 +1,6 @@
 { "location" : "akra",
 "variables" : { "public" : { "template" : { "location" : "akra.IUnPacker",
-"type" : "IPackerTemplate"}}},
+"type" : "akra.IPackerTemplate"}}},
 "functions" : { "read" : { "comments" : [  ],
 "location" : "akra.IUnPacker",
 "arguments" : [  ],

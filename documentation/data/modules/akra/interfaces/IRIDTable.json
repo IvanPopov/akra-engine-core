@@ -3,6 +3,6 @@
 "location" : "akra.IRIDTable",
 "arguments" : [ { "name" : "iSceneObjectGuid",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IntMap",
+"type" : "int"} ],
+"type" : "akra.IntMap",
 "isInline" : false}}}

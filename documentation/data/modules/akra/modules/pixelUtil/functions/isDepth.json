@@ -1,7 +1,7 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [ [ "/** Shortcut method to determine if the format is a depth format. */" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
-"type" : "EPixelFormats"} ],
+"type" : "akra.EPixelFormats"} ],
 "type" : "bool",
-"isInline" : false}
+"isInline" : true}

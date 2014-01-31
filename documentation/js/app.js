@@ -2,7 +2,7 @@ var app = angular.module("docsApp", ['ngRoute']);
 
 var keywords = ["modules","classes","functions","interfaces","enums","variables","typeDefs"];
 var subobjects = ["modules","classes","functions","interfaces","enums","variables","typeDefs","constants","getters","setters"];
-var systemtypes = ['string','number','bool','void','int','float'];
+var systemtypes = ['string','number','bool','void','int','float','uint','any'];
 
 app.factory('docobjects', function($location) {
 	var pathtree = $location.path().split("/");
@@ -30,6 +30,7 @@ app.factory('templates', function() {
 		classView: '/templates/class-view.html',
 		moduleView: '/templates/module-view.html',
 		functionView: '/templates/function-view.html',
+		enumView: '/templates/enum-view.html',
 		interfaceView: '/templates/interface-view.html',
 		nullView: '/templates/null-view.html',
 	};
@@ -145,6 +146,8 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 
 	$scope.$on('$locationChangeSuccess', function() {
 		tryFileExists();
+		$('#search').val('');
+		try_search();
 	});
 
 	$scope.currLocation = $location.path().replace(/\/[^\/]*\/?$/, "/");
@@ -168,7 +171,8 @@ app.directive('documobject', function() {
 		scope: {
 			docobject: '=',
 			arrow: '=',
-			filtersubobjects: '='
+			filtersubobjects: '=',
+			isparent: '='
 		}
 	};
 });
@@ -215,6 +219,13 @@ app.directive('functionView', function(templates) {
 	};
 });
 
+app.directive('enumView', function(templates) {
+	return {
+		replace: true,
+		templateUrl: templates.enumView
+	};
+});
+
 app.directive('interfaceView', function(templates) {
 	return {
 		replace: true,
@@ -245,6 +256,19 @@ app.filter('toStyleType', function() {
 	}
 });
 
+app.filter('toClassStyleType', function() {
+	return function(input) {
+		switch(input) {
+			case 'functions':
+				input = 'methods'
+				break
+			default:
+				break
+ 		}
+ 		return input;
+	}
+});
+
 app.filter('checkSystemType', function() {
 	return function(input) {
 		return systemtypes.indexOf(input)>=0;
@@ -258,7 +282,7 @@ app.filter('systemTypeToLoc', function() {
 			return '/'+input.replace(/\./g,'/');
 		}
 		else {
-			return '/'+name;
+			return null;
 		}
 	}
 });

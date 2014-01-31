@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "width" : { "location" : "akra.ICanvasInfo",
-"type" : "number"},
+"type" : "int"},
 "height" : { "location" : "akra.ICanvasInfo",
-"type" : "number"},
+"type" : "int"},
 "id" : { "location" : "akra.ICanvasInfo",
 "type" : "string"}}}}

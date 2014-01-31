@@ -3,6 +3,6 @@
 "location" : "akra.fx.IVariableInfoMap",
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "IAFXVariableInfo",
+"type" : "uint"} ],
+"type" : "akra.IAFXVariableInfo",
 "isInline" : false}}}

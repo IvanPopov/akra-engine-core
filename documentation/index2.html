@@ -51,13 +51,13 @@
 	<div class="b-center">
 		<div class="b-left j-sidebar">
 			<ul class="b-side-menu j-side-menu">
-				<li class="item has-sub-menu" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
-					<documobject docobject="currParent" treeview arrow="'opened'"></documobject>
+				<li class="item parent" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
+					<documobject docobject="currParent" isparent="'true'" treeview arrow="'opened'"></documobject>
 				</li>
-				<li class="item has-sub-menu">
+				<li class="item parent has-sub-menu">
 					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'"></documobject>
 				</li>
-				<li class="item has-sub-menu" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
+				<li class="item" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
 					<documobject docobject="currSibling" treeview arrow="'closed'"></documobject>
 				</li>
 			</ul>
@@ -77,7 +77,7 @@
 					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
 				</div>
 				<div ng-switch-when="enums">
-					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' enum-view></documobject>
 				</div>
 				<div ng-switch-when="variables">
 					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>

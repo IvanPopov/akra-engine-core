@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "value",
 "isOptional" : false,
 "type" : "number"} ],
-"type" : "number",
+"type" : "uint",
 "isInline" : true}

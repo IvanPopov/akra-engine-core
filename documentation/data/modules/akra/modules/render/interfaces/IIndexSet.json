@@ -2,12 +2,12 @@
 "variables" : { "public" : { "sName" : { "location" : "akra.render.IIndexSet",
 "type" : "string"},
 "pMap" : { "location" : "akra.render.IIndexSet",
-"type" : "IBufferMap"},
+"type" : "akra.IBufferMap"},
 "pIndexData" : { "location" : "akra.render.IIndexSet",
-"type" : "IBufferData"},
+"type" : "akra.IBufferData"},
 "pAttribData" : { "location" : "akra.render.IIndexSet",
-"type" : "IVertexData"},
+"type" : "akra.IVertexData"},
 "pI2IDataCache" : { "location" : "akra.render.IIndexSet",
-"type" : "IntMap"},
+"type" : "akra.IntMap"},
 "pAdditionCache" : { "location" : "akra.render.IIndexSet",
-"type" : "IntMap"}}}}
+"type" : "akra.IntMap"}}}}

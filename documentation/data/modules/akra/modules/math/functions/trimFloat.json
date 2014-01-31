@@ -2,9 +2,9 @@
 "location" : "akra.math",
 "arguments" : [ { "name" : "f",
 "isOptional" : false,
-"type" : "number"},
+"type" : "float"},
 { "name" : "precision",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
+"type" : "float"} ],
+"type" : "float",
 "isInline" : true}

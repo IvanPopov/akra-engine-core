@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pPlane",
 "isOptional" : false,
-"type" : "IPlane3d"},
+"type" : "akra.IPlane3d"},
 { "name" : "pSphere",
 "isOptional" : false,
-"type" : "ISphere"} ],
-"type" : "EPlaneClassifications",
+"type" : "akra.ISphere"} ],
+"type" : "akra.EPlaneClassifications",
 "isInline" : false}

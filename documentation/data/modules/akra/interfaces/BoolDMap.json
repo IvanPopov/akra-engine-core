@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "number"} ],
-"type" : "BoolMap",
+"type" : "akra.BoolMap",
 "isInline" : false}}}

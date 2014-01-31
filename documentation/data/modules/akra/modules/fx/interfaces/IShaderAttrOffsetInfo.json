@@ -2,6 +2,6 @@
 "variables" : { "public" : { "semantic" : { "location" : "akra.fx.IShaderAttrOffsetInfo",
 "type" : "string"},
 "shaderVarInfo" : { "location" : "akra.fx.IShaderAttrOffsetInfo",
-"type" : "IShaderUniformInfo"},
+"type" : "akra.fx.IShaderUniformInfo"},
 "defaultValue" : { "location" : "akra.fx.IShaderAttrOffsetInfo",
-"type" : "number"}}}}
+"type" : "float"}}}}

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "",
+"arguments" : [ { "name" : "str",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "string",
+"isInline" : false}

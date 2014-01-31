@@ -2,7 +2,7 @@
 "variables" : { "public" : { "sid" : { "location" : "akra.IColladaNewParam",
 "type" : "string"},
 "annotate" : { "location" : "akra.IColladaNewParam",
-"type" : "IColladaAnnotate"},
+"type" : "akra.IColladaAnnotate"},
 "semantics" : { "location" : "akra.IColladaNewParam",
 "type" : "string"},
 "modifier" : { "location" : "akra.IColladaNewParam",

@@ -2,7 +2,7 @@
 "variables" : { "public" : { "visible" : { "location" : "akra.ISceneModel",
 "type" : "bool"},
 "mesh" : { "location" : "akra.ISceneModel",
-"type" : "IMesh"}}},
+"type" : "akra.IMesh"}}},
 "functions" : { "isVisible" : { "comments" : [  ],
 "location" : "akra.ISceneModel",
 "arguments" : [  ],

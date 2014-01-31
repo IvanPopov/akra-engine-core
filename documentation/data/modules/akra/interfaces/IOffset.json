@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "x" : { "location" : "akra.IOffset",
-"type" : "number"},
+"type" : "float"},
 "y" : { "location" : "akra.IOffset",
-"type" : "number"}}}}
+"type" : "float"}}}}

@@ -3,6 +3,6 @@
 "location" : "akra.ILibrary",
 "arguments" : [ { "name" : "guid",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "ILibraryEntry",
+"type" : "int"} ],
+"type" : "akra.ILibraryEntry",
 "isInline" : false}}}

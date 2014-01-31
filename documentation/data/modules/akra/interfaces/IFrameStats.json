@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "fps" : { "location" : "akra.IFrameStats",
-"type" : "IFPSStat"},
+"type" : "akra.IFPSStat"},
 "time" : { "location" : "akra.IFrameStats",
-"type" : "ITimeStat"},
+"type" : "akra.ITimeStat"},
 "polygonsCount" : { "location" : "akra.IFrameStats",
-"type" : "number"}}}}
+"type" : "uint"}}}}

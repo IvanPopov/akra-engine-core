@@ -3,6 +3,6 @@
 "location" : "akra.IExplorerFunc",
 "arguments" : [ { "name" : "pEntity",
 "isOptional" : false,
-"type" : "IEntity"} ],
+"type" : "akra.IEntity"} ],
 "type" : "bool",
 "isInline" : false}}}

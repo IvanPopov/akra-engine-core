@@ -1,8 +1,8 @@
 { "location" : "akra.geometry",
 "variables" : { "public" : { "point" : { "location" : "akra.geometry.Ray2d",
-"type" : "IVec2"},
+"type" : "akra.IVec2"},
 "normal" : { "location" : "akra.geometry.Ray2d",
-"type" : "IVec2"}}},
+"type" : "akra.IVec2"}}},
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.geometry.Ray2d",
 "arguments" : [  ]} ]}

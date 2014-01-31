@@ -71,6 +71,6 @@
 "location" : "WEBGL_multiple_render_targets",
 "arguments" : [ { "name" : "buffers",
 "isOptional" : false,
-"type" : "[  ]"} ],
+"type" : "number"} ],
 "type" : "void",
 "isInline" : false}}}

@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IJoint",
+"type" : "akra.IJoint",
 "isInline" : false}}}

@@ -1,9 +1,9 @@
 { "location" : "akra",
 "variables" : { "public" : { "last" : { "location" : "akra.IFPSStat",
-"type" : "number"},
+"type" : "float"},
 "avg" : { "location" : "akra.IFPSStat",
-"type" : "number"},
+"type" : "float"},
 "best" : { "location" : "akra.IFPSStat",
-"type" : "number"},
+"type" : "float"},
 "worst" : { "location" : "akra.IFPSStat",
-"type" : "number"}}}}
+"type" : "float"}}}}

@@ -1,5 +1,5 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra",
 "arguments" : [  ],
-"type" : "number",
-"isInline" : false}
+"type" : "uint",
+"isInline" : true}

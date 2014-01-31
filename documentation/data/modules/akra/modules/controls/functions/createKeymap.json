@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "target",
 "isOptional" : true,
 "type" : "HTMLElement"} ],
-"type" : "IKeyMap",
+"type" : "akra.IKeyMap",
 "isInline" : false}

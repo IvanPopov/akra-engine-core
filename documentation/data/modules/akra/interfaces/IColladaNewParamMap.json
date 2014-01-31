@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "sid",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IColladaNewParam",
+"type" : "akra.IColladaNewParam",
 "isInline" : false}}}

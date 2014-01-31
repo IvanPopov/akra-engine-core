@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "symbol",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IColladaInstanceMaterial",
+"type" : "akra.IColladaInstanceMaterial",
 "isInline" : false}}}

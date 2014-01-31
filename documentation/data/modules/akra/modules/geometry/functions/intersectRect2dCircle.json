@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pRect",
 "isOptional" : false,
-"type" : "IRect2d"},
+"type" : "akra.IRect2d"},
 { "name" : "pCircle",
 "isOptional" : false,
-"type" : "ICircle"} ],
+"type" : "akra.ICircle"} ],
 "type" : "bool",
 "isInline" : false}

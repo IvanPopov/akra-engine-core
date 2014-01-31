@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pVertexData",
 "isOptional" : false,
-"type" : "IVertexData"},
+"type" : "akra.IVertexData"},
 { "name" : "pBoundingBox",
 "isOptional" : false,
-"type" : "IRect3d"} ],
+"type" : "akra.IRect3d"} ],
 "type" : "bool",
 "isInline" : false}

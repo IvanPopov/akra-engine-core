@@ -26,6 +26,6 @@
 "componentName" : { "location" : "akra.fx.IEffectErrorInfo",
 "type" : "string"},
 "line" : { "location" : "akra.fx.IEffectErrorInfo",
-"type" : "number"},
+"type" : "uint"},
 "column" : { "location" : "akra.fx.IEffectErrorInfo",
-"type" : "number"}}}}
+"type" : "uint"}}}}

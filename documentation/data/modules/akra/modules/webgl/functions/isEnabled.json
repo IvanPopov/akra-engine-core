@@ -2,4 +2,4 @@
 "location" : "akra.webgl",
 "arguments" : [  ],
 "type" : "bool",
-"isInline" : true}
+"isInline" : false}

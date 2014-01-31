@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sTarget",
 "isOptional" : true,
 "type" : "string"} ],
-"type" : "IAnimationTrack",
+"type" : "akra.IAnimationTrack",
 "isInline" : false}

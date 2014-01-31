@@ -1,3 +1,3 @@
 { "location" : "akra",
 "variables" : { "public" : { "effect" : { "location" : "akra.IColladaEffectLibrary",
-"type" : "{  [ id :  string ] :  IColladaEffect; }"}}}}
+"type" : "_anonymous"}}}}

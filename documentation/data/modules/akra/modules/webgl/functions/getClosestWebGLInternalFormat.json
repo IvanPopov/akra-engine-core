@@ -2,9 +2,9 @@
 "location" : "akra.webgl",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
-"type" : "EPixelFormats"},
+"type" : "akra.EPixelFormats"},
 { "name" : "isHWGamma",
 "isOptional" : true,
 "type" : "bool"} ],
-"type" : "number",
+"type" : "int",
 "isInline" : false}

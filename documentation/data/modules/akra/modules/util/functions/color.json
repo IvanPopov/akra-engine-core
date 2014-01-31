@@ -3,7 +3,7 @@
 "arguments" : [ { "name" : "..."},
 { "name" : "argv",
 "isOptional" : false,
-"type" : "[  ]"} ],
+"type" : "any"} ],
 "variableArgList" : true,
-"type" : "IColor",
+"type" : "akra.IColor",
 "isInline" : false}

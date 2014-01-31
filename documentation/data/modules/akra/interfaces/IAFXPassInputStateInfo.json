@@ -1,9 +1,9 @@
 { "location" : "akra",
 "variables" : { "public" : { "uniformKey" : { "location" : "akra.IAFXPassInputStateInfo",
-"type" : "number"},
+"type" : "uint"},
 "foreignKey" : { "location" : "akra.IAFXPassInputStateInfo",
-"type" : "number"},
+"type" : "uint"},
 "samplerKey" : { "location" : "akra.IAFXPassInputStateInfo",
-"type" : "number"},
+"type" : "uint"},
 "renderStatesKey" : { "location" : "akra.IAFXPassInputStateInfo",
-"type" : "number"}}}}
+"type" : "uint"}}}}

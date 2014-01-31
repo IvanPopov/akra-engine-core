@@ -2,6 +2,6 @@
 "location" : "akra.util.deps",
 "arguments" : [ { "name" : "pEngine",
 "isOptional" : false,
-"type" : "IEngine"} ],
-"type" : "IDepsManager",
+"type" : "akra.IEngine"} ],
+"type" : "akra.IDepsManager",
 "isInline" : false}

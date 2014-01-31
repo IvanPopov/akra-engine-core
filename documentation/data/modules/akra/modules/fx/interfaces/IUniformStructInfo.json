@@ -6,8 +6,8 @@
 "isArray" : { "location" : "akra.fx.IUniformStructInfo",
 "type" : "bool"},
 "index" : { "location" : "akra.fx.IUniformStructInfo",
-"type" : "number"},
+"type" : "int"},
 "fields" : { "location" : "akra.fx.IUniformStructInfo",
-"type" : "IUniformStructInfo[  ]"},
+"type" : "akra.fx.IUniformStructInfo"},
 "shaderVarInfo" : { "location" : "akra.fx.IUniformStructInfo",
-"type" : "IShaderUniformInfo"}}}}
+"type" : "akra.fx.IShaderUniformInfo"}}}}

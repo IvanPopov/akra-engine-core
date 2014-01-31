@@ -2,7 +2,7 @@
 "variables" : { "public" : { "name" : { "location" : "akra.fx.IShaderAttrInfo",
 "type" : "string"},
 "location" : { "location" : "akra.fx.IShaderAttrInfo",
-"type" : "number"},
+"type" : "uint"},
 "semantic" : { "location" : "akra.fx.IShaderAttrInfo",
 "type" : "string"},
 "isMappable" : { "location" : "akra.fx.IShaderAttrInfo",
@@ -10,6 +10,6 @@
 "isComplex" : { "location" : "akra.fx.IShaderAttrInfo",
 "type" : "bool"},
 "vertexTextureInfo" : { "location" : "akra.fx.IShaderAttrInfo",
-"type" : "IShaderUniformInfo"},
+"type" : "akra.fx.IShaderUniformInfo"},
 "offsets" : { "location" : "akra.fx.IShaderAttrInfo",
-"type" : "IShaderAttrOffsetInfo[  ]"}}}}
+"type" : "akra.fx.IShaderAttrOffsetInfo"}}}}

@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sAddr",
 "isOptional" : true,
 "type" : "string"} ],
-"type" : "IPipe",
+"type" : "akra.IPipe",
 "isInline" : false}

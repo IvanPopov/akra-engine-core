@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "sTypeName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "SystemTypeInstruction",
+"type" : "akra.fx.SystemTypeInstruction",
 "isInline" : false}}}

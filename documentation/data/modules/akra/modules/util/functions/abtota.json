@@ -5,6 +5,6 @@
 "type" : "ArrayBuffer"},
 { "name" : "eType",
 "isOptional" : false,
-"type" : "EDataTypes"} ],
+"type" : "akra.EDataTypes"} ],
 "type" : "ArrayBufferView",
 "isInline" : false}

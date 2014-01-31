@@ -1,2 +1,2 @@
 { "location" : "akra.render",
-"type" : "{  MODEL_MATRIX :  string; VIEW_MATRIX :  string; PROJ_MATRIX :  string; NORMAL_MATRIX :  string; BIND_MATRIX :  string; RENDER_OBJECT_ID :  string; }"}
+"type" : "_anonymous"}

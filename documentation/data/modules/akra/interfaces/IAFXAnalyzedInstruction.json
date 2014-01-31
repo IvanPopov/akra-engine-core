@@ -3,9 +3,9 @@
 "location" : "akra.IAFXAnalyzedInstruction",
 "arguments" : [ { "name" : "pUsedDataCollector",
 "isOptional" : false,
-"type" : "IAFXTypeUseInfoMap"},
+"type" : "akra.IAFXTypeUseInfoMap"},
 { "name" : "eUsedMode",
 "isOptional" : true,
-"type" : "EVarUsedMode"} ],
+"type" : "akra.EVarUsedMode"} ],
 "type" : "void",
 "isInline" : false}}}

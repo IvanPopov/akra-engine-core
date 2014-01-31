@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pSphere",
 "isOptional" : false,
-"type" : "ISphere"},
+"type" : "akra.ISphere"},
 { "name" : "pRay",
 "isOptional" : false,
-"type" : "IRay3d"} ],
+"type" : "akra.IRay3d"} ],
 "type" : "bool",
 "isInline" : false}

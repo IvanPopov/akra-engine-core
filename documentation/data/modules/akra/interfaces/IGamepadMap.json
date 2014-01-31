@@ -18,7 +18,7 @@
 "location" : "akra.IGamepadMap",
 "arguments" : [ { "name" : "i",
 "isOptional" : true,
-"type" : "number"} ],
+"type" : "int"} ],
 "type" : "Gamepad",
 "isInline" : false},
 "connected" : { "comments" : [  ],

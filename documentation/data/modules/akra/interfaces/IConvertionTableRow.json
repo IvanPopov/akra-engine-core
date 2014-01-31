@@ -2,4 +2,4 @@
 "variables" : { "public" : { "type" : { "location" : "akra.IConvertionTableRow",
 "type" : "any"},
 "converter" : { "location" : "akra.IConvertionTableRow",
-"type" : "IConverter"}}}}
+"type" : "akra.IConverter"}}}}

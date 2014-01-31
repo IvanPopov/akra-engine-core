@@ -2,6 +2,6 @@
 "variables" : { "public" : { "lastModifiedDate" : { "location" : "akra.IFileMeta",
 "type" : "string"},
 "size" : { "location" : "akra.IFileMeta",
-"type" : "number"},
+"type" : "uint"},
 "eTag" : { "location" : "akra.IFileMeta",
 "type" : "string"}}}}

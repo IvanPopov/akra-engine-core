@@ -1,7 +1,7 @@
-{ "comments" : [ [ "/**@inline*/" ] ],
+{ "comments" : [  ],
 "location" : "akra.bf",
 "arguments" : [ { "name" : "f",
 "isOptional" : false,
-"type" : "number"} ],
-"type" : "number",
-"isInline" : false}
+"type" : "float"} ],
+"type" : "uint",
+"isInline" : true}

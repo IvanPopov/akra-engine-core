@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "grammarSymbolOrFuncName",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IRuleFunction",
+"type" : "akra.IRuleFunction",
 "isInline" : false}}}

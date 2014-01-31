@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pRect",
 "isOptional" : false,
-"type" : "IRect2d"},
+"type" : "akra.IRect2d"},
 { "name" : "pRay",
 "isOptional" : false,
-"type" : "IRay2d"} ],
+"type" : "akra.IRay2d"} ],
 "type" : "bool",
 "isInline" : false}

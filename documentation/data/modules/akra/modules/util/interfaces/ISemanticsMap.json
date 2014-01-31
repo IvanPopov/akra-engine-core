@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "semantics",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IDataFlow",
+"type" : "akra.IDataFlow",
 "isInline" : false}}}

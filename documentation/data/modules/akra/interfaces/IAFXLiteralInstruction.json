@@ -10,6 +10,6 @@
 "location" : "akra.IAFXLiteralInstruction",
 "arguments" : [ { "name" : "pRelationMap",
 "isOptional" : true,
-"type" : "IAFXInstructionMap"} ],
-"type" : "IAFXLiteralInstruction",
+"type" : "akra.IAFXInstructionMap"} ],
+"type" : "akra.IAFXLiteralInstruction",
 "isInline" : false}}}

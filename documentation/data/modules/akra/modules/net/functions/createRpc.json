@@ -5,6 +5,6 @@
 "type" : "string"},
 { "name" : "opt",
 "isOptional" : true,
-"type" : "IRPCOptions"} ],
-"type" : "IRPC",
+"type" : "akra.IRPCOptions"} ],
+"type" : "akra.IRPC",
 "isInline" : false}

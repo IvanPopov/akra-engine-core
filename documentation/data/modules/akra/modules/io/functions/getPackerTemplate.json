@@ -1,5 +1,5 @@
 { "comments" : [  ],
 "location" : "akra.io",
 "arguments" : [  ],
-"type" : "IPackerTemplate",
+"type" : "akra.IPackerTemplate",
 "isInline" : false}

@@ -2,6 +2,6 @@
 "location" : "akra",
 "arguments" : [ { "name" : "options",
 "isOptional" : true,
-"type" : "IEngineOptions"} ],
-"type" : "IEngine",
+"type" : "akra.IEngineOptions"} ],
+"type" : "akra.IEngine",
 "isInline" : false}

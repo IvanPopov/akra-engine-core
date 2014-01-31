@@ -1,7 +1,7 @@
 { "location" : "akra",
 "variables" : { "public" : { "data" : { "location" : "akra.IDataMapper",
-"type" : "IVertexData"},
+"type" : "akra.IVertexData"},
 "semantics" : { "location" : "akra.IDataMapper",
 "type" : "string"},
 "addition" : { "location" : "akra.IDataMapper",
-"type" : "number"}}}}
+"type" : "int"}}}}

@@ -13,7 +13,7 @@
 "location" : "akra.IPathinfo",
 "arguments" : [ { "name" : "pPath",
 "isOptional" : false,
-"type" : "IPathinfo"} ],
+"type" : "akra.IPathinfo"} ],
 "type" : "void",
 "isInline" : false},
 "isAbsolute" : { "comments" : [  ],

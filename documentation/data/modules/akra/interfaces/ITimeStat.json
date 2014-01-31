@@ -1,5 +1,5 @@
 { "location" : "akra",
 "variables" : { "public" : { "best" : { "location" : "akra.ITimeStat",
-"type" : "number"},
+"type" : "float"},
 "worst" : { "location" : "akra.ITimeStat",
-"type" : "number"}}}}
+"type" : "float"}}}}

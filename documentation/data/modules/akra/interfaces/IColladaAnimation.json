@@ -2,10 +2,10 @@
 "variables" : { "public" : { "name" : { "location" : "akra.IColladaAnimation",
 "type" : "string"},
 "sources" : { "location" : "akra.IColladaAnimation",
-"type" : "IColladaSource[  ]"},
+"type" : "akra.IColladaSource"},
 "samplers" : { "location" : "akra.IColladaAnimation",
-"type" : "IColladaAnimationSampler[  ]"},
+"type" : "akra.IColladaAnimationSampler"},
 "channels" : { "location" : "akra.IColladaAnimation",
-"type" : "IColladaAnimationChannel[  ]"},
+"type" : "akra.IColladaAnimationChannel"},
 "animations" : { "location" : "akra.IColladaAnimation",
-"type" : "IColladaAnimation[  ]"}}}}
+"type" : "akra.IColladaAnimation"}}}}

@@ -1,6 +1,6 @@
 { "location" : "akra",
 "variables" : { "public" : { "unit" : { "location" : "akra.IAsset",
-"type" : "IUnit"},
+"type" : "akra.IUnit"},
 "upAxis" : { "location" : "akra.IAsset",
 "type" : "string"},
 "title" : { "location" : "akra.IAsset",
@@ -12,6 +12,6 @@
 "modified" : { "location" : "akra.IAsset",
 "type" : "string"},
 "keywords" : { "location" : "akra.IAsset",
-"type" : "string[  ]"},
+"type" : "string"},
 "contributor" : { "location" : "akra.IAsset",
-"type" : "IContributor"}}}}
+"type" : "akra.IContributor"}}}}

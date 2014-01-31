@@ -2,8 +2,8 @@
 "variables" : { "public" : { "proc" : { "location" : "akra.IRPCRequest",
 "type" : "string"},
 "argv" : { "location" : "akra.IRPCRequest",
-"type" : "any[  ]"},
+"type" : "any"},
 "lt" : { "location" : "akra.IRPCRequest",
-"type" : "number"},
+"type" : "uint"},
 "pr" : { "location" : "akra.IRPCRequest",
-"type" : "number"}}}}
+"type" : "uint"}}}}

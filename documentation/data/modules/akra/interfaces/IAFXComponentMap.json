@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "index",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IAFXComponent",
+"type" : "akra.IAFXComponent",
 "isInline" : false}}}

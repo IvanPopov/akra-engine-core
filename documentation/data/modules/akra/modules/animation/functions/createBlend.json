@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sName",
 "isOptional" : true,
 "type" : "string"} ],
-"type" : "IAnimationBlend",
+"type" : "akra.IAnimationBlend",
 "isInline" : false}

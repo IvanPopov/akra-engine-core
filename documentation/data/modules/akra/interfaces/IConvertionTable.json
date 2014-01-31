@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "type",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "IConvertionTableRow",
+"type" : "akra.IConvertionTableRow",
 "isInline" : false}}}

@@ -17,7 +17,7 @@
 "type" : "string"},
 { "name" : "iMode",
 "isOptional" : true,
-"type" : "number"},
+"type" : "int"},
 { "name" : "fnCallback",
 "isOptional" : true,
 "type" : "Function"} ]} ],

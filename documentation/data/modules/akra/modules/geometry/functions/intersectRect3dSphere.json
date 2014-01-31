@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pRect",
 "isOptional" : false,
-"type" : "IRect3d"},
+"type" : "akra.IRect3d"},
 { "name" : "pSphere",
 "isOptional" : false,
-"type" : "ISphere"} ],
+"type" : "akra.ISphere"} ],
 "type" : "bool",
 "isInline" : false}

@@ -3,5 +3,5 @@
 "arguments" : [ { "name" : "sMode",
 "isOptional" : false,
 "type" : "string"} ],
-"type" : "number",
+"type" : "int",
 "isInline" : false}

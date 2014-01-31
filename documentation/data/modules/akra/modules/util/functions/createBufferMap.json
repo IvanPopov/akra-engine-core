@@ -2,6 +2,6 @@
 "location" : "akra.util",
 "arguments" : [ { "name" : "pEngine",
 "isOptional" : false,
-"type" : "IEngine"} ],
-"type" : "IBufferMap",
+"type" : "akra.IEngine"} ],
+"type" : "akra.IBufferMap",
 "isInline" : false}

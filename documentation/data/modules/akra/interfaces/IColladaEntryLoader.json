@@ -4,5 +4,5 @@
 "arguments" : [ { "name" : "pXML",
 "isOptional" : false,
 "type" : "Element"} ],
-"type" : "IColladaEntry",
+"type" : "akra.IColladaEntry",
 "isInline" : false}}}

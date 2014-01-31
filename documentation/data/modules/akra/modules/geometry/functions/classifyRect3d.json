@@ -2,9 +2,9 @@
 "location" : "akra.geometry",
 "arguments" : [ { "name" : "pRectA",
 "isOptional" : false,
-"type" : "IRect3d"},
+"type" : "akra.IRect3d"},
 { "name" : "pRectB",
 "isOptional" : false,
-"type" : "IRect3d"} ],
-"type" : "EVolumeClassifications",
+"type" : "akra.IRect3d"} ],
+"type" : "akra.EVolumeClassifications",
 "isInline" : false}

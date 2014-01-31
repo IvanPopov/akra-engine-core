@@ -1,11 +1,11 @@
 { "location" : "akra",
 "variables" : { "public" : { "count" : { "location" : "akra.IColladaVertexWeights",
-"type" : "number"},
+"type" : "int"},
 "inputs" : { "location" : "akra.IColladaVertexWeights",
-"type" : "IColladaInput[  ]"},
+"type" : "akra.IColladaInput"},
 "weightInput" : { "location" : "akra.IColladaVertexWeights",
-"type" : "IColladaInput"},
+"type" : "akra.IColladaInput"},
 "vcount" : { "location" : "akra.IColladaVertexWeights",
-"type" : "number[  ]"},
+"type" : "uint"},
 "v" : { "location" : "akra.IColladaVertexWeights",
-"type" : "number[  ]"}}}}
+"type" : "int"}}}}

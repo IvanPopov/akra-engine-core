@@ -1,11 +1,11 @@
 { "location" : "akra.render",
 "variables" : { "protected" : { "_pBuffer" : { "location" : "akra.render.Screen",
-"type" : "IRenderDataCollection"}}},
+"type" : "akra.IRenderDataCollection"}}},
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.render.Screen",
 "arguments" : [ { "name" : "pRenderer",
 "isOptional" : false,
-"type" : "IRenderer"},
+"type" : "akra.IRenderer"},
 { "name" : "pCollection",
 "isOptional" : true,
-"type" : "IRenderDataCollection"} ]} ]}
+"type" : "akra.IRenderDataCollection"} ]} ]}
