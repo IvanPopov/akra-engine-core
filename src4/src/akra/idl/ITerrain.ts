@@ -7,8 +7,9 @@
 /// <reference path="ISceneNode.ts" />
 
 module akra {
-	export interface IImageMap {
-		[index: string]: IImg;
+	export interface ITerrainMaps {
+		height: IImg;
+		normal: IImg;
 	}
 	
 	export interface ITerrainSampleData {
@@ -50,7 +51,7 @@ module akra {
 		 * @param {uint} iShiftY Количество секторов в terrain по оси Y (указывается в степенях двойки).
 		 * @param {string} sSurfaceTextures Название мега текстуры.
 		 */
-		init(pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneNode): boolean;
+		init(pMaps: ITerrainMaps, pWorldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneNode): boolean;
 		initMegaTexture(sSurfaceTextures?: string): void;
 		/**
 		 * Ищет секцию по координате

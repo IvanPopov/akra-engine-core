@@ -183,8 +183,8 @@ module akra.terrain {
 		}
 
 
-		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode: ISceneObject = null) {
-			var bResult: boolean = super.init(pImgMap,worldExtents, iShift, iShiftX, iShiftY, sSurfaceTextures, pRootNode);
+		init(pMaps: ITerrainMaps, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode: ISceneObject = null) {
+			var bResult: boolean = super.init(pMaps, worldExtents, iShift, iShiftX, iShiftY, sSurfaceTextures, pRootNode);
 			if (bResult) {
 				this._iTessellationQueueSize = this.getSectorCountX() * this.getSectorCountY();
 				this._pTessellationQueue = new Array<ITerrainSectionROAM>(this._iTessellationQueueSize);

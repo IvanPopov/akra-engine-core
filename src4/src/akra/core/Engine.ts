@@ -154,6 +154,19 @@ module akra.core {
 
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
+			
+			//read options 
+			if (!isNull(pOptions)) {
+				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
+				//default deps has higher priority!
+				if (isDefAndNotNull(pOptions.deps)) {
+					Engine.depends(pOptions.deps);
+				}
+
+				if (pOptions.gamepads === true) {
+					this.enableGamepads();
+				}
+			}
 
 			deps.load(this, pDeps, sDepsRoot,
 				(e: Error, pDep: IDependens): void => {
@@ -167,19 +180,6 @@ module akra.core {
 				},
 				(pDep: IDep, pProgress: any): void => {
 				});
-
-			//read options 
-			if (!isNull(pOptions)) {
-				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
-				//default deps has higher priority!
-				if (isDefAndNotNull(pOptions.deps)) {
-					Engine.depends(pOptions.deps);
-				}
-
-				if (pOptions.gamepads === true) {
-					this.enableGamepads();
-				}
-			}
 		}
 
 		getSpriteManager(): ISpriteManager {
@@ -366,44 +366,44 @@ module akra.core {
 		//engine core dependences
 		{
 			files: [
-				{ path: "grammars/HLSL.gr" }
-				//{
-				//	path: "../../../src2/data/core.map", 
-				//	type: "map",
-				//	name: "core resources" 
-				//}
-			],
-			deps: {
-				files: [
-					{ path: "effects/SystemEffects.afx" },
-					{ path: "effects/Plane.afx" },
-					{ path: "effects/fxaa.afx" },
-					{ path: "effects/skybox.afx" },
-					{ path: "effects/TextureToScreen.afx" },
-					{ path: "effects/mesh_geometry.afx" },
-					{ path: "effects/prepare_shadows.afx" },
-					{ path: "effects/terrain.afx" },
-					{ path: "effects/prepareDeferredShading.afx" },
-					{ path: "effects/generate_normal_map.afx" },
-					{ path: "effects/sky.afx" },
-					{ path: "effects/motion_blur.afx" },
-					{ path: "effects/edge_detection.afx" },
-					{ path: "effects/wireframe.afx" },
-					{ path: "effects/sprite.afx" }
-				],
-				deps: {
-					files: [
-						{ path: "effects/mesh_texture.afx" },
-						{ path: "effects/deferredShading.afx" },
-						{ path: "effects/apply_lights_and_shadows.afx" }
-					],
-					deps: {
-						files: [
-							{ path: "effects/color_maps.afx" }
-						]
-					}
+				//{ path: "grammars/HLSL.gr" }
+				{
+					path: "core.map", 
+					type: "map",
+					name: "core resources" 
 				}
-			},
+			],
+			//deps: {
+			//	files: [
+			//		{ path: "effects/SystemEffects.afx" },
+			//		{ path: "effects/Plane.afx" },
+			//		{ path: "effects/fxaa.afx" },
+			//		{ path: "effects/skybox.afx" },
+			//		{ path: "effects/TextureToScreen.afx" },
+			//		{ path: "effects/mesh_geometry.afx" },
+			//		{ path: "effects/prepare_shadows.afx" },
+			//		{ path: "effects/terrain.afx" },
+			//		{ path: "effects/prepareDeferredShading.afx" },
+			//		{ path: "effects/generate_normal_map.afx" },
+			//		{ path: "effects/sky.afx" },
+			//		{ path: "effects/motion_blur.afx" },
+			//		{ path: "effects/edge_detection.afx" },
+			//		{ path: "effects/wireframe.afx" },
+			//		{ path: "effects/sprite.afx" }
+			//	],
+			//	deps: {
+			//		files: [
+			//			{ path: "effects/mesh_texture.afx" },
+			//			{ path: "effects/deferredShading.afx" },
+			//			{ path: "effects/apply_lights_and_shadows.afx" }
+			//		],
+			//		deps: {
+			//			files: [
+			//				{ path: "effects/color_maps.afx" }
+			//			]
+			//		}
+			//	}
+			//},
 			root: "../../../src2/data/"
 		};
 

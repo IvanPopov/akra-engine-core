@@ -2,13 +2,25 @@
 /// <reference path="../../build/addons/base3dObjects.addon.d.ts" />
 var akra;
 (function (akra) {
-    akra.pEngine = akra.createEngine();
+    var pDeps = {
+        root: "../../../src2/data/",
+        files: [
+            { path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP" },
+            { path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
+            { path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
+            { path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
+        ]
+    };
+
+    akra.pEngine = akra.createEngine({ deps: pDeps });
     akra.pScene = akra.pEngine.getScene();
     akra.pCanvas = akra.pEngine.getRenderer().getDefaultCanvas();
     akra.pCamera = null;
     akra.pViewport = null;
     akra.pRmgr = akra.pEngine.getResourceManager();
     akra.pSky = null;
+    akra.pTerrain = null;
+
     var data = "../../../src2/data/";
 
     function setup(pCanvas) {
@@ -57,7 +69,7 @@ var akra;
 
                 pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
 
-                var fSpeed = 0.1 * 1 / 5;
+                var fSpeed = 0.1 * 10;
                 if (pKeymap.isKeyPress(87 /* W */)) {
                     pCamera.addRelPosition(0, 0, -fSpeed);
                 }
@@ -72,6 +84,42 @@ var akra;
                 }
             }
         });
+    }
+
+    function createTerrain(pScene, bShowMegaTex, eType) {
+        if (typeof bShowMegaTex === "undefined") { bShowMegaTex = true; }
+        if (typeof eType === "undefined") { eType = 67 /* TERRAIN_ROAM */; }
+        var pRmgr = pScene.getManager().getEngine().getResourceManager();
+        var pTerrain = null;
+        if (eType === 67 /* TERRAIN_ROAM */) {
+            pTerrain = pScene.createTerrainROAM("Terrain");
+            pTerrain.setUseTessellationThread(false);
+        } else {
+            pTerrain = pScene.createTerrain("Terrain");
+        }
+
+        var pTerrainMap = {
+            height: pRmgr.getImagePool().findResource("TERRAIN_HEIGHT_MAP"),
+            normal: pRmgr.getImagePool().findResource("TERRAIN_NORMAL_MAP")
+        };
+
+        // pTerrain.manualMegaTextureInit = !bShowMegaTex;
+        var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
+        pTerrain.attachToParent(pScene.getRootNode());
+        pTerrain.setInheritance(4 /* ALL */);
+
+        pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
+        pTerrain.setPosition(11, -109, -109.85);
+
+        var pMinLevel = pRmgr.getImagePool().findResource("MEGATEXTURE_MIN_LEVEL");
+        if (pMinLevel) {
+            pTerrain.getMegaTexture().setMinLevelTexture(pMinLevel);
+            //(<terrain.MegaTexture>pTerrain.getMegaTexture()).enableStreaming(true);
+        }
+
+        pTerrain.setShowMegaTexture(bShowMegaTex);
+
+        return pTerrain;
     }
 
     function createViewport() {
@@ -94,12 +142,12 @@ var akra;
         pOmniLight.getParams().attenuation.set(1, 0, 0);
         pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(1, 5, 3);
+        pOmniLight.addPosition(1, 100, 3);
     }
 
     function createSky() {
         akra.pSky = new akra.model.Sky(akra.pEngine, 32, 32, 1000.0);
-        akra.pSky.setTime(13.);
+        akra.pSky.setTime(15.);
 
         akra.pSky.sun.setShadowCaster(false);
 
@@ -108,13 +156,12 @@ var akra;
     }
 
     function createSkyBox() {
-        var pSkyBoxTexture = akra.pEngine.getResourceManager().createTexture(".sky-box-texture");
+        var pSkyBoxTexture = akra.pRmgr.createTexture(".sky-box-texture");
+        pSkyBoxTexture.loadResource("SKYBOX");
 
-        //pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
-        pSkyBoxTexture.loadResource("../../../src2/data/" + "textures/skyboxes/desert-2.dds");
-        pSkyBoxTexture.loaded.connect(function (pTexture) {
-            akra.pViewport.setSkybox(pTexture);
-        });
+        if (akra.pViewport.getType() === 1 /* DSVIEWPORT */) {
+            akra.pViewport.setSkybox(pSkyBoxTexture);
+        }
     }
 
     function loadModel(sPath, fnCallback) {
@@ -239,13 +286,14 @@ var akra;
         createKeymap(akra.pCamera);
 
         //createSceneEnvironment();
-        createLighting();
+        //createLighting();
         createSkyBox();
+        createSky();
 
-        //createSky();
+        akra.pTerrain = createTerrain(akra.pScene, true, 67 /* TERRAIN_ROAM */);
+
         //loadHero();
-        loadManyModels(400, data + "models/cube.dae");
-
+        //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(150, data + "models/box/opened_box.dae");
         //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();

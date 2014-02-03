@@ -33,7 +33,7 @@ module akra.terrain {
 		private _pEngine: IEngine = null;
 		// private _pDevice = null;
 
-		private _pObject: any = null;
+		private _pObject: ISceneObject = null;
 		private _pWorldExtents: IRect3d = null;
 		//Координаты камеры на объекте
 		private _v2fCameraCoord: IVec2 = new Vec2(0, 0); 
@@ -84,6 +84,7 @@ module akra.terrain {
 		private _bManualMinLevelLoad: boolean = false;
 
 		private _bStreaming: boolean = false;
+		private _tLastUpdateTime: float = 0;
 
 		constructor(pEngine: IEngine) {
 			this.setupSignals();
@@ -205,7 +206,7 @@ module akra.terrain {
 			}
 		}
 
-		connectToServer(sURL: string = "ws://23.21.68.208:6112"): void {
+		connectToServer(sURL: string = "ws://192.168.88.53:6112"/*"ws://23.21.68.208:6112"*/): void {
 			this._pRPC.join(sURL);
 			// this._pRPC.join("ws://localhost:6112");
 			this._bStreaming = true;
@@ -220,33 +221,26 @@ module akra.terrain {
 			this._bStreaming = false;
 		}
 
-		private _bError: boolean = false;
-		private _tLastTime: float = 0;
 		prepareForRender(pViewport: IViewport): void {
-			if(this._bError){
-				logger.critical("ERROR");
+			if (!this._bStreaming) {
+				return;
 			}
 
 			if(!this._pXY[0].isLoaded) {
-				// var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
-
-				// if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
-				// 	this.loadMinTextureLevel();
-				// }
-
 				return;
 			}
 
 			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 
-			if(tCurrentTime - this._tLastTime < 30){
+			if (tCurrentTime - this._tLastUpdateTime < 30){
 				return;
 			}
-			this._tLastTime = tCurrentTime;
+
+			this._tLastUpdateTime = tCurrentTime;
 
 			var pCamera: ICamera = pViewport.getCamera();
 			var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.getWorldPosition(), 1.);
-			var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix;
+			var m4fTransposeInverse: IMat4 = this._pObject.getInverseWorldMatrix();
 
 			v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
 
@@ -654,6 +648,9 @@ module akra.terrain {
 
 			if(isNull(this._fnPRCCallBack)){
 				this._fnPRCCallBack = function (pError: Error, pData: Uint8Array) {
+					//var pError = null;
+					//var pData = this.pDataList[this._iMinLevel + iLev];
+					//var pTextureData = pData;
 
 					if(!isNull(pError)){
 						// debug_print(pError.message);
@@ -667,9 +664,6 @@ module akra.terrain {
 					var iBlockSize: uint = pHeaderData[1];
 					var iX: uint = pHeaderData[2];
 					var iY: uint = pHeaderData[3];
-
-					// var pTextureData = this.pDataList[this._iMinLevel + iLev];
-					// pHeaderData.set(pData.subarray(0, 8));
 
 					var iXBuf: uint = iX - me._pXY[iLev].iX;
 					var iYBuf: uint = iY - me._pXY[iLev].iY;
