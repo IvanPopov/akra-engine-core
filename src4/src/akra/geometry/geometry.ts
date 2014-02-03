@@ -33,7 +33,7 @@ module akra.geometry {
 	/**
 	 * Computes a coordinate-axis oriented bounding box.
 	 */
-	export function computeBoundingBox(pVertexData, pBoundingBox): boolean {
+	export function computeBoundingBox(pVertexData: IVertexData, pBoundingBox: IRect3d): boolean {
 		var fX0: float = 0, fY0: float = 0, fZ0: float = 0,
 			fX1: float = 0, fY1: float = 0, fZ1: float = 0;
 		var fTemp: float, pTempData: Float32Array;
@@ -52,7 +52,7 @@ module akra.geometry {
 		if (isNull(pVertexElement))
 			return false;
 
-		nCount = pVertexData.length;
+		nCount = pVertexData.getLength();
 		nStride = pVertexElement.size;
 
 		pData = pVertexData.getData(pVertexElement.offset, pVertexElement.size);

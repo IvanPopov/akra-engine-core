@@ -26,6 +26,8 @@ module akra {
 		getType(): EEventTypes;
 		getListeners(eEventType: EEventTypes): IListener<T>[];
 		setForerunner(fn: Function): void;
+
+		_syncSignal(pSignal: ISignal<T>): void;
 	}
 
 	export interface IListener<T extends Function> {
@@ -35,6 +37,8 @@ module akra {
 		callback: T;
 		/** Event type. */
 		type: EEventTypes;
+
+		callbackName: string;
 	}
 	
 	export interface IEventProvider extends IUnique {

@@ -48,9 +48,9 @@ module akra.conv {
 	}
 
 	export function retrieve<SRC_ARRAY_TYPE, DST_ARRAY_TYPE>(
-		pSrc: SRC_ARRAY_TYPE, pDst: DST_ARRAY_TYPE, iStride?: uint,
-		iFrom?: uint, iCount?: uint, iOffset?: uint,
-		iLen?: uint): uint {
+		pSrc: SRC_ARRAY_TYPE, pDst: DST_ARRAY_TYPE, iStride: uint = 1,
+		iFrom: uint = 0, iCount?: uint, iOffset: uint = 0,
+		iLen: uint = iStride - iOffset): uint {
 		if (!isDef(iCount)) {
 			iCount = ((<any[]><any>pSrc).length / iStride - iFrom);
 		}
@@ -98,7 +98,7 @@ module akra.conv {
 		return string2Array<string>(sData, ppData, parseString, iFrom);
 	}
 
-	export function stoa<T extends any[]>(sData: string, n: number, sType: string, isArray?: boolean): T {
+	export function stoa<T extends any[]>(sData: string, n: number, sType: string, isArray: boolean = false): T {
 		var pRow: IConvertionTableRow<T> = conversionFormats[sType];
 		var ppData: T = new (pRow.type)(n);
 		pRow.converter(sData, ppData);

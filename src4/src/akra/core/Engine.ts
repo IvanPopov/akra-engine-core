@@ -33,6 +33,8 @@
 /// <reference path="../webgl/WebGLRenderer.ts" />
 // #endif
 
+/// <reference path="../model/Sky.ts" />
+
 module akra.core {
 	export class Engine implements IEngine {
 
@@ -53,8 +55,6 @@ module akra.core {
 
 		/** stop render loop?*/
 		private _pTimer: IUtilTimer;
-		private _iAppPausedCount: int = 0;
-
 
 		/** is paused? */
 		private _isActive: boolean = false;
@@ -154,6 +154,19 @@ module akra.core {
 
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
+			
+			//read options 
+			if (!isNull(pOptions)) {
+				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
+				//default deps has higher priority!
+				if (isDefAndNotNull(pOptions.deps)) {
+					Engine.depends(pOptions.deps);
+				}
+
+				if (pOptions.gamepads === true) {
+					this.enableGamepads();
+				}
+			}
 
 			deps.load(this, pDeps, sDepsRoot,
 				(e: Error, pDep: IDependens): void => {
@@ -167,19 +180,6 @@ module akra.core {
 				},
 				(pDep: IDep, pProgress: any): void => {
 				});
-
-			//read options 
-			if (!isNull(pOptions)) {
-				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
-				//default deps has higher priority!
-				if (isDefAndNotNull(pOptions.deps)) {
-					Engine.depends(pOptions.deps);
-				}
-
-				if (pOptions.gamepads === true) {
-					this.enableGamepads();
-				}
-			}
 		}
 
 		getSpriteManager(): ISpriteManager {
@@ -279,7 +279,6 @@ module akra.core {
 
 		play(): boolean {
 			if (!this.isActive()) {
-				this._iAppPausedCount = 0;
 				this.active.emit();
 
 				if (this._isFrameMoving) {
@@ -290,20 +289,21 @@ module akra.core {
 			return this.isActive();
 		}
 
-		pause(isPause: boolean = false): boolean {
-			this._iAppPausedCount += (isPause ? +1 : -1);
-			(this._iAppPausedCount ? this.inactive.emit() : this.active.emit());
+		pause(isPause: boolean = true): boolean {
+			if (this.isActive() !== isPause) {
+				return !this.isActive();
+			}
 
-			// Handle the first pause request (of many, nestable pause requests)
-			if (isPause && (1 == this._iAppPausedCount)) {
-				// Stop the scene from animating
+			if (isPause) {
+				this.inactive.emit();
+
 				if (this._isFrameMoving) {
 					this._pTimer.stop();
 				}
 			}
+			else {
+				this.active.emit();
 
-			if (0 == this._iAppPausedCount) {
-				// Restart the timers
 				if (this._isFrameMoving) {
 					this._pTimer.start();
 				}
@@ -329,7 +329,7 @@ module akra.core {
 		}
 
 		final protected _inactivate(): void {
-			this._isActive = true;
+			this._isActive = false;
 		}
 
 		final protected _activate(): void {
@@ -366,44 +366,44 @@ module akra.core {
 		//engine core dependences
 		{
 			files: [
-				{ path: "grammars/HLSL.gr" }
-				//{
-				//	path: "../../../src2/data/core.map", 
-				//	type: "map",
-				//	name: "core resources" 
-				//}
-			],
-			deps: {
-				files: [
-					{ path: "effects/SystemEffects.afx" },
-					{ path: "effects/Plane.afx" },
-					{ path: "effects/fxaa.afx" },
-					{ path: "effects/skybox.afx" },
-					{ path: "effects/TextureToScreen.afx" },
-					{ path: "effects/mesh_geometry.afx" },
-					{ path: "effects/prepare_shadows.afx" },
-					{ path: "effects/terrain.afx" },
-					{ path: "effects/prepareDeferredShading.afx" },
-					{ path: "effects/generate_normal_map.afx" },
-					{ path: "effects/sky.afx" },
-					{ path: "effects/motion_blur.afx" },
-					{ path: "effects/edge_detection.afx" },
-					{ path: "effects/wireframe.afx" },
-					{ path: "effects/sprite.afx" }
-				],
-				deps: {
-					files: [
-						{ path: "effects/mesh_texture.afx" },
-						{ path: "effects/deferredShading.afx" },
-						{ path: "effects/apply_lights_and_shadows.afx" }
-					],
-					deps: {
-						files: [
-							{ path: "effects/color_maps.afx" }
-						]
-					}
+				//{ path: "grammars/HLSL.gr" }
+				{
+					path: "core.map", 
+					type: "map",
+					name: "core resources" 
 				}
-			},
+			],
+			//deps: {
+			//	files: [
+			//		{ path: "effects/SystemEffects.afx" },
+			//		{ path: "effects/Plane.afx" },
+			//		{ path: "effects/fxaa.afx" },
+			//		{ path: "effects/skybox.afx" },
+			//		{ path: "effects/TextureToScreen.afx" },
+			//		{ path: "effects/mesh_geometry.afx" },
+			//		{ path: "effects/prepare_shadows.afx" },
+			//		{ path: "effects/terrain.afx" },
+			//		{ path: "effects/prepareDeferredShading.afx" },
+			//		{ path: "effects/generate_normal_map.afx" },
+			//		{ path: "effects/sky.afx" },
+			//		{ path: "effects/motion_blur.afx" },
+			//		{ path: "effects/edge_detection.afx" },
+			//		{ path: "effects/wireframe.afx" },
+			//		{ path: "effects/sprite.afx" }
+			//	],
+			//	deps: {
+			//		files: [
+			//			{ path: "effects/mesh_texture.afx" },
+			//			{ path: "effects/deferredShading.afx" },
+			//			{ path: "effects/apply_lights_and_shadows.afx" }
+			//		],
+			//		deps: {
+			//			files: [
+			//				{ path: "effects/color_maps.afx" }
+			//			]
+			//		}
+			//	}
+			//},
 			root: "../../../src2/data/"
 		};
 

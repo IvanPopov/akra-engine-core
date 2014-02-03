@@ -1,11 +1,27 @@
 /// <reference path="../../build/akra.d.ts" />
+/// <reference path="../../build/addons/base3dObjects.addon.d.ts" />
 
 module akra {
-	export var pEngine = akra.createEngine();
+	var pDeps = {
+		root: "../../../src2/data/",
+		files: [
+			{ path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP" },
+			{ path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
+			{ path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
+			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
+		]
+	};
+
+	export var pEngine = akra.createEngine({ deps: pDeps });
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
 	export var pViewport: IViewport = null;
+	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+	export var pSky: model.Sky = null;
+	export var pTerrain: ITerrain = null;
+
+	var data = "../../../src2/data/";
 
 	function setup(pCanvas: ICanvas3d): void {
 		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
@@ -14,6 +30,17 @@ module akra {
 		document.body.appendChild(pDiv);
 		pDiv.appendChild(pCanvasElement);
 		pDiv.style.position = "fixed";
+	}
+
+	function createSceneEnvironment(): void {
+		var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
+		pSceneQuad.attachToParent(pScene.getRootNode());
+		//pSceneQuad.addPosition(0., 1., 0.);
+
+		var pSceneSurface: ISceneModel = addons.createSceneSurface(pScene, 40);
+		pSceneSurface.addPosition(0, 0.01, 0);
+		pSceneSurface.scale(5.);
+		pSceneSurface.attachToParent(pScene.getRootNode());
 	}
 
 	function createCamera(): ICamera {
@@ -28,6 +55,72 @@ module akra {
 		return pCamera;
 	}
 
+	function createKeymap(pCamera: ICamera): void {
+		var pKeymap: IKeyMap = control.createKeymap();
+		pKeymap.captureMouse((<any>pCanvas)._pCanvas);
+		pKeymap.captureKeyboard(document);
+
+		pScene.beforeUpdate.connect(() => {
+			if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
+				var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+
+				var fdX = v2fMouseShift.x / pViewport.getActualWidth() * 10.0;
+				var fdY = v2fMouseShift.y / pViewport.getActualHeight() * 10.0;
+
+				pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+
+				var fSpeed: float = 0.1 * 10;
+				if (pKeymap.isKeyPress(EKeyCodes.W)) {
+					pCamera.addRelPosition(0, 0, -fSpeed);
+				}
+				if (pKeymap.isKeyPress(EKeyCodes.S)) {
+					pCamera.addRelPosition(0, 0, fSpeed);
+				}
+				if (pKeymap.isKeyPress(EKeyCodes.A)) {
+					pCamera.addRelPosition(-fSpeed, 0, 0);
+				}
+				if (pKeymap.isKeyPress(EKeyCodes.D)) {
+					pCamera.addRelPosition(fSpeed, 0, 0);
+				}
+			}
+		});
+	}
+
+	function createTerrain(pScene: IScene3d, bShowMegaTex: boolean = true, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM): ITerrain {
+		var pRmgr: IResourcePoolManager = pScene.getManager().getEngine().getResourceManager();
+		var pTerrain: ITerrain = null;
+		if (eType === EEntityTypes.TERRAIN_ROAM) {
+			pTerrain = pScene.createTerrainROAM("Terrain");
+			(<ITerrainROAM>pTerrain).setUseTessellationThread(false);
+		}
+		else {
+			pTerrain = pScene.createTerrain("Terrain");
+		}
+
+		var pTerrainMap: ITerrainMaps = {
+			height: pRmgr.getImagePool().findResource("TERRAIN_HEIGHT_MAP"),
+			normal: pRmgr.getImagePool().findResource("TERRAIN_NORMAL_MAP")
+		};
+		// pTerrain.manualMegaTextureInit = !bShowMegaTex;
+
+		var isCreate: boolean = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
+		pTerrain.attachToParent(pScene.getRootNode());
+		pTerrain.setInheritance(ENodeInheritance.ALL);
+
+		pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
+		pTerrain.setPosition(11, -109, -109.85);
+
+		var pMinLevel: IImg = pRmgr.getImagePool().findResource("MEGATEXTURE_MIN_LEVEL");
+		if (pMinLevel) {
+			pTerrain.getMegaTexture().setMinLevelTexture(pMinLevel);
+			//(<terrain.MegaTexture>pTerrain.getMegaTexture()).enableStreaming(true);
+		}
+
+		pTerrain.setShowMegaTexture(bShowMegaTex);
+
+		return pTerrain;
+	}
+
 	function createViewport(): IViewport {
 		var pViewport: IViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
@@ -38,7 +131,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
+		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.setEnabled(true);
@@ -46,18 +139,28 @@ module akra {
 		pOmniLight.getParams().diffuse.set(0.5);
 		pOmniLight.getParams().specular.set(1, 1, 1, 1);
 		pOmniLight.getParams().attenuation.set(1, 0, 0);
-		pOmniLight.setIsShadowCaster(false);
+		pOmniLight.setShadowCaster(false);
 
-		pOmniLight.addPosition(1, 5, 3);
+		pOmniLight.addPosition(1, 100, 3);
+	}
+
+	function createSky(): void {
+		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
+		pSky.setTime(15.);
+
+		pSky.sun.setShadowCaster(false);
+
+		var pSceneModel: ISceneModel = pSky.skyDome;
+		pSceneModel.attachToParent(pScene.getRootNode());
 	}
 
 	function createSkyBox(): void {
-		var pSkyBoxTexture: ITexture = pEngine.getResourceManager().createTexture(".sky-box-texture");
-		//pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
-		pSkyBoxTexture.loadResource("../../../src2/data/" + "textures/skyboxes/desert-2.dds");
-		pSkyBoxTexture.loaded.connect((pTexture: ITexture) => {
-			(<render.DSViewport>pViewport).setSkybox(pTexture);
-		});
+		var pSkyBoxTexture: ITexture = pRmgr.createTexture(".sky-box-texture");
+		pSkyBoxTexture.loadResource("SKYBOX");
+
+		if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+			(<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
+		}
 	}
 
 	function loadModel(sPath, fnCallback?: Function): ISceneNode {
@@ -132,17 +235,69 @@ module akra {
 		});
 	}
 
+	function loadHero() {
+		var pModelRoot: ISceneNode = pScene.createNode();
+		var pController: IAnimationController = pEngine.createAnimationController("movie");
+		var pHeroData: ICollada = <ICollada>pRmgr.loadModel(data + "models/hero/movie.DAE");
+
+		pModelRoot.attachToParent(pScene.getRootNode());
+
+		pHeroData.loaded.connect(() => {
+			pHeroData.attachToScene(pModelRoot);
+
+			var pMovieData: ICollada = <ICollada>pRmgr.loadModel(data + "models/hero/movie_anim.DAE");
+
+			pMovieData.loaded.connect(() => {
+				var pAnim: IAnimation = pMovieData.extractAnimation(0);
+				var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
+
+				pMovie.useLoop(true);
+
+				// LOG(pMovieData);
+				// window["movieData"] = pMovieData;
+
+				// pController.addAnimation(pMovie);
+				// pMovie.rightInfinity(false);
+				// pController.stop();
+
+				var pWalkData: ICollada = <ICollada>pRmgr.loadModel(data + "models/hero/walk.DAE");
+				pWalkData.loaded.connect(() => {
+					var pAnim: IAnimation = pWalkData.extractAnimation(0);
+					var pWalk: IAnimationContainer = animation.createContainer(pAnim, "walk");
+
+					pWalk.useLoop(true);
+
+					var pBlender: IAnimationBlend = animation.createBlend();
+					// pBlender.addAnimation(pMovie, 1);
+					pBlender.addAnimation(pWalk, 1);
+
+					pController.addAnimation(pBlender);
+					pModelRoot.addController(pController);
+
+				});
+			});
+		});
+
+	}
+
 	function main(pEngine: IEngine) {
 		setup(pCanvas);
 
 		pCamera = createCamera();
 		pViewport = createViewport();
 
-		createLighting();
-		createSkyBox();
+		createKeymap(pCamera);
 
-		//loadManyModels(1, "../../../src2/data/" + "models/cube.dae");
-		loadManyModels(150, "../../../src2/data/" + "models/box/opened_box.dae");
+		//createSceneEnvironment();
+		//createLighting();
+		createSkyBox();
+		createSky();
+
+		pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
+		//loadHero();
+		//loadManyModels(400, data + "models/cube.dae");
+		//loadManyModels(150, data + "models/box/opened_box.dae");
+		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
 		pEngine.exec();
 		//pEngine.renderFrame();

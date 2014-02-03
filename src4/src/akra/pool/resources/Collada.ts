@@ -426,7 +426,7 @@ module akra.pool.resources {
 
 				case "bind_shape_matrix":
 				case "matrix":
-					return (new Mat4(<any>conv.stoa<float[]>(sData, 16, "float"), true)).transpose();
+					return (new Mat4(<Float32Array><any>conv.stoa<float[]>(sData, 16, "float"), true)).transpose();
 
 				case "float_array":
 					return conv.stoa<float[]>(sData, parseInt(attr(pXML, "count")), "float", true);

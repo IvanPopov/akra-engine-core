@@ -11,7 +11,6 @@
 
 
 module akra.ui.animation {
-
 	import filedrop = addons.filedrop;
 
 	class DropSignal extends Signal<{ (pGraph: IUIAnimationGraph, e: IUIEvent, pComponent: IUIComponent, pInfo?: any): void; }, IUIAnimationGraph> {

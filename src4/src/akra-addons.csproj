@@ -33,6 +33,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="akra-addons\addons\base3dObjects.ts" />
     <TypeScriptCompile Include="akra-addons\addons\navigation.ts" />
     <TypeScriptCompile Include="akra-addons\addons\filedrop\filedrop.ts" />
     <TypeScriptCompile Include="akra-addons\idl\IFileDropArea.ts" />

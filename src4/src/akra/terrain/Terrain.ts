@@ -216,7 +216,7 @@ module akra.terrain {
 		    return true;
 		}
 
-		init(pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode: ISceneNode = null): boolean {
+		init(pMaps: ITerrainMaps, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode: ISceneNode = null): boolean {
 			if(!isNull(pRootNode)) {
 				if(!this.attachToParent(pRootNode)) {
 					return false;
@@ -251,13 +251,10 @@ module akra.terrain {
 
 			// convert the height map to
 			// data stored in local tables
-			this._buildHeightAndNormalTables(pMap["height"], pMap["normal"]);
+			this._buildHeightAndNormalTables(pMaps.height, pMaps.normal);
 
-			for (var sImgMap in pMap) {
-			    if (pMap[sImgMap].destroyResource) {
-			        pMap[sImgMap].destroyResource();
-			    }
-			}
+			pMaps.height.destroyResource();
+			pMaps.normal.destroyResource();
 
 			if(!this._allocateSectors()){
 				debug.error("Can not alloacte terrain sections");
@@ -282,6 +279,7 @@ module akra.terrain {
 		initMegaTexture(sSurfaceTextures: string = this._sSurfaceTextures): void {
 			if (config.terrain.useMegaTexture) {
 				this._pMegaTexures.init(this, sSurfaceTextures);
+				this._bMegaTextureCreated = true;
 			}
 		}
 

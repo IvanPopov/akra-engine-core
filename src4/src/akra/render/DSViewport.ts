@@ -250,6 +250,7 @@ module akra.render {
 
 							pTechnique = pRenderable.getTechnique(sMethod);
 							//TODO: need something else
+							pTechnique.render._syncSignal(pTechCurr.render);
 							//pTechnique._syncTable(pTechCurr);
 
 
@@ -490,6 +491,7 @@ module akra.render {
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
 					pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
+
 					break;
 
 				case 1:

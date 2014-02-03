@@ -331,7 +331,7 @@ module akra.animation {
 
 		frame(sName: string, fRealTime: float): IPositionFrame {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
-			var pResultFrame: IPositionFrame = <IPositionFrame>PositionFrame.temp().reset();
+			var pResultFrame: IPositionFrame = <IPositionFrame>PositionFrame.temp();
 			var pFrame: IPositionFrame;
 			var pMask: IMap<float>;
 			var pPointer: IAnimationElement;

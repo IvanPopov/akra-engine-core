@@ -291,7 +291,7 @@ module akra.webgl {
 		///////////////////////////////////////////////
 
 		pWebGLContext.flush();
-
+		
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFrameBuffer);
 		pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
 

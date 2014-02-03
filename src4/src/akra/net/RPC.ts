@@ -160,6 +160,8 @@ module akra.net {
 							logger.presume(pDeffered.getLength() === 0, "something going wrong. length is: " + pDeffered.getLength());
 						}
 
+						var pRPC: IRPC = this;
+
 						this.proc(this.getOptions().procListName,
 							function (pError: Error, pList: string[]) {
 								if (!isNull(pError)) {
@@ -171,19 +173,19 @@ module akra.net {
 									for (var i: int = 0; i < pList.length; ++i) {
 										(function (sMethod) {
 
-											this.options.procMap[sMethod] = this.options.procMap[sMethod] || {
+											pRPC.getOptions().procMap[sMethod] = pRPC.getOptions().procMap[sMethod] || {
 												lifeTime: -1,
 												priority: 0
 											}
 
-										this.remote[sMethod] = function () {
+											pRPC.getRemote()[sMethod] = function () {
 												var pArguments: string[] = [sMethod];
 
 												for (var j: int = 0; j < arguments.length; ++j) {
 													pArguments.push(arguments[j]);
 												}
 
-												return this.proc.apply(this, pArguments);
+												return pRPC.proc.apply(pRPC, pArguments);
 											}
 										})(String(pList[i]));
 									}
@@ -191,11 +193,9 @@ module akra.net {
 									// logger.log("rpc options: ", pRPC.options);
 								}
 
-								this.joined();
-							}
-							);
-					}
-					);
+								pRPC.joined.emit();
+							});
+					});
 
 				pPipe.error.connect(
 					(pPipe: IPipe, pError: ErrorEvent): void => {
@@ -299,18 +299,20 @@ module akra.net {
 				else {
 					var pStack: IObjectList<IRPCCallback> = this._pCallbacksList;
 					pCallback = <IRPCCallback>pStack.getLast();
-					do {
-						// LOG("#n: ", nSerial, " result: ", pResult);
-						if (pCallback.n === nSerial) {
-							fn = pCallback.fn;
-							this._releaseCallback(pStack.takeCurrent());
+					if (!isNull(pCallback)) {
+						do {
+							// LOG("#n: ", nSerial, " result: ", pResult);
+							if (pCallback.n === nSerial) {
+								fn = pCallback.fn;
+								this._releaseCallback(pStack.takeCurrent());
 
-							if (!isNull(fn)) {
-								fn(null, pResult);
+								if (!isNull(fn)) {
+									fn(null, pResult);
+								}
+								return;
 							}
-							return;
-						}
-					} while (pCallback = pStack.prev());
+						} while (pCallback = pStack.prev());
+					}
 				}
 
 
