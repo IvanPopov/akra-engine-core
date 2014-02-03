@@ -129,7 +129,7 @@ module akra.pool.resources {
 		//=======================================================================================
 		
 		private _pModel: IModel = null;
-		private _pOptions: IColladaLoadOptions = null;
+		private _pOptions: IColladaLoadOptions = {};
 
 		private _pLinks: IColladaLinkMap = {};
 		private _pLib: IColladaLibraryMap = {};
@@ -154,6 +154,7 @@ module akra.pool.resources {
 		getOptions(): IColladaLoadOptions {
 			return this._pOptions;
 		}
+
 
 		getByteLength(): uint {
 			return this._iByteLength;
@@ -2677,20 +2678,19 @@ module akra.pool.resources {
 			});
 		}
 
-		private setOptions(pOptions: IColladaLoadOptions): void {
+		setOptions(pOptions: IColladaLoadOptions): void {
 			if (isNull(pOptions)) {
 				pOptions = {};
 			}
 
 			for (var i in Collada.DEFAULT_OPTIONS) {
 				if (isDef(pOptions[i])) {
-					continue;
+					this._pOptions[i] = pOptions[i];
 				}
-
-				pOptions[i] = Collada.DEFAULT_OPTIONS[i];
+				else {
+					this._pOptions[i] = isDef(this._pOptions[i])? this._pOptions[i]: Collada.DEFAULT_OPTIONS[i];
+				}
 			}
-			
-			this._pOptions = pOptions;
 		}
 
 		private setXMLRoot(pXML: Element): void {

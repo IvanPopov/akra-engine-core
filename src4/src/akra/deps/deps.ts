@@ -611,7 +611,7 @@ module akra.deps {
 		pEngine: IEngine,
 		pDeps: IDependens,
 		fnLoaded: (e: Error, pDeps: IDependens) => void,
-		fnChanged: (pDep: IDep, pProgress: any) => void): void {
+		fnChanged: (pDep: IDep, pProgress: any) => void = null): void {
 
 		//if got empty dependency.
 		if (!isArray(pDeps.files) || pDeps.files.length === 0) {
@@ -629,7 +629,10 @@ module akra.deps {
 			//pDep.status = EDependenceStatuses.LOADING;
 			//this.changeDepStatus(pDep);
 			updateStatus(pDep, EDependenceStatuses.LOADING);
-			fnChanged(pDep, null);
+
+			if (isFunction(fnChanged)) {
+				fnChanged(pDep, null);
+			}
 
 			var sExt: string = detectType(pDep);
 
@@ -686,7 +689,7 @@ module akra.deps {
 		pDeps: IDependens,
 		sRoot: string,
 		fnLoaded: (e: Error, pDeps: IDependens) => void,
-		fnChanged: (pDep: IDep, pProgress: any) => void
+		fnChanged: (pDep: IDep, pProgress: any) => void = () => { }
 		): void {
 
 		normalize(pDeps, pDeps.root || sRoot);
@@ -713,4 +716,9 @@ module akra.deps {
 			fnChanged);
 	}
 
+	export function createDependenceByPath(sPath: string, sType?: string): IDependens {
+		return {
+			files: [{ path: sPath, type: sType}]
+		};
+	}
 }

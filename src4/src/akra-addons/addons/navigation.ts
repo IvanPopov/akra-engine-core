@@ -3,26 +3,44 @@
 module akra.addons {
 	import Vec3 = math.Vec3;
 	import Quat4 = math.Quat4;
+	import addons = config.addons;
 
-	export function navigation(pGeneralViewport: IViewport, pRotationPoint: IVec3 = null): void {
+	addons['navigation'] = addons['navigation'] || { path: null };
+	addons['navigation'].path = addons['navigation'].path || document.currentScript.src
+
+	export interface INavigationsParameters {
+		//path to resources
+		path?: string;
+		rotationPoint?: IVec3;
+	}
+
+	function _navigation(
+		pGeneralViewport: IViewport,
+		pParameters: INavigationsParameters,
+		pCallback: (e: Error) => void): void {
+
 		var pCanvas: webgl.WebGLCanvas = <webgl.WebGLCanvas>pGeneralViewport.getTarget();
 		var pEngine: IEngine = pCanvas.getRenderer().getEngine();
 		var pSceneMgr: ISceneManager = pEngine.getSceneManager();
 		var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
 		var pGeneralScene: IScene3d = pEngine.getScene();
-		var pRmgr: IResourcePoolManager = pEngine.getResourceManager(); 
+		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+
+		var pRotationPoint: IVec3 = pParameters.rotationPoint;
 
 		//scene with cube backend
-		var pModel: ICollada = <ICollada>pRmgr.loadModel(config.data + "/models/ocube/cube.DAE", {shadows: false});
 		var pCamera: ICamera = pScene.createCamera();
+		var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);
+		var pParams: IProjectParameters = pLight.getParams();
+		var pModel: ICollada =
+			<ICollada>pRmgr.getModelPoolByFormat(EModelFormats.COLLADA).findResource("akra.navigation.ORIENTATION_CUBE");
+
+		pModel.setOptions({ shadows: false });
 
 		pCamera.attachToParent(pScene.getRootNode());
 
-		var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);
 		pLight.attachToParent(pCamera);
 		pLight.setInheritance(ENodeInheritance.ALL);
-
-		var pParams: IProjectParameters = pLight.getParams();
 
 		pParams.ambient.set(0.0, 0.0, 0.0, 1);
 		pParams.diffuse.set(1.);
@@ -31,7 +49,7 @@ module akra.addons {
 
 
 		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
-		
+
 		//detection of center point
 
 		var pPlaneXZ: IPlane3d = new geometry.Plane3d(Vec3.temp(1., 0., 0.), Vec3.temp(0.), Vec3.temp(0., 0., 1.));
@@ -56,11 +74,11 @@ module akra.addons {
 			}
 
 			pGeneralViewport.unprojectPoint(
-				pGeneralViewport.getActualWidth() / 2., 
+				pGeneralViewport.getActualWidth() / 2.,
 				pGeneralViewport.getActualHeight() / 2., vDest);
 
 			fUnprojDist = vDest.subtract(pCamera.getWorldPosition(), Vec3.temp()).length();
-			
+
 			if (fUnprojDist >= pCamera.getFarPlane()) {
 
 				pCameraDir.point = pCamera.getWorldPosition();
@@ -70,7 +88,7 @@ module akra.addons {
 					vDest.set(pCameraDir.normal.scale(10., Vec3.temp()).add(pCameraDir.point));
 				}
 			}
-			
+
 			return vDest;
 		}
 
@@ -90,7 +108,7 @@ module akra.addons {
 		pGeneralViewport.enableSupportFor3DEvent(E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP);
 
 		var vWorldPosition: IVec3 = new Vec3;
-		var pStartPos: IPoint = {x: 0, y: 0};
+		var pStartPos: IPoint = { x: 0, y: 0 };
 		var fDragSpeedRatio: float = 1.;
 
 		pGeneralViewport.dragstart.connect((pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void => {
@@ -130,10 +148,10 @@ module akra.addons {
 		var eDestBlend: ERenderStateValues = ERenderStateValues.DESTALPHA;
 
 		pViewport.render.connect((
-			pViewport: IViewport, 
-			pTechnique: IRenderTechnique, 
-			iPass: uint, 
-			pRenderable: IRenderableObject, 
+			pViewport: IViewport,
+			pTechnique: IRenderTechnique,
+			iPass: uint,
+			pRenderable: IRenderableObject,
 			pSceneObject: ISceneObject): void => {
 
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
@@ -148,7 +166,7 @@ module akra.addons {
 		});
 
 		pViewport.enableSupportFor3DEvent(
-			E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | 
+			E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER |
 			E3DEventTypes.MOUSEOUT | E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.MOUSEWHEEL);
 
 		//cube scene synchronization backend
@@ -156,12 +174,12 @@ module akra.addons {
 		function syncCubeWithCamera(pGeneralViewport: IViewport, pViewport: IViewport, pCenterPoint): void {
 			var pSceneCam: ICamera = pGeneralViewport.getCamera();
 			// logger.assert (pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
-			
+
 			pViewport.hide(pSceneCam.getParent() !== pSceneCam.getRoot());
-			
+
 			var pCubeCam: ICamera = pViewport.getCamera();
 			var vPos: IVec3 = pSceneCam.getWorldPosition().subtract(pCenterPoint, Vec3.temp()).normalize().scale(5.5);
-			
+
 			pCubeCam.setPosition(vPos);
 			pCubeCam.lookAt(Vec3.temp(0.), pSceneCam.getLocalOrientation().multiplyVec3(Vec3.temp(0., 1., 0.)));
 		}
@@ -172,15 +190,15 @@ module akra.addons {
 			var pCubeModel: ISceneModel = <ISceneModel>pModelRoot.getChild();
 			var pMesh: IMesh = pCubeModel.getMesh();
 
-			var pStartPos: IPoint = {x: 0, y: 0};
+			var pStartPos: IPoint = { x: 0, y: 0 };
 			var pCenterPoint: IVec3 = new Vec3(0.);
 			var bDragStarted: boolean = false;
 
 			var vWorldPosition: IVec3 = new Vec3;
 			var vLocalPosition: IVec3 = new Vec3;
 			var qLocalOrientation: IQuat4 = new Quat4;
-			
-			
+
+
 
 			pGeneralViewport.viewportCameraChanged.connect(() => {
 				syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint)
@@ -228,15 +246,15 @@ module akra.addons {
 
 				var vDistance: IVec3 = vFrom.subtract(vCenter, Vec3.temp());
 
-				qOrient = Quat4.fromYawPitchRoll(fY, 0., 0., Quat4.temp());					
-				
+				qOrient = Quat4.fromYawPitchRoll(fY, 0., 0., Quat4.temp());
+
 				pNode.setPosition(qOrient.multiplyVec3(vDistance, Vec3.temp()).add(vCenter));
 				pNode.setRotation(qOrient.multiply(qLocalOrientation, Quat4.temp()));
 
 				qOrient = Quat4.fromAxisAngle(pNode.getLocalOrientation().multiplyVec3(Vec3.temp(1., 0., 0.)), -fX);
 
 				vDistance = pNode.getLocalPosition().subtract(vCenter, Vec3.temp());
-				
+
 				pNode.setPosition(qOrient.multiplyVec3(vDistance, Vec3.temp()).add(vCenter));
 				pNode.setRotation(qOrient.multiply(pNode.getLocalOrientation(), Quat4.temp()));
 			}
@@ -252,34 +270,34 @@ module akra.addons {
 				syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
 			});
 
-		/*	function softAlignTo(vDir: IVec3, vUp: IVec3): void {
-				var pCamera: ICamera = pGeneralViewport.getCamera();
-				var qDest: IQuat4 = Quat4.fromForwardUp(vDir, vUp, Quat4.temp());
-				var qSrc: IQuat4 = Quat4.fromForwardUp(pCamera.getWorldPosition().normalize(), 
-					pCamera.getLocalOrientation().multiplyVec3(Vec3.temp(0., 1., 0.), Vec3.temp()), Quat4.temp());
-				var fDelta: float = 0.0;
+			/*	function softAlignTo(vDir: IVec3, vUp: IVec3): void {
+					var pCamera: ICamera = pGeneralViewport.getCamera();
+					var qDest: IQuat4 = Quat4.fromForwardUp(vDir, vUp, Quat4.temp());
+					var qSrc: IQuat4 = Quat4.fromForwardUp(pCamera.getWorldPosition().normalize(), 
+						pCamera.getLocalOrientation().multiplyVec3(Vec3.temp(0., 1., 0.), Vec3.temp()), Quat4.temp());
+					var fDelta: float = 0.0;
 				
-				var i = setInterval(() => {
-					if (fDelta >= 1.) {
-						clearInterval(i);
-						return;
-					}
+					var i = setInterval(() => {
+						if (fDelta >= 1.) {
+							clearInterval(i);
+							return;
+						}
 
-					fDelta = 1.0;
+						fDelta = 1.0;
 
-					var q = qDest;
-					//qSrc.smix(qDest, fDelta, Quat4.temp());
+						var q = qDest;
+						//qSrc.smix(qDest, fDelta, Quat4.temp());
 					
-					var vDistance: IVec3 = pCamera.getWorldPosition().subtract(pCenterPoint, Vec3.temp());
-					pCamera.localPosition = q.multiplyVec3(vDistance, Vec3.temp()).add(pCenterPoint);
-					pCamera.lookAt(pCenterPoint, vUp);
-					pCamera.update();
+						var vDistance: IVec3 = pCamera.getWorldPosition().subtract(pCenterPoint, Vec3.temp());
+						pCamera.localPosition = q.multiplyVec3(vDistance, Vec3.temp()).add(pCenterPoint);
+						pCamera.lookAt(pCenterPoint, vUp);
+						pCamera.update();
 
-					fDelta += 0.05;
+						fDelta += 0.05;
 
-					syncCubeWithCamera(pGeneralViewport);
-				}, 18);
-			}*/
+						syncCubeWithCamera(pGeneralViewport);
+					}, 18);
+				}*/
 
 			function alignTo(vDir: IVec3, vUp: IVec3): void {
 				pCenterPoint.set(detectCenterPoint(pGeneralViewport));
@@ -296,7 +314,7 @@ module akra.addons {
 				syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
 			}
 
-			for (var i: int = 0; i < pMesh.getLength(); ++ i) {
+			for (var i: int = 0; i < pMesh.getLength(); ++i) {
 				var pSubset: IMeshSubset = pMesh.getSubset(i);
 				// pSubset.wireframe(true);
 
@@ -353,7 +371,37 @@ module akra.addons {
 					syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
 				});
 			}
-		});	
-				
+		});
+	}
+
+	/**
+	 * @param pGeneralViewport Target viewport.
+	 * @param pParameters Parameters.
+	 * @param pCallback Loading callback.
+	 */
+	export function navigation(
+		pGeneralViewport: IViewport,
+		pParameters: INavigationsParameters = {},
+		pCallback: (e: Error) => void = null): void {
+
+
+
+		if (isNull(pCallback)) {
+			pCallback = (e: Error) => {
+				throw e;
+			}
+		}
+
+		deps.load(
+			pGeneralViewport.getTarget().getRenderer().getEngine(),
+			deps.createDependenceByPath("{ %orientation_cube% }"),
+			pParameters.path || <string>addons['navigation'].path,
+			(e: Error, pDep: IDependens): void => {
+				if (!isNull(e)) {
+					pCallback(new Error("Could not load resources for akra.addon.navigation"));
+				}
+
+				_navigation(pGeneralViewport, pParameters, pCallback);
+			});
 	}
 }

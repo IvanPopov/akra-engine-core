@@ -226,7 +226,6 @@
     <None Include="akra\idl\IEventProvider.ts" />
     <None Include="akra\idl\IExplorerFunc.ts" />
     <None Include="akra\idl\IFile.ts" />
-    <None Include="akra\idl\IFileDropArea.ts" />
     <None Include="akra\idl\IFont2d.ts" />
     <None Include="akra\idl\IFrame.ts" />
     <None Include="akra\idl\IFrameStats.ts" />
@@ -526,6 +525,17 @@
     <TypeScriptCompile Include="akra\webgl\WebGLTextureBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexTexture.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="akra\net\server\ConnectionWrapper.js" />
+    <Content Include="akra\net\server\lib\getMegaTexture.js" />
+    <Content Include="akra\net\server\lib\getMegaTextureColored.js" />
+    <Content Include="akra\net\server\lib\getMegaTextureNative.js" />
+    <Content Include="akra\net\server\lib\loadMegaTexture.js" />
+    <Content Include="akra\net\server\lib\todo.js" />
+    <Content Include="akra\net\server\lib\trace.js" />
+    <Content Include="akra\net\server\procedurer.js" />
+    <Content Include="akra\net\server\readme.txt" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
