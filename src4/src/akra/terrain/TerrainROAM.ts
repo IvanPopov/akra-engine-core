@@ -33,7 +33,7 @@ module akra.terrain {
 	import Vec4 = math.Vec4;
 
 	import Mat4 = math.Mat4;
-
+	
 	import VE = data.VertexElement;
 
 	export class TerrainROAM extends Terrain implements ITerrainROAM {

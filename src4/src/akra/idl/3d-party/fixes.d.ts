@@ -185,3 +185,7 @@ declare var BlobBuilder: {
 
 //default JS function
 declare function unescape(s: string): string;
+
+interface Document {
+	currentScript: HTMLScriptElement;
+}

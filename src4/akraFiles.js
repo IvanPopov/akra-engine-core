@@ -22,6 +22,7 @@ akraFiles = {
 
   'akraUI': [
     'src/akra-ui/ui/UI.ts',
+    'src/akra-ui/ui/graph/Graph.ts',
     'src/akra-ui/ui/IDE.ts'
   ],
 

@@ -52,9 +52,8 @@ module.exports = function (grunt) {
                 dest: "build/akra.js",
                 options: {
                     target: "es3",
-                    //module: "commonjs",
                     removeComments: false,
-                    //sourceMap: true,
+                    sourceMap: true,
                     propagateEnumConstants: true
                 }
             },
@@ -75,7 +74,8 @@ module.exports = function (grunt) {
                     options: {
                         target: "es3",
                         removeComments: true,
-                        propagateEnumConstants: true
+                        propagateEnumConstants: true,
+                        sourceMap: true
                     }
                 },
                 "addon-filedrop": {

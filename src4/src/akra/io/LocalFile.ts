@@ -257,9 +257,8 @@ module akra.io {
 			this._pFile = null;
 		}
 
-		private checkIfNotOpen(method: Function, callback: Function): boolean {
+		private checkIfNotOpen(method: Function, callback: Function, pArgs: IArguments = null): boolean {
 			if (!this.isOpened) {
-				var argv: IArguments = arguments;
 				this.open((e) => {
 					if (e) {
 						if (callback) {
@@ -267,7 +266,12 @@ module akra.io {
 						}
 					}
 
-					method.apply(this, argv);
+					if (!isNull(pArgs)) {
+						method.apply(this, pArgs);
+					}
+					else {
+						method.call(this, callback);
+					}
 				});
 
 				return true;
@@ -342,7 +346,7 @@ module akra.io {
 		write(sData: string, fnCallback?: Function, sContentType?: string): void;
 		write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
 		write(pData: any, fnCallback: Function = LocalFile.defaultCallback, sContentType?: string): void {
-			if (this.checkIfNotOpen(this.write, fnCallback)) {
+			if (this.checkIfNotOpen(this.write, fnCallback, arguments)) {
 				return;
 			}
 

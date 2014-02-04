@@ -528,6 +528,17 @@
     <TypeScriptCompile Include="akra\webgl\WebGLVertexTexture.ts" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="akra\net\server\ConnectionWrapper.js" />
+    <Content Include="akra\net\server\lib\getMegaTexture.js" />
+    <Content Include="akra\net\server\lib\getMegaTextureColored.js" />
+    <Content Include="akra\net\server\lib\getMegaTextureNative.js" />
+    <Content Include="akra\net\server\lib\loadMegaTexture.js" />
+    <Content Include="akra\net\server\lib\todo.js" />
+    <Content Include="akra\net\server\lib\trace.js" />
+    <Content Include="akra\net\server\procedurer.js" />
+    <Content Include="akra\net\server\readme.txt" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -575,4 +586,8 @@
     <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
 </Project>

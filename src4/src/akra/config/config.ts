@@ -136,32 +136,9 @@ module akra.config {
 		vertexbufferMinSize: 1024,
 		vertexTextureMinSize: 32
 	}
+
+	export var addons = {
+
+	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-//thread inlining
-//if (!DEBUG) {
-//    var buildInlineThread = (sInterface: string, sLogic: string): string => {
-//        return conv.toURL(
-//            "var $INTERFACE_DEFINED = true;\n" + sLogic + "\n" + sInterface,
-//            "application/javascript");
-//    };
-
-//    var ifaceContent: string = __STRINGIFY__(__MINIFY__(__CONTENT__("/js/FileInterface.t.js")));
-//    var localContent: string = __STRINGIFY__(__MINIFY__(__CONTENT__("/js/LocalFile.t.js")));
-//    var remoteContent: string = __STRINGIFY__(__MINIFY__(__CONTENT__("/js/RemoteFile.t.js")));
-
-//    io.tfile.interface = null;
-//    io.tfile.local = buildInlineThread(ifaceContent, localContent);
-//    io.tfile.remote = buildInlineThread(ifaceContent, remoteContent);
-//}

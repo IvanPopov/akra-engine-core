@@ -179,9 +179,8 @@ module akra.io {
 			this._pFileMeta = null;
 		}
 
-		protected checkIfNotOpen(method: Function, callback: Function, ...pArgs: any[]): boolean {
+		protected checkIfNotOpen(method: Function, callback: Function, pArgs: IArguments = null): boolean {
 			if (!this.isOpened()) {
-				var argv: IArguments = arguments;
 				this.open((e) => {
 					if (e) {
 						if (callback) {
@@ -189,8 +188,12 @@ module akra.io {
 						}
 					}
 
-					pArgs.unshift(callback);
-					method.apply(this, pArgs);
+					if (!isNull(pArgs)) {
+						method.apply(this, pArgs);
+					}
+					else {
+						method.call(this, callback);
+					}
 				});
 
 				return true;
@@ -218,7 +221,7 @@ module akra.io {
 			fnCallback: (e: Error, data: any) => void = <any>TFile.defaultCallback,
 			fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void {
 
-			if (this.checkIfNotOpen(this.read, fnCallback)) {
+			if (this.checkIfNotOpen(this.read, fnCallback, arguments)) {
 				return;
 			}
 
@@ -257,7 +260,7 @@ module akra.io {
 		write(sData: string, fnCallback?: Function, sContentType?: string): void;
 		write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
 		write(pData: any, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void {
-			if (this.checkIfNotOpen(this.write, fnCallback)) {
+			if (this.checkIfNotOpen(this.write, fnCallback, arguments)) {
 				return;
 			}
 
@@ -467,7 +470,6 @@ module akra.io {
 
 
 		private static execCommand(pFile: IFile, isLocal: boolean, pCommand: AIFileCommand, fnCallback: Function, pTransferables?: any[]): void {
-
 			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal ? TFile.localManager : TFile.remoteManager;
 			pManager.waitForThread((pThread: IThread) => {

@@ -3,6 +3,4 @@ module akra {
 		x: float;
 		y: float;
 	}
-	
-	
 }
