@@ -50,7 +50,7 @@ module akra.threading {
 				return;
 			}
 
-			logger.log("start routine", this._sDefaultScript);
+			debug.log("Start routine:", this._sDefaultScript);
 
 			this._iSysRoutine = setInterval((): void => {
 				var pStats: AIThreadStats;
@@ -61,31 +61,31 @@ module akra.threading {
 
 					if (pStats.releaseTime > 0 && iNow - pStats.releaseTime > config.threading.idleTime * 1000) {
 						if (this.terminateThread(i)) {
-							logger.log("thread with id - " + i + " terminated. (" + i + "/" + n + ")");
+							debug.log("Thread with id - " + i + " terminated. (" + i + "/" + n + ")");
 							i--, n--;
 							continue;
 						}
 
-						logger.warn("thread must be removed: " + i);
+						logger.warn("Thread must be removed: " + i);
 					}
 				};
 			}, 5000);
 		}
 
 		private stopSystemRoutine(): void {
-			logger.log("stop routine", this._sDefaultScript);
+			debug.log("Stop routine:", this._sDefaultScript);
 			clearInterval(this._iSysRoutine);
 		}
 
 		createThread(): boolean {
 			//console.log((new Error).stack)
 			if (this._pWorkerList.length === config.threading.max) {
-				logger.warn("Reached limit the number of threads");
+				debug.log("Reached limit the number of threads.");
 				return false;
 			}
 
 			if (!info.api.getWebWorker()) {
-				logger.error("WebWorkers unsupprted..");
+				logger.critical("WebWorker unsupported.");
 				return false;
 			}
 
@@ -123,7 +123,7 @@ module akra.threading {
 				return this.occupyThread();
 			}
 			else {
-				logger.warn("cannot occupy thread");
+				debug.log("Cannot occupy thread.");
 				return null;
 			}
 		}

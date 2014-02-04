@@ -75,9 +75,5 @@ module akra {
 		assert(bCondition: boolean, pEntity: ILoggerEntity): void;
 		assert(bCondition: boolean, eCode: uint, ...pArgs: any[]): void;
 		assert(bCondition: boolean, ...pArgs: any[]): void;
-
-		presume(bCond: boolean, pEntity: ILoggerEntity): void;
-		presume(bCond: boolean, eCode: uint, ...pArgs: any[]);
-		presume(bCond: boolean, ...pArgs: any[]);
 	}
 }

@@ -380,12 +380,6 @@ module akra.util {
 			}
 		}
 
-		presume(bCondition: boolean, pEntity: ILoggerEntity): void;
-		presume(bCondition: boolean, eCode: uint, ...pArgs: any[]): void;
-		presume(bCondition: boolean, ...pArgs: any[]): void;
-		presume(): void {
-		}
-
 		private generateFamilyName(): string {
 			var sSuffix: string = <string><any>(this._nFamilyGenerator++);
 			var sName: string = Logger._sDefaultFamilyName + sSuffix;

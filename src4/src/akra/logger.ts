@@ -13,57 +13,28 @@ module akra {
 
 	//Default log routines
 
-	function sourceLocationToString(pLocation: ISourceLocation): string {
-		var pDate: Date = new Date;
-		var sTime: string = pDate.getHours() + ":" + pDate.getMinutes() + "." + pDate.getSeconds();
-		var sLocation: string = "[" + pLocation.file + ":" + pLocation.line.toString() + " " + sTime + "]: ";
-		return sLocation;
-	}
-
 	function logRoutine(pLogEntity: ILoggerEntity): void {
 		var pArgs: any[] = pLogEntity.info;
-
-		var sLocation: string = sourceLocationToString(pLogEntity.location);
-
-		if (isString(pArgs[0])) {
-			pArgs[0] = sLocation + " " + pArgs[0];
-		}
-		else {
-			pArgs.unshift(sLocation);
-		}
 
 		console.log.apply(console, pArgs);
 	}
 
 	function warningRoutine(pLogEntity: ILoggerEntity): void {
-		var pArgs: any[] = pLogEntity.info;
+		var pArgs: any[] = pLogEntity.info || [];
 
-		var sCodeInfo: string = "Code: " + pLogEntity.code.toString() + ".";
-		var sLocation: string = sourceLocationToString(pLogEntity.location);
-
-		if (isString(pArgs[0])) {
-			pArgs[0] = sLocation + " " + sCodeInfo + " " + pArgs[0];
-		}
-		else {
-			pArgs.unshift(sLocation + " " + sCodeInfo);
-		}
+		var sCodeInfo: string = "%cwarning" + (pLogEntity.code != 0 ? " AE" + pLogEntity.code.toString() : "") + ":";
+		pArgs.unshift(sCodeInfo, "color: red;");
 
 		console.warn.apply(console, pArgs);
 	}
 
 	function errorRoutine(pLogEntity: ILoggerEntity): void {
-		var pArgs: any[] = pLogEntity.info;
+		var pArgs: any[] = pLogEntity.info || [];
 
 		var sMessage: string = pLogEntity.message;
-		var sCodeInfo: string = "Error code: " + pLogEntity.code.toString() + ".";
-		var sLocation: string = sourceLocationToString(pLogEntity.location);
+		var sCodeInfo: string = "error" + (pLogEntity.code != 0? " AE" + pLogEntity.code.toString(): "") + ":";
 
-		if (isString(pArgs[0])) {
-			pArgs[0] = sLocation + " " + sCodeInfo + " " + sMessage + " " + pArgs[0];
-		}
-		else {
-			pArgs.unshift(sLocation + " " + sCodeInfo + " " + sMessage);
-		}
+		pArgs.unshift("%c " + sCodeInfo, "color: red;", sMessage);
 
 		console.error.apply(console, pArgs);
 	}
