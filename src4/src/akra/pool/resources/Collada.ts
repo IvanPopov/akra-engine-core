@@ -1211,10 +1211,7 @@ module akra.pool.resources {
 				CLD_PRINT(this, "load texture \"" + pImage.path + "\"...");
 
 				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
-				// var pModel = this;
-				// pTex.bind("loaded", () => {
-				//     logger.log(pTex.findResourceName(), "loaded", pModel.isResourceLoaded());
-				//     })
+
 				this.sync(pTex, EResourceItemEvents.LOADED);
 
 				//FIX THIS

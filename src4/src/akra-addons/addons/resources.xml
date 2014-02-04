@@ -10,8 +10,8 @@
           <Folder Path="navigation">
             <Exclude Path="cubemap.psd" />
           </Folder>
-          <Resource Path="navigation/cube.dae" 
-                    Name="akra.navigation.ORIENTATION_CUBE" 
+          <Resource Path="navigation/cube.dae"
+                    Name="akra.navigation.ORIENTATION_CUBE"
                     Comment="Model of orientation cube."/>
         </Data>
       </PropertyGroup>

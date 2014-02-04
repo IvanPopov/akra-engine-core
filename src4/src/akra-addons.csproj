@@ -24,7 +24,6 @@
   <ItemGroup>
     <Content Include="akra-addons\addons\navigation\cube.dae" />
     <Content Include="akra-addons\addons\navigation\cubemap.psd" />
-    <Content Include="akra-addons\addons\navigation\navigation.map" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

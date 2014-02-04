@@ -135,7 +135,7 @@ module.exports = function (grunt) {
                 for (var i = 0; i < map.files.length; i++) {
                     var file = map.files[i].path;
                     var res = file.replace(/\\/ig, "/");
-                    archive.file(res, fs.readFileSync(path.join(folder, file), 'utf8'));
+                    archive.file(res, fs.readFileSync(path.join(folder, file)).toString('base64'), { base64: true });
                     grunt.log.debug("\t [add file]", res);
                 }
             }
@@ -155,7 +155,7 @@ module.exports = function (grunt) {
                         grunt.fail.warn("TODO: folder support not implemented....");
                     }
                     else if (Object.keys(archive.files).indexOf(name) === -1) {
-                        archive.file(name, fs.readFileSync(value, 'utf8'));
+                        archive.file(name, fs.readFileSync(value).toString('base64'), { base64: true });
                         grunt.log.debug("\t [add file]", name);
                     }
                 }
@@ -339,8 +339,9 @@ module.exports = function (grunt) {
                 var outputFile = path.join(destFolder, outDir, resourceName + ".ara");
                 wrench.mkdirSyncRecursive(path.dirname(outputFile));
 
-                fs.writeFileSync(outputFile, archive.generate({ base64: false, compression: 'DEFLATE' }), 'binary');
+                var archiveData = archive.generate({ base64: false, compression: 'DEFLATE' });
 
+                fs.writeFileSync(outputFile, archiveData, 'binary');
                 return path.relative(destFolder, outputFile).replace(/\\/ig, "/");
             }       
         }
@@ -372,7 +373,7 @@ module.exports = function (grunt) {
             var srcFile = path.resolve(path.join(resourcePath, srcFiles[i]));
 
             wrench.mkdirSyncRecursive(path.dirname(dstFile));                              //создаем путь к файлу, если такого не существует
-            fs.writeFileSync(dstFile, fs.readFileSync(srcFile, "utf8"), "utf8");           //записываем файл в destFolder
+            fs.writeFileSync(dstFile, fs.readFileSync(srcFile));           //записываем файл в destFolder
         }
         
 
@@ -465,7 +466,7 @@ module.exports = function (grunt) {
 
         if (!fs.existsSync(resourceFile)) {
             grunt.log.warn("Could not find resoure.xml");
-            cb(true);
+            return cb(true);
         }
 
         grunt.log.debug("Resources:", resourceFile);

@@ -1,5 +1,6 @@
 /// <reference path="../../build/akra.d.ts" />
 /// <reference path="../../build/addons/base3dObjects.addon.d.ts" />
+/// <reference path="../../build/addons/navigation.addon.d.ts" />
 var akra;
 (function (akra) {
     var pDeps = {
@@ -282,6 +283,10 @@ var akra;
 
         akra.pCamera = createCamera();
         akra.pViewport = createViewport();
+
+        akra.addons.navigation(akra.pViewport, null, function () {
+            alert(1);
+        });
 
         createKeymap(akra.pCamera);
 

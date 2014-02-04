@@ -53,7 +53,7 @@ module.exports = function (grunt) {
                 options: {
                     target: "es3",
                     removeComments: false,
-                    //sourceMap: true,
+                    sourceMap: true,
                     propagateEnumConstants: true
                 }
             },
@@ -74,7 +74,8 @@ module.exports = function (grunt) {
                     options: {
                         target: "es3",
                         removeComments: true,
-                        propagateEnumConstants: true
+                        propagateEnumConstants: true,
+                        sourceMap: true
                     }
                 },
                 "addon-filedrop": {

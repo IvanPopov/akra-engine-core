@@ -585,4 +585,8 @@
     <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
 </Project>
