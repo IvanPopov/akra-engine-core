@@ -104,7 +104,7 @@ var akra;
         };
 
         // pTerrain.manualMegaTextureInit = !bShowMegaTex;
-        var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
+        var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 7, 3, 3, "main");
         pTerrain.attachToParent(pScene.getRootNode());
         pTerrain.setInheritance(4 /* ALL */);
 
@@ -290,11 +290,11 @@ var akra;
         createSkyBox();
         createSky();
 
-        akra.pTerrain = createTerrain(akra.pScene, true, 67 /* TERRAIN_ROAM */);
-
+        //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        //loadManyModels(400, data + "models/cube.dae");
-        //loadManyModels(150, data + "models/box/opened_box.dae");
+        loadManyModels(300, data + "models/cube.dae");
+
+        //loadManyModels(100, data + "models/box/opened_box.dae");
         //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();

@@ -59,6 +59,7 @@ module akra.model {
 		private _nSize: uint;
 		private _nSamples: uint;
 
+		private _v2fTex: IVec2 = new Vec2;
 		// private _bSkyBuffer: boolean;
 
 		// private _v2fRttQuad: IVec2[] = [new Vec2, new Vec2, new Vec2, new Vec2];
@@ -522,11 +523,12 @@ module akra.model {
 
 			var MP: IMat4 = pProjection.multiply(pModelView, Mat4.temp());
 
+			this._v2fTex.set(<float> this._nSize, 1.0 / this._nSize);
+
 			pPass.setUniform("WorldViewProjection", MP);
 			pPass.setUniform("fKrESun", this._fKrESun);
 			pPass.setUniform("fKmESun", this._fKmESun);
-			var v2fTemp: IVec2 = Vec2.temp(<float>this._nSize, 1.0 / this._nSize);
-			pPass.setUniform("Tex", v2fTemp);
+			pPass.setUniform("Tex", this._v2fTex);
 			pPass.setUniform("vSunPos", this._v3fSunDir);
 			pPass.setUniform("vHG", this._v3fHG);
 			pPass.setUniform("vInvWavelength", this._v3fInvWavelength4);
