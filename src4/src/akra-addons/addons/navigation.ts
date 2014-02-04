@@ -30,7 +30,7 @@ module akra.addons {
 
 		//scene with cube backend
 		var pCamera: ICamera = pScene.createCamera();
-		var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);
+		var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
 		var pParams: IProjectParameters = pLight.getParams();
 		var pModel: ICollada =
 			<ICollada>pRmgr.getModelPoolByFormat(EModelFormats.COLLADA).findResource("akra.navigation.ORIENTATION_CUBE");
@@ -392,7 +392,7 @@ module akra.addons {
 
 		if (isNull(pCallback)) {
 			pCallback = (e: Error) => {
-				throw e;
+				//throw e;
 			}
 		}
 

@@ -143,7 +143,7 @@ var akra;
         pOmniLight.getParams().attenuation.set(1, 0, 0);
         pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(1, 100, 3);
+        pOmniLight.addPosition(1, 5, 3);
     }
 
     function createSky() {
@@ -284,20 +284,17 @@ var akra;
         akra.pCamera = createCamera();
         akra.pViewport = createViewport();
 
-        akra.addons.navigation(akra.pViewport, null, function () {
-            alert(1);
-        });
-
+        //addons.navigation(pViewport);
         createKeymap(akra.pCamera);
 
         //createSceneEnvironment();
-        //createLighting();
+        createLighting();
         createSkyBox();
-        createSky();
 
+        //createSky();
         //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        loadManyModels(300, data + "models/cube.dae");
+        loadManyModels(400, data + "models/cube.dae");
 
         //loadManyModels(100, data + "models/box/opened_box.dae");
         //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);

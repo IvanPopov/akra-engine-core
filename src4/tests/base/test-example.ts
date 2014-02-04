@@ -142,7 +142,7 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0);
 		pOmniLight.setShadowCaster(false);
 
-		pOmniLight.addPosition(1, 100, 3);
+		pOmniLight.addPosition(1, 5, 3);
 	}
 
 	function createSky(): void {
@@ -287,18 +287,18 @@ module akra {
 		pCamera = createCamera();
 		pViewport = createViewport();
 
-		addons.navigation(pViewport);
+		//addons.navigation(pViewport);
 
 		createKeymap(pCamera);
 
 		//createSceneEnvironment();
-		//createLighting();
+		createLighting();
 		createSkyBox();
-		createSky();
+		//createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
-		loadManyModels(300, data + "models/cube.dae");
+		loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
 		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
