@@ -590,7 +590,7 @@ module akra.fx.instructions {
 
 				if (isEval) {
 					var iValue: uint = <uint>this._pArrayIndexExpr.getEvalValue();
-					this._iLength = isInt(iValue) ? iValue : Instruction.UNDEFINE_LENGTH;
+					this._iLength = isNumber(iValue) ? iValue : Instruction.UNDEFINE_LENGTH;
 				}
 			}
 

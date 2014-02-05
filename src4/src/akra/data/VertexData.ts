@@ -194,7 +194,7 @@ module akra.data {
 
 			//debug_print("VertexData (offset: " + this.byteOffset + ") resized from " + this.byteLength + " to ", arguments);
 
-			if (arguments.length == 2) {
+			if (arguments.length === 2) {
 				if (isInt(pDecl)) {
 					iStride = <uint>pDecl;
 				}

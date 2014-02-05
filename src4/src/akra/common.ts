@@ -74,10 +74,10 @@ module akra {
 	export var isString = (x: any): boolean => typeof x === "string";
 	export var isNumber = (x: any): boolean => typeof x === "number";
 	export var isFloat = isNumber;
-	export var isInt = isNumber;
-	export var isUint = isNumber;
-	//export var isInt = (x: any): boolean => isNumber(x) && (~~x === x);
-	//export var isUint = (x: any): boolean => isInt(x) && x > 0;
+	//export var isInt = isNumber;
+	//export var isUint = isNumber;
+	export var isInt = (x: any): boolean => isNumber(x) && (~~x === x);
+	export var isUint = (x: any): boolean => isInt(x) && x > 0;
 	export var isFunction = (x: any): boolean => typeOf(x) === "function";
 	export var isObject = (x: any): boolean => {
 		var type = typeOf(x);

@@ -66,11 +66,7 @@ module akra.math {
 			f5: float, f6: float, f7: float, f8: float,
 			f9: float, f10: float, f11: float, f12: float,
 			f13: float, f14: float, f15: float, f16: float);
-		constructor(
-			f1?, f2?, f3?, f4?,
-			f5?, f6?, f7?, f8?,
-			f9?, f10?, f11?, f12?,
-			f13?, f14?, f15?, f16?) {
+		constructor() {
 			var n: uint = arguments.length;
 
 			if (n === 2) {
@@ -131,11 +127,7 @@ module akra.math {
 			f5: float, f6: float, f7: float, f8: float,
 			f9: float, f10: float, f11: float, f12: float,
 			f13: float, f14: float, f15: float, f16: float): IMat4;
-		set(
-			f1?, f2?, f3?, f4?,
-			f5?, f6?, f7?, f8?,
-			f9?, f10?, f11?, f12?,
-			f13?, f14?, f15?, f16?): IMat4 {
+		set(): IMat4 {
 
 			var nArgumentsLength: uint = arguments.length;
 			var pData: Float32Array = this.data;
@@ -494,13 +486,14 @@ module akra.math {
 		}
 
 		multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4 {
-			if (!isDef(m4fDestination)) {
-				m4fDestination = this;
-			}
+			var m4fDest: IMat4 = isDef(m4fDestination) ? m4fDestination : this;
+			//if (!isDef(m4fDestination)) {
+			//	m4fDestination = this;
+			//}
 
 			var pData1: Float32Array = this.data;
 			var pData2: Float32Array = m4fMat.data;
-			var pDataDestination: Float32Array = m4fDestination.data;
+			var pDataDestination: Float32Array = m4fDest.data;
 
 			//кешируем значения матриц для ускорения
 
@@ -534,7 +527,7 @@ module akra.math {
 			pDataDestination[__43] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
 			pDataDestination[__44] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
 
-			return m4fDestination;
+			return m4fDest;
 		}
 
 		/**  */ multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4 {
@@ -1709,14 +1702,33 @@ module akra.math {
 			f5: float, f6: float, f7: float, f8: float,
 			f9: float, f10: float, f11: float, f12: float,
 			f13: float, f14: float, f15: float, f16: float): IMat4;
-		static temp(
-			f1?, f2?, f3?, f4?,
-			f5?, f6?, f7?, f8?,
-			f9?, f10?, f11?, f12?,
-			f13?, f14?, f15?, f16?): IMat4 {
-				iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
+		static temp(): IMat4 {
+			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
 			var p = pBuffer[iElement++];
-			return p.set.apply(p, arguments);
+
+			var n: uint = arguments.length;
+			switch (n) {
+				case 1:
+					p.set(arguments[0]);
+					break;
+				case 2:
+					p.set(arguments[0], arguments[1]);
+					break;
+				case 4:
+					p.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+					break;
+				case 16:
+					p.set(arguments[0], arguments[1], arguments[2], arguments[3],
+						arguments[4], arguments[5], arguments[6], arguments[7],
+						arguments[8], arguments[9], arguments[10], arguments[11],
+						arguments[12], arguments[13], arguments[14], arguments[15]);
+					break;
+				default:
+					p.set();
+					break;
+			}
+
+			return p;
 		}
 	}
 

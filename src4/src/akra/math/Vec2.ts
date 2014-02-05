@@ -18,7 +18,7 @@ module akra.math {
 		constructor(xy: IVec2);
 		constructor(xy: float[]);
 		constructor(x: float, y: float);
-		constructor(x?, y?) {
+		constructor() {
 			var n: uint = arguments.length;
 			var v: IVec2 = this;
 
@@ -39,7 +39,7 @@ module akra.math {
 		set(xy: IVec2): IVec2;
 		set(xy: float[]): IVec2;
 		set(x: float, y: float): IVec2;
-		set(x?, y?): IVec2 {
+		set(): IVec2 {
 			var n: uint = arguments.length;
 
 			switch (n) {
@@ -288,10 +288,40 @@ module akra.math {
 		static temp(xy: IVec2): IVec2;
 		static temp(xy: float[]): IVec2;
 		static temp(x: float, y: float): IVec2;
-		static temp(x?, y?): IVec2 {
+		static temp(): IVec2 {
 			iElement = ((iElement === pBuffer.length - 1) ? 0 : iElement);
 			var p = pBuffer[iElement++];
-			return p.set.apply(p, arguments);
+
+			var n: uint = arguments.length;
+
+			switch (n) {
+				case 0:
+					p.x = p.y = 0.;
+					break;
+				case 1:
+					if (isFloat(arguments[0])) {
+						p.x = p.y = arguments[0];
+					}
+					else if (arguments[0] instanceof Vec2) {
+						var v2fVec: IVec2 = arguments[0];
+
+						p.x = v2fVec.x;
+						p.y = v2fVec.y;
+					}
+					else {
+						var pArray: float[] = arguments[0];
+
+						p.x = pArray[0];
+						p.y = pArray[1];
+					}
+					break;
+				case 2:
+					p.x = arguments[0];
+					p.y = arguments[1];
+					break;
+			}
+
+			return p;
 		}
 	}
 

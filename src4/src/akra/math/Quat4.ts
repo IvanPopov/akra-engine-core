@@ -22,7 +22,7 @@ module akra.math {
 		constructor(xyz: float, w: float);
 		constructor(xyz: IVec3, w: float);
 		constructor(x: float, y: float, z: float, w: float);
-		constructor(fX?, fY?, fZ?, fW?) {
+		constructor() {
 			var nArgumentsLength: uint = arguments.length;
 
 			switch (nArgumentsLength) {
@@ -48,14 +48,14 @@ module akra.math {
 		set(xyz: float, w: float): IQuat4;
 		set(xyz: IVec3, w: float): IQuat4;
 		set(x: float, y: float, z: float, w: float): IQuat4;
-		set(x?, y?, z?, w?): IQuat4 {
+		set(): IQuat4 {
 			var nArgumentsLength: uint = arguments.length;
 
 			if (nArgumentsLength === 0) {
 				this.x = this.y = this.z = 0.;
 				this.w = 1.;
 			}
-			if (nArgumentsLength === 1) {
+			else if (nArgumentsLength === 1) {
 				if (arguments[0] instanceof Quat4) {
 					var q4fQuat: IQuat4 = arguments[0];
 
@@ -627,15 +627,22 @@ module akra.math {
 
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, q4fDestination?: IQuat4): IQuat4;
 		static fromYawPitchRoll(v3fAngles: IVec3, q4fDestination?: IQuat4): IQuat4;
-		static fromYawPitchRoll(fYaw?, fPitch?, fRoll?, q4fDestination?): IQuat4 {
+		static fromYawPitchRoll(arg1?, arg2?, arg3?, arg4?): IQuat4 {
+			var fYaw = 0.0, fPitch = 0.0, fRoll = 0.0, q4fDestination = null;
 			if (arguments.length <= 2) {
-				var v3fVec: IVec3 = arguments[0];
-
+				var v3fVec: IVec3 = arg1/*arguments[0]*/;
+				
 				fYaw = v3fVec.x;
 				fPitch = v3fVec.y;
 				fRoll = v3fVec.z;
 
-				q4fDestination = arguments[1];
+				q4fDestination = arg2/*arguments[1]*/;
+			}
+			else {
+				fYaw = arg1;
+				fPitch = arg2;
+				fRoll = arg3;
+				q4fDestination = arg4;
 			}
 
 			if (!isDef(q4fDestination)) {
@@ -682,10 +689,64 @@ module akra.math {
 		static temp(xyz: float, w: float): IQuat4;
 		static temp(xyz: IVec3, w: float): IQuat4;
 		static temp(x: float, y: float, z: float, w: float): IQuat4;
-		static temp(x?, y?, z?, w?): IQuat4 {
+		static temp(): IQuat4 {
 			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
 			var p = pBuffer[iElement++];
-			return p.set.apply(p, arguments);
+			var nArgumentsLength: uint = arguments.length;
+
+			if (nArgumentsLength === 0) {
+				p.x = p.y = p.z = 0.;
+				p.w = 1.;
+			}
+			else if (nArgumentsLength === 1) {
+				if (arguments[0] instanceof Quat4) {
+					var q4fQuat: IQuat4 = arguments[0];
+
+					p.x = q4fQuat.x;
+					p.y = q4fQuat.y;
+					p.z = q4fQuat.z;
+					p.w = q4fQuat.w;
+				}
+				else {
+					//Array
+					var pElements: float[] = arguments[0];
+
+					p.x = pElements[0];
+					p.y = pElements[1];
+					p.z = pElements[2];
+					p.w = pElements[3];
+				}
+			}
+			else if (nArgumentsLength === 2) {
+				//float float
+				//vec3 float
+				if (isFloat(arguments[0])) {
+					//float float
+					var fValue: float = arguments[0];
+
+					p.x = fValue;
+					p.y = fValue;
+					p.z = fValue;
+					p.w = arguments[1];
+				}
+				else {
+					//vec3 float
+					var v3fValue: IVec3 = arguments[0];
+
+					p.x = v3fValue.x;
+					p.y = v3fValue.y;
+					p.z = v3fValue.z;
+					p.w = arguments[1];
+				}
+			}
+			else if (nArgumentsLength === 4) {
+				p.x = arguments[0];
+				p.y = arguments[1];
+				p.z = arguments[2];
+				p.w = arguments[3];
+			}
+
+			return p;
 		}
 	}
 

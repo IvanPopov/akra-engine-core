@@ -386,10 +386,10 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(arguments[0], arguments[1], arguments[2], arguments[3]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](arguments[0], arguments[1], arguments[2], arguments[3]);
 						}
 						else {
@@ -447,10 +447,10 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 						}
 						else {
@@ -509,12 +509,12 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5]);
@@ -551,9 +551,9 @@ module akra {
 							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5]);	
+									arguments[5]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5]);
@@ -582,12 +582,12 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6]);
@@ -624,9 +624,9 @@ module akra {
 							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6]);	
+									arguments[5], arguments[6]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6]);
@@ -655,12 +655,12 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7]);
@@ -697,9 +697,9 @@ module akra {
 							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6], arguments[7]);	
+									arguments[5], arguments[6], arguments[7]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6], arguments[7]);
@@ -728,12 +728,12 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7], arguments[8]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7], arguments[8]);
@@ -770,9 +770,9 @@ module akra {
 							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6], arguments[7], arguments[8]);	
+									arguments[5], arguments[6], arguments[7], arguments[8]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6], arguments[7], arguments[8]);
@@ -801,12 +801,12 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						if(this._pSender === null){
+						if (this._pSender === null) {
 							this._fnForerunnerTrigger(
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
 						}
-						else if(this._sForerunnerTriggerName !== null){
+						else if (this._sForerunnerTriggerName !== null) {
 							this._pSender[this._sForerunnerTriggerName](
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
@@ -843,9 +843,9 @@ module akra {
 							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);	
+									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);

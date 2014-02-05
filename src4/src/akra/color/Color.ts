@@ -151,7 +151,7 @@ module akra.color {
 					this.a = 1.;
 					break;
 				case 1:
-					if (isInt(arguments[0])) {
+					if (isFloat(arguments[0])) {
 						this.r = this.g = this.b = <uint>r;
 						this.a = 1.;
 					}
