@@ -192,7 +192,7 @@ module akra.scene {
 			// console.warn(iLevel);
 			///////////////////////////
 
-			if (iLevel == 0) {
+			if (iLevel === 0) {
 				return this._pHead;
 			}
 

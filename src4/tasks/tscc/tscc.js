@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var tsc = path.normalize(__dirname + '/../typescript/tsc.js');
+var tsc = path.normalize(__dirname + '/../typescript-0.9.1.1/tsc.js');
 
 var DEFINES = [];
 var MANGLE_NAMES = false;

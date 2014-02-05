@@ -6,6 +6,33 @@
 
 module akra.math {
 
+	import __11 = math.__11;
+	import __12 = math.__12;
+	import __13 = math.__13;
+	import __14 = math.__14;
+	import __21 = math.__21;
+	import __22 = math.__22;
+	import __23 = math.__23;
+	import __24 = math.__24;
+	import __31 = math.__31;
+	import __32 = math.__32;
+	import __33 = math.__33;
+	import __34 = math.__34;
+	import __41 = math.__41;
+	import __42 = math.__42;
+	import __43 = math.__43;
+	import __44 = math.__44;
+
+	import __a11 = math.__a11;
+	import __a12 = math.__a12;
+	import __a13 = math.__a13;
+	import __a21 = math.__a21;
+	import __a22 = math.__a22;
+	import __a23 = math.__a23;
+	import __a31 = math.__a31;
+	import __a32 = math.__a32;
+	import __a33 = math.__a33;
+
 	var pBuffer: IQuat4[];
 	var iElement: uint;
 
@@ -436,10 +463,11 @@ module akra.math {
 		}
 
 		toMat4(m4fDestination?: IMat4): IMat4 {
-			if (!isDef(m4fDestination)) {
-				m4fDestination = new Mat4();
-			}
-			var pDataDestination: Float32Array = m4fDestination.data;
+			var m4fDest: IMat4 = isDef(m4fDestination) ? m4fDestination : new Mat4();
+			//if (!isDef(m4fDestination)) {
+			//	m4fDestination = new Mat4();
+			//}
+			var pDataDestination: Float32Array = m4fDest.data;
 
 			var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
 
@@ -465,7 +493,7 @@ module akra.math {
 			pDataDestination[__43] = 0.;
 			pDataDestination[__44] = 1.;
 
-			return m4fDestination;
+			return m4fDest;
 		}
 
 		/**  */ toString(): string {

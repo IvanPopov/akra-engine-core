@@ -530,7 +530,7 @@ module akra.math {
 			return m4fDest;
 		}
 
-		/**  */ multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4 {
+		multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4 {
 			if (!isDef(m4fDestination)) {
 				m4fDestination = this;
 			}

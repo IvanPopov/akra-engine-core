@@ -170,21 +170,21 @@ module akra.render {
 
 		switchRenderMethod(pMethod: IRenderMethod): boolean;
 		switchRenderMethod(csName: string): boolean;
-		switchRenderMethod(csName: any): boolean {
+		switchRenderMethod(pNameOrMethod: any): boolean {
 			var pTechnique: IRenderTechnique;
 			var sName: string = null;
 
-			if (isNull(arguments[0])) {
+			if (isNull(pNameOrMethod)) {
 				sName = DEFAULT_RT;
 			}
-			else if (isString(arguments[0])) {
-				sName = <string>csName;
+			else if (isString(pNameOrMethod)) {
+				sName = <string>pNameOrMethod;
 			}
-			else if (isDefAndNotNull(arguments[0])) {
-				sName = (<IRenderMethod>arguments[0]).findResourceName();
+			else if (isDefAndNotNull(pNameOrMethod)) {
+				sName = (<IRenderMethod>pNameOrMethod).findResourceName();
 
 				if (!isDefAndNotNull(this._pTechniqueMap[sName])) {
-					if (!this.addRenderMethod(<IRenderMethod>arguments[0], sName)) {
+					if (!this.addRenderMethod(<IRenderMethod>pNameOrMethod, sName)) {
 						return false;
 					}
 				}
