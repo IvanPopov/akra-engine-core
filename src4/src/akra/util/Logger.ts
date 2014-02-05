@@ -88,7 +88,7 @@ module akra.util {
 
 		registerCode(eCode: uint, sMessage: string = this._sUnknownMessage): boolean {
 			if (this.isUsedCode(eCode)) {
-				debug.error("Error code " + String(eCode) + " already in use.");
+				//debug.error("Error code " + String(eCode) + " already in use.");
 				return false;
 			}
 

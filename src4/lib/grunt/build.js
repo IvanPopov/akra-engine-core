@@ -68,7 +68,7 @@ module.exports = function (grunt) {
             argv.push("--module", options.module);
         }
 
-        if (options.sourceMap && !options.declaration) {
+        if (options.sourceMap/* && !options.declaration*/) {
             argv.push("--sourcemap");
         }
 
@@ -100,7 +100,7 @@ module.exports = function (grunt) {
 
         tsc.on("close", function (code) {
             if (code === 0) {
-                if (!options.declaration) {
+                if (/*!options.declaration*/true) {
                     searchResources(moduleName, sourcePaths, dest, options, function () {
                         if (minimizationLevel > 0) {
                             minimize(dest, minimizationLevel, cb);
@@ -531,7 +531,7 @@ module.exports = function (grunt) {
         var resourceFile = path.join(resourceFolder, "resources.xml");
 
         if (!fs.existsSync(resourceFile)) {
-            grunt.log.warn("Could not find resoure.xml");
+            grunt.log.warn("Could not find resources.xml");
             return cb(true);
         }
 

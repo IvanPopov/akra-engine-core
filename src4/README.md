@@ -1,10 +1,15 @@
 ## Build
 
+Build all:
+
+```
+grunt
+```
+
 Build core:
 
 ```
 grunt build:core
-grunt --module core
 ```
 
 Build addons:
@@ -23,7 +28,7 @@ Build with declaration(*.d.ts):
 
 ```
 grunt decl
-grunt decl --module addon-navigation
+grunt decl:addon-navigation
 ``` 
 
 Release/Debug build:

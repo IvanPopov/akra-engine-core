@@ -26,8 +26,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gjslint');
 
     require('time-grunt')(grunt);
-    
-    console.log(JSON.stringify(util.getVersion(), null, '\t'));
 
     //TODO: util.getVersion() from package.json
     var AE_VERSION = {
@@ -103,7 +101,7 @@ module.exports = function (grunt) {
         },
         clean: {
             build: {
-                src: ["build/**/*.js"]
+                src: ["build/*"]
             }
         },
         regarde: {
@@ -137,17 +135,23 @@ module.exports = function (grunt) {
     });
 
     grunt.config("configuration", grunt.option('configuration') || 'Debug');
+    grunt.log.debug("Configuration: " + grunt.config.get("configuration"));
 
-    var target = grunt.option('module') || 'core';
-    grunt.registerTask("compile", ["build:" + target]);
-
-    grunt.registerTask('decl', 'Build declaration.', function(n) {
+    grunt.registerTask('decl', 'Build with declaration.', function(target) {
       grunt.config("build." + target + ".options.declaration", true);
-      grunt.task.run("compile");
+      grunt.task.run("build:" + target);
     });
 
     grunt.registerTask("lint", ["tslint"]);
-    grunt.registerTask("default", ["compile"]);
+    grunt.registerTask("default", ["all"]);
+    grunt.registerTask("all", [
+        "decl:core",
+        "decl:parser",
+        "decl:addon-navigation",
+        "decl:addon-filedrop",
+        "decl:addon-base3dObjects",
+        "decl:ui",
+    ]);
 
 
     //grunt.registerTask("build", ["compile", "concat", "uglify"]);
