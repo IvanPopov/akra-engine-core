@@ -90,7 +90,7 @@ module akra.util {
 		}
 
 		replace(iPos: uint, pData: T): IObjectList<T> {
-			logger.presume(!this.isLocked());
+			debug.assert(!this.isLocked());
 			this.find(iPos).data = pData;
 			return this;
 		}
@@ -135,7 +135,7 @@ module akra.util {
 		}
 
 		swap(i: uint, j: uint): IObjectList<T> {
-			logger.presume(!this.isLocked());
+			debug.assert(!this.isLocked());
 
 			i = Math.min(i, this._iLength - 1);
 			j = Math.min(j, this._iLength - 1);
@@ -205,7 +205,7 @@ module akra.util {
 		}
 
 		takeAt(n: int): T {
-			logger.presume(!this.isLocked(), "list locked.");
+			debug.assert(!this.isLocked(), "list locked.");
 
 			if (n < 0) {
 				return null;
@@ -306,7 +306,7 @@ module akra.util {
 		}
 
 		insert(n: uint, pData: T): IObjectList<T> {
-			logger.presume(!this.isLocked());
+			debug.assert(!this.isLocked());
 
 			var pNew: IObjectListItem<T> = this.createItem();
 			var pItem: IObjectListItem<T>;
@@ -365,7 +365,7 @@ module akra.util {
 		}
 
 		clear(): IObjectList<T> {
-			logger.presume(!this.isLocked());
+			debug.assert(!this.isLocked());
 
 			var pPrev: IObjectListItem<T>;
 			var pNext: IObjectListItem<T>;

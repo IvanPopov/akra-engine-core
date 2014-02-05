@@ -64,7 +64,7 @@ module akra.io {
 
             pProperties = pTemplate.properties(sType);
 
-            logger.presume(isDefAndNotNull(pProperties), "unknown object <" + sType + "> type cannot be readed");
+            debug.assert(isDefAndNotNull(pProperties), "unknown object <" + sType + "> type cannot be readed");
 
             fnReader = pProperties.read;
 

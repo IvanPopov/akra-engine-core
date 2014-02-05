@@ -152,7 +152,7 @@ module akra.webgl {
 				}
 			}
 			
-			debug.log("webgl context attributes:", pOptions);
+			debug.log("WebGL context attributes:", JSON.stringify(pOptions));
 
 			this._pWebGLContext = createContext(this._pCanvas, pOptions);
 

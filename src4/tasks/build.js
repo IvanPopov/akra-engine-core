@@ -128,7 +128,7 @@ module.exports = function (grunt) {
 
         archive.file(".map", JSON.stringify(map));
 
-        grunt.log.debug("\t [add file]", ".map");
+        grunt.log.debug("@RESOURCE", ".map");
 
         while (map) {
             if (map.files) {
@@ -136,7 +136,7 @@ module.exports = function (grunt) {
                     var file = map.files[i].path;
                     var res = file.replace(/\\/ig, "/");
                     archive.file(res, fs.readFileSync(path.join(folder, file)).toString('base64'), { base64: true });
-                    grunt.log.debug("\t [add file]", res);
+                    grunt.log.debug("@RESOURCE", res);
                 }
             }
 
@@ -156,7 +156,7 @@ module.exports = function (grunt) {
                     }
                     else if (Object.keys(archive.files).indexOf(name) === -1) {
                         archive.file(name, fs.readFileSync(value).toString('base64'), { base64: true });
-                        grunt.log.debug("\t [add file]", name);
+                        grunt.log.debug("@RESOURCE", name);
                     }
                 }
                 else {
@@ -230,7 +230,7 @@ module.exports = function (grunt) {
         var map = null;
 
         if (PropertyGroup.UseInlining) {
-            isArchive = PropertyGroup.Archive[0].toLowerCase() === "true";
+            useInlining = PropertyGroup.UseInlining[0].toLowerCase() === "true";
 
             //При подстановке внутрь скрипта все должно быть запаковано в один файл.
             if (useInlining) {
@@ -259,7 +259,7 @@ module.exports = function (grunt) {
                 grunt.fail.warn("<MapFile>" + mapFile + "</MapFile> not found.");
             }
         }
-        
+
         if (mapFile) {
             map = JSON.parse(fs.readFileSync(mapFile), "utf8");
 
@@ -328,12 +328,14 @@ module.exports = function (grunt) {
                 }
             }
         }
-        
+
         if (isArchive) {
             var archive = packResourcesArchive(resourcePath, map, additionalFiles);
-
             if (useInlining) {
-                return "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' });
+                return {
+                    path: "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' }),
+                    type: "ara"
+                };
             }
             else {
                 var outputFile = path.join(destFolder, outDir, resourceName + ".ara");
@@ -342,8 +344,11 @@ module.exports = function (grunt) {
                 var archiveData = archive.generate({ base64: false, compression: 'DEFLATE' });
 
                 fs.writeFileSync(outputFile, archiveData, 'binary');
-                return path.relative(destFolder, outputFile).replace(/\\/ig, "/");
-            }       
+                return {
+                    path: path.relative(destFolder, outputFile).replace(/\\/ig, "/"),
+                    type: "ara"
+                }
+            }
         }
 
         // Записываем все файлы из map & additionalFiles в srcFiles
@@ -361,7 +366,7 @@ module.exports = function (grunt) {
                     if (srcFiles.indexOf(p.files[i].path) == -1) {
                         srcFiles.push(p.files[i].path);
                     }
-                    
+
                 }
             }
 
@@ -375,13 +380,16 @@ module.exports = function (grunt) {
             wrench.mkdirSyncRecursive(path.dirname(dstFile));                              //создаем путь к файлу, если такого не существует
             fs.writeFileSync(dstFile, fs.readFileSync(srcFile));           //записываем файл в destFolder
         }
-        
+
 
         var mapFile = path.join(outputDir, resourceName + ".map");
 
         fs.writeFileSync(mapFile, JSON.stringify(map, null, "\t"), "utf8");
 
-        return path.relative(destFolder, mapFile).replace(/\\/ig, "/");
+        return {
+            path: path.relative(destFolder, mapFile).replace(/\\/ig, "/"),
+            type: "map"
+        }
     }
 
     /**
@@ -391,9 +399,27 @@ module.exports = function (grunt) {
         var name = Resource.$.Name;
 
         for (var i = 0; i < Resource.PropertyGroup.length; ++i) {
+            var PropertyGroup = Resource.PropertyGroup[i];
             //TODO: проверить Condition данной групы и убедиться, что она подходит
+            if (PropertyGroup.$.Condition) {
+                if (!computeXmlData(PropertyGroup.$.Condition)) {
+                    continue;
+                }
+            }
+
             return crateResourceObject(name, folder, Resource.PropertyGroup[i], dest);
         }
+
+        return null;
+    }
+
+    function computeXmlData(expression) {
+        var $ = function (val) {
+            return grunt.config.get(val.toLowerCase());
+        };
+
+        var f = new Function("$", "True", "False", "return (" + expression + ");");
+        return f($, true, false);
     }
 
     /** 
@@ -403,31 +429,63 @@ module.exports = function (grunt) {
      * @param dest {String} Файл, в который будет собран проект.
      */
     function buildProject(folder, Project, dest, cb) {
+        var variables = {};
+
         console.time("Build project " + Project.$.Name);
 
-        for (var i = 0; i < Project.Resource.length; ++i) {
-            var resourcePath = packResource(folder, Project.Resource[i], path.dirname(dest));
+        if (Project.Variable) {
+            for (var i = 0; i < Project.Variable.length; ++i) {
+                var Variable = Project.Variable[i];
+                var name = Variable.$.Name;
 
-            var data = fs.readFileSync(dest, "utf8");
-            var pattern = /\{\s*\%([\w\d\.\-\_]*?)\%\s*\}/g;
-
-            data = data.replace(pattern, function replacer(str, name) {
-                if (name == Project.Resource[i].$.Name) {
-                    return resourcePath;
+                if (Variable.$.Condition) {
+                    if (!computeXmlData(Variable.$.Condition)) continue;
                 }
 
-                return name;
-            });
-
-            fs.writeFileSync(dest, data, "utf8");
+                var value = computeXmlData(Project.Variable[i]._);
+                variables[name] = value;
+                grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string'? value.substr(0, 16): value));
+            }
         }
+
+        if (Project.Resource) {
+            for (var i = 0; i < Project.Resource.length; ++i) {
+                var resource = packResource(folder, Project.Resource[i], path.dirname(dest));
+
+                if (!resource) {
+                    continue;
+                }
+
+                var resourceName = Project.Resource[i].$.Name;
+
+                variables[resourceName] = variables[resourceName + "::Path"] = resource.path;
+                variables[resourceName + "::Type"] = resource.type;
+            }
+        }
+
+        var data = fs.readFileSync(dest, "utf8");
+        var pattern = /\"\s*\{\s*\%\s*([\w\d\.\-\_\:]*?)\s*\%\s*\}\s*\"/g;
+
+        data = data.replace(pattern, function replacer(str, name) {
+            var value = variables[name];
+   
+            if (value !== undefined) {
+                if (typeof value === 'string') {
+                    value = JSON.stringify(value);
+                }
+
+                return value;
+            }
+
+            return name;
+        });
+
+        fs.writeFileSync(dest, data, "utf8");
 
         console.timeEnd("Build project " + Project.$.Name);
 
         cb(true);
     }
-
-    //"{ %orientation_cube% }"
 
     /**
      * Ищем ресурсы для данного проектта.

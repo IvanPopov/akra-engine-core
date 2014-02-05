@@ -54,6 +54,12 @@ module akra {
 
 		// Print messages methods
 
+		time(sLabel: string): void;
+		timeEnd(sLabel: string): void;
+
+		group(...pArgs: any[]): void;
+		groupEnd(): void;
+
 		log(...pArgs: any[]);
 
 		info(pEntity: ILoggerEntity): void;

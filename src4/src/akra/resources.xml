@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AkraResources>
+  <Project Name="core">
+    
+    <Variable Name="debug">$('Configuration') == 'Debug'</Variable>
+    <Variable Name="version">$('Version').full</Variable>
+    
+    <Resource Name="akra-cd">
+      <PropertyGroup  Condition="$('Configuration') == 'Debug'">
+        <Archive>True</Archive>
+        <UseInlining>False</UseInlining>
+        <Data>
+          <File Path="resources/fx/floatSpecialFunctions.afx" />
+          <Resource Path="resources/HLSL.gr">
+            <Resource Path="resources/fx/SystemEffects.afx" />
+            <Resource Path="resources/fx/Plane.afx" />
+            <Resource Path="resources/fx/fxaa.afx" />
+            <Resource Path="resources/fx/skybox.afx" />
+            <Resource Path="resources/fx/TextureToScreen.afx" />
+            <Resource Path="resources/fx/mesh_geometry.afx" >
+              <Resource Path="resources/fx/mesh_texture.afx" />
+            </Resource>
+            <Resource Path="resources/fx/prepare_shadows.afx" />
+            <Resource Path="resources/fx/terrain.afx" />
+            <Resource Path="resources/fx/prepareDeferredShading.afx">
+              <Resource Path="resources/fx/apply_lights_and_shadows.afx" />
+              <Resource Path="resources/fx/deferredShading.afx" >
+                <Resource Path="resources/fx/color_maps.afx" />
+              </Resource>
+            </Resource>
+            <Resource Path="resources/fx/generate_normal_map.afx" />
+            <Resource Path="resources/fx/sky.afx" />
+            <Resource Path="resources/fx/motion_blur.afx" />
+            <Resource Path="resources/fx/edge_detection.afx" />
+            <Resource Path="resources/fx/wireframe.afx" />
+            <Resource Path="resources/fx/sprite.afx" />
+          </Resource>
+        </Data>
+      </PropertyGroup>
+
+      <PropertyGroup  Condition="$('Configuration') == 'Release'">
+        <Archive>True</Archive>
+        <UseInlining>True</UseInlining>
+        <Data>
+          <File Path="resources/fx/floatSpecialFunctions.afx" />
+          <Resource Path="resources/HLSL.gr">
+            <Resource Path="resources/fx/SystemEffects.afx" />
+            <Resource Path="resources/fx/Plane.afx" />
+            <Resource Path="resources/fx/fxaa.afx" />
+            <Resource Path="resources/fx/skybox.afx" />
+            <Resource Path="resources/fx/TextureToScreen.afx" />
+            <Resource Path="resources/fx/mesh_geometry.afx" >
+              <Resource Path="resources/fx/mesh_texture.afx" />
+            </Resource>
+            <Resource Path="resources/fx/prepare_shadows.afx" />
+            <Resource Path="resources/fx/terrain.afx" />
+            <Resource Path="resources/fx/prepareDeferredShading.afx">
+              <Resource Path="resources/fx/apply_lights_and_shadows.afx" />
+              <Resource Path="resources/fx/deferredShading.afx" >
+                <Resource Path="resources/fx/color_maps.afx" />
+              </Resource>
+            </Resource>
+            <Resource Path="resources/fx/generate_normal_map.afx" />
+            <Resource Path="resources/fx/sky.afx" />
+            <Resource Path="resources/fx/motion_blur.afx" />
+            <Resource Path="resources/fx/edge_detection.afx" />
+            <Resource Path="resources/fx/wireframe.afx" />
+            <Resource Path="resources/fx/sprite.afx" />
+          </Resource>
+        </Data>
+      </PropertyGroup>
+    </Resource>
+  </Project>
+</AkraResources>

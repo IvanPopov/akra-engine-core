@@ -31,12 +31,15 @@ module.exports = function (grunt) {
 
     //TODO: util.getVersion() from package.json
     var VERSION = {
-        full: "0.1.0"
+        full: "0.4.1"
     };
 
     var dist = "akraengine-" + VERSION.full;
 
     grunt.initConfig({
+        configuration: 'Debug',
+        version: VERSION,
+
         pkg: grunt.file.readJSON("package.json"),
         build: {
             parser: {
@@ -132,6 +135,8 @@ module.exports = function (grunt) {
             }
         }
     });
+
+    grunt.config("configuration", grunt.option('configuration') || 'Debug');
 
     var target = grunt.option('module') || 'core';
     grunt.registerTask("compile", ["build:" + target]);

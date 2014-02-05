@@ -36,6 +36,9 @@
 /// <reference path="../model/Sky.ts" />
 
 module akra.core {
+
+	debug.log("config['data'] = " + config.data);
+
 	export class Engine implements IEngine {
 
 		frameStarted: ISignal<{ (pEngine: IEngine): void; }>;
@@ -171,9 +174,11 @@ module akra.core {
 			deps.load(this, pDeps, sDepsRoot,
 				(e: Error, pDep: IDependens): void => {
 					if (!isNull(e)) {
-						logger.critical("[DEPS NOT LOADED]");
+						logger.critical(e);
 					}
-					debug.log("[ALL DEPTS LOADED]");
+
+					logger.info("%cEngine dependecies loaded.", "color: green;");
+
 					this._isDepsLoaded = true;
 
 					this.depsLoaded.emit(pDep);
@@ -361,53 +366,7 @@ module akra.core {
 		}
 
 		static DEPS_ROOT: string = config.data;
-		static DEPS: IDependens =
-		//RELEASE
-		//engine core dependences
-		{
-			files: [
-				//{ path: "grammars/HLSL.gr" }
-				{
-					path: "core.map", 
-					type: "map",
-					name: "core resources" 
-				}
-			],
-			//deps: {
-			//	files: [
-			//		{ path: "effects/SystemEffects.afx" },
-			//		{ path: "effects/Plane.afx" },
-			//		{ path: "effects/fxaa.afx" },
-			//		{ path: "effects/skybox.afx" },
-			//		{ path: "effects/TextureToScreen.afx" },
-			//		{ path: "effects/mesh_geometry.afx" },
-			//		{ path: "effects/prepare_shadows.afx" },
-			//		{ path: "effects/terrain.afx" },
-			//		{ path: "effects/prepareDeferredShading.afx" },
-			//		{ path: "effects/generate_normal_map.afx" },
-			//		{ path: "effects/sky.afx" },
-			//		{ path: "effects/motion_blur.afx" },
-			//		{ path: "effects/edge_detection.afx" },
-			//		{ path: "effects/wireframe.afx" },
-			//		{ path: "effects/sprite.afx" }
-			//	],
-			//	deps: {
-			//		files: [
-			//			{ path: "effects/mesh_texture.afx" },
-			//			{ path: "effects/deferredShading.afx" },
-			//			{ path: "effects/apply_lights_and_shadows.afx" }
-			//		],
-			//		deps: {
-			//			files: [
-			//				{ path: "effects/color_maps.afx" }
-			//			]
-			//		}
-			//	}
-			//},
-			root: "../../../src2/data/"
-		};
-
-
+		static DEPS: IDependens = deps.createDependenceByPath("{% akra-cd::Path %}", "{ % akra-cd::Type %}");
 	}
-
 }
+

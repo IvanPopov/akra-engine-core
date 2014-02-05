@@ -1,6 +1,8 @@
 ﻿/// <reference path="../idl/IAjaxParams.ts" />
 /// <reference path="../idl/IRenderer.ts" />
 
+/// <reference path="../uri/uri.ts" />
+
 module akra.config {
 	//unknown constants
 	export var unknown = {
@@ -10,7 +12,7 @@ module akra.config {
 	}
 
 	//global
-	export var DEBUG: boolean = true;
+	export var DEBUG: boolean = !!"{% debug %}";
 	export var WEBGL: boolean = true;
 	export var UI: boolean = false;
 
@@ -36,10 +38,10 @@ module akra.config {
 	///end of render targets
 
 	//path to data folder
-	export var data = "";
+	export var data = config['data'] || uri.currentPath();
 
 	//current version
-	export var version = "0.4.1";
+	export var version = "{% version %}";
 
 	//default <any> name
 	export var defaultName: string = "default";

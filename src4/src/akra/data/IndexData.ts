@@ -50,7 +50,7 @@ module akra.data {
 			ePrimitiveType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST,
 			eElementsType: EDataTypes = EDataTypes.UNSIGNED_SHORT) {
 
-			logger.presume(
+			debug.assert(
 				eElementsType == EDataTypes.UNSIGNED_SHORT ||
 				eElementsType == EDataTypes.UNSIGNED_BYTE ||
 				eElementsType == EDataTypes.UNSIGNED_INT, "supported only short, byte, uint data types.");
@@ -63,25 +63,25 @@ module akra.data {
 			this._ePrimitiveType = ePrimitiveType;
 			this._eElementsType = eElementsType;
 
-			logger.presume(pIndexBuffer.getByteLength() >= this.getByteLength() + this.getByteOffset(), "out of buffer limits.");
+			debug.assert(pIndexBuffer.getByteLength() >= this.getByteLength() + this.getByteOffset(), "out of buffer limits.");
 		}
 
 
 		getData(iOffset: int, iSize: int): ArrayBuffer {
-			logger.presume(iOffset + iSize <= this.getByteLength(), "out of buffer limits");
+			debug.assert(iOffset + iSize <= this.getByteLength(), "out of buffer limits");
 			var pBuffer: Uint8Array = new Uint8Array(iSize);
 
 			if (this._pIndexBuffer.readData(this.getByteOffset() + iOffset, iSize, pBuffer)) {
 				return pBuffer.buffer;
 			}
 
-			logger.presume(false, "cannot read data from index buffer");
+			debug.assert(false, "cannot read data from index buffer");
 
 			return null;
 		}
 
 		getTypedData(iStart: int, iCount: int): ArrayBufferView {
-			logger.presume((iStart + iCount) <= this._iLength, "out of buffer limits");
+			debug.assert((iStart + iCount) <= this._iLength, "out of buffer limits");
 
 			var iTypeSize: uint = sizeof(this._eElementsType);
 
@@ -107,7 +107,7 @@ module akra.data {
 		}
 
 		setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.getBytesPerIndex()): boolean {
-			logger.presume((iOffset + iCount) * this.getBytesPerIndex() <= this.getByteLength(), "out of buffer limits.");
+			debug.assert((iOffset + iCount) * this.getBytesPerIndex() <= this.getByteLength(), "out of buffer limits.");
 
 			return this._pIndexBuffer.writeData(
 				pData,

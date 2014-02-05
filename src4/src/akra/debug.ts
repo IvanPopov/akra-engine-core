@@ -14,14 +14,14 @@ module akra {
 
 	function logRoutine(pLogEntity: ILoggerEntity): void {
 		var pArgs: any[] = pLogEntity.info;
-
+		pArgs.unshift("%c[D]", "color: gray;");
 		console.log.apply(console, pArgs);
 	}
 
 	function warningRoutine(pLogEntity: ILoggerEntity): void {
 		var pArgs: any[] = pLogEntity.info || [];
 
-		var sCodeInfo: string = "%cwarning" + (pLogEntity.code != 0 ? " AE" + pLogEntity.code.toString() : "") + ":";
+		var sCodeInfo: string = "%c[W]" + (pLogEntity.code != 0 ? " AE" + pLogEntity.code.toString() + ":": "") + " ";
 		pArgs.unshift(sCodeInfo, "color: red;");
 
 		console.warn.apply(console, pArgs);
@@ -31,7 +31,7 @@ module akra {
 		var pArgs: any[] = pLogEntity.info || [];
 
 		var sMessage: string = pLogEntity.message;
-		var sCodeInfo: string = "error" + (pLogEntity.code != 0 ? " AE" + pLogEntity.code.toString() : "") + ":";
+		var sCodeInfo: string = "[E]" + (pLogEntity.code != 0 ? " AE" + pLogEntity.code.toString() + ":" : "") + " ";
 
 		pArgs.unshift("%c " + sCodeInfo, "color: red;", sMessage);
 

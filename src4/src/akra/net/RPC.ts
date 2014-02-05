@@ -157,7 +157,7 @@ module akra.net {
 								this._releaseRequest(<IRPCRequest>pDeffered.takeCurrent());
 							}
 
-							logger.presume(pDeffered.getLength() === 0, "something going wrong. length is: " + pDeffered.getLength());
+							debug.assert(pDeffered.getLength() === 0, "something going wrong. length is: " + pDeffered.getLength());
 						}
 
 						var pRPC: IRPC = this;

@@ -30,23 +30,6 @@ module akra.pool.resources {
 	import Color = color.Color;
 	import VE = data.VertexElement;
 
-	var COLLADA_DEBUG = config.DEBUG;
-
-	var CLD_PRINT: (c: ICollada, ...argv: any[]) => void = () => { };
-	var CLD_WARNING: (c: ICollada, ...argv: any[]) => void = () => { };
-
-	if (COLLADA_DEBUG) {
-		CLD_PRINT = (c: ICollada, ...argv: any[]) => {
-			argv.unshift("[COLLADA [" + c.findResourceName() + "]]");
-			logger.log.apply(logger, argv);
-		};
-
-		CLD_WARNING = (c: ICollada, ...argv: any[]) => {
-			argv.unshift("[COLLADA [" + c.findResourceName() + "]]");
-			logger.warn.apply(logger, argv);
-		};
-	}
-
 	 /* COMMON FUNCTIONS
 	 ------------------------------------------------------
 	 */
@@ -682,7 +665,7 @@ module akra.pool.resources {
 
 			pLib[sTag] = {};
 
-			CLD_PRINT(this, "read library <" + sTag + "/>");
+			debug.info("read library <" + sTag + "/>");
 
 			this.eachChild(pXML, (pXMLData: Element, sName?: string): void => {
 				if (sTag !== sName) {
@@ -841,9 +824,10 @@ module akra.pool.resources {
 
 					case "INV_BIND_MATRIX":
 						pJoints.inputs["INV_BIND_MATRIX"] = this.COLLADAInput(pXMLData);
-						if (this.getOptions().debug) {
-							console.log(pJoints.inputs["INV_BIND_MATRIX"]);
-						}
+
+						
+						//console.log(pJoints.inputs["INV_BIND_MATRIX"]);
+
 						break;
 
 					default:
@@ -1208,7 +1192,7 @@ module akra.pool.resources {
 				var pImage: IColladaImage = <IColladaImage>this.source((<IColladaSurface>pTexture.surface.value).initFrom);
 				pTexture.image = pImage;
 
-				CLD_PRINT(this, "load texture \"" + pImage.path + "\"...");
+				debug.info("Load texture " + pImage.path + ".");
 
 				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
 
@@ -1318,7 +1302,7 @@ module akra.pool.resources {
 				//FIXME: at now, all materials draws similar..
 				case "blinn":
 				case "lambert":
-					CLD_WARNING(this, "<blinn /> or <lambert /> material interprated as phong");
+					debug.warn("<blinn /> or <lambert /> material interprated as phong");
 				case "phong":
 					pTech.value = this.COLLADAPhong(pValue);
 					break;
@@ -1382,7 +1366,7 @@ module akra.pool.resources {
 						pEffect.profileCommon.technique.value.name = pEffect.id;
 						break;
 					default:
-						CLD_WARNING(this, "<" + sName + " /> unsupported in effect section");
+						debug.warn("<" + sName + " /> unsupported in effect section");
 				}
 			});
 
@@ -1492,7 +1476,7 @@ module akra.pool.resources {
 				}
 			});
 
-			CLD_PRINT(this, "visual scene loaded.");
+			debug.info("visual scene loaded.");
 
 			return pScene;
 		}
@@ -1565,13 +1549,13 @@ module akra.pool.resources {
 
 			this.eachByTag(pXML, "technique_hint", (pXMLData: Element): void => {
 				pInstance.techniqueHint[attr(pXMLData, "platform")] = attr(pXMLData, "ref");
-				CLD_WARNING(this, "<technique_hint /> used, but will be ignored!");
+				debug.warn("<technique_hint /> used, but will be ignored!");
 			});
 
 			this.eachByTag(pXML, "setparam", (pXMLData: Element): void => {
 				//can be any type
 				pInstance.parameters[attr(pXMLData, "ref")] = <any>this.COLLADAData(pXMLData);
-				CLD_WARNING(this, "<setparam /> used, but will be ignored!");
+				debug.warn("<setparam /> used, but will be ignored!");
 			});
 
 			return pInstance;
@@ -1623,7 +1607,7 @@ module akra.pool.resources {
 			var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
 			if (isNull(pXMLData) || isNull(pScene)) {
-				CLD_WARNING(this, "model has no visual scenes.");
+				debug.warn("model has no visual scenes.");
 			}
 
 			return this._pVisualScene = pScene;
@@ -1713,7 +1697,7 @@ module akra.pool.resources {
 
 
 			if (isNull(pChannel.target) || isNull(pChannel.target.object)) {
-				CLD_WARNING(this, "cound not setup animation channel for <" + attr(pXML, "target") + ">");
+				debug.warn("cound not setup animation channel for <" + attr(pXML, "target") + ">");
 				return null;
 			}
 
@@ -1765,7 +1749,7 @@ module akra.pool.resources {
 			});
 
 			if (pAnimation.channels.length == 0 && pAnimation.animations.length == 0) {
-				CLD_WARNING(this, "animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
+				debug.warn("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
 				return null;
 			}
 
@@ -1787,7 +1771,7 @@ module akra.pool.resources {
 			var pElement: IColladaEntry = this._pLinks[sUrl];
 
 			if (!isDefAndNotNull(pElement)) {
-				CLD_WARNING(this, "cannot find element with id: " + sUrl + (<any>new Error).stack.split("\n").slice(1).join("\n"));
+				debug.warn("cannot find element with id: " + sUrl + (<any>new Error).stack.split("\n").slice(1).join("\n"));
 			}
 
 			return pElement || null;
@@ -2081,7 +2065,7 @@ module akra.pool.resources {
 
 			pDecl.push(VE.custom(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
 
-			CLD_PRINT(this, "Automatically constructed declaration: ", data.VertexDeclaration.normalize(pDecl).toString());
+			debug.info("Automatically constructed declaration: ", data.VertexDeclaration.normalize(pDecl).toString());
 			
 			return pDecl;
 		}
@@ -2264,13 +2248,7 @@ module akra.pool.resources {
 
 								pData = pDataExt;
 								pDecl = [VE.float3(sSemantic), VE.end(16)];
-// #if COLLADA_DEBUG == true
-//                                 if (this.options.debug) {
-//                                     CLD_PRINT(this, "[add vertex data]");
-//                                     console.log(pDecl);
-//                                     console.log(pData);
-//                                 }
-// #endif
+
 								break;
 							case data.Usages.TEXCOORD:
 							case data.Usages.TEXCOORD1:
@@ -2287,7 +2265,7 @@ module akra.pool.resources {
 								break;
 							default:
 								pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
-								CLD_WARNING(this, "unsupported semantics used: " + sSemantic);
+								debug.warn("unsupported semantics used: " + sSemantic);
 						}
 
 						pMeshData.allocateData(pDecl, pData);
@@ -2665,7 +2643,7 @@ module akra.pool.resources {
 			var pScene: IColladaVisualScene = this.getVisualScene();
 			
 			if (isNull(pScene)) {
-				CLD_WARNING(this, "build complete, but visual scene not parsed correctly!");
+				debug.warn("build complete, but visual scene not parsed correctly!");
 				return;
 			}
 
@@ -2833,7 +2811,7 @@ module akra.pool.resources {
 				return false;
 			}
 
-			CLD_PRINT(this, "parsing started...");
+			debug.time("parsed");
 
 			var pParser: DOMParser = new DOMParser();
 			var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
@@ -2854,18 +2832,21 @@ module akra.pool.resources {
 				this.readLibraries(pXMLRoot, Collada.ANIMATION_TEMPLATE);
 			}
 
-			CLD_PRINT(this, "parsed.");
+			debug.timeEnd("parsed");
 
 			return true;
 		}
 
 		loadResource(sFilename: string = null, pOptions: IColladaLoadOptions = null): boolean {
+			debug.group("Collada %s", this.findResourceName());
+			debug.time("loaded " + this.findResourceName());
+
 			if (isNull(sFilename)) {
 				sFilename = this.findResourceName();
 			}
 
 			if (this.isResourceLoaded()) {
-				CLD_WARNING(this, "collada model already loaded");
+				debug.warn("collada model already loaded");
 				return false;
 			}
 
@@ -2878,7 +2859,7 @@ module akra.pool.resources {
 
 			var pFile: IFile = io.fopen(sFilename);
 
-			pFile.open(function (err, meta): void {
+			pFile.open((err, meta): void => {
 				//FIXME: setuop byteLength correctly..
 				(<any>pModel)["_iByteLength"] = meta.size || 0;
 			});
@@ -2886,6 +2867,9 @@ module akra.pool.resources {
 			pFile.read(function (pErr: Error, sXML: string) {
 				if (!isNull(pErr)) {
 					logger.error(pErr);
+
+					debug.groupEnd();
+					return; 
 				}
 
 				pModel.notifyRestored();
@@ -2899,14 +2883,17 @@ module akra.pool.resources {
 					if (pModel.isSyncedTo(EResourceItemEvents.LOADED)) {
 						pModel.setChangesNotifyRoutine((eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean) => {
 							if (eFlag === EResourceItemEvents.LOADED && isSet) {
-								//automaticly LOADED
-								CLD_PRINT(pModel, "resource loaded");
+								debug.timeEnd("loaded " + pModel.findResourceName());
+								debug.groupEnd();
+
 								pModel.loaded.emit();
 							}
 						});
 					}
 					else {
-						CLD_PRINT(pModel, "resource loaded");
+						debug.timeEnd("loaded " + pModel.findResourceName());
+						debug.groupEnd();
+
 						pModel.notifyLoaded();
 					}
 				}

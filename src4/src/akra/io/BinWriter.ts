@@ -89,7 +89,7 @@ module akra.io {
             var iStrLen: int = sUTF8String.length;
             var arrUTF8string: Uint8Array = BinWriter.rawStringToBuffer(sUTF8String);
 
-            logger.presume(iStrLen <= math.pow(2, 32) - 1, "Это значение не влезет в тип string");
+            debug.assert(iStrLen <= math.pow(2, 32) - 1, "Это значение не влезет в тип string");
 
             this.uint32(iStrLen);
 
@@ -121,9 +121,9 @@ module akra.io {
 
             // LOG("uint" + iX + ": ", iValue);
 
-            logger.presume(isNumber(iValue));
+            debug.assert(isNumber(iValue));
 
-            logger.presume(0 <= iValue && iValue <= Math.pow(2, iX), "Out of Int range value:" + iX);
+            debug.assert(0 <= iValue && iValue <= Math.pow(2, iX), "Out of Int range value:" + iX);
             var arrTmpBuf: ArrayBufferView = null;
 
             switch (iX) {
@@ -226,8 +226,8 @@ module akra.io {
 
             // LOG("array uint", iX, ": ", iValue);
 
-            logger.presume(isNumber(iValue));
-            logger.presume(0 <= iValue && iValue <= Math.pow(2, iX), "Это значение не влезет в тип uint" + iX);
+            debug.assert(isNumber(iValue));
+            debug.assert(0 <= iValue && iValue <= Math.pow(2, iX), "Это значение не влезет в тип uint" + iX);
 
             var arrTmpBuf: ArrayBufferView = null;
 
@@ -279,8 +279,8 @@ module akra.io {
 
             // LOG("int", iX, ": ", iValue);
 
-            logger.presume(isNumber(iValue));
-            logger.presume(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
+            debug.assert(isNumber(iValue));
+            debug.assert(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
                 "Это значение не влезет в тип int" + iX);
 
             var arrTmpBuf: ArrayBufferView = null;
@@ -368,8 +368,8 @@ module akra.io {
 
             // LOG("array int", iX, ": ", iValue);
 
-            logger.presume(isNumber(iValue));
-            logger.presume(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
+            debug.assert(isNumber(iValue));
+            debug.assert(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
                 "Это значение не влезет в тип int" + iX);
 
             var arrTmpBuf: ArrayBufferView = null;
@@ -413,8 +413,8 @@ module akra.io {
                 fValue = 0;
             }
 
-            logger.presume(isNumber(fValue));
-            //logger.presume(typeof(fValue) == 'number', "Не является числом");
+            debug.assert(isNumber(fValue));
+            //debug.assert(typeof(fValue) == 'number', "Не является числом");
 
             // LOG("float", iX, ": ", fValue);
 

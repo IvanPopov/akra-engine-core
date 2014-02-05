@@ -107,7 +107,7 @@ module akra.deps {
 	 * Make the <path> absolute for IDep
 	 */
 	export function normalize(pDeps: IDependens, sRoot: string = null, iDepth: int = 0): void {
-		sRoot = isString(sRoot) ? sRoot : document.location.pathname;
+		sRoot = isString(sRoot) ? sRoot : uri.here().toString();
 
 		eachLevel(pDeps, (pDeps: IDependens, pParentDeps: IDependens): void => {
 			pDeps.loaded = 0;
@@ -157,7 +157,6 @@ module akra.deps {
 					break;
 				case "dae":
 					if (!pRmgr.getColladaPool().findResource(sResource)) {
-						logger.log("colladaPool.createResource(" + sResource + ")");
 						pRmgr.getColladaPool().createResource(sResource);
 					}
 					break;
@@ -265,7 +264,6 @@ module akra.deps {
 		if (pRes.loadResource(pDep.path)) {
 			handleResourceEventOnce(pRes, "loaded", (pItem: IResourcePoolItem): void => {
 				updateStatus(pDep, EDependenceStatuses.LOADED);
-				logger.log("loade from pool", pItem.findResourceName());
 				fnLoaded(null, pDep);
 			});
 		}
@@ -383,7 +381,7 @@ module akra.deps {
 					throw e;
 				}
 
-				logger.log("unpacked to local filesystem: ", pEntry.filename);
+				debug.log("Unpacked to local filesystem " + pEntry.filename + ".");
 
 				var pCrc32: IFile = io.fopen(sPath + ".crc32", "w+");
 				pCrc32.write(String(pEntry.crc32), (e: Error) => {
@@ -409,7 +407,7 @@ module akra.deps {
 			if (bExists) {
 				pCRC32File.read((e: Error, data: string) => {
 					if (parseInt(data) === pEntry.crc32) {
-						debug.log("skip unpacking for dep.: ", sPath);
+						debug.log("Skip unpacking for " + sPath + ".");
 						fnCallback(sPath);
 					}
 					else {
@@ -449,7 +447,7 @@ module akra.deps {
 			//data URI required cross-origin policy, and cannot be loaded with XMLHTTPRequest :(
 
 			pUri = uri.parseDataURI(sArchivePath);
-			logger.presume(pUri.base64, "only base64 decoded ARA resources supported.", sArchivePath);
+			debug.assert(pUri.base64, "only base64 decoded ARA resources supported.", sArchivePath);
 			sBase64Data = pUri.data;
 		}
 		else {
@@ -502,7 +500,7 @@ module akra.deps {
 								return;
 							}
 
-							logger.log("ARA dependences successfully loaded: ", sArchivePath);
+							logger.info("%cDependences loaded: ", "color: green;", sArchivePath);
 
 							pZipReader.close();
 							//id data-uri used, archive is null
@@ -516,7 +514,7 @@ module akra.deps {
 							var sPath: string = pDep.path;
 							var pEntry: ZipEntry = pEntryMap[sPath];
 
-							logger.assert(isDefAndNotNull(pEntry), "Cannot resolve ARA dependence: " + sPath);
+							logger.assert(isDefAndNotNull(pEntry), "Cannot resolve dependence: " + sPath);
 							delete pEntryMap[sPath];
 
 							extractARADependence(pEntry, sArchiveHash, (sLocalPath: string): void => {

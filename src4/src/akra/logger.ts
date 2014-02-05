@@ -29,6 +29,7 @@ module akra {
 	}
 
 	function errorRoutine(pLogEntity: ILoggerEntity): void {
+		console.log(pLogEntity);
 		var pArgs: any[] = pLogEntity.info || [];
 
 		var sMessage: string = pLogEntity.message;

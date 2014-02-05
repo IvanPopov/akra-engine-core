@@ -2,7 +2,7 @@
 <AkraResources>
   <Project Name="addon-navigation">
     <Resource Name="orientation_cube">
-      <PropertyGroup>
+      <PropertyGroup Condition="$('Configuration') == 'Debug'">
         <Archive>True</Archive>
         <UseInlining>False</UseInlining>
         <OutDir>navigation</OutDir>
@@ -13,6 +13,18 @@
           <Resource Path="navigation/cube.dae"
                     Name="akra.navigation.ORIENTATION_CUBE"
                     Comment="Model of orientation cube."/>
+        </Data>
+      </PropertyGroup>
+
+      <PropertyGroup Condition="$('Configuration') == 'Release'">
+        <Archive>True</Archive>
+        <UseInlining>True</UseInlining>
+        <Data>
+          <Folder Path="navigation">
+            <Exclude Path="cubemap.psd" />
+          </Folder>
+          <Resource Path="navigation/cube.dae"
+                    Name="akra.navigation.ORIENTATION_CUBE" />
         </Data>
       </PropertyGroup>
     </Resource>

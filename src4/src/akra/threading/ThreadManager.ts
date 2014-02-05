@@ -50,8 +50,6 @@ module akra.threading {
 				return;
 			}
 
-			debug.log("Start routine:", this._sDefaultScript);
-
 			this._iSysRoutine = setInterval((): void => {
 				var pStats: AIThreadStats;
 				var iNow: uint = time();
@@ -61,7 +59,7 @@ module akra.threading {
 
 					if (pStats.releaseTime > 0 && iNow - pStats.releaseTime > config.threading.idleTime * 1000) {
 						if (this.terminateThread(i)) {
-							debug.log("Thread with id - " + i + " terminated. (" + i + "/" + n + ")");
+							debug.log("Thread " + i + " terminated. (" + i + "/" + n + ")");
 							i--, n--;
 							continue;
 						}
@@ -70,11 +68,13 @@ module akra.threading {
 					}
 				};
 			}, 5000);
+
+			debug.log("Routine " + path.parse(this._sDefaultScript).getFileName() + " started.");
 		}
 
 		private stopSystemRoutine(): void {
-			debug.log("Stop routine:", this._sDefaultScript);
 			clearInterval(this._iSysRoutine);
+			debug.log("Routine " + path.parse(this._sDefaultScript).getFileName() + " stoped.");
 		}
 
 		createThread(): boolean {
@@ -123,7 +123,6 @@ module akra.threading {
 				return this.occupyThread();
 			}
 			else {
-				debug.log("Cannot occupy thread.");
 				return null;
 			}
 		}

@@ -6,7 +6,9 @@ module akra.addons {
 	import addons = config.addons;
 
 	addons['navigation'] = addons['navigation'] || { path: null };
-	addons['navigation'].path = addons['navigation'].path || document.currentScript.src
+	addons['navigation'].path = addons['navigation'].path || uri.currentPath();
+
+	debug.log("config['addons']['navigation'] = ", JSON.stringify(addons['navigation']));
 
 	export interface INavigationsParameters {
 		//path to resources
@@ -398,7 +400,7 @@ module akra.addons {
 
 		deps.load(
 			pGeneralViewport.getTarget().getRenderer().getEngine(),
-			deps.createDependenceByPath("{ %orientation_cube% }"),
+			deps.createDependenceByPath("{% orientation_cube::Path %}", "{% orientation_cube::Type %}"),
 			pParameters.path || <string>addons['navigation'].path,
 			(e: Error, pDep: IDependens): void => {
 				if (!isNull(e)) {

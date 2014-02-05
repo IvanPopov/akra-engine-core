@@ -1,0 +1,90 @@
+provide akra.system;
+
+include "floatSpecialFunctions.afx";
+
+struct base_material{
+    float4 diffuse:DIFFUSE;
+    float4 ambient:AMBIENT;
+    float4 emissive:EMISSIVE;
+    float4 specular:SPECULAR;
+    float shininess:SHININESS;
+};
+
+shared float3 Normal;
+shared base_material Fragment_material;
+
+int objectId : RENDER_OBJECT_ID;
+bool normalFix;
+
+float4 prepareForDeferredShadingPass1() : COLOR {
+	float4 data;
+	
+    //Fragment_material.emissive *= 254./255.;
+    //Fragment_material.diffuse *= 254./255.;
+    //Fragment_material.ambient *= 254./255.;
+
+    Fragment_material.emissive = min(Fragment_material.emissive, 0.99);
+    Fragment_material.diffuse = min(Fragment_material.diffuse, 0.99);
+    
+    
+    float3 tmp;
+
+    if(normalFix){
+    	tmp = float3((Normal.xyz + 1.)/2.);
+    }
+    else {
+    	tmp = float3((Normal.xy + 1.)/2., Fragment_material.shininess / 255.);
+    }
+     
+    tmp *= 254./255.;
+
+	data.x = float3ToFloat(Fragment_material.emissive.xyz);
+	data.y = float3ToFloat(tmp);
+	data.z = float3ToFloat(Fragment_material.diffuse.xyz);
+	
+	data.w = float(objectId);
+
+	return data;
+};
+
+
+
+float4 prepareForDeferredShadingPass2() : COLOR {
+	float4 data;
+	
+    //Fragment_material.specular *= 254./255.;
+    Fragment_material.specular = min(Fragment_material.specular, 0.99);
+    Fragment_material.ambient = min(Fragment_material.ambient, 0.99);
+
+	data.x = float3ToFloat(Fragment_material.ambient.xyz);
+	data.y = float3ToFloat(Fragment_material.specular.xyz);
+	
+	if(normalFix){
+		data.z = Fragment_material.shininess / 255.;
+	}
+	
+	return data;
+};
+
+//float4 simplePrepareForDeferredShadingPass1() : COLOR {
+//    float4 data;
+//
+//    data.x = float3ToFloat(Fragment_material.emissive.xyz);
+//
+//    return data;
+//};
+
+technique prepareForDeferredShading{
+	pass pass1{
+		PixelShader = compile prepareForDeferredShadingPass1();
+	};
+	pass pass2{
+		PixelShader = compile prepareForDeferredShadingPass2();
+	};
+};
+
+//technique simplePrepareForDeferredShading{
+//    pass pass1{
+//        PixelShader = compile simplePrepareForDeferredShadingPass1();
+//    };
+//};
