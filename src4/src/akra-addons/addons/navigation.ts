@@ -1,5 +1,7 @@
 /// <reference path="../../../build/akra.d.ts" />
 
+declare var AE_NAVIGATION_DEPENDENCIES: { path: string; type: string; };
+
 module akra.addons {
 	import Vec3 = math.Vec3;
 	import Quat4 = math.Quat4;
@@ -400,7 +402,7 @@ module akra.addons {
 
 		deps.load(
 			pGeneralViewport.getTarget().getRenderer().getEngine(),
-			deps.createDependenceByPath("{% orientation_cube::Path %}", "{% orientation_cube::Type %}"),
+			deps.createDependenceByPath(AE_NAVIGATION_DEPENDENCIES.path, AE_NAVIGATION_DEPENDENCIES.type),
 			pParameters.path || <string>addons['navigation'].path,
 			(e: Error, pDep: IDependens): void => {
 				if (!isNull(e)) {

@@ -68,7 +68,7 @@ module.exports = function (grunt) {
             argv.push("--module", options.module);
         }
 
-        if (options.sourceMap) {
+        if (options.sourceMap && !options.declaration) {
             argv.push("--sourcemap");
         }
 
@@ -100,14 +100,19 @@ module.exports = function (grunt) {
 
         tsc.on("close", function (code) {
             if (code === 0) {
-                searchResources(moduleName, sourcePaths, dest, options, function () {
-                    if (minimizationLevel > 0) {
-                        minimize(dest, minimizationLevel, cb);
-                    }
-                    else {
-                        cb(true);
-                    }
-                });
+                if (!options.declaration) {
+                    searchResources(moduleName, sourcePaths, dest, options, function () {
+                        if (minimizationLevel > 0) {
+                            minimize(dest, minimizationLevel, cb);
+                        }
+                        else {
+                            cb(true);
+                        }
+                    });
+                }
+                else {
+                    cb(true);
+                }
             }
             else {
                 grunt.log.error(new Error("Compilation failed."));
@@ -160,12 +165,11 @@ module.exports = function (grunt) {
                     }
                 }
                 else {
-                    grunt.fail.warn("\t [could not find file] " + value + " (cwd: " + process.cwd() + ")");
+                    grunt.fail.warn("Could not find file " + value + " (cwd: " + process.cwd() + ")");
                 }
             });
         }
 
-        //return "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' });
         return archive;
     }
 
@@ -331,6 +335,7 @@ module.exports = function (grunt) {
 
         if (isArchive) {
             var archive = packResourcesArchive(resourcePath, map, additionalFiles);
+
             if (useInlining) {
                 return {
                     path: "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' }),
@@ -339,11 +344,11 @@ module.exports = function (grunt) {
             }
             else {
                 var outputFile = path.join(destFolder, outDir, resourceName + ".ara");
-                wrench.mkdirSyncRecursive(path.dirname(outputFile));
-
                 var archiveData = archive.generate({ base64: false, compression: 'DEFLATE' });
 
+                wrench.mkdirSyncRecursive(path.dirname(outputFile));
                 fs.writeFileSync(outputFile, archiveData, 'binary');
+
                 return {
                     path: path.relative(destFolder, outputFile).replace(/\\/ig, "/"),
                     type: "ara"
@@ -366,7 +371,6 @@ module.exports = function (grunt) {
                     if (srcFiles.indexOf(p.files[i].path) == -1) {
                         srcFiles.push(p.files[i].path);
                     }
-
                 }
             }
 
@@ -377,7 +381,7 @@ module.exports = function (grunt) {
             var dstFile = path.join(outputDir, srcFiles[i]);
             var srcFile = path.resolve(path.join(resourcePath, srcFiles[i]));
 
-            wrench.mkdirSyncRecursive(path.dirname(dstFile));                              //создаем путь к файлу, если такого не существует
+            wrench.mkdirSyncRecursive(path.dirname(dstFile));              //создаем путь к файлу, если такого не существует
             fs.writeFileSync(dstFile, fs.readFileSync(srcFile));           //записываем файл в destFolder
         }
 
@@ -397,6 +401,10 @@ module.exports = function (grunt) {
      */
     function packResource(folder, Resource, dest) {
         var name = Resource.$.Name;
+        
+        if (Resource.Filename) {
+            name = Resource.Filename[0];
+        }
 
         for (var i = 0; i < Resource.PropertyGroup.length; ++i) {
             var PropertyGroup = Resource.PropertyGroup[i];
@@ -415,7 +423,7 @@ module.exports = function (grunt) {
 
     function computeXmlData(expression) {
         var $ = function (val) {
-            return grunt.config.get(val.toLowerCase());
+            return grunt.config.get("AE_" + val.toUpperCase());
         };
 
         var f = new Function("$", "True", "False", "return (" + expression + ");");
@@ -458,18 +466,18 @@ module.exports = function (grunt) {
 
                 var resourceName = Project.Resource[i].$.Name;
 
-                variables[resourceName] = variables[resourceName + "::Path"] = resource.path;
-                variables[resourceName + "::Type"] = resource.type;
+                variables[resourceName] = variables[resourceName + ".path"] = resource.path;
+                variables[resourceName + ".type"] = resource.type;
             }
         }
 
         var data = fs.readFileSync(dest, "utf8");
-        var pattern = /\"\s*\{\s*\%\s*([\w\d\.\-\_\:]*?)\s*\%\s*\}\s*\"/g;
+        var pattern = /(AE_[\w\d\-\.\_\:]*)/g;
 
         data = data.replace(pattern, function replacer(str, name) {
             var value = variables[name];
    
-            if (value !== undefined) {
+            if (typeof value !== "undefined") {
                 if (typeof value === 'string') {
                     value = JSON.stringify(value);
                 }

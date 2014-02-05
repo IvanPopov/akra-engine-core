@@ -3,6 +3,9 @@
 
 /// <reference path="../uri/uri.ts" />
 
+declare var AE_DEBUG: boolean;
+declare var AE_VERSION: string;
+
 module akra.config {
 	//unknown constants
 	export var unknown = {
@@ -12,9 +15,11 @@ module akra.config {
 	}
 
 	//global
-	export var DEBUG: boolean = !!"{% debug %}";
+	export var DEBUG: boolean = AE_DEBUG;
+	export var VERSION: string = AE_VERSION;
 	export var WEBGL: boolean = true;
 	export var UI: boolean = false;
+
 
 	//temporary 
 	export var DEBUG_PARSER: boolean = false;
@@ -29,19 +34,16 @@ module akra.config {
 	export var WEBGL_DEBUG: boolean = false;
 	export var PROFILE_MAKER: boolean = false;
 	export var PROFILE_TESSEALLATION: boolean = false;
-	//////////////////////
+	
 
 	export var SHADOW_DISCARD_DISTANCE: float = 70.;
+	//////////////////////
 
 	///render targets
-
 	///end of render targets
 
 	//path to data folder
 	export var data = config['data'] || uri.currentPath();
-
-	//current version
-	export var version = "{% version %}";
 
 	//default <any> name
 	export var defaultName: string = "default";

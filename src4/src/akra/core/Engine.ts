@@ -35,6 +35,8 @@
 
 /// <reference path="../model/Sky.ts" />
 
+declare var AE_CORE_DEPENDENCIES: { path: string; type: string; };
+
 module akra.core {
 
 	debug.log("config['data'] = " + config.data);
@@ -366,7 +368,7 @@ module akra.core {
 		}
 
 		static DEPS_ROOT: string = config.data;
-		static DEPS: IDependens = deps.createDependenceByPath("{% akra-cd::Path %}", "{ % akra-cd::Type %}");
+		static DEPS: IDependens = deps.createDependenceByPath(AE_CORE_DEPENDENCIES.path, AE_CORE_DEPENDENCIES.type);
 	}
 }
 

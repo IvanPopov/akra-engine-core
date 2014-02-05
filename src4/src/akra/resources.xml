@@ -2,10 +2,12 @@
 <AkraResources>
   <Project Name="core">
     
-    <Variable Name="debug">$('Configuration') == 'Debug'</Variable>
-    <Variable Name="version">$('Version').full</Variable>
+    <Variable Name="AE_DEBUG">$('Configuration') == 'Debug'</Variable>
+    <Variable Name="AE_VERSION">$('Version').full</Variable>
     
-    <Resource Name="akra-cd">
+    <Resource Name="AE_CORE_DEPENDENCIES">
+      <Filename>akra</Filename>
+      
       <PropertyGroup  Condition="$('Configuration') == 'Debug'">
         <Archive>True</Archive>
         <UseInlining>False</UseInlining>

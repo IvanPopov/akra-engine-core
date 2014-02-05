@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AkraResources>
   <Project Name="addon-navigation">
-    <Resource Name="orientation_cube">
+    <Resource Name="AE_NAVIGATION_DEPENDENCIES">
+      <Filename>navigation.addon</Filename>
+      
       <PropertyGroup Condition="$('Configuration') == 'Debug'">
         <Archive>True</Archive>
         <UseInlining>False</UseInlining>
-        <OutDir>navigation</OutDir>
         <Data>
           <Folder Path="navigation">
             <Exclude Path="cubemap.psd" />

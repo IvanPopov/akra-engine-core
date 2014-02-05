@@ -8,15 +8,13 @@
 
 var files = require("./akraFiles").files;
 var path = require("path");
-
+var util = require('./lib/grunt/utils.js');
 
 module.exports = function (grunt) {
     var extend = require('util')._extend,
         resolve = require('path').resolve;
 
-    require(path.resolve('tasks/build.js'))(grunt);
-    //require(path.resolve('tasks/tscc.js'))(grunt);
-    //require(path.resolve('tasks/closure.js'))(grunt);
+    require(path.resolve('lib/grunt/build.js'))(grunt);
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-concat");
@@ -28,17 +26,19 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gjslint');
 
     require('time-grunt')(grunt);
+    
+    console.log(JSON.stringify(util.getVersion(), null, '\t'));
 
     //TODO: util.getVersion() from package.json
-    var VERSION = {
+    var AE_VERSION = {
         full: "0.4.1"
     };
 
-    var dist = "akraengine-" + VERSION.full;
+    var dist = "akraengine-" + AE_VERSION.full;
 
     grunt.initConfig({
-        configuration: 'Debug',
-        version: VERSION,
+        AE_CONFIGURATION: 'Debug',
+        AE_VERSION: AE_VERSION,
 
         pkg: grunt.file.readJSON("package.json"),
         build: {
@@ -148,6 +148,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask("lint", ["tslint"]);
     grunt.registerTask("default", ["compile"]);
+
+
     //grunt.registerTask("build", ["compile", "concat", "uglify"]);
     //grunt.registerTask("generate", ["compile", "build", "copy:public"]);
     //return grunt.registerTask("preview", ["generate", "connect:preview", "regarde"]);
