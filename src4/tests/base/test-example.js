@@ -285,7 +285,7 @@ var akra;
         akra.pViewport = createViewport();
 
         akra.addons.navigation(akra.pViewport, null, function () {
-            alert(1);
+      
         });
 
         createKeymap(akra.pCamera);

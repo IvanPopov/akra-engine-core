@@ -35,6 +35,12 @@ module akra.io {
 
 
 	export class TFile implements IFile {
+		guid: uint = guid();
+
+		opened: ISignal<{ (pFile: IFile): void; }>;
+		closed: ISignal<{ (pFile: IFile): void; }>;
+		renamed: ISignal<{ (pFile: IFile, sName: string, sNamePrev: string): void; }>;
+
 		private static localManager = new threading.Manager(config.io.tfile.local);
 		private static remoteManager = new threading.Manager(config.io.tfile.remote);
 
@@ -45,6 +51,36 @@ module akra.io {
 		protected _eTransferMode: EFileTransferModes = EFileTransferModes.k_Normal;
 		protected _pFileMeta: IFileMeta = null;
 		protected _isLocal: boolean = false;
+
+		constructor(sFilename?: string, sMode?: string, cb?: Function);
+		constructor(sFilename?: string, iMode?: int, cb?: Function);
+		constructor(sFilename?: string, sMode?: any, cb: Function = TFile.defaultCallback) {
+			this.setupSignals();
+
+			if (isDef(sMode)) {
+				this._iMode = isString(sMode) ? io.filemode(sMode) : sMode;
+			}
+
+			this.setAndValidateUri(uri.parse(sFilename));
+
+			if (info.api.getTransferableObjects()) {
+				this._eTransferMode = EFileTransferModes.k_Fast;
+			}
+			//OPERA MOVED TO WEBKIT, and this TRAP not more be needed!
+			// else if (info.browser.name == "Opera") {
+			// 	this._eTransferMode = EFileTransferModes.k_Slow;
+			// }
+
+			if (arguments.length > 2) {
+				this.open(sFilename, sMode, cb);
+			}
+		}
+
+		setupSignals(): void {
+			this.opened = this.opened || new Signal(<any>this);
+			this.closed = this.closed || new Signal(<any>this);
+			this.renamed = this.renamed || new Signal(<any>this);
+		}
 
 		getPath(): string {
 			return this._pUri.toString();
@@ -83,72 +119,42 @@ module akra.io {
 			this._nCursorPosition = iOffset;
 		}
 
-		setOnRead(fnCallback: (e: Error, data: any) => void): void {
-			this.read(fnCallback);
-		}
-
-		setOnOpen(fnCallback: Function): void {
-			this.open(fnCallback);
-		}
-
-		constructor(sFilename?: string, sMode?: string, fnCallback?: Function);
-		constructor(sFilename?: string, iMode?: int, fnCallback?: Function);
-		constructor(sFilename?: string, sMode?: any, fnCallback: Function = TFile.defaultCallback) {
-			if (isDef(sMode)) {
-				this._iMode = isString(sMode) ? io.filemode(sMode) : sMode;
-			}
-
-			this.setAndValidateUri(uri.parse(sFilename));
-
-			if (info.api.getTransferableObjects()) {
-				this._eTransferMode = EFileTransferModes.k_Fast;
-			}
-			//OPERA MOVED TO WEBKIT, and this TRAP not more be needed!
-			// else if (info.browser.name == "Opera") {
-			// 	this._eTransferMode = EFileTransferModes.k_Slow;
-			// }
-
-			if (arguments.length > 2) {
-				this.open(sFilename, sMode, fnCallback);
-			}
-		}
-
-		open(sFilename: string, iMode: int, fnCallback?: Function): void;
-		open(sFilename: string, sMode: string, fnCallback?: Function): void;
-		open(sFilename: string, fnCallback?: Function): void;
-		open(iMode: int, fnCallback?: Function): void;
-		open(fnCallback?: Function): void;
-		open(sFilename?: any, iMode?: any, fnCallback?: any): void {
+		open(sFilename: string, iMode: int, cb?: Function): void;
+		open(sFilename: string, sMode: string, cb?: Function): void;
+		open(sFilename: string, cb?: Function): void;
+		open(iMode: int, cb?: Function): void;
+		open(cb?: Function): void;
+		open(sFilename?: any, iMode?: any, cb?: any): void {
 			var pFile: IFile = this;
 			var hasMode: boolean = !isFunction(iMode);
 
 			if (arguments.length < 3) {
 				if (isString(arguments[0])) {
 					this.setAndValidateUri(uri.parse(sFilename));
-					fnCallback = arguments[1];
+					cb = arguments[1];
 				}
 				else if (isInt(arguments[0])) {
 					this._iMode = arguments[0];
-					fnCallback = arguments[1];
+					cb = arguments[1];
 				}
 				else {
-					fnCallback = arguments[0];
+					cb = arguments[0];
 				}
 
 				logger.assert(isDefAndNotNull(this._pUri), "No filename provided.");
 
 
-				this.open(this._pUri.toString(), this._iMode, fnCallback);
+				this.open(this._pUri.toString(), this._iMode, cb);
 
 				return;
 			}
 
-			fnCallback = arguments[hasMode ? 2 : 1];
-			fnCallback = fnCallback || TFile.defaultCallback;
+			cb = arguments[hasMode ? 2 : 1];
+			cb = cb || TFile.defaultCallback;
 
 			if (this.isOpened()) {
 				logger.warn("file already opened: " + this.getName());
-				(<Function>fnCallback).call(pFile, null, this._pFileMeta);
+				(<Function>cb).call(pFile, null, this._pFileMeta);
 			}
 
 			this.setAndValidateUri(uri.parse(arguments[0]));
@@ -157,18 +163,20 @@ module akra.io {
 				this._iMode = (isString(arguments[1]) ? io.filemode(<string>arguments[1]) : arguments[1]);
 			}
 
+			console.log("before open TFile > ", this);
+
 			this.update(function (err) {
 				if (err) {
 					logger.warn("file update err", err);
-					fnCallback.call(pFile, err);
+					cb.call(pFile, err);
 					return;
 				}
 
 				if (io.isAppend(this._iMode)) {
 					this.setPosition(this.size);
 				}
-
-				fnCallback.call(pFile, null, this._pFileMeta);
+				console.log("TFile::updated()", this);
+				cb.call(pFile, null, this._pFileMeta);
 			});
 		}
 
@@ -202,8 +210,8 @@ module akra.io {
 			return false;
 		}
 
-		clear(fnCallback: Function = TFile.defaultCallback): void {
-			if (this.checkIfNotOpen(this.clear, fnCallback)) {
+		clear(cb: Function = TFile.defaultCallback): void {
+			if (this.checkIfNotOpen(this.clear, cb)) {
 				return;
 			}
 
@@ -213,15 +221,15 @@ module akra.io {
 				mode: this._iMode
 			};
 
-			this.execCommand(pCommand, fnCallback);
+			this.execCommand(pCommand, cb);
 		}
 
 
 		read(
-			fnCallback: (e: Error, data: any) => void = <any>TFile.defaultCallback,
+			cb: (e: Error, data: any) => void = <any>TFile.defaultCallback,
 			fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void {
 
-			if (this.checkIfNotOpen(this.read, fnCallback, arguments)) {
+			if (this.checkIfNotOpen(this.read, cb, arguments)) {
 				return;
 			}
 
@@ -241,7 +249,7 @@ module akra.io {
 
 			var fnCallbackSystem: Function = (err, pData: any): any => {
 				if (err) {
-					fnCallback.call(pFile, err);
+					cb.call(pFile, err);
 					return;
 				}
 
@@ -251,16 +259,16 @@ module akra.io {
 				}
 
 				pFile.atEnd();
-				fnCallback.call(pFile, null, pData.data);
+				cb.call(pFile, null, pData.data);
 			};
 
 			this.execCommand(pCommand, fnCallbackSystem);
 		}
 
-		write(sData: string, fnCallback?: Function, sContentType?: string): void;
-		write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
-		write(pData: any, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void {
-			if (this.checkIfNotOpen(this.write, fnCallback, arguments)) {
+		write(sData: string, cb?: Function, sContentType?: string): void;
+		write(pData: ArrayBuffer, cb?: Function, sContentType?: string): void;
+		write(pData: any, cb: Function = TFile.defaultCallback, sContentType?: string): void {
+			if (this.checkIfNotOpen(this.write, cb, arguments)) {
 				return;
 			}
 
@@ -269,14 +277,14 @@ module akra.io {
 			var pCommand: AIFileCommand;
 			var fnCallbackSystem: Function = function (err, pMeta) {
 				if (err) {
-					fnCallback.call(pFile, err);
+					cb.call(pFile, err);
 					return;
 				}
 
 				pFile.setPosition(pFile.getPosition() + (isString(pData) ? pData.length : pData.byteLength));
 				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
 
-				fnCallback.call(pFile, null, pMeta);
+				cb.call(pFile, null, pMeta);
 			};
 
 			logger.assert(io.canWrite(iMode), "The file is not writable.");
@@ -300,68 +308,84 @@ module akra.io {
 			}
 		}
 
-		move(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
+		move(sFilename: string, cb: (e: Error, sPath: string, sPathPrev: string) => void = <any>TFile.defaultCallback): void {
 			var pFile: IFile = this;
+			var sPath: string = this.getPath();
 
-			this.copy(sFilename, function (err) {
-				if (err) {
-					fnCallback(err);
-					return;
+			this.copy(sFilename, (e: Error, pCopy: IFile): void => {
+				if (e) {
+					return cb.call(pFile, e);
 				}
 
-				pFile.remove(fnCallback);
+				pFile.remove((e: Error) => {
+					pFile.close();
+					pFile.open(sFilename);
+
+					cb.call(pFile, e, pFile.getPath(), sPath);
+				});
 			});
 		}
 
-		copy(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
+		//copy file
+		copy(sFilename: string, cb: (e: Error, pCopy: IFile, pMeta: IFileMeta) => void = <any>TFile.defaultCallback): void {
 			var iMode: int = EIO.IN | EIO.OUT | EIO.TRUNC;
 			var pFile: IFile = this;
-			var pFileCopy: IFile;
+			var pCopy: IFile;
 
 			if (io.isBinary(this._iMode)) {
 				iMode |= EIO.BIN;
 			}
 
-			pFileCopy = new TFile(sFilename, iMode,
-				function (err) {
-					if (err) {
-						fnCallback(err);
-					}
+			pCopy = fopen(sFilename, iMode);
 
-					pFile.read((e: Error, pData: ArrayBuffer): void => {
-						pFile.write(pData, fnCallback);
+			pCopy.open((err): void => {
+				if (err) {
+					return cb.call(pFile, err, null);
+				}
+
+				pFile.read((e: Error, pData: ArrayBuffer): void => {
+					pCopy.write(pData, (e: Error, pMeta: IFileMeta) => {
+						if (!e) { pCopy.close(); }
+
+						cb.call(pFile, e, pCopy, pMeta);
 					});
 				});
+			});
 		}
 
-		rename(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
+		rename(sFilename: string, cb: (e: Error, sName: string, sNamePrev: string) => void = <any>TFile.defaultCallback): void {
 			var pName: IPathinfo = path.parse(sFilename);
+			var sNamePrev: string = this.getName();
 
-			logger.assert(!pName.getDirName(), 'only filename can be specified.');
+			logger.assert(!pName.getDirName(), "only filename can be specified.");
 
-			this.move(path.parse(this._pUri.getPath()).getDirName() + "/" + pName.getBaseName(), fnCallback);
+			this.move(path.parse(this._pUri.getPath()).getDirName() + "/" + pName.getBaseName(),
+				(e: Error) => {
+					this.renamed.emit(this.getName(), sNamePrev);
+					cb.call(this, this.getName(), sNamePrev);
+			});
 		}
 
-		remove(fnCallback: Function = TFile.defaultCallback): void {
-			if (this.checkIfNotOpen(this.remove, fnCallback)) {
+		remove(cb: Function = TFile.defaultCallback): void {
+			if (this.checkIfNotOpen(this.remove, cb)) {
 				return;
 			}
 
 			var pFile: IFile = this;
+
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Remove,
 				name: this.getPath(),
 				mode: this._iMode
 			};
-			var fnCallbackSystem: Function = function (err, pData) {
-				pFile.close();
 
-				if (isDef(fnCallback)) {
-					fnCallback.call(pFile, err, pData);
+			this.execCommand(pCommand, (e: Error): void => {
+				if (!e) {
+					pFile.close();
 				}
-			}
 
-			this.execCommand(pCommand, fnCallbackSystem);
+				cb.call(pFile, e);
+			});
 		}
 
 		//return current position
@@ -389,22 +413,22 @@ module akra.io {
 			return this._pFileMeta !== null;
 		}
 
-		isExists(fnCallback: Function): void {
+		isExists(cb: Function): void {
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Exists,
 				name: this.getPath(),
 				mode: this._iMode
 			};
-			this.execCommand(pCommand, fnCallback);
+			this.execCommand(pCommand, cb);
 		}
 
 		isLocal(): boolean {
 			return this._isLocal;
 		}
 
-		getMetaData(fnCallback: Function): void {
+		getMetaData(cb: Function): void {
 			logger.assert(isDefAndNotNull(this._pFileMeta), 'There is no file handle open.');
-			fnCallback(null, {
+			cb(null, {
 				lastModifiedDate: this._pFileMeta.lastModifiedDate
 			});
 		}
@@ -442,7 +466,7 @@ module akra.io {
 			}
 		}
 
-		protected update(fnCallback: Function = TFile.defaultCallback) {
+		protected update(cb: Function = TFile.defaultCallback) {
 			var pFile: IFile = this;
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Open,
@@ -451,15 +475,15 @@ module akra.io {
 			};
 			var fnCallbackSystem: Function = function (err, pMeta) {
 				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
-				// console.log(pMeta);
-				fnCallback.call(pFile, err, pFile);
+				console.log(pMeta);
+				cb.call(pFile, err, pFile);
 			};
 
 			this.execCommand(pCommand, fnCallbackSystem);
 		}
 
-		private execCommand(pCommand: AIFileCommand, fnCallback: Function, pTransferables?: any[]): void {
-			TFile.execCommand(this, this.isLocal(), pCommand, fnCallback, pTransferables);
+		private execCommand(pCommand: AIFileCommand, cb: Function, pTransferables?: any[]): void {
+			TFile.execCommand(this, this.isLocal(), pCommand, cb, pTransferables);
 		}
 
 		static defaultCallback: Function = function (err) {
@@ -469,12 +493,12 @@ module akra.io {
 		}
 
 
-		private static execCommand(pFile: IFile, isLocal: boolean, pCommand: AIFileCommand, fnCallback: Function, pTransferables?: any[]): void {
+		private static execCommand(pFile: IFile, isLocal: boolean, pCommand: AIFileCommand, cb: Function, pTransferables?: any[]): void {
 			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal ? TFile.localManager : TFile.remoteManager;
 			pManager.waitForThread((pThread: IThread) => {
 				pThread.onmessage = function (e) {
-					if (fnCallback.call(pFile, null, e.data) === false) {
+					if (cb.call(pFile, null, e.data) === false) {
 						return;
 					}
 
@@ -484,7 +508,7 @@ module akra.io {
 
 				pThread.onerror = function (e) {
 					pThread.onmessage = null;
-					fnCallback.call(pFile, e);
+					cb.call(pFile, e);
 					pManager.releaseThread(pThread);
 				}
 

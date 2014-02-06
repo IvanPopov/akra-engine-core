@@ -250,7 +250,7 @@ module akra.pool.resources {
 					pImg.src = sFilename;
 				}
 				else {
-					io.fopen(sFilename, "rb").setOnRead(function (pError: Error, pDataInFile: ArrayBuffer) {
+					io.fopen(sFilename, "rb").read((pError: Error, pDataInFile: ArrayBuffer): void => {
 						pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
 					});
 				}

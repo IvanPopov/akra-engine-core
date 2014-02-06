@@ -40,8 +40,6 @@
     }
 }
 
-
-
 @keyframes loading {
     from {
         left: 0;
@@ -93,7 +91,6 @@
 }
 
 
-
 div.ae-loader {
     overflow: hidden;
     width: 400px;
@@ -103,7 +100,7 @@ div.ae-loader {
     -webkit-animation: bounceInLeft 1s;
 }
 
-div.ae-progress:last-child{
+div.ae-progress:last-child {
     margin-bottom: 0px;
 }
 
@@ -112,7 +109,7 @@ div.ae-progress {
     margin: 0 auto;
     padding-top: 0px;
     padding-bottom: 20px;
-    margin-bottom
+    /*margin-bottom;*/
 }
 
 .ae-string {
@@ -171,7 +168,7 @@ div.ae-bar {
     margin-top: 30px;
     width: 400px;
     height: 2px;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
     .ae-slider .line {

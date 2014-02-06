@@ -178,6 +178,7 @@ module akra.core {
 					if (!isNull(e)) {
 						logger.critical(e);
 					}
+					debug.log("\t\tloaded / ", arguments);
 
 					logger.info("%cEngine dependecies loaded.", "color: green;");
 
@@ -186,6 +187,7 @@ module akra.core {
 					this.depsLoaded.emit(pDep);
 				},
 				(pDep: IDep, pProgress: any): void => {
+					debug.log("\t\tchanged / ", pDep.status, path.parse(pDep.path).getBaseName(), pProgress? pProgress.loaded + " / " + pProgress.total: "- / -");
 				});
 		}
 

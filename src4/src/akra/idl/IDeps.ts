@@ -4,8 +4,9 @@
 module akra {
 	export enum EDependenceStatuses {
 		NOT_LOADED,
-		LOADING,
+		INITIALIZATION,
 		CHECKING,
+		LOADING,
 		UNPACKING,
 		LOADED
 	}
@@ -14,6 +15,8 @@ module akra {
 		//system
 		index?: int;
 		deps?: IDependens;
+		//if primary dependence?
+		primary?: boolean; 
 	
 		//additional
 		status?: EDependenceStatuses;
@@ -25,8 +28,7 @@ module akra {
 		comment?: string;
 		type?: string;
 	}
-	
-	
+
 	
 	export interface IDependens {
 	    //system paramaters

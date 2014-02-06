@@ -122,14 +122,43 @@ module akra.deps {
 
 			pDep.index = i;
 			pDep.deps = pDeps;
+			pDep.primary = false;
 
 			pDep.status = EDependenceStatuses.NOT_LOADED;
 			pDep.path = uri.resolve(pDeps.files[i].path, pDeps.root || sRoot);
-		})
-}
+		});
+	}
 
 	export function detectType(pDep: IDep): string {
 		return pDep.type || path.parse(pDep.path).getExt() || "";
+	}
+
+	export function detectSize(pDep: IDep): uint {
+		return 0;
+
+		//var sExt: string = detectType(pDep);
+
+		//switch (sExt.toLowerCase()) {
+		//	case "ara":
+		//	case "jpeg":
+		//	case "jpg":
+		//	case "png":
+		//	case "gif":
+		//	case "bmp":
+		//	case "dds":
+		//	case "bson":
+
+		//	case "gr":
+		//	case "fx":
+		//	case "afx":
+		//	case "dae":
+		//	case "json":
+		//	case "txt":
+		//	case "map":
+
+		//	default:
+		//		logger.warn("dependence " + pDep.path + " unknown, and will be skipped.");
+		//}
 	}
 
 	export function createResources(pEngine: IEngine, pDeps: IDependens): void {
@@ -203,7 +232,11 @@ module akra.deps {
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
+
 		var pFile: IFile = io.fopen(pDep.path, "rj");
+
+		updateStatus(pDep, EDependenceStatuses.LOADING);
+		fnChanged(pDep, null);
 
 		pFile.read((pErr: Error, pMap: IDependens): void => {
 			if (!isNull(pErr)) {
@@ -238,6 +271,9 @@ module akra.deps {
 
 		var pGrammar: IFile = io.fopen(pDep.path, "r");
 
+		updateStatus(pDep, EDependenceStatuses.LOADING);
+		fnChanged(pDep, null);
+
 		pGrammar.read((e: Error, sData: string): void => {
 			if (!isNull(e)) {
 				fnLoaded(e, null);
@@ -261,6 +297,9 @@ module akra.deps {
 		var sResource: string = pDep.name || pDep.path;
 		var pRes: IResourcePoolItem = pPool.findResource(sResource);
 
+		updateStatus(pDep, EDependenceStatuses.LOADING);
+		fnChanged(pDep, null);
+
 		if (pRes.loadResource(pDep.path)) {
 			handleResourceEventOnce(pRes, "loaded", (pItem: IResourcePoolItem): void => {
 				updateStatus(pDep, EDependenceStatuses.LOADED);
@@ -272,6 +311,7 @@ module akra.deps {
 		}
 	}
 
+	/** loade */
 	export function loadAFX(
 		pEngine: IEngine,
 		pDep: IDep,
@@ -305,6 +345,9 @@ module akra.deps {
 
 		var pFile: IFile = io.fopen(pDep.path, "r");
 
+		updateStatus(pDep, EDependenceStatuses.LOADING);
+		fnChanged(pDep, null);
+
 		pFile.read((pErr: Error, sData: string): void => {
 			if (!isNull(pErr)) {
 				fnLoaded(pErr, null);
@@ -328,6 +371,9 @@ module akra.deps {
 
 		var pFile: IFile = io.fopen(pDep.path, "rj");
 
+		updateStatus(pDep, EDependenceStatuses.LOADING);
+		fnChanged(pDep, null);
+
 		pFile.read((pErr: Error, pData: Object): void => {
 			if (!isNull(pErr)) {
 				fnLoaded(pErr, null);
@@ -347,6 +393,9 @@ module akra.deps {
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
 		var pFile: IFile = io.fopen(pDep.path, "rb");
+
+		updateStatus(pDep, EDependenceStatuses.LOADING);
+		fnChanged(pDep, null);
 
 		pFile.read((pErr: Error, pBuffer: ArrayBuffer): void => {
 			if (!isNull(pErr)) {
@@ -472,7 +521,7 @@ module akra.deps {
 
 			var fnZipReadedCallback = (pZipReader: ZipReader): void => {
 				pZipReader.getEntries((pEntries: ZipEntry[]): void => {
-					
+
 					var pEntryMap: { [path: string]: ZipEntry; } = {};
 					var nTotal: uint = 0;
 					var nUnpacked: uint = 0;
@@ -482,12 +531,14 @@ module akra.deps {
 						pEntryMap[pEntries[i].filename] = pEntries[i];
 						nTotal++;
 					}
-			
+
 					var pMapEntry: ZipEntry = pEntryMap[ARA_INDEX];
 
 					logger.assert(isDefAndNotNull(pMapEntry), "ARA dependences found, but headers corrupted.");
 
+					console.log("before get entry data ====>");
 					pMapEntry.getData(new zip.TextWriter(), (data: string): void => {
+						console.log("!!!!!!!!");
 						var pARADeps: IDependens = <IDependens>JSON.parse(data);
 
 						var fnSuccesss: Function = (sLocalPath: string): void => {
@@ -564,7 +615,8 @@ module akra.deps {
 
 	if (!isNull(pArchive)) {
 			//non data-uri cases
-			pArchive.open((err: Error, pMeta: IFileMeta): void => {
+		pArchive.open((err: Error, pMeta: IFileMeta): void => {
+			console.log("====================>", err);
 				if (FORCE_ETAG_CHECKING) {
 					var pETag: IFile = io.fopen(createARADLocalName(ETAG_FILE, sArchiveHash), "r+");
 
@@ -607,7 +659,7 @@ module akra.deps {
 	}
 
 
-	export function loadDependences(
+	function loadDependences(
 		pEngine: IEngine,
 		pDeps: IDependens,
 		fnLoaded: (e: Error, pDeps: IDependens) => void,
@@ -626,13 +678,9 @@ module akra.deps {
 
 		//walk single deps level
 		each({ files: pDeps.files }, (pDep: IDep): void => {
-			//pDep.status = EDependenceStatuses.LOADING;
-			//this.changeDepStatus(pDep);
-			updateStatus(pDep, EDependenceStatuses.LOADING);
+			updateStatus(pDep, EDependenceStatuses.INITIALIZATION);
+			fnChanged(pDep, null);
 
-			if (isFunction(fnChanged)) {
-				fnChanged(pDep, null);
-			}
 
 			var sExt: string = detectType(pDep);
 
@@ -695,9 +743,28 @@ module akra.deps {
 		normalize(pDeps, pDeps.root || sRoot);
 		createResources(pEngine, pDeps);
 
+
+		var iTotalNumber: uint = 0;
+		var iTotalByteLength: uint = 0;
+
+		//mark initial dependencies as primary
+		walk(pDeps, (pDeps: IDependens, i: int, iDepth: uint): void => {
+			var pDep: IDep = pDeps.files[i];
+			pDep.primary = false;
+
+			iTotalNumber++;
+			iTotalByteLength += detectSize(pDep);
+		});
+
+		//определяем число первичных зависимостей, которое надо загрузить
+		//определяем размер первичных зависимостей
+
 		function dependacyLoaded(e: Error, pDep: IDep): void {
 			//get dependencies, contained dep
 			var pDeps: IDependens = pDep.deps;
+
+			//notify loaded for all resources
+			fnChanged(pDep, null);
 
 			if (pDeps.loaded < pDeps.total) {
 				return;

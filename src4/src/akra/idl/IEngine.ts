@@ -22,10 +22,11 @@ module akra {
 		deps?: IDependens;
 		gamepads?: boolean;
 		renderer?: IRendererOptions;
-		//loader?: {
-		//	loaded?: (manager: AIDepsManager, pDeps: IDependens) => void;
-		//	changed?: (manager: AIDepsManager, pFile: IDep, pInfo: any) => void;
-		//};
+
+		loader?: {
+			loaded?: (e: Error, pDeps: IDependens) => void;
+			changed?: (e: Error, pFile: IDep, pProgress: any) => void;
+		};
 	}
 	
 	export interface IEngine extends IEventProvider {

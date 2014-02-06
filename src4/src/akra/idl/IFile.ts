@@ -5,7 +5,11 @@ module akra {
 		eTag?: string;
 	}
 	
-	export interface IFile {
+	export interface IFile extends IEventProvider {
+		opened: ISignal<{ (pFile: IFile): void; }>;
+		closed: ISignal<{ (pFile: IFile): void; }>;
+		renamed: ISignal<{ (pFile: IFile, sName: string, sNamePrev: string): void; }>;
+
 		getPath(): string;
 		getName(): string;
 		getByteLength(): uint;
@@ -17,29 +21,24 @@ module akra {
 
 		getPosition(): uint;
 		setPosition(iPos: uint): void;
-
-		///** @deprecated */
-		setOnRead(fnCallback: (e: Error, data: any) => void): void;
-		///** @deprecated */
-		setOnOpen(fnCallback: Function): void;		
 	
 		// binarayType: EFileBinaryType;
 	
-		open(sFilename: string, iMode: int, fnCallback?: Function): void;
-		open(sFilename: string, sMode: string, fnCallback?: Function): void;
-		open(sFilename: string, fnCallback?: Function): void;
-		open(iMode: int, fnCallback?: Function): void;
-		open(fnCallback?: Function): void;
+		open(sFilename: string, iMode: int, cb?: Function): void;
+		open(sFilename: string, sMode: string, cb?: Function): void;
+		open(sFilename: string, cb?: Function): void;
+		open(iMode: int, cb?: Function): void;
+		open(cb?: Function): void;
 	
 		close(): void;
-		clear(fnCallback?: Function): void;
-		read(fnCallback?: (e: Error, data: any) => void, fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void;
-		write(sData: string, fnCallback?: Function, sContentType?: string): void;
-		write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
-		move(sFilename: string, fnCallback?: Function): void;
-		copy(sFilename: string, fnCallback?: Function): void;
-		rename(sFilename: string, fnCallback?: Function): void;
-		remove(fnCallback?: Function): void;
+		clear(cb?: Function): void;
+		read(cb?: (e: Error, data: any) => void, fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void;
+		write(sData: string, cb?: Function, sContentType?: string): void;
+		write(pData: ArrayBuffer, cb?: Function, sContentType?: string): void;
+		move(sFilename: string, cb?: (e: Error, sPath: string, sPathPrev: string) => void): void;
+		copy(sFilename: string, cb?: (e:Error, pCopy: IFile) => void): void;
+		rename(sFilename: string, cb?: Function): void;
+		remove(cb?: (e: Error, sName: string, sNamePrev: string) => void): void;
 	
 		//return current position
 		atEnd(): int;
@@ -47,10 +46,10 @@ module akra {
 		seek(iOffset: int): int;
 	
 		isOpened(): boolean;
-		isExists(fnCallback: Function): void;
+		isExists(cb: Function): void;
 		isLocal(): boolean;
 	
-		getMetaData(fnCallback: Function): void;
+		getMetaData(cb: Function): void;
 	}
 	
 }

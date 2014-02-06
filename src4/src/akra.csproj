@@ -16,6 +16,33 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="akra\resources.xml" />
+    <Content Include="akra\resources\fx\apply_lights_and_shadows.afx" />
+    <Content Include="akra\resources\fx\color_maps.afx" />
+    <Content Include="akra\resources\fx\deferredShading.afx" />
+    <Content Include="akra\resources\fx\edge_detection.afx" />
+    <Content Include="akra\resources\fx\floatSpecialFunctions.afx" />
+    <Content Include="akra\resources\fx\fxaa.afx" />
+    <Content Include="akra\resources\fx\generateTangent.afx" />
+    <Content Include="akra\resources\fx\generate_normal_map.afx" />
+    <Content Include="akra\resources\fx\math.afx" />
+    <Content Include="akra\resources\fx\mesh_geometry.afx" />
+    <Content Include="akra\resources\fx\mesh_skinning.afx" />
+    <Content Include="akra\resources\fx\mesh_texture.afx" />
+    <Content Include="akra\resources\fx\motion_blur.afx" />
+    <Content Include="akra\resources\fx\Plane.afx" />
+    <Content Include="akra\resources\fx\prepareDeferredShading.afx" />
+    <Content Include="akra\resources\fx\prepare_shadows.afx" />
+    <Content Include="akra\resources\fx\sky.afx" />
+    <Content Include="akra\resources\fx\skybox.afx" />
+    <Content Include="akra\resources\fx\sprite.afx" />
+    <Content Include="akra\resources\fx\SystemEffects.afx" />
+    <Content Include="akra\resources\fx\terrain.afx" />
+    <Content Include="akra\resources\fx\text3d.afx" />
+    <Content Include="akra\resources\fx\TextureToScreen.afx" />
+    <Content Include="akra\resources\fx\wireframe.afx" />
+    <Content Include="akra\resources\HLSL.gr" />
+    <Content Include="packages.config" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -526,6 +553,14 @@
     <TypeScriptCompile Include="akra\webgl\WebGLTextureBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexTexture.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-cookies.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-mocks.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-resource.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-sanitize.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-scenario.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="akra\net\server\ConnectionWrapper.js" />

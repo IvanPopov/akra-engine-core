@@ -70,7 +70,7 @@ module akra.info {
 
 			this._bWebAudio = ((<any>window).AudioContext && (<any>window).webkitAudioContext ? true : false);
 			this._bFile = ((<any>window).File && (<any>window).FileReader && (<any>window).FileList && (<any>window).Blob ? true : false);
-			this._bFileSystem = (this._bFile && (<any>window).URL && (<any>window).requestFileSystem ? true : false);
+			this._bFileSystem = (this._bFile && (<any>window).URL && ((<any>window).requestFileSystem || (<any>window).webkitRequestFileSystem) ? true : false);
 			this._bWebWorker = isDef((<any>window).Worker);
 			this._bLocalStorage = isDef((<any>window).localStorage);
 			this._bWebSocket = isDef((<any>window).WebSocket);
