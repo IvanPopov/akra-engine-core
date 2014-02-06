@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var tsc = path.normalize(__dirname + '/../typescript-0.9.1.1/tsc.js');
+var tsc = path.normalize(__dirname + '/../typescript-0.9.5/tsc.js');
 
 var DEFINES = [];
 var MANGLE_NAMES = false;
@@ -26,7 +26,7 @@ eval(fs
   .replace(/batch\.batchCompile\(\);\s*$/, '')
   .replace(/\btsc\b/g, 'tscc'));
 
-eval(fs.readFileSync(path.resolve(__dirname, 'emitter.js'), 'utf8'));
+eval(fs.readFileSync(path.resolve(__dirname, 'emitter2.js'), 'utf8'));
 eval(fs.readFileSync(path.resolve(__dirname, 'patches.js'), 'utf8'));
 
 TypeScript.OptionsParser.prototype.printUsage = function(printUsage) {

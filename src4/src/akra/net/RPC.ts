@@ -415,9 +415,9 @@ module akra.net {
 
 		proc(...argv: any[]): boolean {
 
-			var IRPCCallback: int = arguments.length - 1;
+			var iRPCCallback: int = arguments.length - 1;
 			var fnCallback: Function =
-				isFunction(arguments[IRPCCallback]) ? <Function>arguments[IRPCCallback] : null;
+				isFunction(arguments[iRPCCallback]) ? <Function>arguments[iRPCCallback] : null;
 			var nArg: uint = arguments.length - (fnCallback ? 2 : 1);
 			var pArgv: any[] = new Array(nArg);
 			var pPipe: IPipe = this._pPipe;
