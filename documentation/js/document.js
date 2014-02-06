@@ -58,7 +58,7 @@ jQuery(document).ready(function($){
 	});
 
 	enableSideScroll(sidebar);
-	bindSearchBar();
+	// bindSearchBar();
 
 	$(window).resize(function(){
 		enableSideScroll(sidebar);
@@ -70,12 +70,21 @@ jQuery(document).ready(function($){
 			hideTreeMenu();
 		}
 	});
+
+	$(".search").submit(function(event){
+		event.preventDefault();
+		// location.assign(location.href.split('#')[0]+'#/search');
+	});
 });
 
 $(document).load(function(){setupHiders();});
 
 function setupHiders() {
+	setupSidebarHiders();
+	setupMainbarHiders();
+}
 
+function setupSidebarHiders() {
 	/* tree-popup-menu */
 	$('.j-tree-button').click(function(){
 		var self = $(this);
@@ -90,17 +99,6 @@ function setupHiders() {
 				scrollpane:    treeMenu, // parent element
 				scrollcontent: treeMenu.find('.j-tree-list')  // inner content
 			});
-		}
-	});
-
-	/* Single Method Close/Open */
-	$('.j-single-method-arrow').click(function(){
-		var self = $(this);
-		var singleMethod = self.parents('.j-single-method');
-		if (singleMethod.hasClass('opened')){
-			singleMethod.removeClass('opened').addClass('closed');
-		} else if (singleMethod.hasClass('closed')){
-			singleMethod.removeClass('closed').addClass('opened');
 		}
 	});
 
@@ -120,6 +118,18 @@ function setupHiders() {
 			}
 		}
 	});
+}
+function setupMainbarHiders() {
+	/* Single Method Close/Open */
+	$('.j-single-method-arrow').click(function(){
+		var self = $(this);
+		var singleMethod = self.parents('.j-single-method');
+		if (singleMethod.hasClass('opened')){
+			singleMethod.removeClass('opened').addClass('closed');
+		} else if (singleMethod.hasClass('closed')){
+			singleMethod.removeClass('closed').addClass('opened');
+		}
+	});
 
 	// content, switch chapters
 	$('.j-content-chapter-button').click(function(){
@@ -136,6 +146,40 @@ function setupHiders() {
 				menuList.hide();
 			}
 		}
+	});
+}
+var _searchbarScrollerElem;
+function setupSearchbarHiders() {
+
+	// content, switch chapters
+	$('.j-search-chapter-button').click(function(){
+		var self = $(this);
+		if (!self.hasClass('disabled')){
+			var selfName = self.data('name');
+			var menuList = $('.j-search-chapter[data-name="'+ selfName +'"]');
+
+			if (self.hasClass('inactive')) {
+				self.removeClass('inactive');
+				menuList.show();
+			} else {
+				self.addClass('inactive');
+				menuList.hide();
+			}
+		}
+	});
+	_searchbarScrollerElem = $('.searchblock-big .frame .scroller .b-description');
+	$('.searchblock-big .frame').on('mousewheel DOMMouseScroll', function(ev,delta,deltaX,deltaY) {
+		// console.log('Scrolling search reslts')
+		scrollTop = _searchbarScrollerElem.scrollTop();
+		scrollHeight = _searchbarScrollerElem[0].scrollHeight;
+		height = _searchbarScrollerElem.height();
+		scrollDelta = (ev.type == 'DOMMouseScroll' ?
+			ev.originalEvent.detail * -40 :
+			deltaY * -40 );
+		_searchbarScrollerElem.scrollTop(Math.min(Math.max(scrollTop+scrollDelta,0),scrollHeight-height));
+
+		ev.stopPropagation();
+		ev.preventDefault();
 	});
 }
 
@@ -177,7 +221,7 @@ function alphabeticColumnSort() {
 		var section_name = $(section_cursor.parents(".j-content-chapter")[0]).find(".b-description-title").html().toUpperCase();
 		// console.log(section_name);
 		// console.log(section_cursor[0]);
-		var entries = section_cursor.find(".content .title").clone();
+		var entries = section_cursor.find(".content .title").parent().clone();
 		section_cursor.find(".col-md-3").remove();
 		var column_len = 10;
 		var columns_in_row = 4;
@@ -200,82 +244,7 @@ function alphabeticColumnSort() {
 				cursor = new_column.find(".content");
 			}
 			$(entries[j]).clone().appendTo(cursor);
-			$("<p class='text'>&nbsp;</p>").appendTo(cursor);
+			// $("<p class='text'>&nbsp;</p>").appendTo(cursor);
 		}
 	}
 }
-
-function try_search() {
-		if(timeout_id_last_search) {
-			clearTimeout(timeout_id_last_search);
-			timeout_id_last_search = null;
-		}
-
-		if($("#search").val().length<3) {
-			$("#searchblock").remove();
-			return;
-		}
-
-		timeout_id_last_search = setTimeout('search_string($("#search").val())',300);
-}
-
-function bindSearchBar() {
-	$("#search").bind('change keyup', function(e) {
-		try_search();
-	});
-}
-
-function search_string(request) {
-
-	if($("#searchblock").length==0) {
-		$(".b-navigate-row").after($(searchblock_template));
-	}
-
-	$.getJSON('http://localhost:3000/search/'+request, function(data) {
-		last_search_response = data;
-		$("#searchblock").empty();
-
-		var response_check=1;
-		for(i in data) {
-			if(data[i].length>0) {
-				response_check=0;
-				break;
-			}
-		}
-
-		var categories = $('<ul class="results"></ul>');
-		$("#searchblock").append(categories);
-
-		if(response_check>0) {
-			categories.append($("<li class='section'><h3 class='name'>Nothing found</h3><p class='entry'><span class='entry-name'>Be more specific, would you kindly?</span></p></li>"));
-			return;
-		}
-
-		for(type_name in last_search_response) {
-			var section = $("<li class='section'><h3 class='name "+type_name+"'>"+type_name+"</h3></li>");
-			var section_elems = last_search_response[type_name];
-			if(section_elems.length==0)
-				continue;
-
-			categories.append(section);
-			for(i in section_elems) {
-				var entry;
-				if(['interfaceMembers','classMembers','enumKeys'].indexOf(type_name)<0) {
-					entry = section_elems[i].location.length!=0 ?
-					$("<p class='entry'><a href='#/"+section_elems[i].location.replace(/\./g,'/')+'/'+section_elems[i].name+"'><span class='entry-name'>"+
-						section_elems[i].name+"</span></a><br><span class='entry-info'>"+section_elems[i].kind+" @ <a href='#/"+
-						section_elems[i].location.replace(/\./g,'/')+"'>"+section_elems[i].location+"</a></span></p>") :
-					$("<p class='entry'><a href='#/"+section_elems[i].name+"'><span class='entry-name'>"+
-						section_elems[i].name+"</span></a><br><span class='entry-info'>global "+section_elems[i].kind+"</span></p>");
-				}
-				else {
-					entry = $("<p class='entry'><a href='#/"+section_elems[i].location.replace(/\./g,'/')+"'><span class='entry-name'>"+
-						section_elems[i].name+"</span></a><br><span class='entry-info'>"+section_elems[i].kind+" @ <a href='#/"+
-						section_elems[i].location.replace(/\./g,'/')+"'>"+section_elems[i].location+"</a></span></p>")
-				}
-				section.append(entry);
-				if(i>4) break;
-			}
-		}
-	});
-};

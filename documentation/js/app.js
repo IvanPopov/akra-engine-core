@@ -3,6 +3,7 @@ var app = angular.module("docsApp", ['ngRoute']);
 var keywords = ["modules","classes","functions","interfaces","enums","variables","typeDefs"];
 var subobjects = ["modules","classes","functions","interfaces","enums","variables","typeDefs","constants","getters","setters"];
 var systemtypes = ['string','number','bool','void','int','float','uint','any'];
+var searchBlocks = ['modules','interfaces','interfaceMembers','classes','classMembers','functions','enums','enumKeys','variables'];
 
 app.factory('docobjects', function($location) {
 	var pathtree = $location.path().split("/");
@@ -28,6 +29,8 @@ app.factory('templates', function() {
 		treeview: '/templates/sidebar-entry.html',
 		treeviewExpanded: '/templates/sidebar-entry-expanded.html',
 		classView: '/templates/class-view.html',
+		searchView: '/templates/search-view.html',
+		columnView: '/templates/column-view.html',
 		moduleView: '/templates/module-view.html',
 		functionView: '/templates/function-view.html',
 		enumView: '/templates/enum-view.html',
@@ -37,6 +40,67 @@ app.factory('templates', function() {
 });
 
 app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
+	$scope.searchText='';
+	$scope.lastSearchID=null;
+	$scope.isShowSearchResults=false;
+	$scope.toggleShowSearchResults = function() {
+		if($scope.searchText.length<3) return;
+
+
+		// console.log('Toggling search results');
+		$scope.isShowSearchResults=!$scope.isShowSearchResults;
+		if($scope.isShowSearchResults) {
+			setTimeout(setupSearchbarHiders,100);
+		}
+		// setTimeout(alphabeticColumnSort,100);
+	}
+
+	$scope.search = function() {
+		if($scope.lastSearchID) {
+			clearTimeout($scope.lastSearchID);
+			$scope.lastSearchID = null;
+		}
+
+		if ($scope.searchText.length < 3) {
+			$scope.isShowSearchResults = false;
+			return;
+		}
+
+		$scope.searchResults.name = $scope.searchText;
+		$scope.lastSearchID = setTimeout(function(){
+			$http.get('//localhost:3000/search/'+$scope.searchText).success(function(data){
+				$scope.searchResults.data = data;
+				console.log($scope.searchResults.data);
+			});
+		},150);
+	};
+
+	$scope.clearSearch = function() {
+		$scope.searchText='';
+		$scope.search();
+	}
+
+	$scope.isSearchEmpty = function() {
+		var response_check=true;
+		for(i in $scope.searchResults.data) {
+			if($scope.searchResults.data[i].data.length>0) {
+				response_check=false;
+				break;
+			}
+		}
+		return response_check;
+	};
+
+	$scope.isPrimary = function(type) {
+		return ['classMembers','interfaceMembers','enumKeys'].indexOf(type) < 0;
+	}
+
+	$scope.searchResults = {
+		name:'',
+		location:'search query:',
+		data:[]
+	}
+
 	$scope.currentObject = {
 		name:'',
 		location:'',
@@ -145,12 +209,27 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	};
 
 	$scope.$on('$locationChangeSuccess', function() {
+		$scope.searchText = '';
+		$scope.isShowSearchResults = false;
+		if($location.path()=='/search') {
+			$scope.currentObject.name = "Search";
+			$scope.currentObject.type = "search";
+			$scope.currentObject.data = last_search_response;
+			$location.path("/searchresults");
+			return;
+		}
+		if($location.path()=='/searchresults') {
+			enableSideScroll({self:$('.j-sidebar')});
+			console.log($scope.currentObject);
+			setTimeout(alphabeticColumnSort,100);
+			setTimeout(setupHiders,100);
+			return;
+		}
 		tryFileExists();
-		$('#search').val('');
-		try_search();
 	});
 
 	$scope.currLocation = $location.path().replace(/\/[^\/]*\/?$/, "/");
+	$location.path('/');
 	/*$scope.location = $location;
 	$scope.http = $http;
 	$http.get('/data/index.json').success(function(data){
@@ -174,6 +253,31 @@ app.directive('documobject', function() {
 			filtersubobjects: '=',
 			isparent: '='
 		}
+	};
+});
+
+app.directive('searchobject', function() {
+	return {
+		restrict:'E',
+		scope: {
+			docobject:'='
+		}
+	}
+});
+
+app.directive('columndisplay', function() {
+	return {
+		restrict:'E',
+		scope: {
+			docobject:'='
+		}
+	}
+});
+
+app.directive('columnView', function(templates) {
+	return {
+		replace: true,
+		templateUrl: templates.columnView,
 	};
 });
 
@@ -202,6 +306,13 @@ app.directive('classView', function(templates) {
 	return {
 		replace: true,
 		templateUrl: templates.classView
+	};
+});
+
+app.directive('searchView', function(templates) {
+	return {
+		replace: true,
+		templateUrl: templates.searchView
 	};
 });
 
@@ -295,6 +406,7 @@ app.filter('locationToDocStyle', function() {
 
 app.filter('locationToUrlStyle', function() {
 	return function(input) {
+		if(!input || input.length==0) return '';
 		return '/'+input.replace(/\./g,'/');
 	}
 });
@@ -302,6 +414,20 @@ app.filter('locationToUrlStyle', function() {
 app.filter('getNameFromLoc', function() {
 	return function(input) {
 		return input.split('.')[input.split('.').length-1];
+	}
+});
+
+app.filter('isContainsKeyVal', function() {
+	return function(input,key,val) {
+		// console.log('isContainsKeyVal: searching '+key+' equals '+val);
+		var contains=false;
+		for(i in input) {
+			if(input[i][key]==val&&input[i].data.length>0) {
+				contains=true;
+				break;
+			}
+		}
+		return contains;
 	}
 });
 
@@ -327,6 +453,20 @@ app.filter('makeRange', function() {
         };
     });
 
+app.filter('isSearchObjectEmpty', function() {
+	return function(object) {
+		// console.log('checking search object')
+		var response_check=true;
+		for(i in object.data) {
+			if(object.data[i].data.length>0) {
+				response_check=false;
+				break;
+			}
+		}
+
+		return response_check;
+	};
+})
 
 	function navigatePath(object,path,symbol) {
 		path = path.replace(/\s/g,'').replace(/\/?$/,'');
@@ -346,3 +486,33 @@ app.filter('makeRange', function() {
 			return null;
 		}
 	}
+
+app.filter('objectToArray', function() {
+	return function(object) {
+		if(object instanceof Array) return object;
+
+		var array = [];
+		for(i in object) {
+			array.push({name:i,data:object[i]});
+		}
+		return array;
+	}
+});
+
+app.filter('splitRowsColumns', function() {
+	return function (object,rowSize,columnSize) {
+		var entriesNum = Object.keys(object).length;
+		var colsNum = Math.ceil(entriesNum/columnSize);
+		var rowsNum = Math.ceil(entriesNum/rowSize/columnSize);
+		// console.log(entriesNum,colsNum,rowsNum);
+		var len=[];
+		for(var i=0;i<rowsNum;i++) {
+			len.push([]);
+			for(var j=i*rowSize;j<Math.min(i*rowSize+rowSize,colsNum);j++) {
+				len[i].push(object.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+				// console.log(object.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+			}
+		}
+		return len;
+	}
+});

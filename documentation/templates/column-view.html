@@ -1,0 +1,22 @@
+					<div>
+						<p>{{docobject}}</p>
+						<h2>&nbsp;</h2>
+						<div class="row" ng-repeat="rowdata in docobject">
+							<!-- <p style="margin-left:20px;">{{rowdata}}</p> -->
+							<div class="col-md-3" ng-repeat="columndata in rowdata">
+								<div class="b-alphabet-column">
+									<!-- <p style="margin-left:40px;">{{columndata}}</p> -->
+									<div>
+										<!-- <div class="header"><span class="main">{{columndata[0].name[0].toUpperCase()}}</span></div> -->
+										<div class="header"><span class="main">All</span></div>
+										<div class="content">
+											<div ng-repeat="entry in columndata">
+												<p class="title"><a href="#{{docobject.location}}/{{docobject.name != 'index' ? docobject.name+'/' : '' }}{{entry.name}}">{{entry.name}}</a></p>
+												<p class="text">{{entry}}</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>

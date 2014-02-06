@@ -1,0 +1,50 @@
+		<div class="frame">
+			<div class="searchframe-scroller">
+				<div class="b-description">
+					<div class="j-search-chapter" ng-if="docobject|isSearchObjectEmpty">
+						<div class="row">
+							<h2 class="b-description-title">Nothing found :(</h2>
+							<p>There's nothing, that would suit your request</p>
+						</div>
+					</div>
+					<columndisplay column-view docobject='[[[{"name":"a","data":2},{"name":"b","data":4},{"name":"c","data":1}],[{"name":"d","data":1},{"name":"e","data":1},{"name":"f","data":1}],[{"name":"g","data":1},{"name":"r","data":1},{"name":"h","data":1}],[{"name":"t","data":1},{"name":"y","data":1},{"name":"j","data":1}]],[[{"name":"u","data":1},{"name":"i","data":1},{"name":"k","data":1}],[{"name":"l","data":1},{"name":"s","data":1}]]]'></columndisplay>
+					<div ng-repeat="section in docobject.data" class="j-search-chapter" data-name="{{section.type|toStyleType}}">
+						<h2 class="b-description-title {{section.type|toStyleType}}" ng-if="section.data.length>0">{{section.type|toStyleType}}</h2>
+
+						<div class="b-description-wrap" ng-if="section.data.length>0">
+							<!-- <columnview docobject="section.data"></columnview> -->
+							<!-- <columndisplay column-view docobject='{a:2,b:4,c:3,d:1,e:1,f:1,g:1,r:1,h:1,t:1,y:1,j:1,u:1,i:1,k:1,l:1,y:1,r:1,d:1,s:1,d:1,c:1,f:1,g:1,h:1}|objectToArray|splitRowsColumns:4:3'></columndisplay> -->
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="searchframe-header">
+				<div class="b-intro">
+					<div class="menu">
+						<ul class="wrap">
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'modules'"><a class="link j-search-chapter-button namespaces" href="javascript:void(0)" data-name="namespaces">NameSpaces</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'interfaces'"><a class="link j-search-chapter-button interfaces" href="javascript:void(0)" data-name="interfaces">Interfaces</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'interfaceMembers'"><a class="link j-search-chapter-button interfaces" href="javascript:void(0)" data-name="interfaceMembers">InterfaceMembers</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'classes'"><a class="link j-search-chapter-button classes" href="javascript:void(0)" data-name="classes">Classes</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'classMembers'"><a class="link j-search-chapter-button classes" href="javascript:void(0)" data-name="classMembers">ClassMembers</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'enums'"><a class="link j-search-chapter-button enums" href="javascript:void(0)" data-name="enums">Enums</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'enumKeys'"><a class="link j-search-chapter-button enums" href="javascript:void(0)" data-name="enumKeys">EnumKeys</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'functions'"><a class="link j-search-chapter-button functions" href="javascript:void(0)" data-name="functions">Functions</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'variables'"><a class="link j-search-chapter-button members" href="javascript:void(0)" data-name="members">Members</a></li>
+						</ul>
+					</div>
+					<div class="title">
+						<span class="icon"><img src="images/magnifier-big.png" alt=""/></span>
+						<span class="way">{{docobject.location | locationToDocStyle}}</span>
+						<h1 class="text">{{docobject.name}}</h1>
+					</div>
+					<div class="text">
+						<!--  -->
+					</div>
+					<div class="clr"></div>
+				</div>
+				<div class="b-intro-sep">
+					<div class="clr"></div>
+				</div>
+			</div>
+		</div>

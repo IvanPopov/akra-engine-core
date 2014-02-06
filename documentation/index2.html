@@ -26,10 +26,37 @@
 	<div class="b-header">
 		<div class="row1">
 			<a class="logo" href="#/">API REFERENCE</a>
-			<form class="search" action="#" method="GET">
-				<input type="text" name="search" id="search" placeholder="Search" class="text"/>
-				<input type="submit" value="" class="submit"/>
-			</form>
+			<div id="searchParent">
+				<form class="search" action="#" method="GET" ng-submit="toggleShowSearchResults();">
+					<input type="text" name="search" id="search" placeholder="Search" class="text" ng-model="searchText" ng-change="search()"/>
+					<a class="cancel" title="clear searchbar" ng-if="searchText.length>0" ng-click="clearSearch();"></a>
+					<a class="submit" title="detail view" style="opacity:{{searchText.length>=3?'1.0':'0.5'}}" ng-click="toggleShowSearchResults();"></a>
+				</form>
+				<div id="searchblock" class="searchblock" ng-if="searchText.length >= 3 && !isShowSearchResults">
+					<ul class="results">
+						<li class='section' ng-if="isSearchEmpty()">
+							<h3 class='name'>Nothing found</h3>
+							<p class='entry'><span class='entry-name'>Be more specific, would you kindly?</span></p>
+						</li>
+						<div ng-if="!isSearchEmpty()">
+							<div ng-repeat='section in searchResults.data'>
+								<div ng-if="section.data.length > 0">
+									<li class='section'>
+										<h3 class='name {{section.type}}'>{{section.type}}</h3>
+									</li>
+									<p class='entry' ng-repeat='entry in section.data | limitTo: 5'>
+										<a href='#{{entry.location|locationToUrlStyle}}{{isPrimary(searchResults.data[i].type) ? "/"+entry.name : ""}}'>
+											<span class='entry-name'>{{entry.name}}</span>
+										</a><br>
+										<span class='entry-info' ng-if="entry.location.length>0">{{entry.kind}} @ <a href='#{{entry.location|locationToUrlStyle}}'>{{entry.location}}</a></span>
+										<span class='entry-info' ng-if="!entry.location||entry.location.length==0">global {{entry.kind}}</a></span>
+									</p>
+								</div>
+							</div>
+						</div>
+					</ul>
+				</div>
+			</div>
 		</div>
 		<div class="row2">
 			<a class="logo" href="#/">AKRA</a>
@@ -45,6 +72,9 @@
 			</div>
 		</div>
 	</div>
+				<div class="searchblock-big" ng-if="isShowSearchResults">
+					<searchobject docobject="searchResults" search-view></searchobject>
+				</div>
 	<div class="b-navigate-row">
 		<a class="left-column-bar j-left-bar opened" href="javascript:void(0);"><span class="bg"></span></a>
 	</div>
