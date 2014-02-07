@@ -1,9 +1,11 @@
 <span>
 	<div class="wrap">
+		<a class="dots" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">
+			<span class="icon {{docobject.type|toStyleType}}"></span>
+			<span class="text">{{docobject.name}}</span>
+		</a>
 		<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
-		<a class="icon {{docobject.type|toStyleType}}" href="#"></a>
-		<a class="text" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">{{docobject.name}}</a>
-		<a class="tree j-tree-button" ng-if="docobject.name!='index'" href="javasctipt:void(0);"> </a>
+		<a class="tree j-tree-button" ng-if="docobject.name!='index'" href="javasctipt:void(0);"></a>
 	</div>
 	<div class="sub-menu">
 		<div class="legend">

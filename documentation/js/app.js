@@ -31,6 +31,7 @@ app.factory('templates', function() {
 		classView: '/templates/class-view.html',
 		searchView: '/templates/search-view.html',
 		columnView: '/templates/column-view.html',
+		moduleColumnView: '/templates/column-view.html',
 		moduleView: '/templates/module-view.html',
 		functionView: '/templates/function-view.html',
 		enumView: '/templates/enum-view.html',
@@ -269,10 +270,28 @@ app.directive('columndisplay', function() {
 	}
 });
 
+app.directive('modulecolumndisplay', function() {
+	return {
+		restrict:'E',
+		scope: {
+			sectiondata:'=',
+			sectiontype:'=',
+			elementlocation:'='
+		}
+	}
+});
+
 app.directive('columnView', function(templates) {
 	return {
 		replace: true,
 		templateUrl: templates.columnView,
+	};
+});
+
+app.directive('moduleColumnView', function(templates) {
+	return {
+		replace: true,
+		templateUrl: templates.moduleColumnView,
 	};
 });
 
@@ -395,6 +414,8 @@ app.filter('systemTypeToLoc', function() {
 
 app.filter('locationToDocStyle', function() {
 	return function(input) {
+		if(!input) return '';
+		
 		return input.replace(/^\//,'').replace(/\//g,'.');
 	}
 });

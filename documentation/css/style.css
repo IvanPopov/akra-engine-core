@@ -309,12 +309,19 @@ b {
 .b-side-menu .item .wrap:hover .icon {
 	background-color:#e1e0e0
 }
+.b-side-menu .item .wrap .dots {
+	display:block;
+	height: 100%;
+}
 .b-side-menu .item .wrap .arrow {
 	display:block;
 	float:left;
 	height:17px;
 	width:13px;
-	background:#f2f2f4
+	background:#f2f2f4;
+	position:absolute;
+	left:-13px;
+	top:0px;
 }
 .b-side-menu .item .wrap .arrow .bg {
 	display:block;
@@ -446,6 +453,7 @@ b {
 }
 .b-side-menu .item .sub-menu .sub-wrap .sub-list .sub-item .sub-link {
 	display:inline-block;
+	width:100%;
 	padding:0 0 0 25px;
 	color:#4c4c4c;
 	font-size:14px;

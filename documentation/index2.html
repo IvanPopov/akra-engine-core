@@ -82,7 +82,7 @@
 		<div class="b-left j-sidebar">
 			<ul class="b-side-menu j-side-menu">
 				<li class="item parent" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
-					<documobject docobject="currParent" isparent="'true'" treeview arrow="'opened'"></documobject>
+					<documobject docobject="currParent" isparent="true" treeview arrow="'opened'"></documobject>
 				</li>
 				<li class="item parent has-sub-menu">
 					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'"></documobject>
@@ -93,6 +93,100 @@
 			</ul>
 		</div>
 		<div class="b-content j-content">
+			<div class="b-intro">
+				<div class="menu">
+					<ul class="wrap" ng-show='currentObject.type=="modules"'>
+						<li class="item"><a class="link j-content-chapter-button namespaces" href="javascript:void(0)" data-name="namespaces">NameSpaces</a></li>
+						<li class="item"><a class="link j-content-chapter-button enums" href="javascript:void(0)" data-name="enums">Enums</a></li>
+						<li class="item"><a class="link j-content-chapter-button interfaces" href="javascript:void(0)" data-name="interfaces">Interfaces</a></li>
+						<li class="item"><a class="link j-content-chapter-button classes" href="javascript:void(0)" data-name="classes">Classes</a></li>
+						<li class="item"><a class="link j-content-chapter-button functions" href="javascript:void(0)" data-name="functions">Functions</a></li>
+						<li class="item"><a class="link j-content-chapter-button members" href="javascript:void(0)" data-name="members">Members</a></li>
+					</ul>
+					<ul class="wrap" ng-show='currentObject.type=="classes"'>
+						<li class="item"><a class="link j-content-chapter-button methods" data-name="methods" href="javasript:void(0);">Methods</a></li>
+						<li class="item"><a class="link j-content-chapter-button members" data-name="members" href="javasript:void(0);">Members</a></li>
+						<li class="item"><a class="link j-content-chapter-button accessors" data-name="getters" href="javasript:void(0);">Getters</a></li>
+						<li class="item"><a class="link j-content-chapter-button accessors" data-name="setters" href="javasript:void(0);">Setters</a></li>
+					</ul>
+					<ul class="wrap" ng-show='docobject.type=="interfaces"'>
+						<li class="item"><a class="link members j-content-chapter-button" data-name="members" href="javascript:void(0);">Members</a></li>
+						<li class="item"><a class="link methods j-content-chapter-button" data-name="methods" href="javascript:void(0);">Methods</a></li>
+					</ul>
+				</div>
+				<div class="title">
+					<span class="icon"><img src="images/{{currentObject.type|toStyleType}}-title-icon.png" alt=""/></span>
+					<span class="way">{{currentObject.location|locationToDocStyle}}&nbsp;</span>
+					<h1 class="text" ng-if="currentObject.name&&currentObject.name.length>0">{{currentObject.name}}</h1>
+					<h1 class="text" ng-if="!currentObject.name||currentObject.name.length==0">index</h1>
+				</div>
+				<div class="text">
+					<p>{{currentObject.description}}</p>
+					<!-- <p ng-repeat="(key, value) in currentData">{{key}}<span ng-repeat="(subkey,subvalue) in value"> {{subkey}}</span></p> -->
+				</div>
+				<div class="clr"></div>
+			</div>
+			<div class="b-intro-sep">
+				<div class="b-alphabet">
+					<div class="row1">
+						<a href="javascript:void(0)"><span class="letter">A</span></a>
+						<a href="javascript:void(0)"><span class="letter">B</span></a>
+						<a href="javascript:void(0)"><span class="letter">C</span></a>
+						<a href="javascript:void(0)"><span class="letter">D</span></a>
+						<a href="javascript:void(0)"><span class="letter">E</span></a>
+						<a href="javascript:void(0)"><span class="letter">F</span></a>
+						<a href="javascript:void(0)"><span class="letter">G</span></a>
+						<a href="javascript:void(0)"><span class="letter">H</span></a>
+						<a href="javascript:void(0)"><span class="letter">I</span></a>
+						<a href="javascript:void(0)"><span class="letter">J</span></a>
+						<a href="javascript:void(0)"><span class="letter">K</span></a>
+						<a href="javascript:void(0)"><span class="letter">L</span></a>
+						<a href="javascript:void(0)"><span class="letter">M</span></a>
+						<a href="javascript:void(0)"><span class="letter">N</span></a>
+						<a href="javascript:void(0)"><span class="letter">O</span></a>
+						<a href="javascript:void(0)"><span class="letter">P</span></a>
+						<a href="javascript:void(0)"><span class="letter">Q</span></a>
+						<a href="javascript:void(0)"><span class="letter">R</span></a>
+						<a href="javascript:void(0)"><span class="letter">S</span></a>
+						<a href="javascript:void(0)"><span class="letter">T</span></a>
+						<a href="javascript:void(0)"><span class="letter">U</span></a>
+						<a href="javascript:void(0)"><span class="letter">V</span></a>
+						<a href="javascript:void(0)"><span class="letter">W</span></a>
+						<a href="javascript:void(0)"><span class="letter">X</span></a>
+						<a href="javascript:void(0)"><span class="letter">Y</span></a>
+						<a href="javascript:void(0)"><span class="letter">Z</span></a>
+					</div>
+					<div class="row2">
+						<a href="javascript:void(0)"><span class="letter">A</span></a>
+						<a href="javascript:void(0)"><span class="letter">B</span></a>
+						<a href="javascript:void(0)"><span class="letter">C</span></a>
+						<a href="javascript:void(0)"><span class="letter">D</span></a>
+						<a href="javascript:void(0)"><span class="letter">E</span></a>
+						<a href="javascript:void(0)"><span class="letter">F</span></a>
+						<a href="javascript:void(0)"><span class="letter">G</span></a>
+						<a href="javascript:void(0)"><span class="letter">H</span></a>
+						<a href="javascript:void(0)"><span class="letter">I</span></a>
+						<a href="javascript:void(0)"><span class="letter">J</span></a>
+						<a href="javascript:void(0)"><span class="letter">K</span></a>
+						<a href="javascript:void(0)"><span class="letter">L</span></a>
+						<a href="javascript:void(0)"><span class="letter">M</span></a>
+						<a href="javascript:void(0)"><span class="letter">N</span></a>
+						<a href="javascript:void(0)"><span class="letter">O</span></a>
+						<a href="javascript:void(0)"><span class="letter">P</span></a>
+						<a href="javascript:void(0)"><span class="letter">Q</span></a>
+						<a href="javascript:void(0)"><span class="letter">R</span></a>
+						<a href="javascript:void(0)"><span class="letter">S</span></a>
+						<a href="javascript:void(0)"><span class="letter">T</span></a>
+						<a href="javascript:void(0)"><span class="letter">U</span></a>
+						<a href="javascript:void(0)"><span class="letter">V</span></a>
+						<a href="javascript:void(0)"><span class="letter">W</span></a>
+						<a href="javascript:void(0)"><span class="letter">X</span></a>
+						<a href="javascript:void(0)"><span class="letter">Y</span></a>
+						<a href="javascript:void(0)"><span class="letter">Z</span></a>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</div>
 			<div ng-switch="currentObject.type">
 				<div ng-switch-when="classes">
 					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' class-view></documobject>

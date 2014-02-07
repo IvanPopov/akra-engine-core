@@ -1,26 +1,5 @@
-			<div>
-			<div class="b-intro">
-				<div class="menu">
-					<ul class="wrap">
-						<li class="item"><a class="link methods j-content-chapter-button" data-name="methods" href="javasript:void(0);">Methods</a></li>
-						<li class="item"><a class="link members j-content-chapter-button" data-name="members" href="javasript:void(0);">Members</a></li>
-						<li class="item"><a class="link accessors j-content-chapter-button" data-name="getters" href="javasript:void(0);">Getters</a></li>
-						<li class="item"><a class="link accessors j-content-chapter-button" data-name="setters" href="javasript:void(0);">Setters</a></li>
-					</ul>
-				</div>
-				<div class="title">
-					<span class="icon"><img src="images/classes-title-icon.png" alt=""/></span>
-					<span class="way">{{docobject.location | locationToDocStyle}}</span>
-					<h1 class="text">{{docobject.name}}</h1>
-				</div>
-				<div class="text">
-					<p>{{docobject.description}}</p>
-				</div>
-				<div class="clr"></div>
-			</div>
-			<div class="b-intro-sep"></div>
 			<div class="b-description">
-			<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key | toStyleType | toClassStyleType}}" ng-switch="key">
+				<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key | toStyleType | toClassStyleType}}" ng-switch="key">
 					<h2 class="b-description-title {{key | toStyleType | toClassStyleType}}">{{key | toStyleType | toClassStyleType}}</h2>
 					<div ng-switch-when="variables">
 						<div ng-repeat="(subkey,subval) in val">
@@ -81,6 +60,5 @@
 							</div>
 						</div>
 					</div>
-			</div>
-			</div>
+				</div>
 			</div>

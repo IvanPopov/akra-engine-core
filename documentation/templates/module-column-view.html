@@ -1,0 +1,24 @@
+					<div ng-init="pagenum = 0">
+						<p>{{sectiontype}} {{elementlocation}}</p>
+							<p ng-hide="sectiondata.length==1">
+								<button ng-click="pagenum = (pagenum==0) ? 0 : pagenum-1">&lt;&lt;</button>
+								{{pagenum+1}} of {{sectiondata.length}}
+								<button ng-click="pagenum = (pagenum==sectiondata.length-1) ? pagenum : pagenum+1">&gt;&gt;</button>
+							</p>
+						<div class="row" ng-repeat="rowdata in sectiondata[pagenum]" ng-init="rownum=$index">
+							<div class="col-md-3" ng-repeat="columndata in rowdata">
+								<div class="b-alphabet-column">
+									<div>
+										<div class="header"><span class="main">{{(sectiontype=='enums'||sectiontype=='interfaces')?(columndata[0].name[0].toUpperCase()!=sectiontype[0].toUpperCase()?columndata[0].name[0].toUpperCase():columndata[0].name[1].toUpperCase()):(columndata[0].name[0].toUpperCase())}}</span></div>
+										<div class="content">
+											<div ng-repeat="entry in columndata">
+												<p class="title"><a href="#{{elementlocation|locationToUrlStyle}}{{(sectiontype=='enumKeys'||sectiontype=='interfaceMembers'||sectiontype=='classMembers') ? '' : '/'+entry.name }}">{{entry.name}}</a></p>
+												<p class="text" ng-if="elementlocation&&elementlocation.length!=0"><a href="#{{elementlocation|locationToUrlStyle}}">{{elementlocation}}</a></p>
+												<p class="text" ng-if="!elementlocation||elementlocation.length==0">global {{elementtype}}</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>

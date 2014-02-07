@@ -1,28 +1,4 @@
-<div>		
-			<div class="b-intro">
-				<!-- <div class="menu">
-					<ul class="wrap">
-						<li class="item"><a class="link namespaces" href="#">NameSpaces</a></li>
-						<li class="item"><a class="link constants" href="#">Constants</a></li>
-						<li class="item"><a class="link enums" href="#">Enums</a></li>
-						<li class="item"><a class="link interfaces" href="#">Interfaces</a></li>
-						<li class="item"><a class="link classes" href="#">Classes</a></li>
-						<li class="item"><a class="link functions" href="#">Functions</a></li>
-					</ul>
-				</div> -->
-				<div class="title">
-					<span class="icon"><img src="images/function-title-icon.png" alt=""/></span>
-					<span class="way">{{docobject.location|locationToDocStyle}}</span>
-					<h1 class="text">{{docobject.name}}</h1>
-				</div>
-				<div class="text">
-					<p>{{docobject.description}}&nbsp;</p>
-				</div>
-				<div class="clr"></div>
-			</div>
-			<div class="b-intro-sep"></div>
 			<div class="b-description">
-
 <div class="b-code"><p class="bold">{{docobject.name}} (<span ng-repeat="arg in docobject.data.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue" ng-if="arg.type|systemTypeToLoc"><a href='#{{arg.type|systemTypeToLoc}}'>{{arg.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(arg.type|systemTypeToLoc)">{{arg.type}}</span><span ng-if="$index < docobject.data.arguments.length-1">,</span></span>) : <span class="blue" ng-if="docobject.data.type|systemTypeToLoc"><a href='#{{docobject.data.type|systemTypeToLoc}}'>{{docobject.data.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(docobject.data.type|systemTypeToLoc)">{{docobject.data.type}}</span></p><p ng-if="docobject.data.comments && docobject.data.comments[0].length>3">{{docobject.data.comments[0][1]}}<br>{{docobject.data.comments[0][2]}}</p><p class="text-muted" ng-else>No description</p>
 <p ng-if="docobject.data.arguments"><span class="bold">Parameters</span>:<br><span ng-if="docobject.data.comments[0].length > 3+docobject.data.arguments.length"><span ng-repeat="n in [3+1,3+docobject.data.arguments.length] | makeRange">{{docobject.data.comments[0][n]}}<br></span></span><span ng-else class="text-muted">No information</span></p>
 			</div>
