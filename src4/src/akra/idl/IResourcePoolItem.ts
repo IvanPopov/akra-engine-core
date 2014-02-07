@@ -26,6 +26,18 @@ module akra {
 	};
 	
 	export interface IResourcePoolItem extends IReferenceCounter, IEventProvider {
+		created: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		destroyed: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		loaded: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		unloaded: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		restored: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		disabled: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		altered: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+		saved: ISignal<{ (pResource: IResourcePoolItem): void; }>;
+
+		stateChanged: ISignal<{ (pResource: IResourcePoolItem, eEvent: EResourceItemEvents, iFlags: uint, isSet: boolean); }>;
+
+
 		/** resource code */
 		getResourceCode(): IResourceCode;
 		/** resource pool */
@@ -59,13 +71,12 @@ module akra {
 		saveResource(sFilename?: string): boolean;
 	
 		/** Добавление и удаление функции, которая будет вызываться при изменении состояния ресурса( fnFunc(iNewSost,iOldSost) ) */
-		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
-		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
-	
 		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 	
 		/** sinchronize events with other resourse */
 		isSyncedTo(eSlot: EResourceItemEvents): boolean;
+
+		findRelatedResources(eState: EResourceItemEvents): IResourcePoolItem[];
 		//sync(pResourceItem: IResourcePoolItem, sSignal: string, sSlot?: string): boolean;
 		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): boolean;
 	
@@ -118,16 +129,6 @@ module akra {
 	
 		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: boolean): boolean;
 		setResourceFlag(iFlagBit: int, isSetting: boolean): boolean;
-	
-		created: ISignal<{ (pResource: IResourcePoolItem): void; }> ;
-		destroyed: ISignal <{ (pResource: IResourcePoolItem): void ; }> ;
-		loaded: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
-		unloaded: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
-		restored: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
-		disabled: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
-		altered: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
-		saved: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
-	
 	}
 	
 	export interface IResourcePoolItemType {

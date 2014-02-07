@@ -213,6 +213,7 @@ module akra.deps {
 		}
 	}
 
+	// Resource item 'loaded' event callback.
 	function handleResourceEventOnce(
 		pRsc: IResourcePoolItem,
 		sSignal: string,
@@ -300,13 +301,12 @@ module akra.deps {
 		updateStatus(pDep, EDependenceStatuses.LOADING);
 		fnChanged(pDep, null);
 
-		if (pRes.loadResource(pDep.path)) {
-			handleResourceEventOnce(pRes, "loaded", (pItem: IResourcePoolItem): void => {
-				updateStatus(pDep, EDependenceStatuses.LOADED);
-				fnLoaded(null, pDep);
-			});
-		}
-		else {
+		handleResourceEventOnce(pRes, "loaded", (pItem: IResourcePoolItem): void => {
+			updateStatus(pDep, EDependenceStatuses.LOADED);
+			fnLoaded(null, pDep);
+		});
+
+		if (!pRes.loadResource(pDep.path)) {
 			fnLoaded(new Error("could not load resource: " + pDep.path), null);
 		}
 	}
@@ -418,24 +418,20 @@ module akra.deps {
 	var ETAG_FILE = config.deps.etag.file || ".etag";
 	var FORCE_ETAG_CHECKING: boolean = config.deps.etag.forceCheck || false;
 
-	function forceExtractARADependence(pEntry: ZipEntry, sPath: string, fnCallback: Function): void {
-		//console.log("forceExtractARADependence(", pEntry.filename, ")");
-
-		pEntry.getData(new zip.ArrayBufferWriter(), (data: ArrayBuffer): void => {
+	function forceExtractARADependence(pEntry: ZipEntry, sPath: string, cb: (e: Error, sPath: string) => void): void {
+		pEntry.getData(new zip.ArrayBufferWriter(), (pData: ArrayBuffer): void => {
 			var pCopy: IFile = io.fopen(sPath, "w+b");
 
-			pCopy.write(data, (e: Error) => {
+			pCopy.write(pData, (e: Error) => {
 				if (e) {
-					console.log(e.message);
-					throw e;
+					return cb(e, null);
 				}
 
 				debug.log("Unpacked to local filesystem " + pEntry.filename + ".");
 
 				var pCrc32: IFile = io.fopen(sPath + ".crc32", "w+");
 				pCrc32.write(String(pEntry.crc32), (e: Error) => {
-					if (e) throw e;
-					fnCallback(sPath);
+					cb(e, sPath);
 					pCrc32.close();
 				});
 
@@ -448,19 +444,23 @@ module akra.deps {
 		return "filesystem:" + info.uri.getScheme() + "//" + info.uri.getHost() + "/temporary/" + sEntry + "/" + sFilename;
 	}
 
-	function extractARADependence(pEntry: ZipEntry, sHash: string, fnCallback: Function): void {
+	function extractARADependence(pEntry: ZipEntry, sHash: string, cb: (e: Error, sPath: string) => void): void {
 		var sPath: string = createARADLocalName(pEntry.filename, sHash);
 		var pCRC32File: IFile = io.fopen(sPath + ".crc32", "r");
 
 		pCRC32File.isExists((e: Error, bExists: boolean) => {
+			if (e) {
+				return cb(e, null);
+			}
+
 			if (bExists) {
 				pCRC32File.read((e: Error, data: string) => {
 					if (parseInt(data) === pEntry.crc32) {
 						debug.log("Skip unpacking for " + sPath + ".");
-						fnCallback(sPath);
+						cb(null, sPath);
 					}
 					else {
-						forceExtractARADependence(pEntry, sPath, fnCallback);
+						forceExtractARADependence(pEntry, sPath, cb);
 					}
 
 					pCRC32File.close();
@@ -469,7 +469,7 @@ module akra.deps {
 				return;
 			}
 
-			forceExtractARADependence(pEntry, sPath, fnCallback);
+			forceExtractARADependence(pEntry, sPath, cb);
 		});
 	}
 
@@ -536,17 +536,21 @@ module akra.deps {
 
 					logger.assert(isDefAndNotNull(pMapEntry), "ARA dependences found, but headers corrupted.");
 
-					console.log("before get entry data ====>");
 					pMapEntry.getData(new zip.TextWriter(), (data: string): void => {
-						console.log("!!!!!!!!");
+
 						var pARADeps: IDependens = <IDependens>JSON.parse(data);
 
-						var fnSuccesss: Function = (sLocalPath: string): void => {
+						var fnSuccesss = (e: Error, sLocalPath: string): void => {
+							if (e) {
+								return fnLoaded(e, pArchiveDep);
+							}
+
 							nUnpacked++;
 
 							updateStatus(pArchiveDep, EDependenceStatuses.UNPACKING);
 							fnChanged(pArchiveDep, { loaded: nUnpacked, total: nTotal });
 
+							// All .map dependencies unpacked??
 							if (nUnpacked < nTotal) {
 								return;
 							}
@@ -568,10 +572,11 @@ module akra.deps {
 							logger.assert(isDefAndNotNull(pEntry), "Cannot resolve dependence: " + sPath);
 							delete pEntryMap[sPath];
 
-							extractARADependence(pEntry, sArchiveHash, (sLocalPath: string): void => {
-								pDep.path = sLocalPath;
-								fnSuccesss(sLocalPath);
-							});
+							extractARADependence(pEntry, sArchiveHash,
+								(e: Error, sLocalPath: string): void => {
+									pDep.path = sLocalPath;
+									fnSuccesss(e, sLocalPath);
+								});
 						});
 
 						for (var sPath in pEntryMap) {
@@ -587,7 +592,7 @@ module akra.deps {
 
 				zip.createReader(new zip.Data64URIReader(sBase64Data),
 					fnZipReadedCallback, (err: Error): void => {
-						console.log(err);
+						fnLoaded(err, null);
 					});
 			};
 
@@ -615,8 +620,7 @@ module akra.deps {
 
 	if (!isNull(pArchive)) {
 			//non data-uri cases
-		pArchive.open((err: Error, pMeta: IFileMeta): void => {
-			console.log("====================>", err);
+			pArchive.open((err: Error, pMeta: IFileMeta): void => {
 				if (FORCE_ETAG_CHECKING) {
 					var pETag: IFile = io.fopen(createARADLocalName(ETAG_FILE, sArchiveHash), "r+");
 
@@ -677,7 +681,7 @@ module akra.deps {
 		}
 
 		//walk single deps level
-		each({ files: pDeps.files }, (pDep: IDep): void => {
+			each({ files: pDeps.files }, (pDep: IDep): void => {
 			updateStatus(pDep, EDependenceStatuses.INITIALIZATION);
 			fnChanged(pDep, null);
 

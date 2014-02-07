@@ -30,16 +30,16 @@ module akra.pool.resources {
 	import Color = color.Color;
 	import VE = data.VertexElement;
 
-	 /* COMMON FUNCTIONS
-	 ------------------------------------------------------
-	 */
-	
+	/* COMMON FUNCTIONS
+	------------------------------------------------------
+	*/
+
 	//function getSupportedFormat(sSemantic: string): IColladaUnknownFormat[];
 	//function calcFormatStride(pFormat: IColladaUnknownFormat[]): int;
 
 
 	// additional
-	
+
 	//function printArray(pArr: any[], nRow: uint, nCol: uint): string;
 	//function sortArrayByProperty(pData: any[], sProperty: string): any[];
 
@@ -48,7 +48,7 @@ module akra.pool.resources {
 	//function stringData(pXML: Element): string;
 	//function attr(pXML: Element, sName: string): string;
 	//function firstChild(pXML: Element, sTag?: string): Element;
-	
+
 
 
 
@@ -69,31 +69,31 @@ module akra.pool.resources {
 
 	export class Collada extends ResourcePoolItem implements ICollada {
 		static DEFAULT_OPTIONS: IColladaLoadOptions = {
-			drawJoints      : false,
-			wireframe       : false,
-			shadows         : true,
-			sharedBuffer    : false,
-			animation       : { pose: true },
-			scene           : true,
-			extractPoses    : true,
-			skeletons       : [],
-			images          : { flipY: false },
-			debug           : false
+			drawJoints: false,
+			wireframe: false,
+			shadows: true,
+			sharedBuffer: false,
+			animation: { pose: true },
+			scene: true,
+			extractPoses: true,
+			skeletons: [],
+			images: { flipY: false },
+			debug: false
 		};
 
 		private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
-			{lib : 'library_images',        element : 'image',          loader : "COLLADAImage"         },
-			{lib : 'library_effects',       element : 'effect',         loader : "COLLADAEffect"        },
-			{lib : 'library_materials',     element : 'material',       loader : "COLLADAMaterial"      },
-			{lib : 'library_geometries',    element : 'geometry',       loader : "COLLADAGeometrie"     },
-			{lib : 'library_controllers',   element : 'controller',     loader : "COLLADAController"    },
-			{lib : 'library_cameras',       element : 'camera',         loader : "COLLADACamera"        },
-			{lib : 'library_lights',        element : 'light',          loader : "COLLADALight"         },
-			{lib : 'library_visual_scenes', element : 'visual_scene',   loader : "COLLADAVisualScene"   }
+			{ lib: 'library_images', element: 'image', loader: "COLLADAImage" },
+			{ lib: 'library_effects', element: 'effect', loader: "COLLADAEffect" },
+			{ lib: 'library_materials', element: 'material', loader: "COLLADAMaterial" },
+			{ lib: 'library_geometries', element: 'geometry', loader: "COLLADAGeometrie" },
+			{ lib: 'library_controllers', element: 'controller', loader: "COLLADAController" },
+			{ lib: 'library_cameras', element: 'camera', loader: "COLLADACamera" },
+			{ lib: 'library_lights', element: 'light', loader: "COLLADALight" },
+			{ lib: 'library_visual_scenes', element: 'visual_scene', loader: "COLLADAVisualScene" }
 		];
 
 		private static ANIMATION_TEMPLATE: IColladaLibraryTemplate[] = [
-			{lib : 'library_animations',    element : 'animation',      loader : "COLLADAAnimation"     }
+			{ lib: 'library_animations', element: 'animation', loader: "COLLADAAnimation" }
 		];
 
 		private static COLLADA_MATERIAL_NAMES: string[] = [
@@ -110,7 +110,7 @@ module akra.pool.resources {
 
 
 		//=======================================================================================
-		
+
 		private _pModel: IModel = null;
 		private _pOptions: IColladaLoadOptions = {};
 
@@ -142,9 +142,9 @@ module akra.pool.resources {
 		getByteLength(): uint {
 			return this._iByteLength;
 		}
-	
 
-		constructor () {
+
+		constructor() {
 			super();
 
 		}
@@ -185,7 +185,7 @@ module akra.pool.resources {
 			return pIndexes;
 		}
 
-		private  polygonToTriangles(pXML: Element, iStride: int): uint[] {
+		private polygonToTriangles(pXML: Element, iStride: int): uint[] {
 			//TODO для невыпуклых многоугольников с самоперечечениями работать будет не верно
 			return this.trifanToTriangles(pXML, iStride);
 		}
@@ -225,7 +225,7 @@ module akra.pool.resources {
 			var pXMLvcount: Element = firstChild(pXML, "vcount");
 			var pXMLp: Element = firstChild(pXML, "p");
 			var pVcount: uint[] = new Array(parseInt(attr(pXML, "count")));
-			var pData: uint[], 
+			var pData: uint[],
 				pIndexes: uint[];
 			var n: uint, h: int = 0;
 			var tmp = new Array(128);
@@ -234,7 +234,7 @@ module akra.pool.resources {
 
 			conv.stoia(stringData(pXMLvcount), pVcount);
 
-			var nElements: uint = 0, 
+			var nElements: uint = 0,
 				nTotalElement: uint = 0;
 
 			for (var i: int = 0; i < pVcount.length; i++) {
@@ -271,10 +271,10 @@ module akra.pool.resources {
 			}
 
 			return pIndexes;
-		} 
+		}
 
 		//xml
-	
+
 		private eachNode(pXMLList: NodeList, fnCallback: IXMLExplorer, nMax?: uint): void {
 			var n: int = pXMLList.length, i: int;
 			nMax = (isNumber(nMax) ? (nMax < n ? nMax : n) : n);
@@ -284,38 +284,38 @@ module akra.pool.resources {
 
 			while (n < pXMLList.length) {
 				//skip text nodes
-				if (pXMLList[n ++].nodeType === Node.TEXT_NODE) {
+				if (pXMLList[n++].nodeType === Node.TEXT_NODE) {
 					continue;
 				}
 
 				var pXMLData: Element = <Element>pXMLList[n - 1];
 				fnCallback.call(this, pXMLData, pXMLData.nodeName);
 
-				i ++;
+				i++;
 
 				if (nMax === i) {
 					break;
 				}
 			}
 
-	//        for (var i = 0; i < nMax; i++) {
-	//            var pXMLData = pXMLList.item(i);
-	//            var sName = pXMLData.getNodeName();
-	//            fnCallback(pXMLData, sName);
-	//        }
+			//        for (var i = 0; i < nMax; i++) {
+			//            var pXMLData = pXMLList.item(i);
+			//            var sName = pXMLData.getNodeName();
+			//            fnCallback(pXMLData, sName);
+			//        }
 		}
 
 		private eachChild(pXML: Element, fnCallback: IXMLExplorer): void {
 			this.eachNode(pXML.childNodes, fnCallback);
 		}
-		
-		private  eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void {
+
+		private eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void {
 			this.eachNode(pXML.getElementsByTagName(sTag), fnCallback, nMax);
 		}
 
 
 		// akra additional functions
-		
+
 		private findNode(pNodes: IColladaNode[], sNode: string = null, fnNodeCallback: (pNode: IColladaNode) => void = null): IColladaNode {
 			var pNode: IColladaNode = null;
 			var pRootJoint: IColladaNode = null;
@@ -347,9 +347,9 @@ module akra.pool.resources {
 			return null;
 		}
 
-		
+
 		// helper functions
-	
+
 		private COLLADATranslateMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(3);
 
@@ -362,18 +362,18 @@ module akra.pool.resources {
 			var pData: float[] = new Array(4);
 
 			conv.stofa(stringData(pXML), pData);
-			
+
 			return (new Mat4(1)).rotateLeft(pData[3] * math.RADIAN_RATIO, Vec3.temp(pData[0], pData[1], pData[2]));
 		}
 
 		private COLLADAScaleMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(3);
-			
+
 			conv.stofa(stringData(pXML), pData);
 
 			return new Mat4(pData[0], pData[1], pData[2], 1.0);
 		}
-		
+
 		private COLLADAData(pXML: Element): any {
 			var sName: string = pXML.nodeName;
 			var sData: string = stringData(pXML);
@@ -437,11 +437,11 @@ module akra.pool.resources {
 
 			//return null;
 		}
-		
+
 		private COLLADAGetSourceData(pSource: IColladaSource, pFormat: IColladaUnknownFormat[]): IColladaArray {
-			
+
 			logger.assert(isDefAndNotNull(pSource), "<source /> with expected format ", pFormat, " not founded");
-			
+
 			var nStride: uint = calcFormatStride(pFormat);
 			var pTech: IColladaTechniqueCommon = pSource.techniqueCommon;
 
@@ -453,20 +453,20 @@ module akra.pool.resources {
 			debug.assert((pAccess.stride <= nStride), pAccess.stride + " / " + nStride);
 
 			logger.assert(pAccess.stride <= nStride,
-						 "<source /> width id" + pSource.id + " has unsupported stride: " + pAccess.stride);
+				"<source /> width id" + pSource.id + " has unsupported stride: " + pAccess.stride);
 
 			var fnUnsupportedFormatError = function (): void {
-				logger.log("expected format: " , pFormat);
-				logger.log("given format: "    , pAccess.params);
+				logger.log("expected format: ", pFormat);
+				logger.log("given format: ", pAccess.params);
 				logger.error("accessor of <" + pSource.id + "> has unsupported format");
 			}
 
-			for (var i: int = 0; i < pAccess.params.length; ++ i) {
-				
+			for (var i: int = 0; i < pAccess.params.length; ++i) {
+
 				isFormatSupported = false;
 
 				//finding name in format names..
-				for (var f: int = 0; f < pFormat[i].name.length; ++ f) {
+				for (var f: int = 0; f < pFormat[i].name.length; ++f) {
 					if ((pAccess.params[i].name || "").toLowerCase() == (pFormat[i].name[f] || "").toLowerCase()) {
 						isFormatSupported = true;
 					}
@@ -475,8 +475,8 @@ module akra.pool.resources {
 				if (!isFormatSupported) {
 					fnUnsupportedFormatError();
 				}
-				
-				
+
+
 				isFormatSupported = false;
 
 				for (var f: int = 0; f < pFormat[i].type.length; ++f) {
@@ -488,21 +488,21 @@ module akra.pool.resources {
 				if (!isFormatSupported) {
 					fnUnsupportedFormatError();
 				}
-				
+
 			}
-			
+
 			return pAccess.data;
 		}
 
 
 		// common
 		// -----------------------------------------------------------
-		
+
 		private COLLADATransform(pXML: Element, id?: string): IColladaTransform {
 			var pTransform: IColladaTransform = {
-				sid         : attr(pXML, "sid"),
-				transform   : String(pXML.nodeName),
-				value       : null
+				sid: attr(pXML, "sid"),
+				transform: String(pXML.nodeName),
+				value: null
 			};
 
 			if (isString(id) && isDefAndNotNull(pTransform.sid)) {
@@ -512,13 +512,13 @@ module akra.pool.resources {
 				this.link(id + "/" + pTransform.transform, pTransform);
 			}
 
-			var v4f: IVec4, 
+			var v4f: IVec4,
 				m4f: IMat4;
 			var pData: float[];
 
 			switch (pTransform.transform) {
 				case "rotate":
-					
+
 					pData = new Array(4);
 					conv.stofa(stringData(pXML), pData);
 					v4f = new Vec4(pData);
@@ -529,7 +529,7 @@ module akra.pool.resources {
 
 				case "translate":
 				case "scale":
-					
+
 					pData = new Array(3);
 					conv.stofa(stringData(pXML), pData);
 					pTransform.value = new Vec3(pData);
@@ -541,7 +541,7 @@ module akra.pool.resources {
 					conv.stofa(stringData(pXML), <float[]><any>m4f.data);
 					m4f.transpose();
 					pTransform.value = m4f;
-					
+
 					break;
 
 				default:
@@ -551,15 +551,15 @@ module akra.pool.resources {
 
 			return pTransform;
 		}
-		
+
 		private COLLADANewParam(pXML: Element): IColladaNewParam {
 			var pParam: IColladaNewParam = {
-				sid         : attr(pXML, "sid"),
-				annotate    : null,
-				semantics   : null,
-				modifier    : null,
-				value       : null,
-				type        : null
+				sid: attr(pXML, "sid"),
+				annotate: null,
+				semantics: null,
+				modifier: null,
+				value: null,
+				type: null
 			};
 
 			this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
@@ -570,12 +570,12 @@ module akra.pool.resources {
 
 					case "modifier":
 						pParam.modifier = stringData(pXMLData);
-					
+
 					case "annotate":
-						
+
 						pParam.annotate = {
-							name  : attr(pXMLData, "name"),
-							value : stringData(pXMLData)
+							name: attr(pXMLData, "name"),
+							value: stringData(pXMLData)
 						};
 
 					case "float":
@@ -587,7 +587,7 @@ module akra.pool.resources {
 						pParam.type = sName;
 						pParam.value = this.COLLADAData(pXMLData);
 						break;
-					
+
 					default:
 						pParam.value = this.COLLADAData(pXMLData);
 				}
@@ -597,25 +597,25 @@ module akra.pool.resources {
 
 			return pParam;
 		}
-		
+
 		private COLLADAAsset(pXML: Element = firstChild(this.getXMLRoot(), "asset")): IColladaAsset {
 			var pAsset: IColladaAsset = {
-				unit : {
-					meter : 1.0,
-					name  : "meter"
+				unit: {
+					meter: 1.0,
+					name: "meter"
 				},
 
-				upAxis   : "Y_UP",
-				title    : null,
-				created  : null,
-				modified : null,
+				upAxis: "Y_UP",
+				title: null,
+				created: null,
+				modified: null,
 
-				contributor : {
-					author          : null,
-					authoringTool   : null,
-					comments        : null,
-					copyright       : null,
-					sourceData      : null
+				contributor: {
+					author: null,
+					authoringTool: null,
+					comments: null,
+					copyright: null,
+					sourceData: null
 				}
 			};
 
@@ -678,7 +678,7 @@ module akra.pool.resources {
 					return;
 				}
 
-				pLib[sTag][attr(pXMLData, 'id') || (sTag + "_" + (iAutoId ++))] = pData;
+				pLib[sTag][attr(pXMLData, 'id') || (sTag + "_" + (iAutoId++))] = pData;
 			});
 
 			return pLib;
@@ -689,30 +689,30 @@ module akra.pool.resources {
 
 		private COLLADAAccessor(pXML: Element): IColladaAccessor {
 			var pAccessor: IColladaAccessor = {
-				data   : <IColladaArray>this.source(attr(pXML, "source")),
-				count  : parseInt(attr(pXML, "count")),
-				stride : parseInt(attr(pXML, "stride") || "1"),
-				params : []
+				data: <IColladaArray>this.source(attr(pXML, "source")),
+				count: parseInt(attr(pXML, "count")),
+				stride: parseInt(attr(pXML, "stride") || "1"),
+				params: []
 			};
 
 
 			this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
 				pAccessor.params.push({
-										  name : attr(pXMLData, "name"),
-										  type : attr(pXMLData, "type")
-									  });
+					name: attr(pXMLData, "name"),
+					type: attr(pXMLData, "type")
+				});
 			});
 
 			return pAccessor;
 		}
-		
+
 		//dangerous: the default offset is 0, but collada required this attribute
 		private COLLADAInput(pXML: Element, iOffset: int = 0): IColladaInput {
 			var pInput: IColladaInput = {
-				semantics : attr(pXML, "semantic"),
-				source    : <IColladaSource>this.source(attr(pXML, "source")),
-				offset    : -1,
-				set       : attr(pXML, "set")
+				semantics: attr(pXML, "semantic"),
+				source: <IColladaSource>this.source(attr(pXML, "source")),
+				offset: -1,
+				set: attr(pXML, "set")
 			};
 			//pInput.set = (pInput.set ? parseInt(pInput.set) : 0);
 
@@ -728,10 +728,10 @@ module akra.pool.resources {
 
 			return pInput;
 		}
-		
+
 		private COLLADATechniqueCommon(pXML: Element): IColladaTechniqueCommon {
 			var pTechniqueCommon: IColladaTechniqueCommon = {
-				accessor : null,
+				accessor: null,
 				perspective: null
 			};
 
@@ -748,13 +748,13 @@ module akra.pool.resources {
 
 			return pTechniqueCommon;
 		}
-		
+
 		private COLLADASource(pXML: Element): IColladaSource {
 			var pSource: IColladaSource = {
-				id               : attr(pXML, "id"),
-				name             : attr(pXML, "name"),
-				array           : {},
-				techniqueCommon : null
+				id: attr(pXML, "id"),
+				name: attr(pXML, "name"),
+				array: {},
+				techniqueCommon: null
 			};
 
 			this.link(pSource);
@@ -785,11 +785,11 @@ module akra.pool.resources {
 
 			return pSource;
 		}
-		
+
 		private COLLADAVertices(pXML: Element): IColladaVertices {
 			var pVertices: IColladaVertices = {
-				id      : attr(pXML, "id"), 
-				inputs  : {}
+				id: attr(pXML, "id"),
+				inputs: {}
 			};
 
 
@@ -800,18 +800,18 @@ module akra.pool.resources {
 
 
 			debug.assert(isDefAndNotNull(pVertices.inputs["POSITION"]),
-						 "semantics POSITION must be in the <vertices /> tag");
+				"semantics POSITION must be in the <vertices /> tag");
 
 			this.link(pVertices);
 
 			return pVertices;
 		}
-		
+
 		private COLLADAJoints(pXML: Element): IColladaJoints {
 			var pJoints: IColladaJoints = {
-				inputs : {}
+				inputs: {}
 			};
-			
+
 			var pMatrixArray: IMat4[];
 			var iCount: int;
 			var pInvMatrixArray: Float32Array;
@@ -825,7 +825,7 @@ module akra.pool.resources {
 					case "INV_BIND_MATRIX":
 						pJoints.inputs["INV_BIND_MATRIX"] = this.COLLADAInput(pXMLData);
 
-						
+
 						//console.log(pJoints.inputs["INV_BIND_MATRIX"]);
 
 						break;
@@ -846,9 +846,9 @@ module akra.pool.resources {
 					pMatrixArray = new Array<IMat4>(iCount);
 
 					for (var j: uint = 0, n: uint = 0; j < pInvMatrixArray.length; j += 16) {
-						pMatrixArray[n++] = 
-							(new Mat4(
-								new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16), true)
+						pMatrixArray[n++] =
+						(new Mat4(
+							new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16), true)
 							).transpose();
 					}
 
@@ -858,14 +858,14 @@ module akra.pool.resources {
 
 			return pJoints;
 		}
-		
+
 		private COLLADAPolygons(pXML: Element, sType: string): IColladaPolygons {
 			var pPolygons: IColladaPolygons = {
-				inputs    : [],                     /*потоки данных*/
-				p         : null,                   /*индексы*/
-				material  : attr(pXML, "material"), /*идентификатор материала*/
-				name      : null,                   /*имя (встречается редко, не используется)*/
-				count     : parseInt(attr(pXML, "count")) /*полное число индексов*/
+				inputs: [],                     /*потоки данных*/
+				p: null,                   /*индексы*/
+				material: attr(pXML, "material"), /*идентификатор материала*/
+				name: null,                   /*имя (встречается редко, не используется)*/
+				count: parseInt(attr(pXML, "count")) /*полное число индексов*/
 			};
 
 			var iOffset: int = 0, n: uint = 0;
@@ -874,12 +874,12 @@ module akra.pool.resources {
 
 			this.eachByTag(pXML, "input", (pXMLData: Element): void => {
 				pPolygons.inputs.push(this.COLLADAInput(pXMLData, iOffset));
-				iOffset ++;
+				iOffset++;
 			});
 
 			sortArrayByProperty(pPolygons.inputs, "iOffset");
 
-			for(var i: uint = 0; i < pPolygons.inputs.length; ++ i) {
+			for (var i: uint = 0; i < pPolygons.inputs.length; ++i) {
 				iStride = math.max((<IColladaInput>pPolygons.inputs[i]).offset + 1, iStride);
 			}
 
@@ -925,14 +925,14 @@ module akra.pool.resources {
 
 			return pPolygons;
 		}
-		
+
 		private COLLADAVertexWeights(pXML: Element): IColladaVertexWeights {
 			var pVertexWeights: IColladaVertexWeights = {
-				count       : parseInt(attr(pXML, "count")),
-				inputs      : [],
-				weightInput : null,
-				vcount      : null,
-				v           : null
+				count: parseInt(attr(pXML, "count")),
+				inputs: [],
+				weightInput: null,
+				vcount: null,
+				v: null
 			};
 
 			var iOffset: int = 0;
@@ -946,10 +946,10 @@ module akra.pool.resources {
 				}
 
 				pVertexWeights.inputs.push(pInput);
-				iOffset ++;
+				iOffset++;
 			});
 
-			var pVcountData: uint[], 
+			var pVcountData: uint[],
 				pVData: int[];
 
 			pVcountData = new Array(pVertexWeights.count);
@@ -958,7 +958,7 @@ module akra.pool.resources {
 
 
 			var n: uint = 0;
-			
+
 			for (var i: int = 0; i < pVcountData.length; ++i) {
 				n += pVcountData[i];
 			}
@@ -966,7 +966,7 @@ module akra.pool.resources {
 			n *= pVertexWeights.inputs.length;
 
 			logger.assert(pVertexWeights.inputs.length === 2,
-						 "more than 2 inputs in <vertex_weights/> not supported currently");
+				"more than 2 inputs in <vertex_weights/> not supported currently");
 
 			pVData = new Array(n);
 			conv.stoia(stringData(firstChild(pXML, "v")), pVData);
@@ -974,16 +974,16 @@ module akra.pool.resources {
 
 			return pVertexWeights;
 		}
-		
+
 		private COLLADAMesh(pXML: Element): IColladaMesh {
 			var pMesh: IColladaMesh = {
-				sources   : [],
-				polygons  : []
+				sources: [],
+				polygons: []
 			};
 
 			var id: string;
-			var pPolygons: IColladaPolygons, 
-				pVertices: IColladaVertices, 
+			var pPolygons: IColladaPolygons,
+				pVertices: IColladaVertices,
 				pPos: IColladaInput;
 
 			this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
@@ -991,7 +991,7 @@ module akra.pool.resources {
 					case "source":
 						pMesh.sources.push(this.COLLADASource(pXMLData));
 						break;
-					
+
 					case "vertices":
 						pVertices = this.COLLADAVertices(pXMLData);
 						break;
@@ -1011,7 +1011,7 @@ module akra.pool.resources {
 							if (pPolygons.inputs[i].semantics == "VERTEX") {
 								if (pPolygons.inputs[i].source.id == pVertices.id) {
 									pPos = pVertices.inputs["POSITION"];
-									
+
 									pPolygons.inputs[i].source = pPos.source;
 									pPolygons.inputs[i].semantics = pPos.semantics;
 								}
@@ -1030,14 +1030,14 @@ module akra.pool.resources {
 
 			return pMesh;
 		}
-		
+
 		private COLLADAGeometrie(pXML: Element): IColladaGeometrie {
 			var pGeometrie: IColladaGeometrie = {
-				id         : attr(pXML, "id"),
-				name       : attr(pXML, "name"),
-				mesh       : null,
-				convexMesh : null,
-				spline     : null,
+				id: attr(pXML, "id"),
+				name: attr(pXML, "name"),
+				mesh: null,
+				convexMesh: null,
+				spline: null,
 			};
 
 			var pXMLData: Element = firstChild(pXML);
@@ -1046,24 +1046,24 @@ module akra.pool.resources {
 			if (sName == "mesh") {
 				pGeometrie.mesh = this.COLLADAMesh(pXMLData);
 			}
-			
+
 			this.link(pGeometrie);
-			
+
 			return pGeometrie;
 		}
-		
+
 		private COLLADASkin(pXML: Element): IColladaSkin {
 			var pSkin: IColladaSkin = {
-				shapeMatrix   : <IMat4>this.COLLADAData(firstChild(pXML, "bind_shape_matrix")),
-				sources       : [],
-				geometry      : <IColladaGeometrie>this.source(attr(pXML, "source")),
-				joints        : null,
-				vertexWeights : null
+				shapeMatrix: <IMat4>this.COLLADAData(firstChild(pXML, "bind_shape_matrix")),
+				sources: [],
+				geometry: <IColladaGeometrie>this.source(attr(pXML, "source")),
+				joints: null,
+				vertexWeights: null
 
 				//TODO:  add other parameters to skin section
 			}
 
-			var pVertexWeights: IColladaVertexWeights, 
+			var pVertexWeights: IColladaVertexWeights,
 				pInput: IColladaInput;
 
 			this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
@@ -1079,7 +1079,7 @@ module akra.pool.resources {
 					case "vertex_weights":
 						pVertexWeights = this.COLLADAVertexWeights(pXMLData);
 
-						for (var i = 0; i < pVertexWeights.inputs.length; ++ i) {
+						for (var i = 0; i < pVertexWeights.inputs.length; ++i) {
 							pInput = this.prepareInput(pVertexWeights.inputs[i]);
 						}
 
@@ -1090,13 +1090,13 @@ module akra.pool.resources {
 
 			return pSkin;
 		}
-		
+
 		private COLLADAController(pXML: Element): IColladaController {
 			var pController: IColladaController = {
-				name  : attr(pXML, "name"),
-				id    : attr(pXML, "id"),
-				skin  : null,
-				morph : null
+				name: attr(pXML, "name"),
+				id: attr(pXML, "id"),
+				skin: null,
+				morph: null
 			};
 
 			var pXMLData: Element = firstChild(pXML, "skin");
@@ -1115,26 +1115,26 @@ module akra.pool.resources {
 		}
 
 		// images
-		
+
 		private COLLADAImage(pXML: Element): IColladaImage {
 			var pImage: IColladaImage = {
-				id        : attr(pXML, "id"),
-				name      : attr(pXML, "name"),
-				
-				format    : attr(pXML, "format"),
-				height    : parseInt(attr(pXML, "height") || "-1"), /*-1 == auto detection*/
-				width     : parseInt(attr(pXML, "width") || "-1"),
-				
-				depth     : 1, /*only 2D images supported*/
-				data      : null,
-				path      : null
+				id: attr(pXML, "id"),
+				name: attr(pXML, "name"),
+
+				format: attr(pXML, "format"),
+				height: parseInt(attr(pXML, "height") || "-1"), /*-1 == auto detection*/
+				width: parseInt(attr(pXML, "width") || "-1"),
+
+				depth: 1, /*only 2D images supported*/
+				data: null,
+				path: null
 			};
 
 			var sFilename: string = this.getFilename();
 			var sPath: string = null;
-			var pXMLInitData: Element = firstChild(pXML, "init_from"), 
+			var pXMLInitData: Element = firstChild(pXML, "init_from"),
 				pXMLData: Element;
-			
+
 			if (isDefAndNotNull(pXMLInitData)) {
 				sPath = stringData(pXMLInitData);
 
@@ -1162,26 +1162,26 @@ module akra.pool.resources {
 		}
 
 		// effects
-		
+
 		private COLLADASurface(pXML: Element): IColladaSurface {
 			var pSurface: IColladaSurface = {
-				initFrom : stringData(firstChild(pXML, "init_from"))
+				initFrom: stringData(firstChild(pXML, "init_from"))
 				//, format: stringData(firstChild(pXML, "format"))
 			}
 
 			return pSurface;
 		}
-		
+
 		private COLLADATexture(pXML: Element): IColladaTexture {
 			if (!isDefAndNotNull(pXML)) {
 				return null;
 			}
 
 			var pTexture: IColladaTexture = {
-				texcoord : attr(pXML, "texcoord"),
-				sampler  : <IColladaNewParam>this.source(attr(pXML, "texture")),
-				surface  : null,
-				image    : null
+				texcoord: attr(pXML, "texcoord"),
+				sampler: <IColladaNewParam>this.source(attr(pXML, "texture")),
+				surface: null,
+				image: null
 			};
 
 			if (!isNull(pTexture.sampler) && isDefAndNotNull(pTexture.sampler.value)) {
@@ -1208,41 +1208,41 @@ module akra.pool.resources {
 
 			return pTexture;
 		}
-		
+
 		private COLLADASampler2D(pXML: Element): IColladaSampler2D {
 			var pSampler: IColladaSampler2D = {
-				source    : stringData(firstChild(pXML, "source")),
-				wrapS     : stringData(firstChild(pXML, "wrap_s")),
-				wrapT     : stringData(firstChild(pXML, "wrap_t")),
-				minFilter : stringData(firstChild(pXML, "minfilter")),
-				mipFilter : stringData(firstChild(pXML, "mipfilter")),
-				magFilter : stringData(firstChild(pXML, "magfilter"))
+				source: stringData(firstChild(pXML, "source")),
+				wrapS: stringData(firstChild(pXML, "wrap_s")),
+				wrapT: stringData(firstChild(pXML, "wrap_t")),
+				minFilter: stringData(firstChild(pXML, "minfilter")),
+				mipFilter: stringData(firstChild(pXML, "mipfilter")),
+				magFilter: stringData(firstChild(pXML, "magfilter"))
 			};
 
 			return pSampler;
 		}
-		
+
 		private COLLADAPhong(pXML: Element): IColladaPhong {
 			var pMat: IColladaPhong = {
-				diffuse             : new Color(0.),
-				specular            : new Color(0.),
-				ambient             : new Color(0.),
-				emissive            : new Color(0.),
-				shininess           : 0.0,
-				
-				reflective          : new Color(0.),
-				reflectivity        : 0.0,
-				transparent         : new Color(0.),
-				transparency        : 0.0,
+				diffuse: new Color(0.),
+				specular: new Color(0.),
+				ambient: new Color(0.),
+				emissive: new Color(0.),
+				shininess: 0.0,
 
-				indexOfRefraction   : 0.0,
+				reflective: new Color(0.),
+				reflectivity: 0.0,
+				transparent: new Color(0.),
+				transparency: 0.0,
+
+				indexOfRefraction: 0.0,
 
 				textures: {
-					diffuse     : null,
-					specular    : null,
-					ambient     : null,
-					emissive    : null,
-					normal      : null
+					diffuse: null,
+					specular: null,
+					ambient: null,
+					emissive: null,
+					normal: null
 				}
 			};
 
@@ -1251,19 +1251,19 @@ module akra.pool.resources {
 
 			for (var i: int = 0; i < pList.length; i++) {
 				var csComponent: string = pList[i];
-				
+
 				pXMLData = firstChild(pXML, csComponent);
-				
+
 				//emission --> emissive
 				//emission does not exists in akra engine materials
-				
+
 				if (csComponent === "emission") {
 					csComponent = "emissive";
 				}
 
 				if (pXMLData) {
 					this.eachChild(pXMLData, (pXMLData: Element, sName?: string) => {
-						
+
 						switch (sName) {
 							case "float":
 								pMat[csComponent] = <float>this.COLLADAData(pXMLData);
@@ -1286,18 +1286,18 @@ module akra.pool.resources {
 
 			return pMat;
 		}
-		
+
 		private COLLADAEffectTechnique(pXML: Element): IColladaEffectTechnique {
 			var pTech: IColladaEffectTechnique = {
-				sid   : attr(pXML, "sid"),
-				type  : null,
-				value : null
+				sid: attr(pXML, "sid"),
+				type: null,
+				value: null
 			};
 
 			var pValue: Element = firstChild(pXML);
 
 			pTech.type = pValue.nodeName;
-			
+
 			switch (pTech.type) {
 				//FIXME: at now, all materials draws similar..
 				case "blinn":
@@ -1319,7 +1319,7 @@ module akra.pool.resources {
 					</bump>​
 				</technique>​
 			*/
- 
+
 			var pXMLExtra: Element = firstChild(pXML, "extra");
 
 			if (isDefAndNotNull(pXMLExtra)) {
@@ -1337,11 +1337,11 @@ module akra.pool.resources {
 
 			return pTech;
 		}
-		
+
 		private COLLADAProfileCommon(pXML: Element): IColladaProfileCommon {
 			var pProfile: IColladaProfileCommon = {
-				technique : null,
-				newParam  : {}
+				technique: null,
+				newParam: {}
 			};
 
 			this.eachByTag(pXML, "newparam", (pXMLData: Element): void => {
@@ -1352,11 +1352,11 @@ module akra.pool.resources {
 
 			return pProfile;
 		}
-		
+
 		private COLLADAEffect(pXML: Element): IColladaEffect {
 			var pEffect: IColladaEffect = {
-				id             : attr(pXML, "id"), 
-				profileCommon  : null
+				id: attr(pXML, "id"),
+				profileCommon: null
 			};
 
 			this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
@@ -1371,18 +1371,18 @@ module akra.pool.resources {
 			});
 
 			this.link(pEffect);
-			
+
 			return pEffect;
 		}
 
 
 		//materials
-		
+
 		private COLLADAMaterial(pXML: Element): IColladaMaterial {
 			var pMaterial: IColladaMaterial = {
-				id             : attr(pXML, "id"),
-				name           : attr(pXML, "name"),
-				instanceEffect : this.COLLADAInstanceEffect(firstChild(pXML, "instance_effect"))
+				id: attr(pXML, "id"),
+				name: attr(pXML, "name"),
+				instanceEffect: this.COLLADAInstanceEffect(firstChild(pXML, "instance_effect"))
 			};
 
 			this.link(pMaterial);
@@ -1394,19 +1394,19 @@ module akra.pool.resources {
 
 		private COLLADANode(pXML: Element, iDepth: uint = 0): IColladaNode {
 			var pNode: IColladaNode = {
-				id              : attr(pXML, "id"),
-				sid             : attr(pXML, "sid"),
-				name            : attr(pXML, "name") || "unknown",
-				type            : attr(pXML, "type"),
-				layer           : attr(pXML, "layer"),
-				transform       : new Mat4(1),
-				geometry        : [],
-				controller      : [],
-				childNodes      : [],
-				camera          : [],
-				depth           : iDepth,
-				transforms      : [],
-				constructedNode : null /*<! узел, в котором будет хранится ссылка на реальный игровой нод, построенный по нему*/
+				id: attr(pXML, "id"),
+				sid: attr(pXML, "sid"),
+				name: attr(pXML, "name") || "unknown",
+				type: attr(pXML, "type"),
+				layer: attr(pXML, "layer"),
+				transform: new Mat4(1),
+				geometry: [],
+				controller: [],
+				childNodes: [],
+				camera: [],
+				depth: iDepth,
+				transforms: [],
+				constructedNode: null /*<! узел, в котором будет хранится ссылка на реальный игровой нод, построенный по нему*/
 			};
 
 			var m4fMatrix: IMat4;
@@ -1452,13 +1452,13 @@ module akra.pool.resources {
 
 			return pNode;
 		}
-		
+
 		private COLLADAVisualScene(pXML: Element): IColladaVisualScene {
 			var pNode: IColladaNode;
 			var pScene: IColladaVisualScene = {
-				id     : attr(pXML, "id"),
-				name   : attr(pXML, "name"),
-				nodes : []
+				id: attr(pXML, "id"),
+				name: attr(pXML, "name"),
+				nodes: []
 			};
 
 			this.link(pScene);
@@ -1467,11 +1467,11 @@ module akra.pool.resources {
 				switch (sName) {
 					case "node":
 						pNode = this.COLLADANode(pXMLData);
-						
+
 						if (isDefAndNotNull(pNode)) {
 							pScene.nodes.push(pNode);
 						}
-						
+
 						break;
 				}
 			});
@@ -1480,7 +1480,7 @@ module akra.pool.resources {
 
 			return pScene;
 		}
-		
+
 		private COLLADABindMaterial(pXML: Element): IColladaBindMaterial {
 			if (!isDefAndNotNull(pXML)) {
 				return null;
@@ -1497,10 +1497,10 @@ module akra.pool.resources {
 
 				pMat = {
 					// url         : pSourceMat.instanceEffect.url,
-					target      : attr(pInstMat, "target"), 
-					symbol      : attr(pInstMat, "symbol"),
-					material    : pSourceMat,
-					vertexInput : <IColladaBindVertexInputMap>{}
+					target: attr(pInstMat, "target"),
+					symbol: attr(pInstMat, "symbol"),
+					material: pSourceMat,
+					vertexInput: <IColladaBindVertexInputMap>{}
 				};
 
 				this.eachByTag(pInstMat, "bind_vertex_input", (pXMLVertexInput: Element): void => {
@@ -1515,9 +1515,9 @@ module akra.pool.resources {
 					var iInputSet: int = parseInt(attr(pXMLVertexInput, "input_set"));
 
 					pMat.vertexInput[sSemantic] = {
-						semantics       : sSemantic,
-						inputSet        : iInputSet,
-						inputSemantic   : sInputSemantic
+						semantics: sSemantic,
+						inputSet: iInputSet,
+						inputSemantic: sInputSemantic
 					};
 				});
 
@@ -1529,9 +1529,9 @@ module akra.pool.resources {
 
 		private COLLADAInstanceEffect(pXML: Element): IColladaInstanceEffect {
 			var pInstance: IColladaInstanceEffect = {
-				parameters    : {},
-				techniqueHint : <IMap<string>>{},
-				effect        : null
+				parameters: {},
+				techniqueHint: <IMap<string>>{},
+				effect: null
 			};
 
 			/*
@@ -1560,12 +1560,12 @@ module akra.pool.resources {
 
 			return pInstance;
 		}
-		
+
 		private COLLADAInstanceController(pXML: Element): IColladaInstanceController {
 			var pInst: IColladaInstanceController = {
-				controller : <IColladaController>this.source(attr(pXML, "url")),
-				material   : <IColladaBindMaterial>this.COLLADABindMaterial(firstChild(pXML, "bind_material")),
-				skeletons  : []
+				controller: <IColladaController>this.source(attr(pXML, "url")),
+				material: <IColladaBindMaterial>this.COLLADABindMaterial(firstChild(pXML, "bind_material")),
+				skeletons: []
 			};
 
 			this.eachByTag(pXML, "skeleton", (pXMLData: Element): void => {
@@ -1575,11 +1575,11 @@ module akra.pool.resources {
 
 			return pInst;
 		}
-		
+
 		private COLLADAInstanceGeometry(pXML: Element): IColladaInstanceGeometry {
 			var pInst: IColladaInstanceGeometry = {
-				geometry : <IColladaGeometrie>this.source(attr(pXML, "url")),
-				material : <IColladaBindMaterial>this.COLLADABindMaterial(firstChild(pXML, "bind_material"))
+				geometry: <IColladaGeometrie>this.source(attr(pXML, "url")),
+				material: <IColladaBindMaterial>this.COLLADABindMaterial(firstChild(pXML, "bind_material"))
 			};
 
 			return pInst;
@@ -1598,7 +1598,7 @@ module akra.pool.resources {
 				light: <IColladaLight>this.source(attr(pXML, "url"))
 			};
 
-			return pInst;   
+			return pInst;
 		}
 
 		// directly load <visual_scene> from <instance_visual_scene> from <scene>.
@@ -1614,12 +1614,12 @@ module akra.pool.resources {
 		}
 
 		//camera
-		
+
 		private COLLADAPerspective(pXML: Element): IColladaPerspective {
 			var pPerspective: IColladaPerspective = {
 				xfov: parseFloat(stringData(firstChild(pXML, "xfov")) || "60.") * math.RADIAN_RATIO,
 				yfov: parseFloat(stringData(firstChild(pXML, "yfov")) || "60.") * math.RADIAN_RATIO,
-				aspect: parseFloat(stringData(firstChild(pXML, "aspect")) || (4./3.).toString()),
+				aspect: parseFloat(stringData(firstChild(pXML, "aspect")) || (4. / 3.).toString()),
 				znear: parseFloat(stringData(firstChild(pXML, "znear")) || ".1"),
 				zfar: parseFloat(stringData(firstChild(pXML, "zfar")) || "500."),
 			}
@@ -1638,7 +1638,7 @@ module akra.pool.resources {
 		private COLLADACamera(pXML: Element): IColladaCamera {
 			var pCamera: IColladaCamera = {
 				optics: null,
-				id    : attr(pXML, "id")
+				id: attr(pXML, "id")
 			};
 
 			pCamera.optics = this.COLLADAOptics(firstChild(pXML, "optics"));
@@ -1649,17 +1649,17 @@ module akra.pool.resources {
 		}
 
 		//light
-		
+
 		private COLLADALight(pXML: Element): IColladaLight {
 			return null;
 		}
 
 		// animation
-		 
+
 		private COLLADAAnimationSampler(pXML: Element): IColladaAnimationSampler {
 			var pSampler: IColladaAnimationSampler = {
-				inputs : {},
-				id    : attr(pXML, "id")
+				inputs: {},
+				id: attr(pXML, "id")
 			};
 
 
@@ -1691,8 +1691,8 @@ module akra.pool.resources {
 
 		private COLLADAAnimationChannel(pXML: Element): IColladaAnimationChannel {
 			var pChannel: IColladaAnimationChannel = {
-				sampler : <IColladaAnimationSampler>this.source(attr(pXML, "source")),
-				target  : this.target(attr(pXML, "target"))
+				sampler: <IColladaAnimationSampler>this.source(attr(pXML, "source")),
+				target: this.target(attr(pXML, "target"))
 			};
 
 
@@ -1707,12 +1707,12 @@ module akra.pool.resources {
 
 		private COLLADAAnimation(pXML: Element): IColladaAnimation {
 			var pAnimation: IColladaAnimation = {
-				id          : attr(pXML, "id"),
-				name        : attr(pXML, "name"),
-				sources     : [],
-				samplers    : [],
-				channels    : [],
-				animations  : []
+				id: attr(pXML, "id"),
+				name: attr(pXML, "name"),
+				sources: [],
+				samplers: [],
+				channels: [],
+				animations: []
 			};
 
 			var pChannel: IColladaAnimationChannel;
@@ -1729,7 +1729,7 @@ module akra.pool.resources {
 					case "sampler":
 						pAnimation.samplers.push(this.COLLADAAnimationSampler(pXMLData));
 						break;
-					
+
 					case "channel":
 						pChannel = this.COLLADAAnimationChannel(pXMLData);
 
@@ -1753,7 +1753,7 @@ module akra.pool.resources {
 				return null;
 			}
 
-			debug.assert(pXML.parentNode === firstChild(this.getXMLRoot(), "library_animations"), 
+			debug.assert(pXML.parentNode === firstChild(this.getXMLRoot(), "library_animations"),
 				"sub animations not supported");
 
 			this._pAnimations.push(pAnimation);
@@ -1764,7 +1764,7 @@ module akra.pool.resources {
 		// collada mapping
 
 		private source(sUrl: string): IColladaEntry {
-			 if (sUrl.charAt(0) !== "#") {
+			if (sUrl.charAt(0) !== "#") {
 				sUrl = "#" + sUrl;
 			}
 
@@ -1788,10 +1788,10 @@ module akra.pool.resources {
 			else {
 				sId = <string>arguments[0];
 			}
-			
+
 			this._pLinks["#" + sId] = pTarget;
 		}
-		
+
 		//astroBoy_newSkeleton_root/rotateY.ANGLE
 		//pObject.source: IColladaEntry = astroBoy_newSkeleton_root
 		//pSource: IColladaTransform = source(astroBoy_newSkeleton_root/rotateY)
@@ -1805,9 +1805,9 @@ module akra.pool.resources {
 		//pObject.object: IColladaTransform = pSource;
 		//
 		private target(sPath: string): IColladaTarget {
-			var pObject: IColladaTarget = {value : null};
+			var pObject: IColladaTarget = { value: null };
 			var pSource: IColladaTransform;
-			
+
 			var pMatches: string[];
 			var sValue: string;
 
@@ -1854,7 +1854,7 @@ module akra.pool.resources {
 					pObject.value = (<IVec4>pSource.value).w;
 					break;
 				case "ANGLE":
-					pObject.value = (<IVec4>pSource.value).w; 
+					pObject.value = (<IVec4>pSource.value).w;
 					//<rotate sid="rotateY">0 1 0 -4.56752</rotate>
 					break;
 			}
@@ -1883,7 +1883,7 @@ module akra.pool.resources {
 		}
 
 		// //animation 
-	
+
 		private buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack {
 			var sNodeId: string = pChannel.target.source.id;
 			var sJoint: string = this.source(sNodeId).sid || null;
@@ -1945,7 +1945,7 @@ module akra.pool.resources {
 						pFloatArray = new Float32Array(pOutputValues);
 
 						debug.assert(nMatrices % 1 === 0.0,
-									 "incorrect output length of transformation data (" + pFloatArray.length + ")");
+							"incorrect output length of transformation data (" + pFloatArray.length + ")");
 
 						for (var i: int = 0; i < nMatrices; i++) {
 							var pFrame: IPositionFrame = new animation.PositionFrame(
@@ -1953,7 +1953,7 @@ module akra.pool.resources {
 								(new Mat4(pFloatArray.subarray(i * 16, i * 16 + 16), true)).transpose());
 							pTrack.keyFrame(pFrame);
 						}
-	   
+
 
 						// i=0;
 						// var m = (new Mat4(pFloatArray.subarray(i * 16, i * 16 + 16), true));
@@ -1978,7 +1978,7 @@ module akra.pool.resources {
 
 			return pTrack;
 		}
-		
+
 		private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[] {
 			var pSubAnimations: IColladaAnimation[] = pAnimationData.animations;
 			var pSubTracks: IAnimationTrack[];
@@ -2001,7 +2001,7 @@ module akra.pool.resources {
 
 			return pTrackList;
 		}
-		
+
 		private buildAnimation(pAnimationData: IColladaAnimation): IAnimation {
 
 			var pTracks: IAnimationTrack[] = this.buildAnimationTrackList(pAnimationData);
@@ -2011,18 +2011,18 @@ module akra.pool.resources {
 			for (var i: int = 0; i < pTracks.length; i++) {
 				pAnimation.push(pTracks[i]);
 			}
-			
+
 			return pAnimation;
 		}
 
-		private buildAnimations(pAnimationsList: IAnimation[] = []): IAnimation[] {
+		private buildAnimations(pAnimationsList: IAnimation[]= []): IAnimation[] {
 			var pAnimations: IColladaAnimation[] = this.getAnimations();
 
 			if (isNull(pAnimations)) {
 				return null;
 			}
-	 
-			for (var i: int = 0; i < pAnimations.length; ++ i) {
+
+			for (var i: int = 0; i < pAnimations.length; ++i) {
 				var pAnimation: IAnimation = this.buildAnimation(pAnimations[i]);
 
 				pAnimationsList.push(pAnimation);
@@ -2031,8 +2031,8 @@ module akra.pool.resources {
 			return pAnimationsList;
 		}
 
-		 // common
-		
+		// common
+
 		private buildAssetTransform(pNode: ISceneNode, pAsset: IColladaAsset = null): ISceneNode {
 			pAsset = pAsset || this.getAsset();
 
@@ -2048,13 +2048,13 @@ module akra.pool.resources {
 				}
 			}
 
-			return pNode;   
+			return pNode;
 		}
 
 		private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[] {
 			var pDecl: IVertexElementInterface[] = [];
-			
-			for (var i: int = 0; i < pAccessor.params.length; ++ i) {
+
+			for (var i: int = 0; i < pAccessor.params.length; ++i) {
 				var sUsage: string = pAccessor.params[i].name;
 				var sType: string = pAccessor.params[i].type;
 
@@ -2066,13 +2066,13 @@ module akra.pool.resources {
 			pDecl.push(VE.custom(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
 
 			debug.info("Automatically constructed declaration: ", data.VertexDeclaration.normalize(pDecl).toString());
-			
+
 			return pDecl;
 		}
 
 
 		// materials & meshes
-		
+
 		private buildDefaultMaterials(pMesh: IMesh): IMesh {
 			var pDefaultMaterial: IMaterial = material.create("default");
 
@@ -2113,7 +2113,7 @@ module akra.pool.resources {
 						//setup materials
 						pSubMesh.getMaterial().set(pMaterial);
 						pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-						
+
 						//setup textures
 						for (var sTextureType in pPhongMaterial.textures) {
 							var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
@@ -2164,8 +2164,8 @@ module akra.pool.resources {
 
 			return pMesh;
 		}
-		
-		
+
+
 		private buildSkeleton(pSkeletonsList: string[]): ISkeleton {
 			var pSkeleton: ISkeleton = null;
 
@@ -2173,7 +2173,7 @@ module akra.pool.resources {
 
 			for (var i: int = 0; i < pSkeletonsList.length; ++i) {
 				var pJoint: IJoint = <IJoint>(<IColladaNode>this.source(pSkeletonsList[i])).constructedNode;
-				
+
 				logger.assert(scene.Joint.isJoint(pJoint), "skeleton node must be joint");
 
 				pSkeleton.addRootJoint(pJoint);
@@ -2240,7 +2240,7 @@ module akra.pool.resources {
 
 								pDataExt = new Float32Array((<Float32Array>pData).length / 3 * 4);
 
-								for (var y = 0, n = 0,  m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
+								for (var y = 0, n = 0, m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
 									pDataExt[n++] = pData[m++];
 									pDataExt[n++] = pData[m++];
 									pDataExt[n++] = pData[m++];
@@ -2257,7 +2257,7 @@ module akra.pool.resources {
 							case data.Usages.TEXCOORD4:
 							case data.Usages.TEXCOORD5:
 								//avoiding semantics collisions
-								if(sSemantic === "TEXCOORD"){
+								if (sSemantic === "TEXCOORD") {
 									sSemantic = "TEXCOORD0";
 								}
 
@@ -2310,7 +2310,7 @@ module akra.pool.resources {
 
 				//     pSubMesh.surfaceMaterial = pSurfaceMaterial;
 				// }
-				
+
 				pSubMesh.getMaterial().name = pPolygons.material;
 			}
 
@@ -2318,7 +2318,7 @@ module akra.pool.resources {
 
 			//adding all data to cahce data
 			this.addMesh(pMesh);
-			
+
 
 			return this.buildMaterials(pMesh, pGeometryInstance);
 		}
@@ -2332,7 +2332,7 @@ module akra.pool.resources {
 			//skin data
 			var pBoneList: string[] = <string[]>pSkinData.joints.inputs["JOINT"].array;
 			var pBoneOffsetMatrices: IMat4[] = <IMat4[]>pSkinData.joints.inputs["INV_BIND_MATRIX"].array;
-			
+
 			var m4fBindMatrix: IMat4 = pSkinData.shapeMatrix;
 			var pVertexWeights: IColladaVertexWeights = pSkinData.vertexWeights;
 
@@ -2343,14 +2343,14 @@ module akra.pool.resources {
 			var pSkin: ISkin;
 
 			pSkeleton = this.buildSkeleton(pControllerInstance.skeletons);
-			pMesh = this.buildMesh({geometry : pGeometry, material : pMaterials});
+			pMesh = this.buildMesh({ geometry: pGeometry, material: pMaterials });
 
 			pSkin = pMesh.createSkin();
 
 			pSkin.setBindMatrix(m4fBindMatrix);
 			pSkin.setBoneNames(pBoneList);
 			pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
-			
+
 			logger.assert(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
 
 			if (!pSkin.setVertexWeights(
@@ -2364,7 +2364,7 @@ module akra.pool.resources {
 			pMesh.setSkeleton(pSkeleton);
 			pSkeleton.attachMesh(pMesh);
 
-			return pMesh;            
+			return pMesh;
 		}
 
 
@@ -2410,7 +2410,7 @@ module akra.pool.resources {
 
 			this.findNode(pScene.nodes, null, function (pNode: IColladaNode) {
 				var pModelNode: ISceneNode = pNode.constructedNode;
-				
+
 				if (isNull(pModelNode)) {
 					debug.error("you must call buildScene() before call buildMeshes() or file corrupt");
 					return;
@@ -2431,7 +2431,7 @@ module akra.pool.resources {
 
 			return pMeshes;
 		}
-		
+
 		// scene
 
 		private buildSceneNode(pNode: IColladaNode, pParentNode: ISceneNode): ISceneNode {
@@ -2441,7 +2441,7 @@ module akra.pool.resources {
 			if (isDefAndNotNull(pSceneNode)) {
 				return pSceneNode;
 			}
-			
+
 			//FIXME: предпологаем, что мы никогда не аттачим контроллеры к узлам,
 			// где они найдены, а аттачим  их к руту скелета, на который они ссылаются
 			if (pNode.geometry.length > 0) {   /*pNode.pController.length ||*/
@@ -2454,10 +2454,10 @@ module akra.pool.resources {
 			logger.assert(pSceneNode.create(), "Can not initialize scene node!");
 
 			pSceneNode.attachToParent(pParentNode);
-		
+
 			return pSceneNode;
 		}
-		
+
 		private buildJointNode(pNode: IColladaNode, pParentNode: ISceneNode): IJoint {
 			var pJointNode: IJoint = <IJoint>pNode.constructedNode;
 			var sJointSid: string = pNode.sid;
@@ -2475,7 +2475,7 @@ module akra.pool.resources {
 			}
 
 			pJointNode = pParentNode.getScene().createJoint();
-				
+
 			logger.assert(pJointNode.create(), "Can not initialize joint node!");
 
 			pJointNode.setBoneName(sJointSid);
@@ -2489,12 +2489,12 @@ module akra.pool.resources {
 			//     pJointNode);
 			// pSceneNode.name = sJointName + '[joint]';
 			// pSceneNode.setScale(0.02);
-		
+
 
 
 			return pJointNode;
 		}
-		
+
 		private buildCamera(pColladaInstanceCamera: IColladaInstanceCamera, pParent: ISceneNode): ICamera {
 			var pColladaCamera: IColladaCamera = pColladaInstanceCamera.camera;
 			var pCamera: ICamera = pParent.getScene().createCamera(pColladaCamera.name || pColladaCamera.id || null);
@@ -2503,11 +2503,11 @@ module akra.pool.resources {
 			pCamera.attachToParent(pParent);
 
 			var pPerspective: IColladaPerspective = pColladaCamera.optics.techniqueCommon.perspective;
-			
-			
-			
+
+
+
 			if (!isNull(pPerspective)) {
-				pCamera.setProjParams(pPerspective.xfov, pPerspective.aspect, pPerspective.znear, 
+				pCamera.setProjParams(pPerspective.xfov, pPerspective.aspect, pPerspective.znear,
 					//FIX far plane distance
 					pPerspective.zfar * (1 / this.getAsset().unit.meter));
 			}
@@ -2548,7 +2548,7 @@ module akra.pool.resources {
 				this.buildNodes(pNode.childNodes, pHierarchyNode);
 
 				if (pNode.camera.length > 0) {
-					for (var c = 0; c < pNode.camera.length; ++ c) {
+					for (var c = 0; c < pNode.camera.length; ++c) {
 						var pColladaCamera: IColladaInstanceCamera = pNode.camera[c];
 						var pCamera: ICamera = this.buildCamera(pColladaCamera, pHierarchyNode);
 					}
@@ -2606,7 +2606,7 @@ module akra.pool.resources {
 			return pPose;
 		}
 
-		private buildInitialPoses(pPoseSkeletons: ISkeleton[] = null): IAnimation[] {
+		private buildInitialPoses(pPoseSkeletons: ISkeleton[]= null): IAnimation[] {
 			if (!this.isVisualSceneLoaded()) {
 				this.COLLADAScene();
 			}
@@ -2637,11 +2637,11 @@ module akra.pool.resources {
 		}
 
 		// additional
-		
+
 
 		private buildComplete(): void {
 			var pScene: IColladaVisualScene = this.getVisualScene();
-			
+
 			if (isNull(pScene)) {
 				debug.warn("build complete, but visual scene not parsed correctly!");
 				return;
@@ -2663,7 +2663,7 @@ module akra.pool.resources {
 					this._pOptions[i] = pOptions[i];
 				}
 				else {
-					this._pOptions[i] = isDef(this._pOptions[i])? this._pOptions[i]: Collada.DEFAULT_OPTIONS[i];
+					this._pOptions[i] = isDef(this._pOptions[i]) ? this._pOptions[i] : Collada.DEFAULT_OPTIONS[i];
 				}
 			}
 		}
@@ -2698,100 +2698,100 @@ module akra.pool.resources {
 			var pSupportedFormat: IColladaUnknownFormat[] = getSupportedFormat(pInput.semantics);
 			debug.assert(isDefAndNotNull(pSupportedFormat), "unsupported semantic used <" + pInput.semantics + ">");
 
-			pInput.array    = <any[]><any>this.COLLADAGetSourceData(pInput.source, pSupportedFormat);
+			pInput.array = <any[]><any>this.COLLADAGetSourceData(pInput.source, pSupportedFormat);
 			pInput.accessor = pInput.source.techniqueCommon.accessor;
 
 			return pInput;
 		}
 
-		private  isJointsVisualizationNeeded(): boolean {
+		private isJointsVisualizationNeeded(): boolean {
 			return this._pOptions.drawJoints === true;
 		}
 
-		public  isVisualSceneLoaded(): boolean {
+		public isVisualSceneLoaded(): boolean {
 			return isDefAndNotNull(this._pVisualScene);
 		}
 
-		public  isAnimationLoaded(): boolean {
+		public isAnimationLoaded(): boolean {
 			return this._pAnimations.length > 0;
 		}
 
-		private  isSceneNeeded(): boolean {
+		private isSceneNeeded(): boolean {
 			return this._pOptions.scene === true;
 		}
 
-		 private  isAnimationNeeded(): boolean {
+		private isAnimationNeeded(): boolean {
 			return isDefAndNotNull(this._pOptions.animation) && this._pOptions.animation !== false;
 		}
 
-		private  isPoseExtractionNeeded(): boolean {
+		private isPoseExtractionNeeded(): boolean {
 			return this._pOptions.extractPoses === true;
 		}
 
-		private  isWireframeEnabled(): boolean {
+		private isWireframeEnabled(): boolean {
 			return this._pOptions.wireframe === true;
 		}
 
-		private  getSkeletonsOutput(): ISkeleton[] {
+		private getSkeletonsOutput(): ISkeleton[] {
 			return this._pOptions.skeletons || null;
 		}
 
-		private  addSkeleton(pSkeleton: ISkeleton): void {
+		private addSkeleton(pSkeleton: ISkeleton): void {
 			this._pOptions.skeletons.push(pSkeleton);
 		}
 
-		private  getImageOptions(): IColladaImageLoadOptions {
+		private getImageOptions(): IColladaImageLoadOptions {
 			return this._pOptions.images;
 		}
 
-		private  getVisualScene(): IColladaVisualScene {
+		private getVisualScene(): IColladaVisualScene {
 			return this._pVisualScene;
 		}
 
-		public  getAnimations(): IColladaAnimation[] {
+		public getAnimations(): IColladaAnimation[] {
 			return this._pAnimations;
 		}
 
-		public  getAnimation(i: int): IColladaAnimation {
+		public getAnimation(i: int): IColladaAnimation {
 			return this._pAnimations[i] || null;
 		}
 
-		public  getAsset(): IColladaAsset {
+		public getAsset(): IColladaAsset {
 			return this._pAsset;
-		}        
+		}
 
-		private  isLibraryLoaded(sLib: string): boolean {
+		private isLibraryLoaded(sLib: string): boolean {
 			return isDefAndNotNull(this._pLib[sLib]);
 		}
 
-		private  isLibraryExists(sLib: string): boolean {
+		private isLibraryExists(sLib: string): boolean {
 			return !isNull(firstChild(this.getXMLRoot(), "library_animations"));
 		}
 
-		private  getLibrary(sLib: string): IColladaLibrary {
+		private getLibrary(sLib: string): IColladaLibrary {
 			return this._pLib[sLib] || null;
 		}
 
-		public  getBasename(): string {
+		public getBasename(): string {
 			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
-		public  getFilename(): string {
+		public getFilename(): string {
 			return this._sFilename;
 		}
 
-		private  setFilename(sName: string): void {
+		private setFilename(sName: string): void {
 			this._sFilename = sName;
 		}
 
 		private readLibraries(pXML: Element, pTemplates: IColladaLibraryTemplate[]): void {
 			var pLibraries: IColladaLibraryMap = this._pLib;
-			
+
 			for (var i: int = 0; i < pTemplates.length; i++) {
 				var sLib: string = pTemplates[i].lib;
 				pLibraries[sLib] = this.COLLADALibrary(firstChild(pXML, sLib), pTemplates[i]);
 			}
-		} 
+		}
 
 		private checkLibraries(pXML: Element, pTemplates: IColladaLibraryTemplate[]): void {
 			var pLibraries: IColladaLibraryMap = this._pLib;
@@ -2853,7 +2853,7 @@ module akra.pool.resources {
 			var pModel: Collada = this;
 
 			this.setFilename(sFilename);
-			
+
 			this.notifyDisabled();
 			this.notifyUnloaded();
 
@@ -2863,24 +2863,24 @@ module akra.pool.resources {
 				//FIXME: setuop byteLength correctly..
 				(<any>pModel)["_iByteLength"] = meta.size || 0;
 			});
-		
-			pFile.read(function (pErr: Error, sXML: string) {
-				if (!isNull(pErr)) {
-					logger.error(pErr);
+
+			pFile.read((e: Error, sXML: string): void => {
+				if (!isNull(e)) {
+					logger.error(e);
 
 					debug.groupEnd();
-					return; 
+					return;
 				}
 
 				pModel.notifyRestored();
-		   
+
 				if (pModel.parse(sXML, pOptions)) {
 					//if resource not synced to any other resources
 					//loaded satet must be setted manuality
 					//but if resource has dependend sub-resources,
 					//loaded event happen automaticly, when all depenedences will be loaded.
-
 					if (pModel.isSyncedTo(EResourceItemEvents.LOADED)) {
+						//pModel.findRelatedResources(EResourceItemEvents.LOADED)
 						pModel.setChangesNotifyRoutine((eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean) => {
 							if (eFlag === EResourceItemEvents.LOADED && isSet) {
 								debug.timeEnd("loaded " + pModel.findResourceName());
@@ -2972,7 +2972,7 @@ module akra.pool.resources {
 
 		extractAnimation(i: int): IAnimation {
 			var pPoses: IAnimation[];
-			var pSkeletons: ISkeleton[], 
+			var pSkeletons: ISkeleton[],
 				pSkeleton: ISkeleton;
 			var pAnimation: IAnimation = null;
 			var pData: IColladaAnimation = this.getAnimation(i);
@@ -2985,8 +2985,8 @@ module akra.pool.resources {
 					pSkeletons = this.getSkeletonsOutput() || [];
 
 					pPoses = this.buildInitialPoses(pSkeletons);
-					
-					for (var j: int = 0; j < pPoses.length; ++ j) {
+
+					for (var j: int = 0; j < pPoses.length; ++j) {
 						pAnimation.extend(pPoses[j]);
 					}
 				}
@@ -2997,7 +2997,7 @@ module akra.pool.resources {
 
 		extractAnimations(): IAnimation[] {
 			var pPoses: IAnimation[];
-			var pSkeletons: ISkeleton[], 
+			var pSkeletons: ISkeleton[],
 				pSkeleton: ISkeleton;
 			var pAnimationOutput: IAnimation[] = null;
 
@@ -3032,8 +3032,8 @@ module akra.pool.resources {
 
 					pPoses = this.buildInitialPoses(pSkeletons);
 
-					for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
-						for (var j: int = 0; j < pPoses.length; ++ j) {
+					for (var i: int = 0; i < pAnimationOutput.length; ++i) {
+						for (var j: int = 0; j < pPoses.length; ++j) {
 							pAnimationOutput[i].extend(pPoses[j]);
 						}
 					}
@@ -3050,79 +3050,79 @@ module akra.pool.resources {
 	}
 
 	pSupportedVertexFormat = [
-		{name : ["X"], type : ["float"]},
-		{name : ["Y"], type : ["float"]},
-		{name : ["Z"], type : ["float"]}
+		{ name: ["X"], type: ["float"] },
+		{ name: ["Y"], type: ["float"] },
+		{ name: ["Z"], type: ["float"] }
 	];
 
 	pSupportedTextureFormat = [
-		{name : ["S"], type : ["float"]},
-		{name : ["T"], type : ["float"]},
-		{name : ["P"], type : ["float"]}
+		{ name: ["S"], type: ["float"] },
+		{ name: ["T"], type: ["float"] },
+		{ name: ["P"], type: ["float"] }
 	];
 
 	pSupportedColorFormat = [
-		{name : ["R"], type : ["float"]},
-		{name : ["G"], type : ["float"]},
-		{name : ["B"], type : ["float"]}
+		{ name: ["R"], type: ["float"] },
+		{ name: ["G"], type: ["float"] },
+		{ name: ["B"], type: ["float"] }
 	];
 
 	pSupportedWeightFormat = [
-		{name : ["WEIGHT"], type : ["float"]}
+		{ name: ["WEIGHT"], type: ["float"] }
 	];
 
 	pSupportedJointFormat = [
-		{name : ["JOINT"], type : ["Name", "IDREF"]}
+		{ name: ["JOINT"], type: ["Name", "IDREF"] }
 	];
 
 	pSupportedInvBindMatrixFormat = [
-		{name : ["TRANSFORM"], type : ["float4x4"]}
+		{ name: ["TRANSFORM"], type: ["float4x4"] }
 	];
 
 	pSupportedInterpolationFormat = [
-		{name : ["INTERPOLATION"], type : ["Name"]}
+		{ name: ["INTERPOLATION"], type: ["Name"] }
 	];
 
 	pSupportedInputFormat = [
-		{name : ["TIME"], type : ["float"]}
+		{ name: ["TIME"], type: ["float"] }
 	];
 
 	pSupportedOutputFormat = [
-		{name : ["TRANSFORM", "X", "ANGLE", null], type : ["float4x4", "float"]},
-		{name : ["Y"], type : ["float"]},
-		{name : ["Z"], type : ["float"]}
+		{ name: ["TRANSFORM", "X", "ANGLE", null], type: ["float4x4", "float"] },
+		{ name: ["Y"], type: ["float"] },
+		{ name: ["Z"], type: ["float"] }
 	];
 
 	pSupportedTangentFormat = [
-		{name : ["X"], type : ["float"]},
-		{name : ["Y"], type : ["float"]},
-		{name : ["X"], type : ["float"]},
-		{name : ["Y"], type : ["float"]},
-		{name : ["X"], type : ["float"]},
-		{name : ["Y"], type : ["float"]},
-		{name : ["X"], type : ["float"]},
-		{name : ["Y"], type : ["float"]},
-		{name : ["X"], type : ["float"]},
-		{name : ["Y"], type : ["float"]}
+		{ name: ["X"], type: ["float"] },
+		{ name: ["Y"], type: ["float"] },
+		{ name: ["X"], type: ["float"] },
+		{ name: ["Y"], type: ["float"] },
+		{ name: ["X"], type: ["float"] },
+		{ name: ["Y"], type: ["float"] },
+		{ name: ["X"], type: ["float"] },
+		{ name: ["Y"], type: ["float"] },
+		{ name: ["X"], type: ["float"] },
+		{ name: ["Y"], type: ["float"] }
 	];
 
 	pFormatStrideTable = <IColladaFormatStrideTable> {
-		"float"    : 1,
-		"float2"   : 2,
-		"float3"   : 3,
-		"float4"   : 4,
-		"float3x3" : 9,
-		"float4x4" : 16,
-		"int"      : 1,
-		"name"     : 1,
-		"Name"     : 1,
-		"IDREF"    : 1
+		"float": 1,
+		"float2": 2,
+		"float3": 3,
+		"float4": 4,
+		"float3x3": 9,
+		"float4x4": 16,
+		"int": 1,
+		"name": 1,
+		"Name": 1,
+		"IDREF": 1
 	};
 
-	 /* COMMON FUNCTIONS
-	 ------------------------------------------------------
-	 */
-	
+	/* COMMON FUNCTIONS
+	------------------------------------------------------
+	*/
+
 	function getSupportedFormat(sSemantics: string): IColladaUnknownFormat[] {
 		switch (sSemantics) {
 			case "TEXTANGENT":
@@ -3170,9 +3170,9 @@ module akra.pool.resources {
 			case "CONTINUITY":
 				return null;
 		}
-		
+
 		logger.error("unknown semantics founded: " + sSemantics);
-		
+
 		return null;
 	}
 
@@ -3189,7 +3189,7 @@ module akra.pool.resources {
 	}
 
 	// additional
-	
+
 	function printArray(pArr: any[], nRow: uint, nCol: uint): string {
 		var s: string = "\n";
 
@@ -3225,12 +3225,12 @@ module akra.pool.resources {
 	}
 
 
-	 function stringData(pXML: Element): string {
+	function stringData(pXML: Element): string {
 		return (isDefAndNotNull(pXML) ? pXML.textContent : null);
 	}
 
-	 function attr(pXML: Element, sName: string): string {
-		 return pXML.getAttribute(sName);
+	function attr(pXML: Element, sName: string): string {
+		return pXML.getAttribute(sName);
 
 	}
 

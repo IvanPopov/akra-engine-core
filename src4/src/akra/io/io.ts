@@ -119,9 +119,8 @@ module akra.io {
 		sUri = uri.resolve(sUri);
 
 		logger.assert(info.api.getWebWorker(), "WebWorker API must have. :(");
-
+		
 		if (!info.api.getFileSystem() && uri.parse(sUri).getScheme() === "filesystem:") {
-			debug.log("Local file will be redirected to WebStorage: ", sUri);
 			return new StorageFile(<string>sUri, pMode);
 		}
 

@@ -346,24 +346,20 @@
 		var chunkIndex = 0, index, outputSize = 0;
 
 		function step() {
-			console.log("inflate() > launchProcess() > step()");
 			var outputData;
 			index = chunkIndex * CHUNK_SIZE;
 			if (index < size)
 				reader.readUint8Array(offset + index, Math.min(CHUNK_SIZE, size - index), function(inputData) {
-					console.log("inflate() > launchProcess() > step() > reader:readUint8Array()");
 					var outputData = process.append(inputData, function() {
 						if (onprogress)
 							onprogress(offset + index, size);
 					});
-					console.log("@outputData", outputData);
 					outputSize += outputData.length;
 					onappend(true, inputData);
 					writer.writeUint8Array(outputData, function() {
-						console.log("inflate() > launchProcess() > step() > reader:readUint8Array() > writer:writeUint8Array()");
 						onappend(false, outputData);
 						chunkIndex++;
-						setTimeout(step, 10);
+						setTimeout(step, 1);
 					}, onwriteerror);
 					if (onprogress)
 						onprogress(index, size);
@@ -372,7 +368,6 @@
 				outputData = process.flush();
 				if (outputData) {
 					outputSize += outputData.length;
-					console.log("@outputSize", outputSize)
 					writer.writeUint8Array(outputData, function() {
 						onappend(false, outputData);
 						onend(outputSize);
@@ -387,7 +382,7 @@
 
 	function inflate(reader, writer, offset, size, computeCrc32, onend, onprogress, onreaderror, onwriteerror) {
 		var worker, crc32 = new Crc32();
-		console.log("inflate() > ");
+
 		function oninflateappend(sending, array) {
 			if (computeCrc32 && !sending)
 				crc32.append(array);
@@ -400,10 +395,8 @@
 		if (obj.zip.useWebWorkers) {
 			worker = new Worker(obj.zip.workerScriptsPath + INFLATE_JS);
 			launchWorkerProcess(worker, reader, writer, offset, size, oninflateappend, onprogress, oninflateend, onreaderror, onwriteerror);
-		} else {
-			console.log("inflate() > launchProcess() > ");
+		} else
 			launchProcess(new obj.zip.Inflater(), reader, writer, offset, size, oninflateappend, onprogress, oninflateend, onreaderror, onwriteerror);
-		}
 		return worker;
 	}
 
@@ -530,7 +523,7 @@
 
 		Entry.prototype.getData = function(writer, onend, onprogress, checkCrc32) {
 			var that = this, worker;
-			console.log("entry get data >>> ");
+
 			function terminate(callback, param) {
 				if (worker)
 					worker.terminate();
@@ -570,16 +563,11 @@
 				}
 				readCommonHeader(that, data, 4, false, onerror);
 				dataOffset = that.offset + 30 + that.filenameLength + that.extraFieldLength;
-				
-				console.log("Entry > getData() > Reader > readUint8Array > OK ");
-
 				writer.init(function() {
 					if (that.compressionMethod === 0)
 						copy(reader, writer, dataOffset, that.compressedSize, checkCrc32, getWriterData, onprogress, onreaderror, onwriteerror);
-					else {
-						console.log("Entry > getData() > Reader > readUint8Array > Writer > before inflate.... ");
+					else
 						worker = inflate(reader, writer, dataOffset, that.compressedSize, checkCrc32, getWriterData, onprogress, onreaderror, onwriteerror);
-					}
 				}, onwriteerror);
 			}, onreaderror);
 		};

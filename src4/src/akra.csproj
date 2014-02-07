@@ -42,7 +42,6 @@
     <Content Include="akra\resources\fx\TextureToScreen.afx" />
     <Content Include="akra\resources\fx\wireframe.afx" />
     <Content Include="akra\resources\HLSL.gr" />
-    <Content Include="packages.config" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -419,7 +418,6 @@
     <None Include="akra\io\BinWriter.ts" />
     <None Include="akra\io\FileInterface.t.ts" />
     <None Include="akra\io\LocalFile.t.ts" />
-    <None Include="akra\io\LocalFile.ts" />
     <None Include="akra\io\Packer.ts" />
     <None Include="akra\io\PackerTemplate.ts" />
     <None Include="akra\io\RemoteFile.t.ts" />
@@ -553,14 +551,6 @@
     <TypeScriptCompile Include="akra\webgl\WebGLTextureBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexTexture.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-cookies.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-mocks.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-resource.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-sanitize.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-scenario.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="akra\net\server\ConnectionWrapper.js" />

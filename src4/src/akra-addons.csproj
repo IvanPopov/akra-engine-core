@@ -19,9 +19,8 @@
   <ItemGroup>
     <Content Include="akra-addons\addons\navigation\cubemap.png" />
     <Content Include="akra-addons\addons\progress\index.html" />
-    <Content Include="akra-addons\addons\progress\tpl\logo2.png" />
-    <Content Include="akra-addons\addons\progress\tpl\progress-bar.html" />
-    <Content Include="akra-addons\addons\progress\tpl\progress.css" />
+    <Content Include="akra-addons\addons\progress\logo2.png" />
+    <Content Include="akra-addons\addons\progress\progress.css" />
     <Content Include="akra-addons\addons\resources.xml" />
     <Content Include="web.config" />
   </ItemGroup>
@@ -40,11 +39,17 @@
     <TypeScriptCompile Include="akra-addons\addons\navigation.ts" />
     <TypeScriptCompile Include="akra-addons\addons\filedrop\filedrop.ts" />
     <TypeScriptCompile Include="akra-addons\addons\progress\progress.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-cookies.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-mocks.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-resource.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-route.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-sanitize.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-scenario.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="akra-addons\idl\IFileDropArea.ts" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="akra-addons\idl\3d-party\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

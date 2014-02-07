@@ -21,7 +21,6 @@ module akra.io {
 		constructor(sFilename?: string, iMode?: int, fnCallback?: Function);
 		constructor(sFilename?: string, sMode?: any, fnCallback: Function = TFile.defaultCallback) {
 			super(sFilename, sMode, fnCallback);
-			console.log("new StorageFile(", arguments, ")");
 		}
 
 		clear(fnCallback: Function = TFile.defaultCallback): void {
@@ -40,7 +39,7 @@ module akra.io {
 				return;
 			}
 
-			logger.assert(io.canCreate(this._iMode), "The file is not readable.");
+			//logger.assert(io.canCreate(this._iMode), "The file is not readable.");
 
 			var pData: any = this.readData();
 			var nPos: uint = this._nCursorPosition;
@@ -105,7 +104,7 @@ module akra.io {
 		}
 
 		isExists(fnCallback: Function = TFile.defaultCallback): void {
-			fnCallback.call(this, null, localStorage.getItem(this.getPath()) == null);
+			fnCallback.call(this, null, localStorage.getItem(this.getPath()) != null);
 		}
 
 		remove(fnCallback: Function = TFile.defaultCallback): void {
@@ -140,7 +139,7 @@ module akra.io {
 		}
 
 		protected update(fnCallback?: Function): void {
-			this._pFileMeta = null;
+			this._pFileMeta = {size: 0, lastModifiedDate: null};
 			this.readData();
 			fnCallback.call(this, null);
 		}

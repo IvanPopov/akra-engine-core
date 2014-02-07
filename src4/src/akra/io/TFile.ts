@@ -163,8 +163,6 @@ module akra.io {
 				this._iMode = (isString(arguments[1]) ? io.filemode(<string>arguments[1]) : arguments[1]);
 			}
 
-			console.log("before open TFile > ", this);
-
 			this.update(function (err) {
 				if (err) {
 					logger.warn("file update err", err);
@@ -175,7 +173,7 @@ module akra.io {
 				if (io.isAppend(this._iMode)) {
 					this.setPosition(this.size);
 				}
-				console.log("TFile::updated()", this);
+
 				cb.call(pFile, null, this._pFileMeta);
 			});
 		}
@@ -419,6 +417,7 @@ module akra.io {
 				name: this.getPath(),
 				mode: this._iMode
 			};
+
 			this.execCommand(pCommand, cb);
 		}
 
@@ -473,9 +472,9 @@ module akra.io {
 				name: this._pUri.toString(),
 				mode: this._iMode
 			};
+
 			var fnCallbackSystem: Function = function (err, pMeta) {
 				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
-				console.log(pMeta);
 				cb.call(pFile, err, pFile);
 			};
 

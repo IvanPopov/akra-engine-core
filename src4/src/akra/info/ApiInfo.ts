@@ -18,6 +18,7 @@ module akra.info {
 		private _bLocalStorage: boolean = false;
 		private _bWebSocket: boolean = false;
 		private _bGamepad: boolean = false;
+		private _bPromise: boolean = false;
 
 		getWebGL(): boolean {
 			return webgl.isEnabled();
@@ -63,6 +64,10 @@ module akra.info {
 			return isDefAndNotNull(window["zip"]);
 		}
 
+		getPromise(): boolean {
+			return this._bPromise;
+		}
+
 		constructor() {
 			super();
 
@@ -75,6 +80,7 @@ module akra.info {
 			this._bLocalStorage = isDef((<any>window).localStorage);
 			this._bWebSocket = isDef((<any>window).WebSocket);
 			this._bGamepad = !!(<any>navigator).webkitGetGamepads || !!(<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
+			this._bPromise = isDefAndNotNull((<any>window).Promise);
 		}
 
 		private chechTransferableObjects(): boolean {

@@ -34,12 +34,13 @@ module akra.pool {
 		altered: ISignal<{ (pResource: IResourcePoolItem): void; }>;
 		saved: ISignal<{ (pResource: IResourcePoolItem): void; }>;
 
+		stateChanged: ISignal<{ (pResource: IResourcePoolItem, eEvent: EResourceItemEvents, iFlags: uint, isSet: boolean); }>;
+
 		//private pManager: IResourcePoolManager;
 		private _pResourceCode: IResourceCode;
 		private _pResourcePool: IResourcePool<IResourcePoolItem> = null;
 		private _iResourceHandle: int = 0;
 		private _iResourceFlags: int = 0;
-		private _pCallbackFunctions: IResourceNotifyRoutineFunc[];
 		private _pStateWatcher: IResourceWatcherFunc[];
 		private _pCallbackSlots: ICallbackSlot[][];
 
@@ -50,7 +51,6 @@ module akra.pool {
 
 			//this.pManager = pManager;
 			this._pResourceCode = new ResourceCode(0);
-			this._pCallbackFunctions = [];
 			this._pStateWatcher = [];
 			this._pCallbackSlots = gen.array<ICallbackSlot[]>(<number>EResourceItemEvents.TOTALRESOURCEFLAGS);
 		}
@@ -64,6 +64,8 @@ module akra.pool {
 			this.disabled = this.disabled || new Signal(<any>this);
 			this.altered = this.altered || new Signal(<any>this);
 			this.saved = this.saved || new Signal(<any>this);
+
+			this.stateChanged = this.stateChanged || new Signal(<any>this);
 		}
 
 		getResourceCode(): IResourceCode {
@@ -125,25 +127,6 @@ module akra.pool {
 		}
 
 
-		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void {
-			for (var i: int = 0; i < this._pCallbackFunctions.length; i++) {
-
-				if (this._pCallbackFunctions[i] == fn) {
-					return;
-				}
-			}
-
-			this._pCallbackFunctions.push(fn);
-		}
-
-		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void {
-			for (var i: int = 0; i < this._pCallbackFunctions.length; i++) {
-				if (this._pCallbackFunctions[i] == fn) {
-					this._pCallbackFunctions[i] = null;
-				}
-			}
-		}
-
 		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void {
 			this._pStateWatcher[eEvent] = fnWatcher;
 		}
@@ -152,6 +135,25 @@ module akra.pool {
 			return !isNull(this._pCallbackSlots[eSlot]) && this._pCallbackSlots[eSlot].length > 0;
 		}
 
+		/**
+		 * Find resources, that may affect the @eState of this resoyrces.
+		 */
+		findRelatedResources(eState: EResourceItemEvents): IResourcePoolItem[] {
+			var pSlots: ICallbackSlot[] = this._pCallbackSlots[eState];
+			var pRelatedResources: IResourcePoolItem[] = [];
+
+			for (var i = 0; i < pSlots.length; ++i) {
+				pRelatedResources.push(pSlots[i].pResourceItem);
+			}
+
+			return pRelatedResources;
+		}
+
+		/**
+		 * Sync resource with another.
+		 *
+		 *
+		 */
 		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): boolean {
 			eSlot = isDef(eSlot) ? eSlot : eSignal;
 
@@ -169,11 +171,13 @@ module akra.pool {
 				pSlots[eSlot] = [];
 			}
 
+			//n - number of signal slot, that contains 'pResourceItem'
+
 			pSignSlots = pSlots[eSlot];
 			n = pSignSlots.length;
 			bState = bf.testBit(pResourceItem.getResourceFlags(), <number>eSignal);
 
-			fn = function (eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean) {
+			fn = (pResourceItem: IResourcePoolItem, eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean) => {
 				if (eFlag == <number>eSignal) {
 					pSignSlots[n].bState = isSet;
 					me.notifyStateChange(eSlot, this);
@@ -196,7 +200,7 @@ module akra.pool {
 			pSignSlots.push({ bState: bState, fn: fn, pResourceItem: pResourceItem });
 
 			fn.call(pResourceItem, eSignal, pResourceItem.getResourceFlags(), bState);
-			pResourceItem.setChangesNotifyRoutine(fn);
+			pResourceItem.stateChanged.connect(fn);
 
 			return true;
 		}
@@ -375,16 +379,9 @@ module akra.pool {
 			var iTempFlags: int = this._iResourceFlags;
 
 			this._iResourceFlags = bf.setBit(this._iResourceFlags, iFlagBit, isSetting);
-			// LOG("before !=", iFlagBit, "(" + EResourceItemEvents.LOADED + ")", iTempFlags, "==>", this.iResourceFlags);
 
 			if (iTempFlags != this._iResourceFlags) {
-				// LOG("!+");
-				for (var i: int = 0; i < this._pCallbackFunctions.length; i++) {
-					if (this._pCallbackFunctions[i]) {
-						this._pCallbackFunctions[i].call(this, iFlagBit, this._iResourceFlags, isSetting);
-					}
-				}
-
+				this.stateChanged.emit(iFlagBit, this._iResourceFlags, isSetting);
 				return true;
 			}
 

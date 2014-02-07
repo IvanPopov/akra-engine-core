@@ -13,7 +13,7 @@
 /// <reference path="IEffect.ts" />
 /// <reference path="IShaderProgram.ts" />
 /// <reference path="IModel.ts" />
-
+/// <reference path="IObj.ts" />
 
 /** Семейства ресурсов */
 module akra {
@@ -98,15 +98,6 @@ module akra {
 		findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
 	
 		getModelPoolByFormat(eFormat: EModelFormats): IResourcePool<IResourcePoolItem>;
-	
-		/**
-		 * @deprecated
-		 */
-		monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
-		/**
-		 * @deprecated
-		 */
-		setLoadedAllRoutine(fnCallback: Function): void;
 	
 		/** Удаление всех ресурсов */
 		destroyAll(): void;

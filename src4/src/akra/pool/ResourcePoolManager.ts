@@ -75,8 +75,6 @@ module akra.pool {
 		private pResourceFamilyList: IResourcePool<IResourcePoolItem>[][] = null;
 		/** Карта пулов по коду ресурса */
 		private pResourceTypeMap: IResourcePool<IResourcePoolItem>[] = null;
-		/** Ресурс для ожидания остальных */
-		private pWaiterResource: IResourcePoolItem = null;
 
 		private pEngine: IEngine;
 
@@ -156,7 +154,6 @@ module akra.pool {
 			}
 
 			this.pResourceTypeMap = new Array();
-			this.pWaiterResource = new ResourcePoolItem();
 
 			this.createDeviceResource();
 		}
@@ -302,56 +299,6 @@ module akra.pool {
 			}
 
 			return pResult;
-		}
-
-		monitorInitResources(fnMonitor: IResourceWatcherFunc): void {
-			var me: IResourcePoolManager = this;
-
-			this.pWaiterResource.setStateWatcher(EResourceItemEvents.LOADED, function () {
-				fnMonitor.apply(me, arguments);
-			});
-		}
-
-		setLoadedAllRoutine(fnCallback: Function): void {
-			var pPool: IResourcePool<IResourcePoolItem>;
-			var pResource: IResourcePoolItem;
-			var iHandleResource: int;
-			var pWaiterResouse: IResourcePoolItem = this.pWaiterResource;
-
-			var fnResCallback = function (iFlagBit?: int, iResourceFlags?: int, isSetting?: boolean) {
-				if (iFlagBit == <number>EResourceItemEvents.LOADED && isSetting) {
-					fnCallback();
-				}
-			};
-
-			pWaiterResouse.notifyLoaded();
-
-			for (var n: uint = 0; n < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; n++) {
-				var nTotal: uint = parseInt(<any>ResourcePoolManager.pTypedResourseTotal[n]);
-
-				for (var i: int = 0; i < nTotal; i++) {
-					pPool = this.findResourcePool(new ResourceCode(n, i));
-
-					if (pPool) {
-
-						var pResources: IResourcePoolItem[] = pPool.getResources();
-						var pResource: IResourcePoolItem;
-
-						for (var h: int = 0; h < pResources.length; ++h) {
-							pResource = pResources[h];
-							pWaiterResouse.sync(pResource, EResourceItemEvents.LOADED);
-						}
-					}
-
-				}
-			}
-
-			if (pWaiterResouse.isResourceLoaded()) {
-				fnCallback();
-			}
-			else {
-				pWaiterResouse.setChangesNotifyRoutine(fnResCallback);
-			}
 		}
 
 		destroyAll(): void {

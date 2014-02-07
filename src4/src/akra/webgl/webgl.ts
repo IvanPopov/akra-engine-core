@@ -96,7 +96,10 @@ module akra.webgl {
 			logger.warn("Extension " + sExtName + " unsupported for this platform.");
 			return false;
 		}
-		if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
+
+		pWebGLExtension = pWebGLContext.getExtension(sExtName);
+
+		if (pWebGLExtension) {
 
 			if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
 				// debug.log("Extension " + sExtName + " already loaded for this context.");
