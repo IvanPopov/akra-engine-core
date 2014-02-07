@@ -575,7 +575,7 @@ module TypeScript {
 				}
 			} else {
 				if (callNode.expression.kind() === SyntaxKind.SuperKeyword && this.emitState.container === EmitContainer.Constructor) {
-					this.writeToOutput("_super.call");
+					this.writeToOutput(this.thisFullExtendClassName + ".call");
 				}
 				else {
 					this.emitJavascript(target, false);
@@ -1004,7 +1004,7 @@ module TypeScript {
 
 			var fullModuleName = pullDecl.getSymbol().fullName();
 
-			if (this._emittedModuleNames.indexOf(this.moduleName) < 0) {
+			if (this._emittedModuleNames.indexOf(fullModuleName) < 0) {
 				this.recordSourceMappingStart(moduleDecl);
 
 				if (fullModuleName.indexOf(".") < 0) {
@@ -1239,7 +1239,7 @@ module TypeScript {
 
 			this.recordSourceMappingStart(funcDecl);
 			this.writeToOutput("function ");
-			this.writeToOutput(this.thisClassNode.identifier.text());
+			//this.writeToOutput(this.thisClassNode.identifier.text());
 			this.writeToOutput("(");
 			var parameters = Parameters.fromParameterList(funcDecl.parameterList);
 			this.emitFunctionParameters(parameters);
@@ -1260,7 +1260,7 @@ module TypeScript {
 
 			this.indenter.decreaseIndent();
 			this.emitIndent();
-			this.writeToOutputWithSourceMapRecord("}", funcDecl.block.closeBraceToken);
+			this.writeToOutputWithSourceMapRecord("};", funcDecl.block.closeBraceToken);
 
 			this.recordSourceMappingNameEnd();
 			this.recordSourceMappingEnd(funcDecl);
@@ -1396,6 +1396,8 @@ module TypeScript {
 			var savedInArrowFunction = this.inArrowFunction;
 			this.inArrowFunction = false;
 
+			var isModuleContainer = (this.emitState.container === EmitContainer.Module || this.emitState.container === EmitContainer.DynamicModule);
+			var isStaticModuleContainer = this.emitState.container === EmitContainer.Module;
 			var temp = this.setContainer(EmitContainer.Function);
 
 			var funcName = funcDecl.identifier.text();
@@ -1408,21 +1410,46 @@ module TypeScript {
 
 			this.emitComments(funcDecl, true);
 
-			this.recordSourceMappingStart(funcDecl);
-			this.writeToOutput("function ");
+			var pullFunctionDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
 
-			if (printName) {
-				var id = funcDecl.identifier.text();
-				if (id) {
+			if (funcDecl.block && isModuleContainer && pullFunctionDecl && hasFlag(pullFunctionDecl.flags, PullElementFlags.Exported)) {
+
+					this.writeLineToOutput("");
+					this.emitIndent();
+					var modName = isStaticModuleContainer ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
+					this.recordSourceMappingStart(funcDecl);
+					this.writeToOutput(modName + ".");
 					if (funcDecl.identifier) {
 						this.recordSourceMappingStart(funcDecl.identifier);
 					}
-					this.writeToOutput(id);
+
+					this.writeToOutput(funcName);
+
 					if (funcDecl.identifier) {
 						this.recordSourceMappingEnd(funcDecl.identifier);
 					}
+
+					this.writeToOutput(" = " + "function");
+					//this.recordSourceMappingEnd(funcDecl);
+			}
+			else {
+				this.recordSourceMappingStart(funcDecl);
+				this.writeToOutput("function ");
+
+				if (printName) {
+					var id = funcDecl.identifier.text();
+					if (id) {
+						if (funcDecl.identifier) {
+							this.recordSourceMappingStart(funcDecl.identifier);
+						}
+						this.writeToOutput(id);
+						if (funcDecl.identifier) {
+							this.recordSourceMappingEnd(funcDecl.identifier);
+						}
+					}
 				}
 			}
+			
 
 			this.emitParameterList(funcDecl.callSignature.parameterList);
 
@@ -1441,17 +1468,17 @@ module TypeScript {
 			this.setContainer(temp);
 			this.inArrowFunction = savedInArrowFunction;
 
-			if (funcDecl.block) {
-				var pullFunctionDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
-				if ((this.emitState.container === EmitContainer.Module || this.emitState.container === EmitContainer.DynamicModule) && pullFunctionDecl && hasFlag(pullFunctionDecl.flags, PullElementFlags.Exported)) {
-					this.writeLineToOutput("");
-					this.emitIndent();
-					var modName = this.emitState.container === EmitContainer.Module ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
-					this.recordSourceMappingStart(funcDecl);
-					this.writeToOutput(modName + "." + funcName + " = " + funcName + ";");
-					this.recordSourceMappingEnd(funcDecl);
-				}
-			}
+			//if (funcDecl.block) {
+			//	var pullFunctionDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
+			//	if ((this.emitState.container === EmitContainer.Module || this.emitState.container === EmitContainer.DynamicModule) && pullFunctionDecl && hasFlag(pullFunctionDecl.flags, PullElementFlags.Exported)) {
+			//		this.writeLineToOutput("");
+			//		this.emitIndent();
+			//		var modName = this.emitState.container === EmitContainer.Module ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
+			//		this.recordSourceMappingStart(funcDecl);
+			//		this.writeToOutput(modName + "." + funcName + " = " + funcName + ";");
+			//		this.recordSourceMappingEnd(funcDecl);
+			//	}
+			//}
 		}
 
 		public emitAmbientVarDecl(varDecl: VariableDeclarator) {
@@ -1706,8 +1733,10 @@ module TypeScript {
 					declPath[i].flags & PullElementFlags.InitializedDynamicModule) {
 					this.writeToOutput("exports.");
 				} else {
+					this.writeToOutput(declPath[lastIndex].getSymbol().fullName() + ".");
+					return;
 					// Get the name of the decl that would need to referenced and is conflict free.
-					this.writeToOutput(this.getModuleName(declPath[i], /* changeNameIfAnyDeclarationInContext */ true) + ".");
+					//this.writeToOutput(this.getModuleName(declPath[i], /* changeNameIfAnyDeclarationInContext */ true) + ".");
 				}
 			}
 		}
@@ -1742,6 +1771,7 @@ module TypeScript {
 		public emitName(name: Identifier, addThis: boolean) {
 			this.emitComments(name, true);
 			this.recordSourceMappingStart(name);
+
 			if (name.text().length > 0) {
 				var symbolForEmit = this.getSymbolForEmit(name);
 				var pullSymbol = symbolForEmit.symbol;
@@ -1751,6 +1781,7 @@ module TypeScript {
 				var pullSymbolAlias = symbolForEmit.aliasSymbol;
 				var pullSymbolKind = pullSymbol.kind;
 				var isLocalAlias = pullSymbolAlias && (pullSymbolAlias.getDeclarations()[0].getParentDecl() == this.getEnclosingDecl());
+
 				if (addThis && (this.emitState.container !== EmitContainer.Args) && pullSymbol) {
 					var pullSymbolContainer = pullSymbol.getContainer();
 
@@ -1778,7 +1809,7 @@ module TypeScript {
 								!pullSymbol.anyDeclHasFlag(PullElementFlags.InitializedModule | PullElementFlags.Enum)) {
 								this.emitSymbolContainerNameInEnclosingContext(pullSymbol);
 							}
-							else if (pullSymbol.anyDeclHasFlag(PullElementFlags.Exported) && !this.symbolIsUsedInItsEnclosingContainer(pullSymbol)) {
+							else if (pullSymbol.anyDeclHasFlag(PullElementFlags.Exported)/* && !this.symbolIsUsedInItsEnclosingContainer(pullSymbol)*/) {
 								this.emitSymbolContainerNameInEnclosingContext(pullSymbol);
 							}
 						}
@@ -2374,39 +2405,64 @@ module TypeScript {
 			this.popDecl(pullDecl);
 		}
 
+		public thisFullClassName: string = null;
+		public thisFullExtendClassName: string = null;
+
 		public emitClass(classDecl: ClassDeclaration) {
 			var pullDecl = this.semanticInfoChain.getDeclForAST(classDecl);
 			this.pushDecl(pullDecl);
 
 			var svClassNode = this.thisClassNode;
+			var svFullClassName = this.thisFullClassName;
+			var svFullExtendClassName = this.thisFullExtendClassName;
+
 			this.thisClassNode = classDecl;
+			this.thisFullClassName = null;
+			this.thisFullExtendClassName = null;
+
 			var className = classDecl.identifier.text();
+			var fullClassName = className;
+
 			this.emitComments(classDecl, true);
 			var temp = this.setContainer(EmitContainer.Class);
 
-			this.recordSourceMappingStart(classDecl);
-			this.writeToOutput("var " + className);
-
 			var hasBaseClass = getExtendsHeritageClause(classDecl.heritageClauses) !== null;
 			var baseTypeReference: AST = null;
-			var varDecl: VariableDeclarator = null;
 
-			if (hasBaseClass) {
-				this.writeLineToOutput(" = (function (_super) {");
-			} else {
-				this.writeLineToOutput(" = (function () {");
+			if ((temp === EmitContainer.Module || temp === EmitContainer.DynamicModule) && hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
+				var modName = temp === EmitContainer.Module ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
+				this.thisFullClassName = fullClassName = modName + "." + className;
 			}
 
-			this.recordSourceMappingNameStart(className);
-			this.indenter.increaseIndent();
+			this.thisFullClassName = fullClassName;
 
 			if (hasBaseClass) {
 				baseTypeReference = getExtendsHeritageClause(classDecl.heritageClauses).typeNames.nonSeparatorAt(0);
-				this.emitIndent();
-				this.writeLineToOutput("__extends(" + className + ", _super);");
+
+				var emitSymbol = this.getSymbolForEmit(baseTypeReference);
+				var fullExtendClassName = "";
+
+				if (emitSymbol.symbol.anyDeclHasFlag(PullElementFlags.Exported) && emitSymbol.symbol.getContainer().isContainer()) {
+					fullExtendClassName = emitSymbol.symbol.getContainer().fullName() + "." + emitSymbol.symbol.getDisplayName();
+				}
+				else {
+					fullExtendClassName = emitSymbol.symbol.getDisplayName();
+				}
+
+				this.thisFullExtendClassName = fullExtendClassName;
+			}
+			
+
+			this.recordSourceMappingStart(classDecl);
+
+			if (fullClassName.indexOf(".") < 0) {
+				this.writeToOutput("var " + className + " = ");
+			}
+			else {
+				this.writeToOutput(fullClassName + " = ");
 			}
 
-			this.emitIndent();
+			this.recordSourceMappingNameStart(className);
 
 			var constrDecl = getLastConstructor(classDecl);
 
@@ -2421,11 +2477,11 @@ module TypeScript {
 				// default constructor
 				//TODO: this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(classDecl), this.getJSDocForConstructor(classDecl)));
 				this.indenter.increaseIndent();
-				this.writeLineToOutput("function " + classDecl.identifier.text() + "() {");
+				this.writeLineToOutput("function () {");
 				this.recordSourceMappingNameStart("constructor");
 				if (hasBaseClass) {
 					this.emitIndent();
-					this.writeLineToOutput("_super.apply(this, arguments);");
+					this.writeLineToOutput(fullExtendClassName + ".apply(this, arguments);");
 				}
 
 				if (this.shouldCaptureThis(classDecl)) {
@@ -2436,40 +2492,32 @@ module TypeScript {
 
 				this.indenter.decreaseIndent();
 				this.emitIndent();
-				this.writeLineToOutput("}");
+				this.writeLineToOutput("};");
 
 				this.recordSourceMappingNameEnd();
 				this.recordSourceMappingEnd(classDecl);
 			}
 
+			if (hasBaseClass) {
+				this.emitIndent();
+				this.writeLineToOutput("__extends(" + fullClassName + ", " + fullExtendClassName + ");");
+			}
+
 			this.emitClassMembers(classDecl);
 
-			this.emitIndent();
-			this.writeToOutputWithSourceMapRecord("return " + className + ";", classDecl.closeBraceToken);
 			this.writeLineToOutput("");
-			this.indenter.decreaseIndent();
-			this.emitIndent();
-			this.writeToOutputWithSourceMapRecord("}", classDecl.closeBraceToken);
+
 			this.recordSourceMappingNameEnd();
 			this.recordSourceMappingStart(classDecl);
-			this.writeToOutput(")(");
-			if (hasBaseClass) {
-				this.emitJavascript(baseTypeReference, /*startLine:*/ false);
-			}
-			this.writeToOutput(");");
-			this.recordSourceMappingEnd(classDecl);
 
-			if ((temp === EmitContainer.Module || temp === EmitContainer.DynamicModule) && hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
-				this.writeLineToOutput("");
-				this.emitIndent();
-				var modName = temp === EmitContainer.Module ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
-				this.writeToOutputWithSourceMapRecord(modName + "." + className + " = " + className + ";", classDecl);
-			}
+			this.recordSourceMappingEnd(classDecl);
 
 			this.recordSourceMappingEnd(classDecl);
 			this.emitComments(classDecl, false);
 			this.setContainer(temp);
 			this.thisClassNode = svClassNode;
+			this.thisFullClassName = svFullClassName;
+			this.thisFullExtendClassName = svFullExtendClassName;
 
 			this.popDecl(pullDecl);
 		}
@@ -2484,14 +2532,14 @@ module TypeScript {
 				if (memberDecl.kind() === SyntaxKind.GetAccessor) {
 					this.emitSpaceBetweenConstructs(lastEmittedMember, memberDecl);
 					var getter = <GetAccessor>memberDecl;
-					this.emitAccessorMemberDeclaration(getter, getter.propertyName, classDecl.identifier.text(),
+					this.emitAccessorMemberDeclaration(getter, getter.propertyName, this.thisFullClassName/*classDecl.identifier.text()*/,
 						!hasModifier(getter.modifiers, PullElementFlags.Static));
 					lastEmittedMember = memberDecl;
 				}
 				else if (memberDecl.kind() === SyntaxKind.SetAccessor) {
 					this.emitSpaceBetweenConstructs(lastEmittedMember, memberDecl);
 					var setter = <SetAccessor>memberDecl;
-					this.emitAccessorMemberDeclaration(setter, setter.propertyName, classDecl.identifier.text(),
+					this.emitAccessorMemberDeclaration(setter, setter.propertyName, this.thisFullClassName/*classDecl.identifier.text()*/,
 						!hasModifier(setter.modifiers, PullElementFlags.Static));
 					lastEmittedMember = memberDecl;
 				}
@@ -2523,10 +2571,10 @@ module TypeScript {
 
 						var varDeclName = varDecl.variableDeclarator.propertyName.text();
 						if (isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== SyntaxKind.IdentifierName) {
-							this.writeToOutput(classDecl.identifier.text() + "[" + varDeclName + "]");
+							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "[" + varDeclName + "]");
 						}
 						else {
-							this.writeToOutput(classDecl.identifier.text() + "." + varDeclName);
+							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "." + varDeclName);
 						}
 
 						this.emit(varDecl.variableDeclarator.equalsValueClause);
@@ -2546,7 +2594,8 @@ module TypeScript {
 			this.emitComments(funcDecl, true);
 			var functionName = funcDecl.propertyName.text();
 
-			this.writeToOutput(classDecl.identifier.text());
+			this.writeToOutput(this.thisFullClassName);
+			//this.writeToOutput(classDecl.identifier.text());
 
 			if (!hasModifier(funcDecl.modifiers, PullElementFlags.Static)) {
 				this.writeToOutput(".prototype");
@@ -2671,7 +2720,7 @@ module TypeScript {
 		}
 
 		public emitSuperExpression(expression: SuperExpression): void {
-			this.writeToOutputWithSourceMapRecord("_super.prototype", expression);
+			this.writeToOutputWithSourceMapRecord(this.thisFullExtendClassName + ".prototype", expression);
 		}
 
 		public emitParenthesizedExpression(parenthesizedExpression: ParenthesizedExpression): void {
@@ -3277,6 +3326,7 @@ module TypeScript {
 		public emitFunctionDeclaration(declaration: FunctionDeclaration): void {
 			if (!hasModifier(declaration.modifiers, PullElementFlags.Ambient) && declaration.block !== null) {
 				this.emitFunction(declaration);
+				this.writeToOutput(";");
 			}
 			else {
 				this.emitComments(declaration, /*pre:*/ true, /*onlyPinnedOrTripleSlashComments:*/ true);
