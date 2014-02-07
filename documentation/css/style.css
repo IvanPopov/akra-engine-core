@@ -92,7 +92,7 @@ b {
 .b-header {
 	display:block;
 	position:fixed;
-	z-index:30;
+	z-index:31;
 	top:0;
 	left:0;
 	margin:0;
@@ -100,8 +100,8 @@ b {
 	width:100%;
 	height:65px;
 	background:#8b88a2 url(../images/header-lines-bg.png) center 6px no-repeat;
-	-webkit-box-shadow:0 3px 5px 0 rgba(0,0,0,0.35);
-	box-shadow:0 3px 5px 0 rgba(0,0,0,0.35)
+	/*-webkit-box-shadow:0 3px 5px 0 rgba(0,0,0,0.35);
+	box-shadow:0 3px 5px 0 rgba(0,0,0,0.35)*/
 }
 .b-header .row1 {
 	padding:8px 0 0 0;
@@ -126,7 +126,7 @@ b {
 .b-header .row1 .search .text {
 	display:block;
 	margin:0;
-	padding:0 35px 0 18px;
+	padding:0 60px 0 18px;
 	height:23px;
 	width:296px;
 	background:#ece9ff;
@@ -151,6 +151,19 @@ b {
 	width:35px;
 	height:23px;
 	background:url(../images/magnifier.png) center center no-repeat;
+	border:0;
+	outline:0;
+	cursor:pointer
+}
+.b-header .row1 .search .cancel {
+	display:block;
+	position:absolute;
+	right:35px;
+	top:0;
+	width:25px;
+	height:23px;
+	background:url(../images/icon-cross.gif) center center no-repeat;
+	opacity:0.5;
 	border:0;
 	outline:0;
 	cursor:pointer
@@ -1315,4 +1328,58 @@ b {
 .searchblock .results .section .entry:hover {
 	background-color: #E6E4F5;
 
+}
+
+.searchblock-big {
+	display:block;
+	position:fixed;
+	top:0px;
+	right: 15px;
+	max-width:1200px;
+	width:100%;
+	min-width: 850px;
+	height:100%;
+	padding: 0px 0px 60px 30px;
+	margin:40px 0px 0px 0px;
+	z-index:40;
+}
+.searchblock-big .frame {
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+	border-radius: 10px 10px 0px 0px;
+}
+.searchblock-big .searchframe-header {
+	position: absolute;
+	top: 0px;
+	background-color: white;
+	width: 100%;
+	height: 139px;
+	border: solid grey;
+	border-width: 1px 1px 0px 1px;
+}
+.searchblock-big .searchframe-scroller {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	padding-top: 139px;
+}
+.searchblock-big .searchframe-scroller .b-description {
+	width: 100%;
+	max-height: 100%;
+	overflow: auto;
+	background: rgb(244, 244, 250);
+	border: solid grey;
+	border-width: 0px 1px 1px 1px;
+	border-radius: 0px 0px 10px 10px;
+}
+
+.searchblock-big .searchframe-scroller .b-description-title {
+	margin-left: 50px;
+	margin-right: 50px;
+}
+
+.searchblock-big .searchframe-scroller .b-description-wrap {
+	margin-left: 50px;
+	margin-right: 50px;
 }

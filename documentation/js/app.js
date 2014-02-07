@@ -54,6 +54,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 		}
 		// setTimeout(alphabeticColumnSort,100);
 	}
+	$scope.isHidersSetup=false;
 
 	$scope.search = function() {
 		if($scope.lastSearchID) {
@@ -124,8 +125,11 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				$scope.currentObject.data = data;
 			
 				enableSideScroll({self:$('.j-sidebar')});
-				setTimeout(setupHiders,100);
-				setTimeout(alphabeticColumnSort,100);
+				if(!$scope.isHidersSetup) {
+					setTimeout(setupHiders,100);
+					$scope.isHidersSetup=true;
+				}
+				// setTimeout(alphabeticColumnSort,100);
 			})
 		}
 		else {
@@ -149,12 +153,16 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				};
 			
 				enableSideScroll({self:$('.j-sidebar')});
-
-				if($scope.currentObject.type=="modules") {
-					setTimeout(alphabeticColumnSort,100);
+				if(!$scope.isHidersSetup) {
+					setTimeout(setupHiders,100);
+					$scope.isHidersSetup=true;
 				}
 
-				setTimeout(setupHiders,100);
+				// if($scope.currentObject.type=="modules") {
+				// 	setTimeout(alphabeticColumnSort,100);
+				// }
+
+				// setTimeout(setupHiders,100);
 				var dir=path.match(/\/[^\/]*\/?$/);
 
 				$http.get(path+"/"+(dir ? dir[0] : 'index').replace(/\//g,"")+".json")
@@ -211,20 +219,6 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	$scope.$on('$locationChangeSuccess', function() {
 		$scope.searchText = '';
 		$scope.isShowSearchResults = false;
-		if($location.path()=='/search') {
-			$scope.currentObject.name = "Search";
-			$scope.currentObject.type = "search";
-			$scope.currentObject.data = last_search_response;
-			$location.path("/searchresults");
-			return;
-		}
-		if($location.path()=='/searchresults') {
-			enableSideScroll({self:$('.j-sidebar')});
-			console.log($scope.currentObject);
-			setTimeout(alphabeticColumnSort,100);
-			setTimeout(setupHiders,100);
-			return;
-		}
 		tryFileExists();
 	});
 
@@ -269,7 +263,8 @@ app.directive('columndisplay', function() {
 	return {
 		restrict:'E',
 		scope: {
-			docobject:'='
+			sectiondata:'=',
+			sectiontype:'='
 		}
 	}
 });
@@ -499,18 +494,25 @@ app.filter('objectToArray', function() {
 	}
 });
 
-app.filter('splitRowsColumns', function() {
-	return function (object,rowSize,columnSize) {
-		var entriesNum = Object.keys(object).length;
+app.filter('splitPagesRowsColumns', function() {
+	return function (array,pageSize,rowSize,columnSize) {
+		var entriesNum = array.length;
 		var colsNum = Math.ceil(entriesNum/columnSize);
 		var rowsNum = Math.ceil(entriesNum/rowSize/columnSize);
-		// console.log(entriesNum,colsNum,rowsNum);
+		var pagesNum = Math.ceil(entriesNum/rowSize/columnSize/pageSize);
+		// console.log(entriesNum,colsNum,rowsNum,pagesNum);
 		var len=[];
-		for(var i=0;i<rowsNum;i++) {
+		for(var k=0;k<pagesNum;k++) {
 			len.push([]);
-			for(var j=i*rowSize;j<Math.min(i*rowSize+rowSize,colsNum);j++) {
-				len[i].push(object.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
-				// console.log(object.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+			// console.log("<",len,">");
+			for(var i=k*pageSize;i<Math.min((k+1)*pageSize,rowsNum);i++) {
+				len[k].push([]);
+				// console.log("<",len,">");
+				for(var j=i*rowSize;j<Math.min((i+1)*rowSize,colsNum);j++) {
+					// console.log("Indexes: ",k,i,j);
+					// console.log(array.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+					len[k][i%pageSize].push(array.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+				}
 			}
 		}
 		return len;

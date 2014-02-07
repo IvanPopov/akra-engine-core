@@ -167,7 +167,7 @@ function setupSearchbarHiders() {
 			}
 		}
 	});
-	_searchbarScrollerElem = $('.searchblock-big .frame .scroller .b-description');
+	_searchbarScrollerElem = $('.searchblock-big .frame .searchframe-scroller .b-description');
 	$('.searchblock-big .frame').on('mousewheel DOMMouseScroll', function(ev,delta,deltaX,deltaY) {
 		// console.log('Scrolling search reslts')
 		scrollTop = _searchbarScrollerElem.scrollTop();
@@ -175,7 +175,7 @@ function setupSearchbarHiders() {
 		height = _searchbarScrollerElem.height();
 		scrollDelta = (ev.type == 'DOMMouseScroll' ?
 			ev.originalEvent.detail * -40 :
-			deltaY * -40 );
+			ev.originalEvent.wheelDelta * -1 );
 		_searchbarScrollerElem.scrollTop(Math.min(Math.max(scrollTop+scrollDelta,0),scrollHeight-height));
 
 		ev.stopPropagation();
