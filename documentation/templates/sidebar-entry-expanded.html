@@ -1,59 +1,75 @@
 <span>
-	<div class="wrap">
-		<a class="dots" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">
-			<span class="icon {{docobject.type|toStyleType}}"></span>
-			<span class="text">{{docobject.name}}</span>
-		</a>
-		<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
-		<a class="tree j-tree-button" ng-if="docobject.name!='index'" href="javasctipt:void(0);"></a>
-	</div>
-	<div class="sub-menu">
-		<div class="legend">
-			<div ng-show='docobject.type=="modules"' class="row">
-				<div class="col-md-2"><a class="link j-sm-button" data-name="classes" title="Classes" href="javascript:void(0);"><img src="images/sm-classes-icon.png"/></a></div
->				<div class="col-md-2"><a class="link j-sm-button" data-name="enums" title="Enums" href="javascript:void(0);"><img src="images/sm-enums-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="functions" title="Functions" href="javascript:void(0);"><img src="images/sm-functions-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="interfaces" title="Interfaces" href="javascript:void(0);"><img src="images/sm-interfaces-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="modules" title="Namespaces" href="javascript:void(0);"><img src="images/sm-namespaces-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="variables" title="Members" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a></div>
-				<div class="col-md-2"></div>
-			</div>
-			<div ng-show='docobject.type=="classes"||docobject.type=="interfaces"' class="row">
-				<div class="col-md-2"><a class="link j-sm-button" data-name="methods" title="Methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="variables" title="Members" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="getters" title="Getters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="setters" title="Setters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png"/></a></div>
+    <div class="wrap">
+        <a class="dots" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">
+            <!--<span class="icon {{docobject.type|toStyleType}}"></span>-->
+            <span class="text">{{docobject.name}}</span>
+        </a>
+        <a class="arrow opened" href="javascript:void(0);"><i class="fa fa-caret-down"></i></a>
+        <a class="tree j-tree-button" ng-if="docobject.name!='index'" href="javasctipt:void(0);"></a>
+    </div>
+    <div class="sub-menu">
+        <div class="legend">
+            <div ng-show='docobject.type=="modules"' class="row">
+                <div class=""><a style="padding: 0 3px 0 0;" class="link j-sm-button" data-name="classes" title="Classes" href="javascript:void(0);"><!--<img src="images/sm-classes-icon.png" />-->Class</a></div>
+                <div class=""><a style="padding: 0 3px 0 0;" class="link j-sm-button" data-name="enums" title="Enums" href="javascript:void(0);"><!--<img src="images/sm-enums-icon.png" />-->Enum</a></div>
+                <div class=""><a style="padding: 0 3px 0 0;" class="link j-sm-button" data-name="functions" title="Functions" href="javascript:void(0);"><!--<img src="images/sm-functions-icon.png" />-->Function</a></div>
+                <br />
+                <div class=""><a style="padding: 0 3px 0 0;" class="link j-sm-button" data-name="interfaces" title="Interfaces" href="javascript:void(0);"><!--<img src="images/sm-interfaces-icon.png" />-->Interface</a></div>
+                <div class=""><a style="padding: 0 3px 0 0;" class="link j-sm-button" data-name="modules" title="Namespaces" href="javascript:void(0);"><!--<img src="images/sm-namespaces-icon.png" />-->Module</a></div>
+                <div class=""><a style="padding: 0 3px 0 0;" class="link j-sm-button" data-name="variables" title="Members" href="javascript:void(0);"><!--<img src="images/sm-members-icon.png" />-->Member</a></div>
+                <div class=""></div>
+            </div>
+            <div ng-show='docobject.type=="classes"||docobject.type=="interfaces"' class="row">
+                <div class="col-md-2"><a class="link j-sm-button" data-name="methods" title="Methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png" /></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="variables" title="Members" href="javascript:void(0);"><img src="images/sm-members-icon.png" /></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="getters" title="Getters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" /></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="setters" title="Setters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" /></a></div>
 
-				<!-- <div class="col-md-2"><a class="link j-sm-button" data-name="methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="members" href="javascript:void(0);"><img src="images/sm-members-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="accessors" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="signals" href="javascript:void(0);"><img src="images/sm-signals-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="static" href="javascript:void(0);"><img src="images/sm-static-icon.png" alt=""/></a></div> -->
-				<div class="col-md-2"></div>
-			</div>
-		</div>
-		<div class="sub-wrap" ng-if="docobject.type!='enums'">
-			<div class="j-sm-sub-list" ng-repeat="(key,subdata) in filtersubobjects(docobject.data)" data-name="{{docobject.type!='modules' ? (key|toClassStyleType) : key}}">
-				<ul class="sub-list" ng-if="key!='variables'">
-					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata"><a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType|toClassStyleType}}">{{subkey}}</a></li>
-				</ul>
-				<ul class="sub-list" ng-if="key=='variables'||subdata">
-					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.private"><a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a></li>
-					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.public"><a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a></li>
-					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.protected"><a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a></li>
-					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.static"><a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a></li>
-				</ul>
-				<div class="sep"></div>
-			</div>
-		</div>
-		<div class="sub-wrap" ng-if="docobject.type=='enums'">
-			<div class="j-sm-sub-list">
-				<ul class="sub-list">
-					<li class="sub-item" ng-repeat="(key,val) in docobject.data"><a class="sub-link {{key|toStyleType}}">{{val.name}}</a></li>
-				</ul>
-				<div class="sep"></div>
-			</div>
-		</div>
-		<div class="sub-bottom-row"></div>
-	</div>
+                <!-- <div class="col-md-2"><a class="link j-sm-button" data-name="methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png" alt=""/></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="members" href="javascript:void(0);"><img src="images/sm-members-icon.png" alt=""/></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="accessors" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" alt=""/></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="signals" href="javascript:void(0);"><img src="images/sm-signals-icon.png" alt=""/></a></div>
+                <div class="col-md-2"><a class="link j-sm-button" data-name="static" href="javascript:void(0);"><img src="images/sm-static-icon.png" alt=""/></a></div> -->
+                <div class="col-md-2"></div>
+            </div>
+        </div>
+        <div class="sub-wrap" ng-if="docobject.type!='enums'">
+            <div class="j-sm-sub-list" ng-repeat="(key,subdata) in filtersubobjects(docobject.data)" data-name="{{docobject.type!='modules' ? (key|toClassStyleType) : key}}">
+                <div class="sep"><a href="javascript:void(0);#"><i class="fa fa-caret-down"></i><strong>{{key|toStyleType|capitalize}}</strong></a></div>
+                <ul class="sub-list" ng-if="key!='variables'">
+                    <li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata">
+                        <a ng-if='docobject.type=="modules" && key!="functions"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a>
+                        <a ng-if='docobject.type=="modules" && key=="functions"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}()</a>
+                        <a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType|toClassStyleType}}">{{docobject.name|lowercase}}.{{subkey}}</a>
+                    </li>
+                </ul>
+
+                <ul class="sub-list" ng-if="key=='variables'||subdata">
+                    <li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.private">
+                        <a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a>
+                    </li>
+                    <li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.public">
+                        <a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a>
+                    </li>
+                    <li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.protected">
+                        <a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a>
+                    </li>
+                    <li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata.static">
+                        <a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType}}">{{subkey}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="sub-wrap" ng-if="docobject.type=='enums'">
+            <div class="j-sm-sub-list">
+                <ul class="sub-list">
+                    <li class="sub-item" ng-repeat="(key,val) in docobject.data">
+                        <a class="sub-link {{key|toStyleType}}">{{val.name}}</a>
+                    </li>
+                </ul>
+                <div class="sep"></div>
+            </div>
+        </div>
+        <div class="sub-bottom-row"></div>
+    </div>
 </span>

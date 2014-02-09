@@ -1,24 +1,49 @@
-					<div ng-init="pagenum = 0">
-							<p ng-hide="sectiondata.length==1">
-								<button ng-click="pagenum = (pagenum==0) ? 0 : pagenum-1">&lt;&lt;</button>
-								{{pagenum+1}} of {{sectiondata.length}}
-								<button ng-click="pagenum = (pagenum==sectiondata.length-1) ? pagenum : pagenum+1">&gt;&gt;</button>
-							</p>
-						<div class="row" ng-repeat="rowdata in sectiondata[pagenum]" ng-init="rownum=$index">
-							<div class="col-md-3" ng-repeat="columndata in rowdata">
-								<div class="b-alphabet-column">
-									<div>
-										<div class="header"><span class="main">{{(sectiontype=='enums'||sectiontype=='interfaces')?(columndata[0].name[0].toUpperCase()!=sectiontype[0].toUpperCase()?columndata[0].name[0].toUpperCase():columndata[0].name[1].toUpperCase()):(columndata[0].name[0].toUpperCase())}}</span></div>
-										<div class="content">
-											<div ng-repeat="entry in columndata">
-												<p class="title"><a href="#{{entry.location|locationToUrlStyle}}{{(sectiontype=='enumKeys'||sectiontype=='interfaceMembers'||sectiontype=='classMembers') ? '' : '/'+entry.name }}">{{entry.name}}</a></p>
-												<p class="text" ng-if="entry.location&&entry.location.length!=0"><a href="#{{entry.location|locationToUrlStyle}}">{{entry.location}}</a></p>
-												<p class="text" ng-if="!entry.location||entry.location.length==0">global {{entry.kind}}</p>
-
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+<div ng-init="pagenum = 0">
+	<p ng-hide="sectiondata.length==1">
+		<a style="margin-left: 2px;" href="javascript:void(0);" ng-click="pagenum = (pagenum==0) ? 0 : pagenum-1" ng-class="{disabled: pagenum==0}">
+			<i class="fa fa-chevron-left"></i>
+		</a>
+		<!--<button ng-click="pagenum = (pagenum==0) ? 0 : pagenum-1">&lt;&lt;</button>-->
+		{{pagenum+1}} of {{sectiondata.length}}
+		<a href="javascript:void(0);" ng-click="pagenum = (pagenum==sectiondata.length-1) ? pagenum : pagenum+1" ng-class="{disabled: pagenum==sectiondata.length-1}">
+			<i class="fa fa-chevron-right"></i>
+		</a>
+		<!--<button ng-click="pagenum = (pagenum==sectiondata.length-1) ? pagenum : pagenum+1">&gt;&gt;</button>-->
+	</p>
+	<div class="row" ng-repeat="rowdata in sectiondata[pagenum]" ng-init="rownum=$index">
+		<div class="col-md-6" ng-repeat="columndata in rowdata">
+			<div class="b-alphabet-column">
+				<table>
+					<thead>
+						<tr class="header">
+							<th class="main" colspan="2">
+								{{(sectiontype=='enums'||sectiontype=='interfaces')?(columndata[0].name[0].toUpperCase()!=sectiontype[0].toUpperCase()?columndata[0].name[0].toUpperCase():columndata[0].name[1].toUpperCase()):(columndata[0].name[0].toUpperCase())}}
+							</th>
+						</tr>
+					</thead>
+					<tbody class="content">
+						<tr ng-repeat="entry in columndata">
+							<td>
+								<p class="title">
+									<span style="color: rgb(153, 153, 153); font-size: 14px;">{{sectiontype=='modules' && elementlocation?elementlocation + '.':''}}</span><a href="#{{elementlocation|locationToUrlStyle}}{{(sectiontype=='enumKeys'||sectiontype=='interfaceMembers'||sectiontype=='classMembers') ? '' : '/'+entry.name }}">{{entry.name}}{{sectiontype=='functions'?'()':''}}</a>
+								</p>
+								<p class="text" ng-if="entry.location&&entry.location.length!=0"><a href="#{{entry.location|locationToUrlStyle}}">{{entry.location}}</a></p>
+								<!--<p class="text" ng-if="!entry.location||entry.location.length==0">global {{entry.kind}}</p>-->
+							</td>
+							<td>
+								<p class="description">
+									{{entry.description}}
+									<span style="color: rgb(153, 153, 153);" ng-if="!entry.description">
+										No description.
+									</span>
+								</p>
+								<p class="text" ng-if="entry.location&&entry.location.length!=0"><a href="#{{entry.location|locationToUrlStyle}}">{{entry.location}}</a></p>
+								<!--<p class="text" ng-if="!entry.location||entry.location.length==0">global {{entry.kind}}</p>-->
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

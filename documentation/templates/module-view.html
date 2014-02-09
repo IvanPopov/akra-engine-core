@@ -1,9 +1,16 @@
-			<div class="b-description">
-				<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key|toStyleType}}">
-					<h2 class="b-description-title {{key|toStyleType}}">{{key|toStyleType}}</h2>
+<div class="b-description">
+	<div ng-repeat="el in docobjectdata" class="j-content-chapter" data-name="{{el.key|toStyleType}}">
+		<h2 class="b-description-title {{el.key|toStyleType}}">{{el.key|toStyleType|capitalize}}</h2>
 
-					<div class="b-description-wrap" ng-init="section_sorted_data = (filtersubobjects(val)|objectToArray|orderBy:'name'|splitPagesRowsColumns:3:4:6)" ng-init="sectiontype = key">
-						<modulecolumndisplay module-column-view sectiondata="section_sorted_data" sectiontype="sectiontype" elementlocation="elementlocation"></modulecolumndisplay>
-					</div>
-				</div>
-			</div>
+		<div class="b-description-wrap"
+			 ng-init="
+			 section_sorted_data = (filtersubobjects(el.value)|objectToArray|orderBy:'nme'|splitPagesRowsColumns:1:2:10);
+			 sectiontype = el.key;
+			 elementlocation = (docobject.name == 'index' && docobject.location=='') ?
+				'' : docobject.location ?
+					docobject.location + '.' + docobject.name: docobject.name">
+			<!-- pageSize,rowSize,columnSize-->
+			<modulecolumndisplay module-column-view sectiondata="section_sorted_data" sectiontype="sectiontype" elementlocation="elementlocation|locationToDocStyle" />
+		</div>
+	</div>
+</div>

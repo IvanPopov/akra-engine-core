@@ -1,144 +1,76 @@
-
 {
-"modules":
-{
-"akra":{ }
-}
-,
-"functions":
-{
-"utf8_encode":{ }
-,
-"utf8_decode":{ }
-,
-"crc32":{ }
-,
-"md5":{ }
-,
-"sha1":{ }
-,
-"createTriTreeNode":{ }
-,
-"processInitTerrain":{ }
-,
-"processTesselate":{ }
-,
-"processUpdateParams":{ }
-}
-,
-"interfaces":
-{
-"String":{ }
-,
-"Array":{ }
-,
-"Number":{ }
-,
-"WebGLObject":{ }
-,
-"WebGLBuffer":{ }
-,
-"WebGLFramebuffer":{ }
-,
-"WebGLProgram":{ }
-,
-"WebGLRenderbuffer":{ }
-,
-"WebGLShader":{ }
-,
-"WebGLTexture":{ }
-,
-"WebGLUniformLocation":{ }
-,
-"WebGLActiveInfo":{ }
-,
-"WebGLShaderPrecisionFormat":{ }
-,
-"WebGLContextAttributes":{ }
-,
-"WebGLRenderingContext":{ }
-,
-"CanvasRenderingContext":{ }
-,
-"HTMLCanvasElement":{ }
-,
-"WEBGL_debug_shaders":{ }
-,
-"WEBGL_debug_renderer_info":{ }
-,
-"WEBGL_compressed_texture_pvrtc":{ }
-,
-"WEBGL_compressed_texture_atc":{ }
-,
-"WEBGL_compressed_texture_s3tc":{ }
-,
-"WEBGL_depth_texture":{ }
-,
-"OES_element_index_uint":{ }
-,
-"WebGLVertexArrayObjectOES":{ }
-,
-"OES_vertex_array_object":{ }
-,
-"OES_standard_derivatives":{ }
-,
-"OES_texture_half_float":{ }
-,
-"OES_texture_float":{ }
-,
-"WEBGL_lose_context":{ }
-,
-"WEBGL_multiple_render_targets":{ }
-,
-"WEBGL_fbo_color_attachments":{ }
-,
-"ZipEntry":{ }
-,
-"ZipWriter":{ }
-,
-"ZipReader":{ }
-,
-"ZipBlobReaderConstructor":{ }
-,
-"ZipArrayBufferReaderConstructor":{ }
-,
-"ZipData64URIReaderConstructor":{ }
-,
-"Zip":{ }
-,
-"ZipStatic":{ }
-,
-"ICommand":{ }
-,
-"IRect3d":{ }
-,
-"ITriTreeNode":{ }
-,
-"ITerrainSectionInfo":{ }
-,
-"ITerrainInitInfo":{ }
-,
-"ITerrainInfo":{ }
-,
-"FileSaver":{ }
-}
-,
-"variables":
-{
-"pTmpTransferableArray":{ }
-,
-"pTerrain":{ }
-}
-,
-"enums":
-{
-"ECommandTypes":{ }
-}
-,
-"classes":
-{
-"TriangleNodePool":{ }
-,
-"TerrainInfo":{ }
-}
+    "modules": {
+        "akra": {}
+    },
+    "classes": {
+        "TerrainInfo": {},
+        "TriangleNodePool": {}
+    },
+    "enums": {
+        "ECommandTypes": {}
+    },
+    "functions": {
+        "crc32": {},
+        "createTriTreeNode": {},
+        "md5": {},
+        "processInitTerrain": {},
+        "processTesselate": {},
+        "processUpdateParams": {},
+        "sha1": {},
+        "utf8_decode": {},
+        "utf8_encode": {}
+    },
+    "interfaces": {
+        "Array": {},
+        "CanvasRenderingContext": {},
+        "FileSaver": {},
+        "HTMLCanvasElement": {},
+        "ICommand": {},
+        "IRect3d": {},
+        "ITerrainInfo": {},
+        "ITerrainInitInfo": {},
+        "ITerrainSectionInfo": {},
+        "ITriTreeNode": {},
+        "Number": {},
+        "OES_element_index_uint": {},
+        "OES_standard_derivatives": {},
+        "OES_texture_float": {},
+        "OES_texture_half_float": {},
+        "OES_vertex_array_object": {},
+        "String": {},
+        "WEBGL_compressed_texture_atc": {},
+        "WEBGL_compressed_texture_pvrtc": {},
+        "WEBGL_compressed_texture_s3tc": {},
+        "WEBGL_debug_renderer_info": {},
+        "WEBGL_debug_shaders": {},
+        "WEBGL_depth_texture": {},
+        "WEBGL_fbo_color_attachments": {},
+        "WEBGL_lose_context": {},
+        "WEBGL_multiple_render_targets": {},
+        "WebGLActiveInfo": {},
+        "WebGLBuffer": {},
+        "WebGLContextAttributes": {},
+        "WebGLFramebuffer": {},
+        "WebGLObject": {},
+        "WebGLProgram": {},
+        "WebGLRenderbuffer": {},
+        "WebGLRenderingContext": {},
+        "WebGLShader": {},
+        "WebGLShaderPrecisionFormat": {},
+        "WebGLTexture": {},
+        "WebGLUniformLocation": {},
+        "WebGLVertexArrayObjectOES": {},
+        "Zip": {},
+        "ZipArrayBufferReaderConstructor": {},
+        "ZipBlobReaderConstructor": {},
+        "ZipData64URIReaderConstructor": {},
+        "ZipEntry": {},
+        "ZipReader": {},
+        "ZipStatic": {},
+        "ZipWriter": {}
+    },
+    "variables": {
+        "pTerrain": {},
+        "pTmpTransferableArray": {}
+    }
 }

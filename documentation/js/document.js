@@ -11,7 +11,7 @@ var timeout_id_last_search;
 var last_search_response = {};
 var searchblock_template = '<div id="searchblock" class="searchblock"> </div>';
 
-jQuery(document).ready(function($){
+jQuery(document).ready(function ($) {
 
 	//Hide/show sidebar
 	var sidebar = [];
@@ -21,16 +21,16 @@ jQuery(document).ready(function($){
 	sidebar.switcher = $('.j-left-bar');
 	sidebar.width = sidebar.self.width();
 
-	sidebar.switcher.click(function(){
-		if (sidebar.switcher.hasClass('opened')){
+	sidebar.switcher.click(function () {
+		if (sidebar.switcher.hasClass('opened')) {
 			//hide sidebar
 			sidebar.self.animate({
-				'left': -sidebar.width+'px'
+				'left': -sidebar.width + 'px'
 			}, sidebar.animateSpeed);
 			//move the button to the left
 			sidebar.switcher.animate({
 				'left': 0
-			}, sidebar.animateSpeed, function(){
+			}, sidebar.animateSpeed, function () {
 				sidebar.switcher.removeClass('opened').addClass('closed');
 			});
 			//move content to the left
@@ -45,13 +45,13 @@ jQuery(document).ready(function($){
 			}, sidebar.animateSpeed);
 			//move the button to the right
 			sidebar.switcher.animate({
-				'left': (sidebar.width-18)+'px'
-			}, sidebar.animateSpeed, function(){
+				'left': (sidebar.width - 18) + 'px'
+			}, sidebar.animateSpeed, function () {
 				sidebar.switcher.removeClass('closed').addClass('opened');
 			});
 			//move content to the right
 			sidebar.content.animate({
-				'marginLeft': sidebar.width+'px'
+				'marginLeft': sidebar.width + 'px'
 			}, sidebar.animateSpeed);
 
 		}
@@ -60,24 +60,24 @@ jQuery(document).ready(function($){
 	enableSideScroll(sidebar);
 	// bindSearchBar();
 
-	$(window).resize(function(){
+	$(window).resize(function () {
 		enableSideScroll(sidebar);
 		hideTreeMenu();
 	});
 
-	$('body').click(function(e){
-		if ( ($(e.target).parents('.j-tree-menu').length==0) && (! $(e.target).hasClass('j-tree-button')) ){
+	$('body').click(function (e) {
+		if (($(e.target).parents('.j-tree-menu').length == 0) && (!$(e.target).hasClass('j-tree-button'))) {
 			hideTreeMenu();
 		}
 	});
 
-	$(".search").submit(function(event){
+	$(".search").submit(function (event) {
 		event.preventDefault();
 		// location.assign(location.href.split('#')[0]+'#/search');
 	});
 });
 
-$(document).load(function(){setupHiders();});
+$(document).load(function () { setupHiders(); });
 
 function setupHiders() {
 	setupSidebarHiders();
@@ -86,28 +86,28 @@ function setupHiders() {
 
 function setupSidebarHiders() {
 	/* tree-popup-menu */
-	$('.j-tree-button').click(function(){
+	$('.j-tree-button').click(function () {
 		var self = $(this);
 		var treeMenu = self.parent().find('.j-tree-menu');
 
-		if(treeMenu.hasClass('opened')) {
+		if (treeMenu.hasClass('opened')) {
 			hideTreeMenu();
 		} else {
 			hideTreeMenu();
 			treeMenu.addClass('opened');
 			$.scrollbar({
-				scrollpane:    treeMenu, // parent element
+				scrollpane: treeMenu, // parent element
 				scrollcontent: treeMenu.find('.j-tree-list')  // inner content
 			});
 		}
 	});
 
 	// leftColumn, switch chapters
-	$('.j-sm-button').click(function(){
+	$('.j-sm-button').click(function () {
 		var self = $(this);
-		if (!self.hasClass('disabled')){
+		if (!self.hasClass('disabled')) {
 			var selfName = self.data('name');
-			var menuList = $('.j-sm-sub-list[data-name="'+ selfName +'"]');
+			var menuList = $('.j-sm-sub-list[data-name="' + selfName + '"]');
 
 			if (self.hasClass('inactive')) {
 				self.removeClass('inactive');
@@ -121,22 +121,22 @@ function setupSidebarHiders() {
 }
 function setupMainbarHiders() {
 	/* Single Method Close/Open */
-	$('.j-single-method-arrow').click(function(){
+	$('.j-single-method-arrow').click(function () {
 		var self = $(this);
 		var singleMethod = self.parents('.j-single-method');
-		if (singleMethod.hasClass('opened')){
+		if (singleMethod.hasClass('opened')) {
 			singleMethod.removeClass('opened').addClass('closed');
-		} else if (singleMethod.hasClass('closed')){
+		} else if (singleMethod.hasClass('closed')) {
 			singleMethod.removeClass('closed').addClass('opened');
 		}
 	});
 
 	// content, switch chapters
-	$('.j-content-chapter-button').click(function(){
+	$('.j-content-chapter-button').click(function () {
 		var self = $(this);
-		if (!self.hasClass('disabled')){
+		if (!self.hasClass('disabled')) {
 			var selfName = self.data('name');
-			var menuList = $('.j-content-chapter[data-name="'+ selfName +'"]');
+			var menuList = $('.j-content-chapter[data-name="' + selfName + '"]');
 
 			if (self.hasClass('inactive')) {
 				self.removeClass('inactive');
@@ -152,11 +152,11 @@ var _searchbarScrollerElem;
 function setupSearchbarHiders() {
 
 	// content, switch chapters
-	$('.j-search-chapter-button').click(function(){
+	$('.j-search-chapter-button').click(function () {
 		var self = $(this);
-		if (!self.hasClass('disabled')){
+		if (!self.hasClass('disabled')) {
 			var selfName = self.data('name');
-			var menuList = $('.j-search-chapter[data-name="'+ selfName +'"]');
+			var menuList = $('.j-search-chapter[data-name="' + selfName + '"]');
 
 			if (self.hasClass('inactive')) {
 				self.removeClass('inactive');
@@ -168,47 +168,50 @@ function setupSearchbarHiders() {
 		}
 	});
 	_searchbarScrollerElem = $('.searchblock-big .frame .searchframe-scroller .b-description');
-	$('.searchblock-big .frame').on('mousewheel DOMMouseScroll', function(ev,delta,deltaX,deltaY) {
+	$('.searchblock-big .frame').on('mousewheel DOMMouseScroll', function (ev, delta, deltaX, deltaY) {
 		// console.log('Scrolling search reslts')
 		scrollTop = _searchbarScrollerElem.scrollTop();
 		scrollHeight = _searchbarScrollerElem[0].scrollHeight;
 		height = _searchbarScrollerElem.height();
 		scrollDelta = (ev.type == 'DOMMouseScroll' ?
 			ev.originalEvent.detail * -40 :
-			ev.originalEvent.wheelDelta * -1 );
-		_searchbarScrollerElem.scrollTop(Math.min(Math.max(scrollTop+scrollDelta,0),scrollHeight-height));
+			ev.originalEvent.wheelDelta * -1);
+		_searchbarScrollerElem.scrollTop(Math.min(Math.max(scrollTop + scrollDelta, 0), scrollHeight - height));
 
 		ev.stopPropagation();
 		ev.preventDefault();
 	});
 }
 
-function enableSideScroll(sidebar){
+function enableSideScroll(sidebar) {
 	//Таймер для того, чтобы браузер успел нормально отобразить левую колонку и вычислить её высоту.
 	//Без него высота вычисляется неверно.
-	setTimeout(function(){
+	setTimeout(function () {
 		var sideMenu = $('.j-side-menu');
 		sideMenu.css({
 			'paddingRight': '',
 			'marginTop': ''
 		});
-		if (sidebar.self.height()<sideMenu.height()){
+		if (sidebar.self.height() < sideMenu.height()) {
 			$('.w-srcollbar-wrap').remove();
 			$.scrollbar({
-				scrollpane:    sidebar.self, // parent element
+				scrollpane: sidebar.self, // parent element
 				scrollcontent: sideMenu  // inner content
 			}).renew();
+			$('.w-srcollbar-wrap').css({ width: '4px' });
+			$('.w-slider').css({ width: '4px' });
+
 		} else {
 			$('.w-srcollbar-wrap').remove();
 			sideMenu.css({
-				'paddingRight':0,
+				'paddingRight': 0,
 				'marginTop': 0
 			});
 		}
-	},50);
+	}, 50);
 }
 
-function hideTreeMenu(){
+function hideTreeMenu() {
 	$('.j-tree-menu').removeClass('opened').find('.w-srcollbar-wrap').remove();
 }
 
@@ -229,8 +232,8 @@ function alphabeticColumnSort() {
 		var new_column, cursor;
 		for (var j = 0; j < entries.length; j++) {
 			// console.log(entries[j],j,entries.length);
-			if(j % column_len == 0) {
-				if(++col_num > columns_in_row) {
+			if (j % column_len == 0) {
+				if (++col_num > columns_in_row) {
 					var new_row = $("<div class='row'></div>");
 					section_cursor.after(new_row);
 					section_cursor = new_row;
@@ -239,7 +242,7 @@ function alphabeticColumnSort() {
 				// console.log("Creating new column");
 				new_column = $("<div class=\"col-md-3\"><div class=\"b-alphabet-column\"></div></div>");
 				var first_entry_name = $(entries[j]).find("a").html().toUpperCase();
-				new_column.find(".b-alphabet-column").append($("<div class='header'><span class='main'>"+(["INTERFACES","ENUMS"].indexOf(section_name)>=0&&first_entry_name[0]==section_name[0] ? first_entry_name[1] : first_entry_name[0])+"</span></div>")).append($("<div class='content'></div>"));
+				new_column.find(".b-alphabet-column").append($("<div class='header'><span class='main'>" + (["INTERFACES", "ENUMS"].indexOf(section_name) >= 0 && first_entry_name[0] == section_name[0] ? first_entry_name[1] : first_entry_name[0]) + "</span></div>")).append($("<div class='content'></div>"));
 				section_cursor.append(new_column);
 				cursor = new_column.find(".content");
 			}

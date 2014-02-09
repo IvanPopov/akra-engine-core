@@ -1,6 +1,6 @@
 			<div class="b-description">
 				<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key | toStyleType | toClassStyleType}}" ng-switch="key">
-					<h2 class="b-description-title {{key | toStyleType | toClassStyleType}}">{{key | toStyleType | toClassStyleType}}</h2>
+					<h2 class="b-description-title {{key | toStyleType | toClassStyleType}}">{{key|toStyleType|toClassStyleType|capitalize}}</h2>
 					<div ng-switch-when="variables">
 						<div ng-repeat="(subkey,subval) in val">
 							<h2 class="b-description-title2 {{subkey}}-{{key|toStyleType}}">{{subkey}} {{key|toStyleType}}</h2>

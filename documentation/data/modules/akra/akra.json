@@ -1,1300 +1,655 @@
-
 {
-"location":"",
-"enums":
-{
-"ELogLevel":{ }
-,
-"EDataTypes":{ }
-,
-"EDataTypeSizes":{ }
-,
-"EEventTypes":{ }
-,
-"ESceneTypes":{ }
-,
-"EResourceFamilies":{ }
-,
-"EVideoResources":{ }
-,
-"EAudioResources":{ }
-,
-"EGameResources":{ }
-,
-"ECompareFunction":{ }
-,
-"ECullingMode":{ }
-,
-"EFrameBufferTypes":{ }
-,
-"EPrimitiveTypes":{ }
-,
-"ERenderCapabilitiesCategory":{ }
-,
-"ERenderCapabilities":{ }
-,
-"EAttachmentTypes":{ }
-,
-"ERenderStates":{ }
-,
-"ERenderStateValues":{ }
-,
-"EUtilTimerCommands":{ }
-,
-"ELightTypes":{ }
-,
-"ENodeCreateMode":{ }
-,
-"EParserCode":{ }
-,
-"EParserType":{ }
-,
-"EParseMode":{ }
-,
-"ETokenType":{ }
-,
-"EOperationType":{ }
-,
-"EResourceItemEvents":{ }
-,
-"EAFXInstructionTypes":{ }
-,
-"EFunctionType":{ }
-,
-"ECheckStage":{ }
-,
-"EVarUsedMode":{ }
-,
-"EExtractExprType":{ }
-,
-"EAFXBlendMode":{ }
-,
-"EPixelFormats":{ }
-,
-"EPixelFormatFlags":{ }
-,
-"EPixelComponentTypes":{ }
-,
-"EFilters":{ }
-,
-"EHardwareBufferFlags":{ }
-,
-"ELockFlags":{ }
-,
-"ETextureFlags":{ }
-,
-"ETextureFilters":{ }
-,
-"ETextureWrapModes":{ }
-,
-"ETextureParameters":{ }
-,
-"ETextureTypes":{ }
-,
-"ECubeFace":{ }
-,
-"ETextureCubeFlags":{ }
-,
-"ETextureUnits":{ }
-,
-"ESurfaceMaterialTextures":{ }
-,
-"EAFXShaderVariableType":{ }
-,
-"EDataFlowTypes":{ }
-,
-"EModelFormats":{ }
-,
-"EResourceCodes":{ }
-,
-"EImageFlags":{ }
-,
-"EImageCubeFlags":{ }
-,
-"ERenderDataTypes":{ }
-,
-"ERenderDataOptions":{ }
-,
-"EMeshOptions":{ }
-,
-"EMeshCloneOptions":{ }
-,
-"ERenderDataBufferOptions":{ }
-,
-"EAnimationInterpolations":{ }
-,
-"EEntityTypes":{ }
-,
-"ENodeInheritance":{ }
-,
-"ESceneNodeFlags":{ }
-,
-"EAnimationTypes":{ }
-,
-"ECameraParameters":{ }
-,
-"ECameraTypes":{ }
-,
-"EFramebuffer":{ }
-,
-"EStatFlags":{ }
-,
-"E3DEventTypes":{ }
-,
-"EViewportTypes":{ }
-,
-"EVertexBufferTypes":{ }
-,
-"ECanvasTypes":{ }
-,
-"EVolumeClassifications":{ }
-,
-"EPlaneClassifications":{ }
-,
-"ERPCPacketTypes":{ }
-,
-"EPipeTypes":{ }
-,
-"EPipeDataTypes":{ }
-,
-"EDependenceStatuses":{ }
-,
-"EGamepadCodes":{ }
-,
-"EGamepadAxis":{ }
-,
-"EKeyCodes":{ }
-,
-"EMouseButton":{ }
-,
-"EDocumentEntry":{ }
-,
-"EDocumentFormat":{ }
-}
-,
-"interfaces":
-{
-"ILogRoutineFunc":{ }
-,
-"ISourceLocation":{ }
-,
-"ILoggerEntity":{ }
-,
-"ILogger":{ }
-,
-"IConverter":{ }
-,
-"IConvertionTableRow":{ }
-,
-"IConvertionTable":{ }
-,
-"Pair":{ }
-,
-"StringMap":{ }
-,
-"IntMap":{ }
-,
-"UintMap":{ }
-,
-"FloatMap":{ }
-,
-"BoolMap":{ }
-,
-"BoolDMap":{ }
-,
-"StringDMap":{ }
-,
-"ISceneManager":{ }
-,
-"IParticleManager":{ }
-,
-"IResourcePoolManager":{ }
-,
-"IRenderer":{ }
-,
-"IRendererOptions":{ }
-,
-"IUtilTimer":{ }
-,
-"IMesh":{ }
-,
-"IRenderDataCollection":{ }
-,
-"IBufferMap":{ }
-,
-"IAnimationController":{ }
-,
-"ISkeleton":{ }
-,
-"IScene3d":{ }
-,
-"IDependens":{ }
-,
-"IAFXComposer":{ }
-,
-"IGamepadMap":{ }
-,
-"IDepsManager":{ }
-,
-"IDep":{ }
-,
-"ISpriteManager":{ }
-,
-"IEngineOptions":{ }
-,
-"IEngine":{ }
-,
-"IManager":{ }
-,
-"IUnique":{ }
-,
-"IEventTable":{ }
-,
-"IEventProvider":{ }
-,
-"IScene":{ }
-,
-"IScene2d":{ }
-,
-"IUI":{ }
-,
-"IResourceCode":{ }
-,
-"IResourcePool":{ }
-,
-"IResourceWatcherFunc":{ }
-,
-"IResourcePoolItem":{ }
-,
-"IRenderMethod":{ }
-,
-"ITexture":{ }
-,
-"IVertexBuffer":{ }
-,
-"IModel":{ }
-,
-"ISurfaceMaterial":{ }
-,
-"IEffect":{ }
-,
-"IShaderProgram":{ }
-,
-"IModelLoadOptions":{ }
-,
-"IRenderEntry":{ }
-,
-"IRenderQueue":{ }
-,
-"IViewportState":{ }
-,
-"IAFXComponent":{ }
-,
-"IAFXEffect":{ }
-,
-"IRenderableObject":{ }
-,
-"IRenderSnapshot":{ }
-,
-"ISceneObject":{ }
-,
-"IVertexData":{ }
-,
-"IIndexBuffer":{ }
-,
-"IRenderResource":{ }
-,
-"IViewport":{ }
-,
-"IColor":{ }
-,
-"IRenderTarget":{ }
-,
-"ICanvas3d":{ }
-,
-"IRenderStateMap":{ }
-,
-"ISceneNode":{ }
-,
-"ICamera":{ }
-,
-"IFrustum":{ }
-,
-"ILightParameters":{ }
-,
-"ILightPoint":{ }
-,
-"ISceneModel":{ }
-,
-"ISprite":{ }
-,
-"IJoint":{ }
-,
-"IText3d":{ }
-,
-"IDisplayList":{ }
-,
-"IShadowCaster":{ }
-,
-"ITerrainSection":{ }
-,
-"ITerrainSectionROAM":{ }
-,
-"ITerrain":{ }
-,
-"ITerrainROAM":{ }
-,
-"IModelEntry":{ }
-,
-"IToken":{ }
-,
-"IRule":{ }
-,
-"IFinishFunc":{ }
-,
-"IRuleFunction":{ }
-,
-"IParseNode":{ }
-,
-"IParseTree":{ }
-,
-"ILexer":{ }
-,
-"IParserState":{ }
-,
-"IParser":{ }
-,
-"IReferenceCounter":{ }
-,
-"IResourceNotifyRoutineFunc":{ }
-,
-"IResourcePoolItemType":{ }
-,
-"IAFXInstructionStateMap":{ }
-,
-"IAFXInstructionRoutine":{ }
-,
-"IAFXInstructionError":{ }
-,
-"IAFXInstructionMap":{ }
-,
-"IAFXSimpleInstructionMap":{ }
-,
-"IAFXIdExprMap":{ }
-,
-"IAFXVariableTypeMap":{ }
-,
-"IAFXTypeMap":{ }
-,
-"IAFXTypeListMap":{ }
-,
-"IAFXTypeDeclMap":{ }
-,
-"IAFXVariableDeclMap":{ }
-,
-"IAFXVariableDeclListMap":{ }
-,
-"IAFXVarUsedModeMap":{ }
-,
-"IAFXFunctionDeclMap":{ }
-,
-"IAFXTypeUseInfoContainer":{ }
-,
-"IAFXTypeUseInfoMap":{ }
-,
-"IAFXImportedTechniqueInfo":{ }
-,
-"IAFXInstruction":{ }
-,
-"IAFXSimpleInstruction":{ }
-,
-"IAFXTypeInstruction":{ }
-,
-"IAFXVariableTypeInstruction":{ }
-,
-"IAFXTypedInstruction":{ }
-,
-"IAFXDeclInstruction":{ }
-,
-"IAFXTypeDeclInstruction":{ }
-,
-"IAFXVariableDeclInstruction":{ }
-,
-"IAFXFunctionDeclInstruction":{ }
-,
-"IAFXStructDeclInstruction":{ }
-,
-"IAFXIdInstruction":{ }
-,
-"IAFXKeywordInstruction":{ }
-,
-"IAFXAnalyzedInstruction":{ }
-,
-"IAFXExprInstruction":{ }
-,
-"IAFXInitExprInstruction":{ }
-,
-"IAFXIdExprInstruction":{ }
-,
-"IAFXLiteralInstruction":{ }
-,
-"IAFXAnnotationInstruction":{ }
-,
-"IAFXStmtInstruction":{ }
-,
-"IAFXPassInstruction":{ }
-,
-"IAFXTechniqueInstruction":{ }
-,
-"IAFXComponentMap":{ }
-,
-"IHardwareObject":{ }
-,
-"PixelFormatList":{ }
-,
-"IBuffer":{ }
-,
-"IHardwareBuffer":{ }
-,
-"EPixelFormats":{ }
-,
-"IBox":{ }
-,
-"IPixelBuffer":{ }
-,
-"IImg":{ }
-,
-"IAFXSamplerStateMap":{ }
-,
-"IAFXSamplerStateListMap":{ }
-,
-"IAFXSamplerState":{ }
-,
-"IMaterial":{ }
-,
-"IAFXComponentPassInputBlend":{ }
-,
-"IAFXPassInputStateInfo":{ }
-,
-"IAFXPassInputBlend":{ }
-,
-"IAFXShaderVarTypeMap":{ }
-,
-"IAFXVariableInfo":{ }
-,
-"IAFXVariableContainer":{ }
-,
-"IAFXComponentBlendMap":{ }
-,
-"IAFXComponentInfo":{ }
-,
-"IAFXComponentBlend":{ }
-,
-"IDataMapper":{ }
-,
-"IIndexData":{ }
-,
-"IDataFlow":{ }
-,
-"IRIDTable":{ }
-,
-"IRIDPair":{ }
-,
-"IRIDMap":{ }
-,
-"IRenderData":{ }
-,
-"IColladaAsset":{ }
-,
-"IAnimation":{ }
-,
-"ICollada":{ }
-,
-"IColladaCache":{ }
-,
-"IColladaAnimationLoadOptions":{ }
-,
-"IColladaImageLoadOptions":{ }
-,
-"IColladaLoadOptions":{ }
-,
-"IXMLExplorer":{ }
-,
-"IColladaTarget":{ }
-,
-"IColladaEntry":{ }
-,
-"IColladaEntryMap":{ }
-,
-"IColladaLibrary":{ }
-,
-"IColladaEffectLibrary":{ }
-,
-"IColladaEntryLoader":{ }
-,
-"IColladaUnknownFormat":{ }
-,
-"IColladaFormatStrideTable":{ }
-,
-"IColladaLinkMap":{ }
-,
-"IColladaLibraryMap":{ }
-,
-"IColladaLibraryTemplate":{ }
-,
-"IColladaArray":{ }
-,
-"IColladaUnit":{ }
-,
-"IColladaContributor":{ }
-,
-"IColladaInstance":{ }
-,
-"IColladaAnnotate":{ }
-,
-"IColladaNewParam":{ }
-,
-"IColladaNewParamMap":{ }
-,
-"IColladaParam":{ }
-,
-"IColladaAccessor":{ }
-,
-"IColladaTechniqueCommon":{ }
-,
-"IColladaSource":{ }
-,
-"IColladaInput":{ }
-,
-"IColladaTransform":{ }
-,
-"IColladaRotate":{ }
-,
-"IColladaTranslate":{ }
-,
-"IColladaScale":{ }
-,
-"IColladaMatrix":{ }
-,
-"IColladaVertices":{ }
-,
-"IColladaJoints":{ }
-,
-"IColladaPolygons":{ }
-,
-"IColladaMesh":{ }
-,
-"IColladaConvexMesh":{ }
-,
-"IColladaSpline":{ }
-,
-"IColladaGeometrie":{ }
-,
-"IColladaMorph":{ }
-,
-"IColladaVertexWeights":{ }
-,
-"IColladaSkin":{ }
-,
-"IColladaController":{ }
-,
-"IColladaImage":{ }
-,
-"IColladaSurface":{ }
-,
-"IColladaSampler2D":{ }
-,
-"IColladaTexture":{ }
-,
-"IColladaInstanceEffect":{ }
-,
-"IColladaPhong":{ }
-,
-"IColladaEffectTechnique":{ }
-,
-"IColladaProfileCommon":{ }
-,
-"IColladaEffect":{ }
-,
-"IColladaMaterial":{ }
-,
-"IColladaTechniqueValue":{ }
-,
-"IColladaBindVertexInput":{ }
-,
-"IColladaBindVertexInputMap":{ }
-,
-"IColladaInstanceMaterial":{ }
-,
-"IColladaInstanceCamera":{ }
-,
-"IColladaInstanceLight":{ }
-,
-"IColladaBindMaterial":{ }
-,
-"IColladaInstanceGeometry":{ }
-,
-"IColladaInstanceController":{ }
-,
-"IColladaPerspective":{ }
-,
-"IColladaOptics":{ }
-,
-"IColladaCamera":{ }
-,
-"IColladaLight":{ }
-,
-"IColladaNode":{ }
-,
-"IColladaVisualScene":{ }
-,
-"IColladaAnimationSampler":{ }
-,
-"IColladaAnimationChannel":{ }
-,
-"IColladaAnimation":{ }
-,
-"IColladaScene":{ }
-,
-"IColladaDocument":{ }
-,
-"IColladaAnimationClip":{ }
-,
-"IAnimationBase":{ }
-,
-"IAnimationBaseController":{ }
-,
-"IDataPool":{ }
-,
-"IEventSlot":{ }
-,
-"IEventSlotListMap":{ }
-,
-"IEventSlotMap":{ }
-,
-"IEventSlotTable":{ }
-,
-"IEventSlotList":{ }
-,
-"IMaterialBase":{ }
-,
-"IFlexMaterial":{ }
-,
-"IVertexElement":{ }
-,
-"IVertexDeclaration":{ }
-,
-"IVertexElementInterface":{ }
-,
-"IColorIValue":{ }
-,
-"IColorValue":{ }
-,
-"IVec2Constructor":{ }
-,
-"IVec2":{ }
-,
-"IMat4":{ }
-,
-"IVec3Constructor":{ }
-,
-"IVec3":{ }
-,
-"IVec4":{ }
-,
-"IMat3":{ }
-,
-"IQuat4":{ }
-,
-"IMat4Constructor":{ }
-,
-"IMat3Constructor":{ }
-,
-"IQuat4Constructor":{ }
-,
-"IVec4Constructor":{ }
-,
-"IPixelBox":{ }
-,
-"IPathinfo":{ }
-,
-"IURI":{ }
-,
-"IDataURI":{ }
-,
-"ICanvasInfo":{ }
-,
-"IBrowserInfo":{ }
-,
-"IScreenInfo":{ }
-,
-"IApiInfo":{ }
-,
-"IPixelFormatDescription":{ }
-,
-"IFileMeta":{ }
-,
-"IFile":{ }
-,
-"IThread":{ }
-,
-"IThreadManager":{ }
-,
-"ICodec":{ }
-,
-"ICodecData":{ }
-,
-"IImgCodec":{ }
-,
-"IImgData":{ }
-,
-"ICodecMap":{ }
-,
-"IRenderDataType":{ }
-,
-"IRect3d":{ }
-,
-"ISphere":{ }
-,
-"IMeshSubset":{ }
-,
-"ISkin":{ }
-,
-"IMeshMap":{ }
-,
-"IFrame":{ }
-,
-"IAnimationParameter":{ }
-,
-"IPositionFrame":{ }
-,
-"IAnimationTrack":{ }
-,
-"IExplorerFunc":{ }
-,
-"IEntity":{ }
-,
-"INodeMap":{ }
-,
-"INode":{ }
-,
-"ISceneNodeMap":{ }
-,
-"IJointMap":{ }
-,
-"IAnimationTarget":{ }
-,
-"IAnimationMap":{ }
-,
-"IAnimationContainer":{ }
-,
-"IAnimationElement":{ }
-,
-"IAnimationBlend":{ }
-,
-"IObjLoadOptions":{ }
-,
-"IObj":{ }
-,
-"IDepthBuffer":{ }
-,
-"IFPSStat":{ }
-,
-"ITimeStat":{ }
-,
-"IFrameStats":{ }
-,
-"ISceneBuilder":{ }
-,
-"IObjectArray":{ }
-,
-"IDepthRange":{ }
-,
-"IRenderTexture":{ }
-,
-"IAFXObject":{ }
-,
-"IAFXVariable":{ }
-,
-"IAFXType":{ }
-,
-"IAFXFunction":{ }
-,
-"IAFXPass":{ }
-,
-"IAFXTechnique":{ }
-,
-"IAFXEffectStats":{ }
-,
-"IAFXPreRenderState":{ }
-,
-"IMat2":{ }
-,
-"IShaderInput":{ }
-,
-"IAFXMakerMap":{ }
-,
-"IAFXBaseAttrInfo":{ }
-,
-"IAFXMaker":{ }
-,
-"IAFXPassBlendMap":{ }
-,
-"IAFXPassBlend":{ }
-,
-"IRenderPass":{ }
-,
-"IRenderTechnique":{ }
-,
-"IRect2d":{ }
-,
-"IBufferData":{ }
-,
-"IBufferDataModifier":{ }
-,
-"ICanvas":{ }
-,
-"IPoint":{ }
-,
-"ICircle":{ }
-,
-"IDSViewport":{ }
-,
-"IOmniParameters":{ }
-,
-"IOmniLight":{ }
-,
-"IProjectParameters":{ }
-,
-"IProjectLight":{ }
-,
-"IPlane3d":{ }
-,
-"IPlane2d":{ }
-,
-"IRect3":{ }
-,
-"IClickable":{ }
-,
-"IOcTreeNode":{ }
-,
-"IOcTreeRect":{ }
-,
-"IOcTree":{ }
-,
-"IObjectList":{ }
-,
-"IListExplorerFunc":{ }
-,
-"IRay2d":{ }
-,
-"IRay3d":{ }
-,
-"ILightGraph":{ }
-,
-"ISegment2d":{ }
-,
-"ISegment3d":{ }
-,
-"IImageMap":{ }
-,
-"ITerrainSampleData":{ }
-,
-"IMegaTexture":{ }
-,
-"IRPCCallback":{ }
-,
-"IRPCPacket":{ }
-,
-"IRPCRequest":{ }
-,
-"IRPCResponse":{ }
-,
-"IRPCProcOptions":{ }
-,
-"IRPCProcOptionsMap":{ }
-,
-"IRPCError":{ }
-,
-"IRPCOptions":{ }
-,
-"IRPC":{ }
-,
-"IPipe":{ }
-,
-"ICollectionIndexFunction":{ }
-,
-"IObjectSortCollection":{ }
-,
-"ITerrainSystem":{ }
-,
-"ITriTreeNode":{ }
-,
-"ITriangleNodePool":{ }
-,
-"ISunParameters":{ }
-,
-"ISunLight":{ }
-,
-"IStringDictionary":{ }
-,
-"IAFXBlender":{ }
-,
-"IDDSCodec":{ }
-,
-"IOffset":{ }
-,
-"IKeyMap":{ }
-,
-"IEntry":{ }
-,
-"IDataEntry":{ }
-,
-"ILibraryEntry":{ }
-,
-"ILibrary":{ }
-,
-"IContributor":{ }
-,
-"IUnit":{ }
-,
-"IAsset":{ }
-,
-"IAnimationFrameEntry":{ }
-,
-"IAnimationTrackEntry":{ }
-,
-"IAnimationTargetEntry":{ }
-,
-"IAnimationBaseEntry":{ }
-,
-"IAnimationEntry":{ }
-,
-"IAnimationBlendElementEntry":{ }
-,
-"IAnimationBlendEntry":{ }
-,
-"IAnimationContainerEntry":{ }
-,
-"IControllerEntry":{ }
-,
-"IDocument":{ }
-,
-"IPackerTemplate":{ }
-,
-"IPackerOptions":{ }
-,
-"IPacker":{ }
-,
-"IPackerBlacklist":{ }
-,
-"IPackerCodec":{ }
-,
-"IPackerFormat":{ }
-,
-"IBinWriter":{ }
-,
-"IBinReader":{ }
-,
-"IUnPacker":{ }
-}
-,
-"variables":
-{
-"DATA":{ }
-,
-"DEBUG":{ }
-,
-"logger":{ }
-,
-"INVALID_INDEX":{ }
-,
-"MIN_INT32":{ }
-,
-"MAX_INT32":{ }
-,
-"MIN_INT16":{ }
-,
-"MAX_INT16":{ }
-,
-"MIN_INT8":{ }
-,
-"MAX_INT8":{ }
-,
-"MIN_UINT32":{ }
-,
-"MAX_UINT32":{ }
-,
-"MIN_UINT16":{ }
-,
-"MAX_UINT16":{ }
-,
-"MIN_UINT8":{ }
-,
-"MAX_UINT8":{ }
-,
-"SIZE_FLOAT64":{ }
-,
-"SIZE_REAL64":{ }
-,
-"SIZE_FLOAT32":{ }
-,
-"SIZE_REAL32":{ }
-,
-"SIZE_INT32":{ }
-,
-"SIZE_UINT32":{ }
-,
-"SIZE_INT16":{ }
-,
-"SIZE_UINT16":{ }
-,
-"SIZE_INT8":{ }
-,
-"SIZE_UINT8":{ }
-,
-"SIZE_BYTE":{ }
-,
-"SIZE_UBYTE":{ }
-,
-"MAX_FLOAT64":{ }
-,
-"MIN_FLOAT64":{ }
-,
-"TINY_FLOAT64":{ }
-,
-"MAX_FLOAT32":{ }
-,
-"MIN_FLOAT32":{ }
-,
-"TINY_FLOAT32":{ }
-,
-"DEFAULT_MATERIAL_NAME":{ }
-,
-"sid":{ }
-,
-"DeclarationUsages":{ }
-,
-"DeclUsages":{ }
-,
-"__11":{ }
-,
-"__12":{ }
-,
-"__13":{ }
-,
-"__14":{ }
-,
-"__21":{ }
-,
-"__22":{ }
-,
-"__23":{ }
-,
-"__24":{ }
-,
-"__31":{ }
-,
-"__32":{ }
-,
-"__33":{ }
-,
-"__34":{ }
-,
-"__41":{ }
-,
-"__42":{ }
-,
-"__43":{ }
-,
-"__44":{ }
-}
-,
-"functions":
-{
-"typeOf":{ }
-,
-"isDef":{ }
-,
-"isEmpty":{ }
-,
-"isDefAndNotNull":{ }
-,
-"isNull":{ }
-,
-"isBoolean":{ }
-,
-"isString":{ }
-,
-"isNumber":{ }
-,
-"isFloat":{ }
-,
-"isInt":{ }
-,
-"isFunction":{ }
-,
-"isObject":{ }
-,
-"isArrayBuffer":{ }
-,
-"isTypedArray":{ }
-,
-"isBlob":{ }
-,
-"isArray":{ }
-,
-"fnSortMinMax":{ }
-,
-"fnSortMaxMin":{ }
-,
-"binarySearchInSortIntArray":{ }
-,
-"parseBool":{ }
-,
-"parseString":{ }
-,
-"retrieve":{ }
-,
-"string2Array":{ }
-,
-"string2IntArray":{ }
-,
-"string2FloatArray":{ }
-,
-"string2BoolArray":{ }
-,
-"string2StringArray":{ }
-,
-"string2Any":{ }
-,
-"genArray":{ }
-,
-"getTypeSize":{ }
-,
-"now":{ }
-,
-"memcpy":{ }
-,
-"createEngine":{ }
-,
-"VE_CUSTOM":{ }
-,
-"VE_FLOAT":{ }
-,
-"VE_FLOAT2":{ }
-,
-"VE_FLOAT3":{ }
-,
-"VE_FLOAT4":{ }
-,
-"VE_FLOAT4x4":{ }
-,
-"VE_VEC2":{ }
-,
-"VE_VEC3":{ }
-,
-"VE_VEC4":{ }
-,
-"VE_MAT4":{ }
-,
-"VE_INT":{ }
-,
-"VE_END":{ }
-,
-"createVertexDeclaration":{ }
-,
-"color":{ }
-,
-"uri":{ }
-,
-"fopen":{ }
-}
-,
-"modules":
-{
-"libs":{ }
-,
-"bf":{ }
-,
-"util":{ }
-,
-"core":{ }
-,
-"events":{ }
-,
-"data":{ }
-,
-"math":{ }
-,
-"material":{ }
-,
-"path":{ }
-,
-"geometry":{ }
-,
-"pixelUtil":{ }
-,
-"webgl":{ }
-,
-"info":{ }
-,
-"io":{ }
-,
-"scene":{ }
-,
-"model":{ }
-,
-"animation":{ }
-,
-"fx":{ }
-,
-"render":{ }
-,
-"net":{ }
-,
-"terrain":{ }
-,
-"controls":{ }
-}
-,
-"typeDefs":
-{
-"VertexElement":{ }
-,
-"VertexDeclaration":{ }
-,
-"Vec2":{ }
-,
-"Vec3":{ }
-,
-"Vec4":{ }
-,
-"Mat3":{ }
-,
-"Mat4":{ }
-,
-"Quat4":{ }
-,
-"Color":{ }
-,
-"Material":{ }
-,
-"ObjectArray":{ }
-,
-"ObjectList":{ }
-}
-,
-"classes":
-{
-"Codec":{ }
-,
-"CodecData":{ }
-,
-"ImgCodec":{ }
-,
-"ImgData":{ }
-,
-"DDSCodec":{ }
-}
+	    "modules": {
+        "animation": {},
+        "bf": {},
+        "controls": {},
+        "core": {},
+        "data": {},
+        "events": {},
+        "fx": {},
+        "geometry": {},
+        "info": {},
+        "io": {},
+        "libs": {},
+        "material": {},
+        "math": {},
+        "model": {},
+        "net": {},
+        "path": {},
+        "pixelUtil": {},
+        "render": {},
+        "scene": {},
+        "terrain": {},
+        "util": {},
+        "webgl": {}
+    },
+    "classes": {
+        "Codec": {},
+        "CodecData": {},
+        "DDSCodec": {},
+        "ImgCodec": {},
+        "ImgData": {}
+    },
+    "enums": {
+        "E3DEventTypes": {},
+        "EAFXBlendMode": {},
+        "EAFXInstructionTypes": {},
+        "EAFXShaderVariableType": {},
+        "EAnimationInterpolations": {},
+        "EAnimationTypes": {},
+        "EAttachmentTypes": {},
+        "EAudioResources": {},
+        "ECameraParameters": {},
+        "ECameraTypes": {},
+        "ECanvasTypes": {},
+        "ECheckStage": {},
+        "ECompareFunction": {},
+        "ECubeFace": {},
+        "ECullingMode": {},
+        "EDataFlowTypes": {},
+        "EDataTypeSizes": {},
+        "EDataTypes": {},
+        "EDependenceStatuses": {},
+        "EDocumentEntry": {},
+        "EDocumentFormat": {},
+        "EEntityTypes": {},
+        "EEventTypes": {},
+        "EExtractExprType": {},
+        "EFilters": {},
+        "EFrameBufferTypes": {},
+        "EFramebuffer": {},
+        "EFunctionType": {},
+        "EGameResources": {},
+        "EGamepadAxis": {},
+        "EGamepadCodes": {},
+        "EHardwareBufferFlags": {},
+        "EImageCubeFlags": {},
+        "EImageFlags": {},
+        "EKeyCodes": {},
+        "ELightTypes": {},
+        "ELockFlags": {},
+        "ELogLevel": {},
+        "EMeshCloneOptions": {},
+        "EMeshOptions": {},
+        "EModelFormats": {},
+        "EMouseButton": {},
+        "ENodeCreateMode": {},
+        "ENodeInheritance": {},
+        "EOperationType": {},
+        "EParseMode": {},
+        "EParserCode": {},
+        "EParserType": {},
+        "EPipeDataTypes": {},
+        "EPipeTypes": {},
+        "EPixelComponentTypes": {},
+        "EPixelFormatFlags": {},
+        "EPixelFormats": {},
+        "EPlaneClassifications": {},
+        "EPrimitiveTypes": {},
+        "ERPCPacketTypes": {},
+        "ERenderCapabilities": {},
+        "ERenderCapabilitiesCategory": {},
+        "ERenderDataBufferOptions": {},
+        "ERenderDataOptions": {},
+        "ERenderDataTypes": {},
+        "ERenderStateValues": {},
+        "ERenderStates": {},
+        "EResourceCodes": {},
+        "EResourceFamilies": {},
+        "EResourceItemEvents": {},
+        "ESceneNodeFlags": {},
+        "ESceneTypes": {},
+        "EStatFlags": {},
+        "ESurfaceMaterialTextures": {},
+        "ETextureCubeFlags": {},
+        "ETextureFilters": {},
+        "ETextureFlags": {},
+        "ETextureParameters": {},
+        "ETextureTypes": {},
+        "ETextureUnits": {},
+        "ETextureWrapModes": {},
+        "ETokenType": {},
+        "EUtilTimerCommands": {},
+        "EVarUsedMode": {},
+        "EVertexBufferTypes": {},
+        "EVideoResources": {},
+        "EViewportTypes": {},
+        "EVolumeClassifications": {}
+    },
+    "functions": {
+        "VE_CUSTOM": {},
+        "VE_END": {},
+        "VE_FLOAT": {},
+        "VE_FLOAT2": {},
+        "VE_FLOAT3": {},
+        "VE_FLOAT4": {},
+        "VE_FLOAT4x4": {},
+        "VE_INT": {},
+        "VE_MAT4": {},
+        "VE_VEC2": {},
+        "VE_VEC3": {},
+        "VE_VEC4": {},
+        "binarySearchInSortIntArray": {},
+        "color": {},
+        "createEngine": {},
+        "createVertexDeclaration": {},
+        "fnSortMaxMin": {},
+        "fnSortMinMax": {},
+        "fopen": {},
+        "genArray": {},
+        "getTypeSize": {},
+        "isArray": {},
+        "isArrayBuffer": {},
+        "isBlob": {},
+        "isBoolean": {},
+        "isDef": {},
+        "isDefAndNotNull": {},
+        "isEmpty": {},
+        "isFloat": {},
+        "isFunction": {},
+        "isInt": {},
+        "isNull": {},
+        "isNumber": {},
+        "isObject": {},
+        "isString": {},
+        "isTypedArray": {},
+        "memcpy": {},
+        "now": {},
+        "parseBool": {},
+        "parseString": {},
+        "retrieve": {},
+        "string2Any": {},
+        "string2Array": {},
+        "string2BoolArray": {},
+        "string2FloatArray": {},
+        "string2IntArray": {},
+        "string2StringArray": {},
+        "typeOf": {},
+        "uri": {}
+    },
+    "interfaces": {
+        "BoolDMap": {},
+        "BoolMap": {},
+        "EPixelFormats": {},
+        "FloatMap": {},
+        "IAFXAnalyzedInstruction": {},
+        "IAFXAnnotationInstruction": {},
+        "IAFXBaseAttrInfo": {},
+        "IAFXBlender": {},
+        "IAFXComponent": {},
+        "IAFXComponentBlend": {},
+        "IAFXComponentBlendMap": {},
+        "IAFXComponentInfo": {},
+        "IAFXComponentMap": {},
+        "IAFXComponentPassInputBlend": {},
+        "IAFXComposer": {},
+        "IAFXDeclInstruction": {},
+        "IAFXEffect": {},
+        "IAFXEffectStats": {},
+        "IAFXExprInstruction": {},
+        "IAFXFunction": {},
+        "IAFXFunctionDeclInstruction": {},
+        "IAFXFunctionDeclMap": {},
+        "IAFXIdExprInstruction": {},
+        "IAFXIdExprMap": {},
+        "IAFXIdInstruction": {},
+        "IAFXImportedTechniqueInfo": {},
+        "IAFXInitExprInstruction": {},
+        "IAFXInstruction": {},
+        "IAFXInstructionError": {},
+        "IAFXInstructionMap": {},
+        "IAFXInstructionRoutine": {},
+        "IAFXInstructionStateMap": {},
+        "IAFXKeywordInstruction": {},
+        "IAFXLiteralInstruction": {},
+        "IAFXMaker": {},
+        "IAFXMakerMap": {},
+        "IAFXObject": {},
+        "IAFXPass": {},
+        "IAFXPassBlend": {},
+        "IAFXPassBlendMap": {},
+        "IAFXPassInputBlend": {},
+        "IAFXPassInputStateInfo": {},
+        "IAFXPassInstruction": {},
+        "IAFXPreRenderState": {},
+        "IAFXSamplerState": {},
+        "IAFXSamplerStateListMap": {},
+        "IAFXSamplerStateMap": {},
+        "IAFXShaderVarTypeMap": {},
+        "IAFXSimpleInstruction": {},
+        "IAFXSimpleInstructionMap": {},
+        "IAFXStmtInstruction": {},
+        "IAFXStructDeclInstruction": {},
+        "IAFXTechnique": {},
+        "IAFXTechniqueInstruction": {},
+        "IAFXType": {},
+        "IAFXTypeDeclInstruction": {},
+        "IAFXTypeDeclMap": {},
+        "IAFXTypeInstruction": {},
+        "IAFXTypeListMap": {},
+        "IAFXTypeMap": {},
+        "IAFXTypeUseInfoContainer": {},
+        "IAFXTypeUseInfoMap": {},
+        "IAFXTypedInstruction": {},
+        "IAFXVarUsedModeMap": {},
+        "IAFXVariable": {},
+        "IAFXVariableContainer": {},
+        "IAFXVariableDeclInstruction": {},
+        "IAFXVariableDeclListMap": {},
+        "IAFXVariableDeclMap": {},
+        "IAFXVariableInfo": {},
+        "IAFXVariableTypeInstruction": {},
+        "IAFXVariableTypeMap": {},
+        "IAnimation": {},
+        "IAnimationBase": {},
+        "IAnimationBaseController": {},
+        "IAnimationBaseEntry": {},
+        "IAnimationBlend": {},
+        "IAnimationBlendElementEntry": {},
+        "IAnimationBlendEntry": {},
+        "IAnimationContainer": {},
+        "IAnimationContainerEntry": {},
+        "IAnimationController": {},
+        "IAnimationElement": {},
+        "IAnimationEntry": {},
+        "IAnimationFrameEntry": {},
+        "IAnimationMap": {},
+        "IAnimationParameter": {},
+        "IAnimationTarget": {},
+        "IAnimationTargetEntry": {},
+        "IAnimationTrack": {},
+        "IAnimationTrackEntry": {},
+        "IApiInfo": {},
+        "IAsset": {},
+        "IBinReader": {},
+        "IBinWriter": {},
+        "IBox": {},
+        "IBrowserInfo": {},
+        "IBuffer": {},
+        "IBufferData": {},
+        "IBufferDataModifier": {},
+        "IBufferMap": {},
+        "ICamera": {},
+        "ICanvas": {},
+        "ICanvas3d": {},
+        "ICanvasInfo": {},
+        "ICircle": {},
+        "IClickable": {},
+        "ICodec": {},
+        "ICodecData": {},
+        "ICodecMap": {},
+        "ICollada": {},
+        "IColladaAccessor": {},
+        "IColladaAnimation": {},
+        "IColladaAnimationChannel": {},
+        "IColladaAnimationClip": {},
+        "IColladaAnimationLoadOptions": {},
+        "IColladaAnimationSampler": {},
+        "IColladaAnnotate": {},
+        "IColladaArray": {},
+        "IColladaAsset": {},
+        "IColladaBindMaterial": {},
+        "IColladaBindVertexInput": {},
+        "IColladaBindVertexInputMap": {},
+        "IColladaCache": {},
+        "IColladaCamera": {},
+        "IColladaContributor": {},
+        "IColladaController": {},
+        "IColladaConvexMesh": {},
+        "IColladaDocument": {},
+        "IColladaEffect": {},
+        "IColladaEffectLibrary": {},
+        "IColladaEffectTechnique": {},
+        "IColladaEntry": {},
+        "IColladaEntryLoader": {},
+        "IColladaEntryMap": {},
+        "IColladaFormatStrideTable": {},
+        "IColladaGeometrie": {},
+        "IColladaImage": {},
+        "IColladaImageLoadOptions": {},
+        "IColladaInput": {},
+        "IColladaInstance": {},
+        "IColladaInstanceCamera": {},
+        "IColladaInstanceController": {},
+        "IColladaInstanceEffect": {},
+        "IColladaInstanceGeometry": {},
+        "IColladaInstanceLight": {},
+        "IColladaInstanceMaterial": {},
+        "IColladaJoints": {},
+        "IColladaLibrary": {},
+        "IColladaLibraryMap": {},
+        "IColladaLibraryTemplate": {},
+        "IColladaLight": {},
+        "IColladaLinkMap": {},
+        "IColladaLoadOptions": {},
+        "IColladaMaterial": {},
+        "IColladaMatrix": {},
+        "IColladaMesh": {},
+        "IColladaMorph": {},
+        "IColladaNewParam": {},
+        "IColladaNewParamMap": {},
+        "IColladaNode": {},
+        "IColladaOptics": {},
+        "IColladaParam": {},
+        "IColladaPerspective": {},
+        "IColladaPhong": {},
+        "IColladaPolygons": {},
+        "IColladaProfileCommon": {},
+        "IColladaRotate": {},
+        "IColladaSampler2D": {},
+        "IColladaScale": {},
+        "IColladaScene": {},
+        "IColladaSkin": {},
+        "IColladaSource": {},
+        "IColladaSpline": {},
+        "IColladaSurface": {},
+        "IColladaTarget": {},
+        "IColladaTechniqueCommon": {},
+        "IColladaTechniqueValue": {},
+        "IColladaTexture": {},
+        "IColladaTransform": {},
+        "IColladaTranslate": {},
+        "IColladaUnit": {},
+        "IColladaUnknownFormat": {},
+        "IColladaVertexWeights": {},
+        "IColladaVertices": {},
+        "IColladaVisualScene": {},
+        "ICollectionIndexFunction": {},
+        "IColor": {},
+        "IColorIValue": {},
+        "IColorValue": {},
+        "IContributor": {},
+        "IControllerEntry": {},
+        "IConverter": {},
+        "IConvertionTable": {},
+        "IConvertionTableRow": {},
+        "IDDSCodec": {},
+        "IDSViewport": {},
+        "IDataEntry": {},
+        "IDataFlow": {},
+        "IDataMapper": {},
+        "IDataPool": {},
+        "IDataURI": {},
+        "IDep": {},
+        "IDependens": {},
+        "IDepsManager": {},
+        "IDepthBuffer": {},
+        "IDepthRange": {},
+        "IDisplayList": {},
+        "IDocument": {},
+        "IEffect": {},
+        "IEngine": {},
+        "IEngineOptions": {},
+        "IEntity": {},
+        "IEntry": {},
+        "IEventProvider": {},
+        "IEventSlot": {},
+        "IEventSlotList": {},
+        "IEventSlotListMap": {},
+        "IEventSlotMap": {},
+        "IEventSlotTable": {},
+        "IEventTable": {},
+        "IExplorerFunc": {},
+        "IFPSStat": {},
+        "IFile": {},
+        "IFileMeta": {},
+        "IFinishFunc": {},
+        "IFlexMaterial": {},
+        "IFrame": {},
+        "IFrameStats": {},
+        "IFrustum": {},
+        "IGamepadMap": {},
+        "IHardwareBuffer": {},
+        "IHardwareObject": {},
+        "IImageMap": {},
+        "IImg": {},
+        "IImgCodec": {},
+        "IImgData": {},
+        "IIndexBuffer": {},
+        "IIndexData": {},
+        "IJoint": {},
+        "IJointMap": {},
+        "IKeyMap": {},
+        "ILexer": {},
+        "ILibrary": {},
+        "ILibraryEntry": {},
+        "ILightGraph": {},
+        "ILightParameters": {},
+        "ILightPoint": {},
+        "IListExplorerFunc": {},
+        "ILogRoutineFunc": {},
+        "ILogger": {},
+        "ILoggerEntity": {},
+        "IManager": {},
+        "IMat2": {},
+        "IMat3": {},
+        "IMat3Constructor": {},
+        "IMat4": {},
+        "IMat4Constructor": {},
+        "IMaterial": {},
+        "IMaterialBase": {},
+        "IMegaTexture": {},
+        "IMesh": {},
+        "IMeshMap": {},
+        "IMeshSubset": {},
+        "IModel": {},
+        "IModelEntry": {},
+        "IModelLoadOptions": {},
+        "INode": {},
+        "INodeMap": {},
+        "IObj": {},
+        "IObjLoadOptions": {},
+        "IObjectArray": {},
+        "IObjectList": {},
+        "IObjectSortCollection": {},
+        "IOcTree": {},
+        "IOcTreeNode": {},
+        "IOcTreeRect": {},
+        "IOffset": {},
+        "IOmniLight": {},
+        "IOmniParameters": {},
+        "IPacker": {},
+        "IPackerBlacklist": {},
+        "IPackerCodec": {},
+        "IPackerFormat": {},
+        "IPackerOptions": {},
+        "IPackerTemplate": {},
+        "IParseNode": {},
+        "IParseTree": {},
+        "IParser": {},
+        "IParserState": {},
+        "IParticleManager": {},
+        "IPathinfo": {},
+        "IPipe": {},
+        "IPixelBox": {},
+        "IPixelBuffer": {},
+        "IPixelFormatDescription": {},
+        "IPlane2d": {},
+        "IPlane3d": {},
+        "IPoint": {},
+        "IPositionFrame": {},
+        "IProjectLight": {},
+        "IProjectParameters": {},
+        "IQuat4": {},
+        "IQuat4Constructor": {},
+        "IRIDMap": {},
+        "IRIDPair": {},
+        "IRIDTable": {},
+        "IRPC": {},
+        "IRPCCallback": {},
+        "IRPCError": {},
+        "IRPCOptions": {},
+        "IRPCPacket": {},
+        "IRPCProcOptions": {},
+        "IRPCProcOptionsMap": {},
+        "IRPCRequest": {},
+        "IRPCResponse": {},
+        "IRay2d": {},
+        "IRay3d": {},
+        "IRect2d": {},
+        "IRect3": {},
+        "IRect3d": {},
+        "IReferenceCounter": {},
+        "IRenderData": {},
+        "IRenderDataCollection": {},
+        "IRenderDataType": {},
+        "IRenderEntry": {},
+        "IRenderMethod": {},
+        "IRenderPass": {},
+        "IRenderQueue": {},
+        "IRenderResource": {},
+        "IRenderSnapshot": {},
+        "IRenderStateMap": {},
+        "IRenderTarget": {},
+        "IRenderTechnique": {},
+        "IRenderTexture": {},
+        "IRenderableObject": {},
+        "IRenderer": {},
+        "IRendererOptions": {},
+        "IResourceCode": {},
+        "IResourceNotifyRoutineFunc": {},
+        "IResourcePool": {},
+        "IResourcePoolItem": {},
+        "IResourcePoolItemType": {},
+        "IResourcePoolManager": {},
+        "IResourceWatcherFunc": {},
+        "IRule": {},
+        "IRuleFunction": {},
+        "IScene": {},
+        "IScene2d": {},
+        "IScene3d": {},
+        "ISceneBuilder": {},
+        "ISceneManager": {},
+        "ISceneModel": {},
+        "ISceneNode": {},
+        "ISceneNodeMap": {},
+        "ISceneObject": {},
+        "IScreenInfo": {},
+        "ISegment2d": {},
+        "ISegment3d": {},
+        "IShaderInput": {},
+        "IShaderProgram": {},
+        "IShadowCaster": {},
+        "ISkeleton": {},
+        "ISkin": {},
+        "ISourceLocation": {},
+        "ISphere": {},
+        "ISprite": {},
+        "ISpriteManager": {},
+        "IStringDictionary": {},
+        "ISunLight": {},
+        "ISunParameters": {},
+        "ISurfaceMaterial": {},
+        "ITerrain": {},
+        "ITerrainROAM": {},
+        "ITerrainSampleData": {},
+        "ITerrainSection": {},
+        "ITerrainSectionROAM": {},
+        "ITerrainSystem": {},
+        "IText3d": {},
+        "ITexture": {},
+        "IThread": {},
+        "IThreadManager": {},
+        "ITimeStat": {},
+        "IToken": {},
+        "ITriTreeNode": {},
+        "ITriangleNodePool": {},
+        "IUI": {},
+        "IURI": {},
+        "IUnPacker": {},
+        "IUnique": {},
+        "IUnit": {},
+        "IUtilTimer": {},
+        "IVec2": {},
+        "IVec2Constructor": {},
+        "IVec3": {},
+        "IVec3Constructor": {},
+        "IVec4": {},
+        "IVec4Constructor": {},
+        "IVertexBuffer": {},
+        "IVertexData": {},
+        "IVertexDeclaration": {},
+        "IVertexElement": {},
+        "IVertexElementInterface": {},
+        "IViewport": {},
+        "IViewportState": {},
+        "IXMLExplorer": {},
+        "IntMap": {},
+        "Pair": {},
+        "PixelFormatList": {},
+        "StringDMap": {},
+        "StringMap": {},
+        "UintMap": {}
+    },
+    "location": "",
+    "typeDefs": {
+        "Color": {},
+        "Mat3": {},
+        "Mat4": {},
+        "Material": {},
+        "ObjectArray": {},
+        "ObjectList": {},
+        "Quat4": {},
+        "Vec2": {},
+        "Vec3": {},
+        "Vec4": {},
+        "VertexDeclaration": {},
+        "VertexElement": {}
+    },
+    "variables": {
+        "DATA": {},
+        "DEBUG": {},
+        "DEFAULT_MATERIAL_NAME": {},
+        "DeclUsages": {},
+        "DeclarationUsages": {},
+        "INVALID_INDEX": {},
+        "MAX_FLOAT32": {},
+        "MAX_FLOAT64": {},
+        "MAX_INT16": {},
+        "MAX_INT32": {},
+        "MAX_INT8": {},
+        "MAX_UINT16": {},
+        "MAX_UINT32": {},
+        "MAX_UINT8": {},
+        "MIN_FLOAT32": {},
+        "MIN_FLOAT64": {},
+        "MIN_INT16": {},
+        "MIN_INT32": {},
+        "MIN_INT8": {},
+        "MIN_UINT16": {},
+        "MIN_UINT32": {},
+        "MIN_UINT8": {},
+        "SIZE_BYTE": {},
+        "SIZE_FLOAT32": {},
+        "SIZE_FLOAT64": {},
+        "SIZE_INT16": {},
+        "SIZE_INT32": {},
+        "SIZE_INT8": {},
+        "SIZE_REAL32": {},
+        "SIZE_REAL64": {},
+        "SIZE_UBYTE": {},
+        "SIZE_UINT16": {},
+        "SIZE_UINT32": {},
+        "SIZE_UINT8": {},
+        "TINY_FLOAT32": {},
+        "TINY_FLOAT64": {},
+        "__11": {},
+        "__12": {},
+        "__13": {},
+        "__14": {},
+        "__21": {},
+        "__22": {},
+        "__23": {},
+        "__24": {},
+        "__31": {},
+        "__32": {},
+        "__33": {},
+        "__34": {},
+        "__41": {},
+        "__42": {},
+        "__43": {},
+        "__44": {},
+        "logger": {},
+        "sid": {}
+    }
 }

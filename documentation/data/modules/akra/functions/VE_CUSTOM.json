@@ -1,4 +1,4 @@
-{ "comments" : [  ],
+{ "comments" : [ "some comment" ],
 "location" : "akra",
 "arguments" : [ { "name" : "sUsage",
 "isOptional" : false,

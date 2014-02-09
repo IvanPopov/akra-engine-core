@@ -1,7 +1,7 @@
 var app = angular.module("docsApp", ['ngRoute']);
 
 var keywords = ["modules","classes","functions","interfaces","enums","variables","typeDefs"];
-var subobjects = ["modules","classes","functions","interfaces","enums","variables","typeDefs","constants","getters","setters"];
+var subobjects = ["modules","classes","interfaces","functions","enums","variables","typeDefs","constants","getters","setters"];
 var systemtypes = ['string','number','bool','void','int','float','uint','any'];
 var searchBlocks = ['modules','interfaces','interfaceMembers','classes','classMembers','functions','enums','enumKeys','variables'];
 
@@ -113,6 +113,29 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 		data: {}
 	};
 
+	/**
+	 * Коряво написанная(но работает) функция для преобразования
+	 * аналогичного $scope.filtersubobjects, но с учетом порядка 
+	 * данных указанного в объекте subobjects.
+	 * Все ради того, что внутри модуля выводились сначала другие модули, затем
+	 * классы и т.д. а не в алфавитном порядке как это было раньше.
+	 */
+	function objectToArray(object) {
+		var result = [];
+
+		angular.forEach(object, function (val, key) {
+			if ((val instanceof Object) && !(val instanceof Array)) {
+				result.push({ key: key, value: val });
+			}
+		});
+
+		result.sort(function(a, b) {
+			return subobjects.indexOf(a.key) < subobjects.indexOf(b.key)? -1: 1;
+		});
+
+		return result;
+	}
+
 	function getData(path,objname,type) {
 		$scope.currentObject.type = '';
 		$scope.currentObject.data = {};
@@ -120,11 +143,12 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 			objname = 'index';
 			type = 'modules';
 			$http.get(path+'/'+objname+".json")
-			.success(function(data,status) {
+			.success(function (data, status) {
 				// console.log(objname, path, $scope.currentObject.parents, type, data);
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
-			
+				$scope.currentObject.dataAsArray = objectToArray(data);
+				
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
 					setTimeout(setupHiders,100);
@@ -135,10 +159,11 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 		}
 		else {
 			$http.get( (type == "modules") ? path+"/"+type+"/"+objname+"/"+objname+".json" : path+"/"+type+"/"+objname+".json")
-			.success(function(data,status) {
+			.success(function (data, status) {
 				// console.log(objname, path, $scope.currentObject.parents, type, data);
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
+				$scope.currentObject.dataAsArray = objectToArray(data);
 
 				var hierarchy = path.replace(/data/,'').replace(/\/modules/g,'').split("/");
 				for (var i = 0; i < hierarchy.length; i++) {
@@ -200,14 +225,17 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 		var location = _locat;
 		var path = "data"+_locat.replace(/\//g,"/modules/");
 
-		$scope.filtersubobjects = function(object) {
+		$scope.filtersubobjects = function (object) {
 			var result = {};
 			angular.forEach(object, function(val,key) {
-				if((val instanceof Object) && !(val instanceof Array))
+				if ((val instanceof Object) && !(val instanceof Array)) {
 					result[key] = val;
+				}
 			});
+
 			return result;
 		}
+
 
 		$scope.currentObject.name = (objname!='') ? objname : 'index';
 		$scope.currentObject.location = location;
@@ -246,6 +274,7 @@ app.directive('documobject', function() {
 			docobject: '=',
 			arrow: '=',
 			filtersubobjects: '=',
+			docobjectdata: '=',
 			isparent: '='
 		}
 	};
@@ -264,8 +293,8 @@ app.directive('columndisplay', function() {
 	return {
 		restrict:'E',
 		scope: {
-			sectiondata:'=',
-			sectiontype:'='
+			sectiontype:'=',
+			sectiondata:'='
 		}
 	}
 });
@@ -280,6 +309,7 @@ app.directive('modulecolumndisplay', function() {
 		}
 	}
 });
+
 
 app.directive('columnView', function(templates) {
 	return {
@@ -365,6 +395,14 @@ app.directive('nullView', function(templates) {
 	};
 });
 
+
+app.filter('capitalize', function () {
+	return function (input, scope) {
+		if (input != null)
+			return input.substring(0, 1).toUpperCase() + input.substring(1);
+	}
+});
+
 app.filter('toStyleType', function() {
 	return function(input) {
 		switch(input) {
@@ -376,8 +414,8 @@ app.filter('toStyleType', function() {
 				break
 			default:
 				break
- 		}
- 		return input;
+		}
+		return input;
 	}
 });
 
@@ -389,8 +427,8 @@ app.filter('toClassStyleType', function() {
 				break
 			default:
 				break
- 		}
- 		return input;
+		}
+		return input;
 	}
 });
 
@@ -448,26 +486,26 @@ app.filter('isContainsKeyVal', function() {
 });
 
 app.filter('makeRange', function() {
-        return function(input) {
-            var lowBound, highBound;
-            switch (input.length) {
-            case 1:
-                lowBound = 0;
-                highBound = parseInt(input[0]) - 1;
-                break;
-            case 2:
-                lowBound = parseInt(input[0]);
-                highBound = parseInt(input[1]);
-                break;
-            default:
-                return input;
-            }
-            var result = [];
-            for (var i = lowBound; i <= highBound; i++)
-                result.push(i);
-            return result;
-        };
-    });
+		return function(input) {
+			var lowBound, highBound;
+			switch (input.length) {
+			case 1:
+				lowBound = 0;
+				highBound = parseInt(input[0]) - 1;
+				break;
+			case 2:
+				lowBound = parseInt(input[0]);
+				highBound = parseInt(input[1]);
+				break;
+			default:
+				return input;
+			}
+			var result = [];
+			for (var i = lowBound; i <= highBound; i++)
+				result.push(i);
+			return result;
+		};
+	});
 
 app.filter('isSearchObjectEmpty', function() {
 	return function(object) {
