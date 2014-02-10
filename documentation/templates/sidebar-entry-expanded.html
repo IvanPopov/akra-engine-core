@@ -2,7 +2,7 @@
     <div class="wrap">
         <a class="dots" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">
             <!--<span class="icon {{docobject.type|toStyleType}}"></span>-->
-            <span class="text">{{docobject.name}}</span>
+            <span class="text">{{docobject|fullPath}}</span>
         </a>
         <a class="arrow opened" href="javascript:void(0);"><i class="fa fa-caret-down"></i></a>
         <a class="tree j-tree-button" ng-if="docobject.name!='index'" href="javasctipt:void(0);"></a>

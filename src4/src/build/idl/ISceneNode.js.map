@@ -1,0 +1,1 @@
+{"version":3,"file":"ISceneNode.js","sourceRoot":"","sources":["../../akra/idl/ISceneNode.ts"],"names":["akra","akra.ESceneNodeFlags"],"mappings":"AACA,iCAAiC;AAGjC,gDAAgD;AAEhD,IAAO,IAAI;AA0BV,CA1BD,UAAO,IAAI;KACVA,UAAYA,eAAeA;QAC1BC,uEAAaA;QACbA,mEAAWA;QACXA,uEAAaA;QACbA,mEAAWA;4DACXD;+CAAAA;AAoBFA,CAACA,uBAAA"}

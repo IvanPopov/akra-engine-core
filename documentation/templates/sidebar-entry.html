@@ -1,7 +1,7 @@
 <div class="wrap">
 	<a class="dots" href="#{{docobject.location+'/'+docobject.name}}">
 		<!--<span class="icon {{docobject.type|toStyleType}}"></span>-->
-		<span class="text">{{docobject.name}}{{docobject.type=='functions'?'()':''}}</span>
+		<span class="text">{{docobject|fullPath}}{{docobject.type=='functions'?'()':''}}</span>
 	</a>
 	<a ng-class="[arrow]" class="arrow" href="javascript:void(0);"><i ng-if="docobject.type=='modules'" class="fa {{arrow=='closed'?'fa-caret-right':'fa-caret-down'}}"></i></a>
 	<!--<a class="arrow {{arrow}}" href="javascript:void(0);"><span class="bg"></span></a>-->

@@ -1,0 +1,11 @@
+/// <reference path="IAFXSamplerState.ts" />
+/// <reference path="IVertexData.ts" />
+/// <reference path="ITexture.ts" />
+/// <reference path="IMat3.ts" />
+/// <reference path="IMat4.ts" />
+/// <reference path="IVec2.ts" />
+/// <reference path="IVec3.ts" />
+/// <reference path="IVec4.ts" />
+/// <reference path="IQuat4.ts" />
+/// <reference path="IBufferMap.ts" />
+//# sourceMappingURL=IShaderProgram.js.map

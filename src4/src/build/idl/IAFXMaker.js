@@ -1,0 +1,10 @@
+/// <reference path="IShaderProgram.ts" />
+/// <reference path="IUnique.ts" />
+/// <reference path="IAFXSamplerBlender.ts" />
+/// <reference path="IAFXAttributeBlendContainer.ts" />
+/// <reference path="IAFXPassInputBlend.ts" />
+/// <reference path="IBufferMap.ts" />
+/// <reference path="IAFXPassInputBlend.ts" />
+/// <reference path="IShaderInput.ts" />
+/// <reference path="IAFXInstruction.ts" />
+//# sourceMappingURL=IAFXMaker.js.map

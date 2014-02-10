@@ -577,3 +577,14 @@ app.filter('splitPagesRowsColumns', function() {
 		return len;
 	}
 });
+
+
+app.filter('fullPath', function () {
+	return function (docobject) {
+		var path = (docobject.name == 'index' && docobject.location == '') ?
+			   'index' : docobject.location ?
+				   docobject.location + '.' + docobject.name : docobject.name;
+
+		return path.replace(/^\//, '').replace(/\//g, '.');
+	}
+});

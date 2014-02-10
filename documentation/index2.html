@@ -77,17 +77,18 @@
 			<div class="api-nav-title"><strong>Akra APIs</strong></div>
 			<a class="left-column-bar j-left-bar opened" href="javascript:void(0);"><i class="fa fa-caret-left"></i></a>
 		</div>
+		
 		<div class="b-center">
 			<div class="b-left j-sidebar">
 				<ul class="b-side-menu j-side-menu">
-					<li class="item parent" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
-						<documobject docobject="currParent" isparent="true" treeview arrow="'opened'"></documobject>
+					<li  class="item parent" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
+						<documobject docobject="currParent" isparent="true" treeview arrow="'opened'" />
 					</li>
 					<li class="item parent has-sub-menu">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'"></documobject>
+						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'" />
 					</li>
 					<li class="item" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
-						<documobject docobject="currSibling" treeview arrow="'closed'"></documobject>
+						<documobject ng-if="currSibling.type=='modules'"  docobject="currSibling" treeview arrow="'closed'" />
 					</li>
 				</ul>
 			</div>
@@ -191,7 +192,7 @@
 					</div>
 					<div class="clr"></div>
 				</div>
-			
+				
 				<div ng-switch="currentObject.type">
 					<div ng-switch-when="modules">
 						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' docobjectdata='currentObject.dataAsArray' module-view></documobject>

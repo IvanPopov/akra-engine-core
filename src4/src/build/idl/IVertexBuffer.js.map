@@ -1,0 +1,1 @@
+{"version":3,"file":"IVertexBuffer.js","sourceRoot":"","sources":["../../akra/idl/IVertexBuffer.ts"],"names":["akra","akra.EVertexBufferTypes"],"mappings":"AACA,2CAA2C;AAC3C,2CAA2C;AAG3C,uCAAuC;AACvC,0CAA0C;AAC1C,8CAA8C;AAE9C,IAAO,IAAI;AA0BV,CA1BD,UAAO,IAAI;KACVA,UAAYA,kBAAkBA;QAC7BC,iEAAOA;QACPA,yDAAGA;QACHA,yDAAGA;kEACHD;qDAAAA;IAAAA,CAACA;AAqBHA,CAACA,uBAAA"}
