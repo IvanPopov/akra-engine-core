@@ -200,6 +200,15 @@ module TypeScript {
 		public document: Document = null;
 		private copyrightElement: AST = null;
 
+		/**
+		* For closure
+		*/
+		public thisFullClassName: string = null;
+		public thisFullExtendClassName: string = null;
+		public obfuscatedSymbolList: PullSymbol[] = [];
+		public obfuscatedSymbolNameMap: { [index: number]: string } = {};
+		public obfuscatorCounter: number = 0;
+
 		constructor(public emittingFileName: string,
 			public outfile: TextWriter,
 			public emitOptions: EmitOptions,
@@ -297,7 +306,8 @@ module TypeScript {
 				} else {
 					this.writeToOutput("var ");
 				}
-				this.writeToOutput(importDeclAST.identifier.text() + " = ");
+
+				this.writeToOutput(this.getObfuscatedName(importSymbol, importDeclAST.identifier.text()) + " = ");
 				var aliasAST = importDeclAST.moduleReference;
 
 				if (isExternalModuleReference) {
@@ -831,72 +841,91 @@ module TypeScript {
 			var temp = this.setContainer(EmitContainer.Module);
 			var isExported = hasFlag(pullDecl.flags, PullElementFlags.Exported);
 
+			//if (!isExported) {
+			//this.recordSourceMappingStart(moduleDecl);
+			//this.writeToOutput("var ");
+			//this.recordSourceMappingStart(moduleDecl.identifier);
+			//this.writeToOutput(this.moduleName);
+			//this.recordSourceMappingEnd(moduleDecl.identifier);
+			//this.writeLineToOutput(";");
+			//this.recordSourceMappingEnd(moduleDecl);
+			//this.emitIndent();
+			//}
+			var enumName = this.moduleName;
+
 			if (!isExported) {
-				this.recordSourceMappingStart(moduleDecl);
-				this.writeToOutput("var ");
-				this.recordSourceMappingStart(moduleDecl.identifier);
-				this.writeToOutput(this.moduleName);
-				this.recordSourceMappingEnd(moduleDecl.identifier);
-				this.writeLineToOutput(";");
-				this.recordSourceMappingEnd(moduleDecl);
-				this.emitIndent();
-			}
-
-			this.writeToOutput("(");
-			this.recordSourceMappingStart(moduleDecl);
-			this.writeToOutput("function (");
-			this.writeToOutputWithSourceMapRecord(this.moduleName, moduleDecl.identifier);
-			this.writeLineToOutput(") {");
-
-			this.recordSourceMappingNameStart(this.moduleName);
-
-			this.indenter.increaseIndent();
-
-			if (this.shouldCaptureThis(moduleDecl)) {
-				this.writeCaptureThisStatement(moduleDecl);
-			}
-
-			this.emitSeparatedList(moduleDecl.enumElements);
-			this.indenter.decreaseIndent();
-			this.emitIndent();
-
-			var parentIsDynamic = temp === EmitContainer.DynamicModule;
-			if (temp === EmitContainer.Prog && isExported) {
-				this.writeToOutput("}");
-				this.recordSourceMappingNameEnd();
-				this.writeToOutput(")(this." + this.moduleName + " || (this." + this.moduleName + " = {}));");
-			}
-			else if (isExported || temp === EmitContainer.Prog) {
-				var dotMod = svModuleName !== "" ? (parentIsDynamic ? "exports" : svModuleFullName) + "." : svModuleFullName;
-				this.writeToOutput("}");
-				this.recordSourceMappingNameEnd();
-				this.writeToOutput(")(" + dotMod + this.moduleName + " || (" + dotMod + this.moduleName + " = {}));");
-			}
-			else if (!isExported && temp !== EmitContainer.Prog) {
-				this.writeToOutput("}");
-				this.recordSourceMappingNameEnd();
-				this.writeToOutput(")(" + this.moduleName + " || (" + this.moduleName + " = {}));");
+				this.moduleName = enumName = this.getObfuscatedName(pullDecl.getSymbol(), enumName);
 			}
 			else {
-				this.writeToOutput("}");
-				this.recordSourceMappingNameEnd();
-				this.writeToOutput(")();");
+				this.moduleName = enumName = svModuleFullName + "." + enumName;
 			}
 
-			this.recordSourceMappingEnd(moduleDecl);
-			if (temp !== EmitContainer.Prog && isExported) {
-				this.recordSourceMappingStart(moduleDecl);
-				if (parentIsDynamic) {
-					this.writeLineToOutput("");
-					this.emitIndent();
-					this.writeToOutput("var " + this.moduleName + " = exports." + this.moduleName + ";");
-				} else {
-					this.writeLineToOutput("");
-					this.emitIndent();
-					this.writeToOutput("var " + this.moduleName + " = " + svModuleFullName + "." + this.moduleName + ";");
-				}
-				this.recordSourceMappingEnd(moduleDecl);
+			this.recordSourceMappingStart(moduleDecl);
+
+			if (!isExported) {
+				this.writeToOutput("var ");
 			}
+
+			this.recordSourceMappingStart(moduleDecl.identifier);
+			this.writeToOutput(this.moduleName);
+			this.recordSourceMappingEnd(moduleDecl.identifier);
+			this.writeLineToOutput(" = {};");
+			this.recordSourceMappingEnd(moduleDecl);
+			//this.emitIndent();
+
+			this.recordSourceMappingStart(moduleDecl);
+			this.recordSourceMappingNameStart(this.moduleName);
+
+			//this.indenter.increaseIndent();
+
+			//if (this.shouldCaptureThis(moduleDecl)) {
+			//	this.writeCaptureThisStatement(moduleDecl);
+			//}
+
+			this.emitSeparatedList(moduleDecl.enumElements);
+			//this.indenter.decreaseIndent();
+			this.emitIndent();
+
+			this.recordSourceMappingNameEnd();
+
+			//var parentIsDynamic = temp === EmitContainer.DynamicModule;
+			//if (temp === EmitContainer.Prog && isExported) {
+			//	this.writeToOutput("}");
+			//	this.recordSourceMappingNameEnd();
+			//	this.writeToOutput(")(this." + this.moduleName + " || (this." + this.moduleName + " = {}));");
+			//}
+			//else if (isExported || temp === EmitContainer.Prog) {
+			//	var dotMod = svModuleName !== "" ? (parentIsDynamic ? "exports" : svModuleFullName) + "." : svModuleFullName;
+			//	this.writeToOutput("}");
+			//	this.recordSourceMappingNameEnd();
+			//	this.writeToOutput(")(" + dotMod + this.moduleName + " || (" + dotMod + this.moduleName + " = {}));");
+			//}
+			//else if (!isExported && temp !== EmitContainer.Prog) {
+			//	this.writeToOutput("}");
+			//	this.recordSourceMappingNameEnd();
+			//	this.writeToOutput(")(" + this.moduleName + " || (" + this.moduleName + " = {}));");
+			//}
+			//else {
+			//	this.writeToOutput("}");
+			//	this.recordSourceMappingNameEnd();
+			//	this.writeToOutput(")();");
+			//}
+
+			this.recordSourceMappingEnd(moduleDecl);
+
+			//if (temp !== EmitContainer.Prog && isExported) {
+			//	this.recordSourceMappingStart(moduleDecl);
+			//	if (parentIsDynamic) {
+			//		this.writeLineToOutput("");
+			//		this.emitIndent();
+			//		this.writeToOutput("var " + this.moduleName + " = exports." + this.moduleName + ";");
+			//	} else {
+			//		this.writeLineToOutput("");
+			//		this.emitIndent();
+			//		this.writeToOutput("var " + this.moduleName + " = " + svModuleFullName + "." + this.moduleName + ";");
+			//	}
+			//	this.recordSourceMappingEnd(moduleDecl);
+			//}
 
 			this.setContainer(temp);
 			this.moduleName = svModuleName;
@@ -1009,7 +1038,7 @@ module TypeScript {
 
 				if (fullModuleName.indexOf(".") < 0) {
 					this.writeToOutput("var ");
-				}				
+				}
 
 				this.recordSourceMappingStart(moduleName);
 				this.writeToOutput(fullModuleName);
@@ -1020,7 +1049,7 @@ module TypeScript {
 
 				this._emittedModuleNames.push(fullModuleName);
 			}
-			
+
 			// prologue
 
 			//if (!isExported) {
@@ -1048,7 +1077,7 @@ module TypeScript {
 
 			this.recordSourceMappingNameStart(moduleName.text());
 
-			this.indenter.increaseIndent();
+			//this.indenter.increaseIndent();
 
 			if (this.shouldCaptureThis(moduleDecl)) {
 				this.writeCaptureThisStatement(moduleDecl);
@@ -1075,8 +1104,8 @@ module TypeScript {
 			}
 
 			this.moduleName = moduleName.text();
-			this.indenter.decreaseIndent();
-			this.emitIndent();
+			//this.indenter.decreaseIndent();
+			//this.emitIndent();
 
 			// epilogue
 			//var parentIsDynamic = temp === EmitContainer.DynamicModule;
@@ -1414,30 +1443,31 @@ module TypeScript {
 
 			if (funcDecl.block && isModuleContainer && pullFunctionDecl && hasFlag(pullFunctionDecl.flags, PullElementFlags.Exported)) {
 
-					this.writeLineToOutput("");
-					this.emitIndent();
-					var modName = isStaticModuleContainer ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
-					this.recordSourceMappingStart(funcDecl);
-					this.writeToOutput(modName + ".");
-					if (funcDecl.identifier) {
-						this.recordSourceMappingStart(funcDecl.identifier);
-					}
+				this.writeLineToOutput("");
+				this.emitIndent();
+				var modName = isStaticModuleContainer ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
+				this.recordSourceMappingStart(funcDecl);
+				this.writeToOutput(modName + ".");
+				if (funcDecl.identifier) {
+					this.recordSourceMappingStart(funcDecl.identifier);
+				}
 
-					this.writeToOutput(funcName);
+				this.writeToOutput(funcName);
+				
+				if (funcDecl.identifier) {
+					this.recordSourceMappingEnd(funcDecl.identifier);
+				}
 
-					if (funcDecl.identifier) {
-						this.recordSourceMappingEnd(funcDecl.identifier);
-					}
-
-					this.writeToOutput(" = " + "function");
-					//this.recordSourceMappingEnd(funcDecl);
+				this.writeToOutput(" = " + "function");
+				//this.recordSourceMappingEnd(funcDecl);
 			}
 			else {
 				this.recordSourceMappingStart(funcDecl);
 				this.writeToOutput("function ");
 
 				if (printName) {
-					var id = funcDecl.identifier.text();
+					var id = this.getObfuscatedName(pullDecl.getSymbol(), funcName);
+					
 					if (id) {
 						if (funcDecl.identifier) {
 							this.recordSourceMappingStart(funcDecl.identifier);
@@ -1449,7 +1479,7 @@ module TypeScript {
 					}
 				}
 			}
-			
+
 
 			this.emitParameterList(funcDecl.callSignature.parameterList);
 
@@ -1621,7 +1651,7 @@ module TypeScript {
 					this.emitVarDeclVar();
 				}
 
-				this.writeToOutputWithSourceMapRecord(varDecl.propertyName.text(), varDecl.propertyName);
+				this.writeToOutputWithSourceMapRecord(this.getObfuscatedName(symbol, varDecl.propertyName.text()), varDecl.propertyName);
 
 				if (varDecl.equalsValueClause) {
 					// Ensure we have a fresh var list count when recursing into the variable 
@@ -1811,6 +1841,14 @@ module TypeScript {
 							}
 							else if (pullSymbol.anyDeclHasFlag(PullElementFlags.Exported)/* && !this.symbolIsUsedInItsEnclosingContainer(pullSymbol)*/) {
 								this.emitSymbolContainerNameInEnclosingContext(pullSymbol);
+							}
+							else if (this.isNeedObfuscateName(pullSymbol)) {
+								this.writeToOutput(this.getObfuscatedName(pullSymbol, name.text()));
+
+								this.recordSourceMappingEnd(name);
+								this.emitComments(name, false);
+
+								return;
 							}
 						}
 						else if (pullSymbolContainerKind === PullElementKind.DynamicModule ||
@@ -2404,10 +2442,7 @@ module TypeScript {
 			this.recordSourceMappingEnd(funcDecl);
 			this.popDecl(pullDecl);
 		}
-
-		public thisFullClassName: string = null;
-		public thisFullExtendClassName: string = null;
-
+		private _temp;
 		public emitClass(classDecl: ClassDeclaration) {
 			var pullDecl = this.semanticInfoChain.getDeclForAST(classDecl);
 			this.pushDecl(pullDecl);
@@ -2446,17 +2481,19 @@ module TypeScript {
 					fullExtendClassName = emitSymbol.symbol.getContainer().fullName() + "." + emitSymbol.symbol.getDisplayName();
 				}
 				else {
-					fullExtendClassName = emitSymbol.symbol.getDisplayName();
+					fullExtendClassName = this.getObfuscatedName(emitSymbol.symbol, emitSymbol.symbol.getDisplayName());
 				}
 
 				this.thisFullExtendClassName = fullExtendClassName;
 			}
-			
+
 
 			this.recordSourceMappingStart(classDecl);
 
 			if (fullClassName.indexOf(".") < 0) {
-				this.writeToOutput("var " + className + " = ");
+				var symbol = (<PullTypeSymbol>pullDecl.getSymbol()).getConstructorMethod();
+				this.thisFullClassName = fullClassName = this.getObfuscatedName(symbol, className);
+				this.writeToOutput("var " + fullClassName + " = ");
 			}
 			else {
 				this.writeToOutput(fullClassName + " = ");
@@ -3671,6 +3708,31 @@ module TypeScript {
 				case SyntaxKind.DebuggerStatement:
 					return this.emitDebuggerStatement(<DebuggerStatement>ast);
 			}
+		}
+
+
+		private isNeedObfuscateName(symbol: PullSymbol): boolean {
+			return PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(PullElementFlags.Exported);
+		}
+
+		private getObfuscatedName(symbol: PullSymbol, origName: string): string {
+			if (!this.isNeedObfuscateName(symbol)) {
+				return origName;
+			}
+
+			var findIndex = this.obfuscatedSymbolList.indexOf(symbol);
+			var obfusctatedName = "";
+
+			if (findIndex < 0) {
+				this.obfuscatedSymbolList.push(symbol);
+				obfusctatedName = this.obfuscatedSymbolNameMap[this.obfuscatedSymbolList.length - 1] =
+				"$$_" + origName + "_" + (this.obfuscatorCounter++) + "_$$";
+			}
+			else {
+				obfusctatedName = this.obfuscatedSymbolNameMap[findIndex];
+			}
+
+			return obfusctatedName;	
 		}
 	}
 
