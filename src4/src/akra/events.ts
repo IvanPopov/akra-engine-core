@@ -88,7 +88,7 @@ module akra {
 			}
 			else {
 				if (this.indexOfBroadcastListener(pListener.reciever, pListener.callback) >= 0) {
-					debug.warn("Listener already exists: ", pListener);
+					debug.warn("Listener already exists: ", "listener:", pListener, "sender:", this.getSender());
 					this.clearListener(pListener);
 					return false;
 				}

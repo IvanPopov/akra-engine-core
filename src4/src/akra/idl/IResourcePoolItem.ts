@@ -70,15 +70,15 @@ module akra {
 		/** Сохранение ресурса в файл, или null при использовании имени ресурса. */
 		saveResource(sFilename?: string): boolean;
 	
-		/** Добавление и удаление функции, которая будет вызываться при изменении состояния ресурса( fnFunc(iNewSost,iOldSost) ) */
-		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
-	
 		/** sinchronize events with other resourse */
 		isSyncedTo(eSlot: EResourceItemEvents): boolean;
 
+		//проверяет
+		isSyncComplete(eSignal: EResourceItemEvents): boolean;
 		findRelatedResources(eState: EResourceItemEvents): IResourcePoolItem[];
 		//sync(pResourceItem: IResourcePoolItem, sSignal: string, sSlot?: string): boolean;
-		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): boolean;
+		sync(pResource: IResourcePoolItem, eSignal: string, eSlot?: string): boolean;
+		sync(pResource: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): boolean;
 	
 		//unsync(pResourceItem: IResourcePoolItem, sSignal: string, sSlot?: string): boolean;
 		unsync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): boolean;
@@ -100,8 +100,6 @@ module akra {
 		/** Установка в состояние сохраненый */
 		notifySaved(): void;
 	
-		notifyStateChange(eEvent: EResourceItemEvents, pTarget?: IResourcePoolItem);
-	
 		/** Проверка создан ли ресурс */
 		isResourceCreated(): boolean;
 		/** Проверка загружен ли ресурс */
@@ -110,9 +108,6 @@ module akra {
 		isResourceDisabled(): boolean;
 		/** Проверка обновлен ли ресурс */
 		isResourceAltered(): boolean;
-	
-		/** Установка состояния в изменен после загружки */
-		setAlteredFlag(isOn?: boolean): boolean;
 	
 		/** Пиписывание ресурсу имени */
 		setResourceName(sName: string);

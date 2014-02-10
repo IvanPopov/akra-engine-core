@@ -209,6 +209,7 @@ module akra.pool.resources {
 				if (isDefAndNotNull(fnCallBack)) {
 					fnCallBack(true);
 				}
+
 				return this;
 			}
 			else if (isString(arguments[0])) {

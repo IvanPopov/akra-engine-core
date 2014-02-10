@@ -60,14 +60,14 @@ module akra.pool.resources {
 
 		createResource(): boolean {
 			this.notifyLoaded();
-			return super.createResource();
+			this.notifyCreated();
+			return true;
 		}
 
 		setTexture(iIndex: int, iTextureHandle: int, iTexcoord?: int): boolean;
 		setTexture(iIndex: int, sTexture: string, iTexcoord?: int): boolean;
 		setTexture(iIndex: int, pTexture: ITexture, iTexcoord?: int): boolean;
 		setTexture(iIndex: int, texture: any, iTexcoord: int = 0): boolean {
-			//LOG(iIndex, pTexture, iTexcoord);
 			debug.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE,
 				"invalid texture slot");
 
@@ -97,7 +97,7 @@ module akra.pool.resources {
 					}
 
 					this._iTextureFlags = bf.clearBit(this._iTextureFlags, iIndex);
-					--this._nTotalTextures;
+					this._nTotalTextures--;
 				}
 
 
@@ -136,20 +136,10 @@ module akra.pool.resources {
 
 					this._pTextures[iIndex].addRef();
 					this._iTextureFlags = bf.setBit(this._iTextureFlags, iIndex);
-					++this._nTotalTextures;
-					this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 
-					// var me = this;
-					// trace('me get texture :)');
-					// pTexture.setChangesNotifyRoutine(function() {
-					//                 if (pTexture.isResourceLoaded()) {
-					//                     trace(arguments);
-					//                     trace('Texture <', pTexture.findResourceName(), '> loaded');
-					//                     if (me.isResourceLoaded()) {
-					//                         trace('Surface material loaded too.')
-					//                     }
-					//                 }
-					//             });
+					this._nTotalTextures++;
+
+					this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 				}
 
 				return true;
@@ -233,14 +223,14 @@ module akra.pool.resources {
 		}
 
 		texture(iSlot: int): ITexture {
-			// debug.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
-			//            "invalid texture slot");
+			 debug.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
+			            "invalid texture slot");
 			return this._pTextures[iSlot];
 		}
 
 		texcoord(iSlot: int): uint {
-			// debug.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
-			//            "invalid texture slot");
+			 debug.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
+			            "invalid texture slot");
 			return this._pTexcoords[iSlot];
 		}
 
@@ -251,36 +241,6 @@ module akra.pool.resources {
 		}
 
 		static MAX_TEXTURES_PER_SURFACE: uint = 16;
-
-
-		// _getHash(): string {
-		// 	if(this._isNeedToUpdateHash){
-		// 		this._sLastHash = this.calcHash();
-		// 	this._isNeedToUpdateHash = false;
-		// 	}
-
-		// 	return this._sLastHash;
-		// }
-
-		// private calcHash(): string {
-		// 	// var iHash: uint = 0;
-		// 	// for(var i: uint = 0; i < this._pTexcoords.length; i++){
-		// 	// 	if(this._pTexcoords[i] !== i){
-		// 	// 		iHash += (this._pTexcoords[i] + 1) << i;
-		// 	// 	}
-		// 	// }
-
-		// 	// return iHash.toString();
-		// 	var sHash: string = "";
-
-		// 	for(var i = 0; i < this._pTexcoords.length; i++){
-		// 		if(this._pTexcoords[i] !== i){
-		// 			sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
-		// 		}
-		// 	}
-
-		// 	return sHash;
-		// }
 	}
 }
 

@@ -664,7 +664,6 @@ module akra.fx {
 			}
 
 			var pComponent: IAFXComponent = <IAFXComponent>pComponentPool.createResource(sTechniqueName);
-			pComponent.create();
 			pComponent.setTechnique(pTechnique);
 
 			pTechnique.finalize(this);

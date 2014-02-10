@@ -8,6 +8,9 @@
 
 module akra {
 	export interface IRenderMethod extends IResourcePoolItem {
+		/** Are all materials/effects loaded? */
+		isReady(): boolean;
+
 		getEffect(): IEffect;
 		setEffect(pEffect: IEffect): void;
 

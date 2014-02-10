@@ -5,41 +5,38 @@
 /// <reference path="../../fx/fx.ts" />
 
 module akra.pool.resources {
-	export class Component extends ResourcePoolItem implements IAFXComponent{
+	export class Component extends ResourcePoolItem implements IAFXComponent {
 		private _pTechnique: IAFXTechniqueInstruction = null;
-		private _pComposer: IAFXComposer = null;
 
-		constructor(){
-			super();
+		createResource(): boolean {
+			this.notifyCreated();
+			return true;
 		}
 
-		create(): void {
-			this._pComposer = this.getManager().getEngine().getComposer();
-		}
-
-		 getTechnique(): IAFXTechniqueInstruction {
+		getTechnique(): IAFXTechniqueInstruction {
 			return this._pTechnique;
 		}
 
-		 setTechnique(pTechnique: IAFXTechniqueInstruction): void {
+		setTechnique(pTechnique: IAFXTechniqueInstruction): void {
 			this._pTechnique = pTechnique;
+			this.notifyLoaded();
 		}
 
-		 isPostEffect(): boolean {
-			return isNull(this._pTechnique) ? false : this._pTechnique.isPostEffect(); 
+		isPostEffect(): boolean {
+			return isNull(this._pTechnique) ? false : this._pTechnique.isPostEffect();
 		}
 
-		 getName(): string {
+		getName(): string {
 			return this._pTechnique.getName();
 		}
 
-		 getTotalPasses(): uint {
+		getTotalPasses(): uint {
 			return this._pTechnique.totalOwnPasses();
 		}
 
 		getHash(iShift: int, iPass: uint): string {
-			return this.guid.toString() + ">" + iShift.toString() + 
-				   ">" + (iPass === fx.ALL_PASSES ? "A" : iPass.toString());
+			return this.guid.toString() + ">" + iShift.toString() +
+				">" + (iPass === fx.ALL_PASSES ? "A" : iPass.toString());
 		}
 	}
 }

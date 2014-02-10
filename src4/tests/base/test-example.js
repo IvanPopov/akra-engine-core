@@ -37,11 +37,11 @@ var akra;
         var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
         pSceneQuad.attachToParent(akra.pScene.getRootNode());
 
-        //pSceneQuad.addPosition(0., 1., 0.);
-        var pSceneSurface = akra.addons.createSceneSurface(akra.pScene, 40);
-        pSceneSurface.addPosition(0, 0.01, 0);
-        pSceneSurface.scale(5.);
-        pSceneSurface.attachToParent(akra.pScene.getRootNode());
+        ////pSceneQuad.addPosition(0., 1., 0.);
+        //var pSceneSurface = akra.addons.createSceneSurface(akra.pScene, 40);
+        //pSceneSurface.addPosition(0, 0.01, 0);
+        //pSceneSurface.scale(5.);
+        //pSceneSurface.attachToParent(akra.pScene.getRootNode());
     }
 
     function createCamera() {
@@ -279,6 +279,7 @@ var akra;
     }
 
     function main(pEngine) {
+
         setup(akra.pCanvas);
 
         akra.pCamera = createCamera();
@@ -295,12 +296,12 @@ var akra;
         createSkyBox();
         createSky();
 
-        akra.pTerrain = createTerrain(akra.pScene, true, 67 /* TERRAIN_ROAM */);
+        //akra.pTerrain = createTerrain(akra.pScene, true, 67 /* TERRAIN_ROAM */);
 
         //loadHero();
         //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(150, data + "models/box/opened_box.dae");
-        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }

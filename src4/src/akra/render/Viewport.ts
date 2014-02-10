@@ -73,7 +73,7 @@ module akra.render {
 			p.object && p.object.dragstop.emit(pViewport, p.renderable, x, y);
 			p.renderable && p.renderable.dragstop.emit(pViewport, p.object, x, y);
 
-			this.emit(eBtn, x, y);
+			super.emit(eBtn, x, y);
 		}
 	}
 
@@ -93,7 +93,7 @@ module akra.render {
 			p.object && p.object.dragging.emit(pViewport, p.renderable, x, y);
 			p.renderable && p.renderable.dragging.emit(pViewport, p.object, x, y);
 
-			this.emit(eBtn, x, y);
+			super.emit(eBtn, x, y);
 		}
 	}
 

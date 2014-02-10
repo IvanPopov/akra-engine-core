@@ -14,13 +14,30 @@ module akra.pool.resources {
 		protected _pPassInputList: IAFXPassInputBlend[] = null;
 		protected _nTotalPasses: uint = 0;
 
+		isReady(): boolean {
+			if (this.isResourceDisabled()) {
+				return false;
+			}
+
+			if (isDefAndNotNull(this._pEffect) || isDefAndNotNull(this._pSurfaceMaterial)) {
+				return this.isResourceLoaded();
+			}
+
+			return this.isResourceCreated();
+		}
+
+		createResource(): boolean {
+			this.notifyCreated();
+			return true;
+		}
+
 		getEffect(): IEffect{
 			return this._pEffect;
 		}
 
 		setEffect(pEffect: IEffect): void {
 			if(!isNull(this._pEffect)){
-				this.unsync(this._pEffect, EResourceItemEvents.LOADED);
+				this.unsync(this._pEffect, EResourceItemEvents.LOADED, EResourceItemEvents.CREATED);
 				this._pEffect.altered.disconnect(this, this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.release();
 			}
@@ -28,11 +45,12 @@ module akra.pool.resources {
 			this._pEffect = pEffect;
 			
 			if(!isNull(pEffect)){
-				this.sync(this._pEffect, EResourceItemEvents.LOADED);
+				this.sync(this._pEffect, EResourceItemEvents.LOADED, EResourceItemEvents.CREATED);
 				this._pEffect.altered.connect(this, this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.addRef();
 			}
 
+			this.notifyLoaded();
 			this.updateEffect(pEffect);
 		}
 
@@ -42,7 +60,7 @@ module akra.pool.resources {
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
 			if(!isNull(this._pSurfaceMaterial)){
-				this.unsync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
+				this.unsync(this._pSurfaceMaterial, EResourceItemEvents.LOADED, EResourceItemEvents.CREATED);
 				this._pSurfaceMaterial.altered.disconnect(this, this.notifyAltered, EEventTypes.BROADCAST);
 				this._pSurfaceMaterial.release();
 			}
@@ -50,13 +68,14 @@ module akra.pool.resources {
 			this._pSurfaceMaterial = pMaterial;
 			
 			if(!isNull(pMaterial)){
-				this.sync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
+				this.sync(this._pSurfaceMaterial, EResourceItemEvents.LOADED, EResourceItemEvents.CREATED);
 				this._pSurfaceMaterial.altered.connect(this, this.notifyAltered, EEventTypes.BROADCAST);
 			}
 
 			this._pSurfaceMaterial.addRef();
 
 			this.notifyAltered();
+			this.notifyLoaded();
 		}
 
 		getMaterial(): IMaterial {
@@ -156,6 +175,7 @@ module akra.pool.resources {
 			return this._pPassInputList[iPass];
 		}
 
+		/** Clear previous pass-inputs.*/
 		protected updateEffect(pEffect: IEffect): void {
 			if(isNull(pEffect)){
 				for(var i: uint = 0; i < this._nTotalPasses; i++){

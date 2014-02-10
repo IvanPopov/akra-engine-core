@@ -14,6 +14,8 @@ module akra.webgl {
 		private _pLockData: Uint8Array = null;
 		protected _sCS: string = null;
 
+
+
 		getType(): EVertexBufferTypes {
 			return EVertexBufferTypes.VBO;
 		}
@@ -22,9 +24,6 @@ module akra.webgl {
 			return this._iByteSize;
 		}
 
-		constructor(/*pManager: IResourcePoolManager*/) {
-			super(/*pManager*/);
-		}
 
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): boolean {
 

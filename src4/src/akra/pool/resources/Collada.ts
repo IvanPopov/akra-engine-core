@@ -2867,35 +2867,16 @@ module akra.pool.resources {
 			pFile.read((e: Error, sXML: string): void => {
 				if (!isNull(e)) {
 					logger.error(e);
-
 					debug.groupEnd();
 					return;
 				}
+				
+				this.notifyRestored();
 
-				pModel.notifyRestored();
-
-				if (pModel.parse(sXML, pOptions)) {
-					//if resource not synced to any other resources
-					//loaded satet must be setted manuality
-					//but if resource has dependend sub-resources,
-					//loaded event happen automaticly, when all depenedences will be loaded.
-					if (pModel.isSyncedTo(EResourceItemEvents.LOADED)) {
-						//pModel.findRelatedResources(EResourceItemEvents.LOADED)
-						pModel.setChangesNotifyRoutine((eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean) => {
-							if (eFlag === EResourceItemEvents.LOADED && isSet) {
-								debug.timeEnd("loaded " + pModel.findResourceName());
-								debug.groupEnd();
-
-								pModel.loaded.emit();
-							}
-						});
-					}
-					else {
-						debug.timeEnd("loaded " + pModel.findResourceName());
-						debug.groupEnd();
-
-						pModel.notifyLoaded();
-					}
+				if (this.parse(sXML, pOptions)) {
+					this.notifyLoaded();
+					debug.timeEnd("loaded " + this.findResourceName());
+					debug.groupEnd();
 				}
 			});
 

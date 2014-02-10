@@ -218,8 +218,7 @@ module akra.deps {
 		pRsc: IResourcePoolItem,
 		sSignal: string,
 		fnHandler: (pItem: IResourcePoolItem) => void): void {
-
-		var fn = (pItem: IResourcePoolItem): void => {
+			var fn = (pItem: IResourcePoolItem): void => {
 			fnHandler(pItem);
 			pRsc.loaded.disconnect(fn);
 		}

@@ -282,6 +282,7 @@ module akra {
 	}
 
 	function main(pEngine: IEngine) {
+
 		setup(pCanvas);
 
 		pCamera = createCamera();

@@ -230,7 +230,7 @@ module akra.render {
 			for (var i in this._pTechniqueMap) {
 				var pMethod: IRenderMethod = this._pTechniqueMap[i].getMethod();
 
-				if (!isDefAndNotNull(pMethod) || !pMethod.isResourceLoaded()) {
+				if (!isDefAndNotNull(pMethod) || pMethod.isReady()) {
 					return false;
 				}
 			}

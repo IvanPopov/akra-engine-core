@@ -421,7 +421,7 @@ module akra.data {
 			//only one vertex data may be used in one veetex buffer
 			//случаи, когда выделяются 2 vertex data'ы в одной области памяти не рассматриваются
 			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
-
+			debug.error("OUAT TAK VOT", this.guid, pData.guid);
 			pData.declarationChanged.connect(this.modified);
 		}
 
