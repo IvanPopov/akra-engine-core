@@ -109,6 +109,31 @@ module akra.parser {
 		rule: IRule;
 	}
 
+
+	interface ITest0 {
+	}
+
+	interface ITest1 {
+	}
+
+	interface ITest2 extends ITest1 {
+	}
+
+	interface ITest3 extends ITest2, ITest0 {
+	}
+
+	class CTest0 implements ITest0 {
+	}
+
+	class CTest1 extends CTest0  implements ITest0, ITest2 {
+	}
+
+	interface ITestFunc0 {
+		(pArg1: ITest0, pARg2: IAdditionalFuncInfo): CTest1;
+		(pArg1: ITest1, pARg2: IAdditionalFuncInfo, pArg3: number): Parser;
+		(pArg1: ITest1, pARg2: IAdditionalFuncInfo, pArg3: number, pArg4: Lexer): Parser;
+	}
+
 	export class Parser implements IParser {
 		//Input
 

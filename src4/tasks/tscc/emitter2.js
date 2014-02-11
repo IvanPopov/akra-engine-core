@@ -2413,17 +2413,21 @@ var TypeScript;
             this.thisFullClassName = fullClassName;
 
             if (hasBaseClass) {
+                this.getJSDocForExtends(classDecl.heritageClauses);
+
                 baseTypeReference = TypeScript.getExtendsHeritageClause(classDecl.heritageClauses).typeNames.nonSeparatorAt(0);
 
                 var emitSymbol = this.getSymbolForEmit(baseTypeReference);
                 var fullExtendClassName = "";
 
-                if (emitSymbol.symbol.anyDeclHasFlag(1 /* Exported */) && emitSymbol.symbol.getContainer().isContainer()) {
-                    fullExtendClassName = emitSymbol.symbol.getContainer().fullName() + "." + emitSymbol.symbol.getDisplayName();
-                } else {
-                    fullExtendClassName = this.getObfuscatedName(emitSymbol.symbol, emitSymbol.symbol.getDisplayName());
-                }
+                fullExtendClassName = this.getFullSymbolName(emitSymbol.symbol);
 
+                //if (emitSymbol.symbol.anyDeclHasFlag(PullElementFlags.Exported) && emitSymbol.symbol.getContainer().isContainer()) {
+                //	fullExtendClassName = emitSymbol.symbol.getContainer().fullName() + "." + emitSymbol.symbol.getDisplayName();
+                //}
+                //else {
+                //	fullExtendClassName = this.getObfuscatedName(emitSymbol.symbol, emitSymbol.symbol.getDisplayName());
+                //}
                 this.thisFullExtendClassName = fullExtendClassName;
             }
 
@@ -3329,26 +3333,36 @@ var TypeScript;
         };
 
         Emitter.prototype.emitInterfaceDeclaration = function (declaration) {
-            if (declaration.preComments() !== null) {
-                this.emitComments(declaration, true, true);
-            }
-
+            //if (declaration.preComments() !== null) {
+            //	this.emitComments(declaration, /*pre:*/ true, /*onlyPinnedOrTripleSlashComments:*/ true);
+            //}
             var symbolForEmit = this.getSymbolForEmit(declaration);
+            var symbol = symbolForEmit.symbol;
+            var name = symbol.getDisplayName();
+            var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
-            //TODO: call signatures
-            var name = symbolForEmit.symbol.getDisplayName();
+            if (name === "IStringDMap") {
+                console.log("Norm");
+            }
 
             if (name === "String" || name === "Number" || name === "Array") {
                 return;
             }
 
-            if (symbolForEmit.symbol.fullName().indexOf(".") < 0) {
-                this.writeToOutput("var ");
+            var userComments = Emitter.getUserComments(declaration);
+
+            if (hasCallOrIndex) {
+                this.emitJSDocComment(Emitter.joinJSDocComments(userComments, this.getJSDocForTypedef(symbol.type)));
             } else {
-                this.emitSymbolContainerNameInEnclosingContext(symbolForEmit.symbol);
+                this.emitJSDocComment(Emitter.joinJSDocComments(userComments, this.getJSDocForInterfaceDeclaration(declaration)));
+            }
+            this.writeToOutput(this.getFullSymbolName(symbol));
+
+            if (!this.isNeedObfuscateName(symbol) && !hasCallOrIndex) {
+                this.writeToOutput(" = function(){}");
             }
 
-            this.writeToOutput(symbolForEmit.symbol.getDisplayName() + ";");
+            this.writeToOutput(";");
         };
 
         Emitter.prototype.firstVariableDeclarator = function (statement) {
@@ -3611,7 +3625,7 @@ var TypeScript;
         };
 
         Emitter.prototype.isNeedObfuscateName = function (symbol) {
-            return TypeScript.PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(1 /* Exported */);
+            return TypeScript.PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.isPrimitive();
         };
 
         Emitter.prototype.getObfuscatedName = function (symbol, origName) {
@@ -3631,6 +3645,202 @@ var TypeScript;
 
             return obfusctatedName;
         };
+
+        Emitter.getUserComments = function (node) {
+            var comments = node.preComments();
+            if (comments === null) {
+                return [];
+            }
+            return Emitter.EMPTY_STRING_LIST.concat(comments.map(function (comment) {
+                return comment.fullText().split('\n');
+            })).map(function (line) {
+                return (line + '').replace(/^\/\/\s?/, '');
+            });
+        };
+
+        Emitter.joinJSDocComments = function (first, second) {
+            return first.concat(first.length && second.length ? [''] : Emitter.EMPTY_STRING_LIST, second);
+        };
+
+        Emitter.stripOffArrayType = function (type) {
+            return type.replace(/^Array\.<(.*)>$/, '$1');
+        };
+
+        Emitter.prototype.getFullSymbolNameForAST = function (ast) {
+            return this.getFullSymbolName(this.getSymbolForEmit(ast).symbol);
+        };
+
+        Emitter.prototype.getFullSymbolName = function (symbol) {
+            var correctSymbol = symbol;
+
+            if (correctSymbol.isTypeReference()) {
+                correctSymbol = correctSymbol.referencedTypeSymbol;
+            }
+
+            if (correctSymbol.isType() && !correctSymbol.isInterface() && !correctSymbol.isPrimitive()) {
+                if (!correctSymbol.type.isEnum()) {
+                    if (correctSymbol.type.isAlias()) {
+                        correctSymbol = correctSymbol.type.assignedType();
+                    }
+
+                    correctSymbol = correctSymbol.type.getConstructorMethod();
+                }
+            }
+
+            var moduleName = "";
+            if (!this.isNeedObfuscateName(correctSymbol) && correctSymbol.getContainer() !== null && !correctSymbol.isPrimitive()) {
+                moduleName = correctSymbol.getContainer().fullName() + ".";
+            }
+
+            var symbolName = this.getObfuscatedName(correctSymbol, correctSymbol.getDisplayName());
+
+            return moduleName + symbolName;
+        };
+
+        Emitter.prototype.getJSDocForInterfaceDeclaration = function (interfaceDecl) {
+            return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.heritageClauses));
+        };
+
+        Emitter.prototype.getJSDocForExtends = function (herigateList) {
+            var extendsClause = TypeScript.getExtendsHeritageClause(herigateList);
+
+            if (extendsClause === null) {
+                return Emitter.EMPTY_STRING_LIST;
+            }
+
+            var extendsList = extendsClause.typeNames;
+            var count = extendsList.nonSeparatorCount();
+            var result = new Array(count);
+
+            for (var i = 0; i < count; i++) {
+                var member = extendsList.nonSeparatorAt(i);
+                result[i] = '@extends {' + this.getFullSymbolName(this.semanticInfoChain.getSymbolForAST(member)) + '}';
+            }
+
+            return result;
+        };
+
+        Emitter.prototype.emitJSDocComment = function (lines) {
+            var _this = this;
+            if (lines.length === 0)
+                return;
+            lines = ['/**'].concat(lines.map(function (line) {
+                return ' ' + ('* ' + line.replace(/\*\//g, '* /')).trim();
+            }), [' */']);
+            lines.forEach(function (line, i) {
+                if (i)
+                    _this.emitIndent();
+                _this.writeLineToOutput(line);
+            });
+            this.emitIndent();
+        };
+
+        Emitter.prototype.getJSDocForTypedef = function (type) {
+            return ['@typedef {' + this.formatJSDocType(type, true) + '}'];
+        };
+
+        Emitter.prototype.formatJSDocType = function (type, ignoreName) {
+            if (typeof ignoreName === "undefined") { ignoreName = false; }
+            var _this = this;
+            // Google Closure Compiler's type system is not powerful enough to work
+            // with type parameters, especially type parameters with constraints
+            if (type.kind & 8192 /* TypeParameter */) {
+                return '?';
+            }
+
+            // Simple types
+            if (type.isNamedTypeSymbol() && ignoreName === false) {
+                var name = this.getFullSymbolName(type);
+                if (name === 'any')
+                    return '?';
+                if (name === 'void')
+                    return 'undefined';
+                if (name === 'Boolean')
+                    return '?boolean';
+                if (name === 'Number')
+                    return '?number';
+                if (name === 'String')
+                    return 'string';
+
+                switch (name) {
+                    case "int":
+                    case "int8":
+                    case "int16":
+                    case "int32":
+                    case "int64":
+
+                    case "uint":
+                    case "uint8":
+                    case "uint16":
+                    case "uint32":
+                    case "uint64":
+
+                    case "float":
+                    case "float32":
+                    case "float64":
+
+                    case "long":
+                        return "number";
+                }
+                return name;
+            }
+
+            // Function types
+            if (type.kind & (8388608 /* ObjectType */ | 16 /* Interface */ | 16777216 /* FunctionType */) && type.hasOwnCallSignatures()) {
+                return this.formatJSDocUnionType(type.getCallSignatures().map(function (signature) {
+                    return '?function(' + signature.parameters.map(function (arg) {
+                        return _this.formatJSDocArgumentType(arg);
+                    }).join(', ') + ')' + ((signature.returnType !== null && signature.returnType.getTypeName() !== 'void') ? (': ' + _this.formatJSDocType(signature.returnType)) : '');
+                }));
+            }
+
+            // Constructor types
+            if (type.kind & 33554432 /* ConstructorType */ && type.getConstructSignatures().length > 0) {
+                return this.formatJSDocUnionType(type.getConstructSignatures().map(function (signature) {
+                    return '?function(' + (signature.returnType !== null && signature.returnType.getTypeName() !== 'void' ? ['new:' + _this.formatJSDocType(signature.returnType)] : Emitter.EMPTY_STRING_LIST).concat(signature.parameters.map(function (arg) {
+                        return _this.formatJSDocArgumentType(arg);
+                    })).join(', ') + ')';
+                }));
+            }
+
+            // Map types
+            if (type.kind & (8388608 /* ObjectType */ | 16 /* Interface */) && type.getIndexSignatures().length > 0) {
+                return this.formatJSDocUnionType(type.getIndexSignatures().map(function (signature) {
+                    return 'Object.<' + _this.formatJSDocType(signature.parameters[0].type) + ', ' + _this.formatJSDocType(signature.returnType) + '>';
+                }));
+            }
+
+            // Object types and interfaces
+            if (type.kind & (8388608 /* ObjectType */ | 16 /* Interface */)) {
+                if (type.getMembers().length === 0) {
+                    return '?Object';
+                }
+                if (type.getMembers().some(function (member) {
+                    return /[^A-Za-z0-9_$]/.test(member.getDisplayName());
+                })) {
+                    return '?';
+                }
+                return '?{ ' + type.getMembers().map(function (member) {
+                    return member.getDisplayName() + ': ' + _this.formatJSDocType(member.type);
+                }).join(', ') + ' }';
+            }
+
+            // Arrays
+            if (type.isArrayNamedTypeReference()) {
+                return 'Array.<' + this.formatJSDocType(type.getTypeArguments()[0]) + '>';
+            }
+
+            throw new Error(TypeScript.PullElementKind[type.kind] + ' types like "' + type.getTypeName() + '" are not supported');
+        };
+
+        Emitter.prototype.formatJSDocUnionType = function (parts) {
+            return parts.length === 1 ? parts[0] : '(' + parts.join('|') + ')';
+        };
+
+        Emitter.prototype.formatJSDocArgumentType = function (arg) {
+            return arg.isVarArg ? '...[' + Emitter.stripOffArrayType(this.formatJSDocType(arg.type)) + ']' : (this.formatJSDocType(arg.type) + (arg.isOptional ? "=" : ""));
+        };
+        Emitter.EMPTY_STRING_LIST = [];
         return Emitter;
     })();
     TypeScript.Emitter = Emitter;
