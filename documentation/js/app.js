@@ -70,7 +70,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 
 		$scope.searchResults.name = $scope.searchText;
 		$scope.lastSearchID = setTimeout(function(){
-			$http.get('//localhost:3000/search/'+$scope.searchText).success(function(data){
+			$http.get('/search/'+$scope.searchText).success(function(data){
 				$scope.searchResults.data = data;
 				console.log($scope.searchResults.data);
 			});
