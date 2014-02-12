@@ -1,7 +1,10 @@
 		<div class="b-description">
+			<div class="j-content-chapter" ng-show="displayfilter.length>0">
+				<h2 class="b-description-title">filter: "{{displayfilter}}..."</h2>
+			</div>
 			<div class="j-content-chapter">
 				<div class="b-single-methods-wrap">
-					<div ng-repeat="(key,val) in docobject.data" class="b-single-method j-single-method closed">
+					<div ng-repeat="(key,val) in docobject.data" class="b-single-method j-single-method closed" style="{{!(val.name|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
 						<div class="top-row">
 							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 							<div class="type"></div>

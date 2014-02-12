@@ -2,7 +2,7 @@ var app = angular.module("docsApp", ['ngRoute']);
 
 var keywords = ["modules","classes","functions","interfaces","enums","variables","typeDefs"];
 var subobjects = ["modules","classes","functions","interfaces","enums","variables","typeDefs","constants","getters","setters"];
-var systemtypes = ['string','number','bool','void','int','float','uint','any'];
+var systemtypes = ['string','number','bool','void','int','float','uint','any','ArrayBuffer','Uint8Array'];
 var searchBlocks = ['modules','interfaces','interfaceMembers','classes','classMembers','functions','enums','enumKeys','variables'];
 
 app.factory('docobjects', function($location) {
@@ -31,7 +31,7 @@ app.factory('templates', function() {
 		classView: '/templates/class-view.html',
 		searchView: '/templates/search-view.html',
 		columnView: '/templates/column-view.html',
-		moduleColumnView: '/templates/column-view.html',
+		moduleColumnView: '/templates/module-column-view.html',
 		moduleView: '/templates/module-view.html',
 		functionView: '/templates/function-view.html',
 		enumView: '/templates/enum-view.html',
@@ -70,16 +70,23 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 
 		$scope.searchResults.name = $scope.searchText;
 		$scope.lastSearchID = setTimeout(function(){
-			$http.get('/search/'+$scope.searchText).success(function(data){
+			$http.get('http://'+location.hostname+':3000/search/'+$scope.searchText).success(function(data){
 				$scope.searchResults.data = data;
 				console.log($scope.searchResults.data);
 			});
 		},150);
 	};
 
+	$scope.displayFilter = '';
+
 	$scope.clearSearch = function() {
 		$scope.searchText='';
 		$scope.search();
+	}
+
+	$scope.handleSearchInput = function($event) {
+		if($event.keyCode==27)
+			$scope.clearSearch();
 	}
 
 	$scope.isSearchEmpty = function() {
@@ -113,6 +120,73 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 		data: {}
 	};
 
+	$scope.isDisplay = {
+		modules: {
+			modules: true,
+			classes: true,
+			functions: true,
+			interfaces: true,
+			enums: true,
+			variables: true,
+			typeDefs: true,
+			constants: true,
+		},
+		classes: {
+			variables: true,
+			functions: true,
+			getters: true,
+			setters: true,
+		},
+		interfaces: {
+			variables: true,
+			functions: true,
+		}
+	}
+
+	$scope.isTreeDisplay = {
+		modules: {
+			modules: true,
+			classes: true,
+			functions: true,
+			interfaces: true,
+			enums: true,
+			variables: true,
+			typeDefs: true,
+			constants: true,
+		},
+		classes: {
+			variables: true,
+			functions: true,
+			getters: true,
+			setters: true,
+		},
+		interfaces: {
+			variables: true,
+			functions: true,
+		}
+	}
+
+	$scope.isDisplaySearch = {};
+	for(i in searchBlocks) {
+		$scope.isDisplaySearch[searchBlocks[i]] = true;
+	}
+
+	function objectToArray(object) {
+		var result = [];
+
+		angular.forEach(object, function (val, key) {
+			if ((val instanceof Object) && !(val instanceof Array)) {
+				result.push({ name: key, value: val });
+			}
+		});
+
+		result.sort(function(a, b) {
+			return subobjects.indexOf(a.name) < subobjects.indexOf(b.name)? -1: 1;
+		});
+
+		return result;
+	}
+
 	function getData(path,objname,type) {
 		$scope.currentObject.type = '';
 		$scope.currentObject.data = {};
@@ -124,10 +198,11 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				// console.log(objname, path, $scope.currentObject.parents, type, data);
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
+				$scope.currentObject.dataAsArray = objectToArray(data);
 			
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
-					setTimeout(setupHiders,100);
+					// setTimeout(setupHiders,100);
 					$scope.isHidersSetup=true;
 				}
 				// setTimeout(alphabeticColumnSort,100);
@@ -139,6 +214,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				// console.log(objname, path, $scope.currentObject.parents, type, data);
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
+				$scope.currentObject.dataAsArray = objectToArray(data);
 
 				var hierarchy = path.replace(/data/,'').replace(/\/modules/g,'').split("/");
 				for (var i = 0; i < hierarchy.length; i++) {
@@ -155,7 +231,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 			
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
-					setTimeout(setupHiders,100);
+					// setTimeout(setupHiders,100);
 					$scope.isHidersSetup=true;
 				}
 
@@ -218,13 +294,14 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	};
 
 	$scope.$on('$locationChangeSuccess', function() {
+		$scope.displayFilter = '';
 		$scope.searchText = '';
 		$scope.isShowSearchResults = false;
 		tryFileExists();
 	});
 
 	$scope.currLocation = $location.path().replace(/\/[^\/]*\/?$/, "/");
-	$location.path('/');
+	if ($location.path().length==0) $location.path('/');
 	/*$scope.location = $location;
 	$scope.http = $http;
 	$http.get('/data/index.json').success(function(data){
@@ -239,6 +316,69 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	});*/
 });
 
+app.controller('ColumnDisplayCtrl', function($scope) {
+	$scope.filter = function(input, prop, filter) {
+		filtered=[];
+		// i=0;
+		for (i in input) {
+		// while (i<input.length) {
+			check=[];
+			check[0]=!(filter[0]&&input[i][prop][0].toUpperCase()!=filter[0]);
+			check[1]=!(filter[1]&&input[i][prop][1].toUpperCase()!=filter[1]);
+			if (check[0]&&check[1]) {
+			// if (!(check[0]&&check[1])) {
+				// input.splice(i,1);
+				filtered.push(input[i]);
+			}
+			// else i++;
+		}
+		return filtered;
+	}
+	$scope.splitPagesRowsColumns = function (array,pageSize,rowSize,columnSize) {
+		var entriesNum = array.length;
+		var colsNum = Math.ceil(entriesNum/columnSize);
+		var rowsNum = Math.ceil(entriesNum/rowSize/columnSize);
+		var pagesNum = Math.ceil(entriesNum/rowSize/columnSize/pageSize);
+		// console.log(entriesNum,colsNum,rowsNum,pagesNum);
+		var len=[];
+		for(var k=0;k<pagesNum;k++) {
+			len.push([]);
+			// console.log("<",len,">");
+			for(var i=k*pageSize;i<Math.min((k+1)*pageSize,rowsNum);i++) {
+				len[k].push([]);
+				// console.log("<",len,">");
+				for(var j=i*rowSize;j<Math.min((i+1)*rowSize,colsNum);j++) {
+					// console.log("Indexes: ",k,i,j);
+					// console.log(array.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+					len[k][i%pageSize].push(array.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+				}
+			}
+		}
+		return len;
+	}
+	$scope.sectiontype;
+	$scope.docobject;
+	$scope.pagenum=0;
+	$scope.displayfilter;
+	$scope.sectiondata;
+	$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',$scope.displayfilter),3,4,6);
+	$scope.$watch('displayfilter', function(newValue,oldValue) {
+		$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',newValue),3,4,6);
+		$scope.pagenum=Math.min($scope.pagenum,$scope.sectiondata.length-1);
+	});
+});
+
+app.directive('modulesectionctrl', function() {
+	return {
+		scope: {
+			displayfilter:'=',
+			sectiondata:'=',
+			sectiontype:'=',
+			docobject:'='
+		}
+	}
+});
+
 app.directive('documobject', function() {
 	return {
 		restrict:'E',
@@ -246,7 +386,11 @@ app.directive('documobject', function() {
 			docobject: '=',
 			arrow: '=',
 			filtersubobjects: '=',
-			isparent: '='
+			docobjectdata: '=',
+			isparent: '=',
+			displayfilter: '=',
+			isdisplay:'=',
+			istreedisplay:'=',
 		}
 	};
 });
@@ -264,6 +408,8 @@ app.directive('columndisplay', function() {
 	return {
 		restrict:'E',
 		scope: {
+			// docobject:'=',
+			displayfilter:'=',
 			sectiondata:'=',
 			sectiontype:'='
 		}
@@ -274,8 +420,11 @@ app.directive('modulecolumndisplay', function() {
 	return {
 		restrict:'E',
 		scope: {
+			// docobject:'=',
+			displayfilter:'=',
 			sectiondata:'=',
 			sectiontype:'=',
+			pagenum:'=',
 			elementlocation:'='
 		}
 	}
@@ -515,6 +664,20 @@ app.filter('objectToArray', function() {
 	}
 });
 
+app.filter('variablesObjectToArray', function() {
+	return function(object) {
+		if(object instanceof Array) return object;
+		var keys=['private','public','protected','static']
+		var array = [];
+		for(j in keys) {
+			for(i in object[keys[j]]) {
+				array.push({name:i,data:object[keys[j]][i]});
+			}
+		}
+		return array;
+	}
+});
+
 app.filter('splitPagesRowsColumns', function() {
 	return function (array,pageSize,rowSize,columnSize) {
 		var entriesNum = array.length;
@@ -537,5 +700,59 @@ app.filter('splitPagesRowsColumns', function() {
 			}
 		}
 		return len;
+	}
+});
+
+app.filter('displayFilter', function() {
+	return function(input, prop, filter) {
+		filtered=[];
+		for (i in input) {
+			check=[];
+			t=(input[i][prop][0]=='_') ? 1 : 0;
+			check[0]=!(filter[0]&&input[i][prop][t].toUpperCase()!=filter[0]);
+			check[1]=!(filter[1]&&input[i][prop][t+1].toUpperCase()!=filter[1]);
+			if (check[0]&&check[1]) {
+				filtered.push(input[i]);
+			}
+		}
+		return filtered;
+	}
+});
+
+app.filter('isDisplayFilteredEmpty', function() {
+	return function(input, prop, filter) {
+		visible=true;
+		for (i in input) {
+			check=[];
+			t=(input[i][prop][0]=='_') ? 1 : 0;
+			check[0]=!(filter[0]&&input[i][prop][t].toUpperCase()!=filter[0]);
+			check[1]=!(filter[1]&&input[i][prop][t+1].toUpperCase()!=filter[1]);
+			if (check[0]&&check[1]) {
+				visible = false;
+				break;
+			}
+		}
+		return visible;
+	}
+});
+
+app.filter('displayFilterString', function() {
+	return function(input, filter) {
+		check=[];
+		t=(input[0]=='_') ? 1 : 0;
+		check[0]=!(filter[0]&&input[t].toUpperCase()!=filter[0]);
+		check[1]=!(filter[1]&&input[t+1].toUpperCase()!=filter[1]);
+		return check[0]&&check[1];
+	}
+});
+
+app.filter('filtersubobjects', function () {
+	return function(input) {
+		var result = {};
+		for(key in input) {
+			if((input[i] instanceof Object) && !(input[i] instanceof Array))
+				result[key] = input[i];
+		}
+		return result;
 	}
 });

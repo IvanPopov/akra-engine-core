@@ -10,30 +10,53 @@
 	<div class="sub-menu">
 		<div class="legend">
 			<div ng-show='docobject.type=="modules"' class="row">
-				<div class="col-md-2"><a class="link j-sm-button" data-name="classes" title="Classes" href="javascript:void(0);"><img src="images/sm-classes-icon.png"/></a></div
->				<div class="col-md-2"><a class="link j-sm-button" data-name="enums" title="Enums" href="javascript:void(0);"><img src="images/sm-enums-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="functions" title="Functions" href="javascript:void(0);"><img src="images/sm-functions-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="interfaces" title="Interfaces" href="javascript:void(0);"><img src="images/sm-interfaces-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="modules" title="Namespaces" href="javascript:void(0);"><img src="images/sm-namespaces-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="variables" title="Members" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a></div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.modules.classes?'':'inactive'}}" data-name="classes" title="Classes" ng-click="istreedisplay.modules.classes=!istreedisplay.modules.classes" href="javascript:void(0);"><img src="images/sm-classes-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.modules.enums?'':'inactive'}}" data-name="enums" title="Enums" ng-click="istreedisplay.modules.enums=!istreedisplay.modules.enums" href="javascript:void(0);"><img src="images/sm-enums-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.modules.functions?'':'inactive'}}" data-name="functions" title="Functions" ng-click="istreedisplay.modules.functions=!istreedisplay.modules.functions" href="javascript:void(0);"><img src="images/sm-functions-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.modules.interfaces?'':'inactive'}}" data-name="interfaces" title="Interfaces" ng-click="istreedisplay.modules.interfaces=!istreedisplay.modules.interfaces" href="javascript:void(0);"><img src="images/sm-interfaces-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.modules.modules?'':'inactive'}}" data-name="modules" title="Namespaces" ng-click="istreedisplay.modules.modules=!istreedisplay.modules.modules" href="javascript:void(0);"><img src="images/sm-namespaces-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.modules.variables?'':'inactive'}}" data-name="members" title="Members" ng-click="istreedisplay.modules.variables=!istreedisplay.modules.variables" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a>
+				</div>
 				<div class="col-md-2"></div>
 			</div>
-			<div ng-show='docobject.type=="classes"||docobject.type=="interfaces"' class="row">
-				<div class="col-md-2"><a class="link j-sm-button" data-name="methods" title="Methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="variables" title="Members" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="getters" title="Getters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png"/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="setters" title="Setters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png"/></a></div>
-
-				<!-- <div class="col-md-2"><a class="link j-sm-button" data-name="methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="members" href="javascript:void(0);"><img src="images/sm-members-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="accessors" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="signals" href="javascript:void(0);"><img src="images/sm-signals-icon.png" alt=""/></a></div>
-				<div class="col-md-2"><a class="link j-sm-button" data-name="static" href="javascript:void(0);"><img src="images/sm-static-icon.png" alt=""/></a></div> -->
+			<div ng-show='docobject.type=="classes"' class="row">
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.classes.functions?'':'inactive'}}" data-name="methods" title="Methods" ng-click="istreedisplay.classes.functions=!istreedisplay.classes.functions" href="javascript:void(0);"><img src="images/sm-methods-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.classes.variables?'':'inactive'}}" data-name="members" title="Members" ng-click="istreedisplay.classes.variables=!istreedisplay.classes.variables" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.classes.getters?'':'inactive'}}" data-name="getters" title="Getters" ng-click="istreedisplay.classes.getters=!istreedisplay.classes.getters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.classes.setters?'':'inactive'}}" data-name="setters" title="Setters" ng-click="istreedisplay.classes.setters=!istreedisplay.classes.setters" href="javascript:void(0);"><img src="images/sm-accessors-icon.png"/></a>
+				</div>
+				<div class="col-md-2"></div>
+			</div>
+			<div ng-show='docobject.type=="interfaces"' class="row">
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.interfaces.functions?'':'inactive'}}" data-name="methods" title="Methods" ng-click="istreedisplay.interfaces.functions=!istreedisplay.interfaces.functions" href="javascript:void(0);"><img src="images/sm-methods-icon.png"/></a>
+				</div>
+				<div class="col-md-2">
+					<a class="link j-sm-button {{istreedisplay.interfaces.variables?'':'inactive'}}" data-name="members" title="Members" ng-click="istreedisplay.interfaces.variables=!istreedisplay.interfaces.variables" href="javascript:void(0);"><img src="images/sm-members-icon.png"/></a>
+				</div>
 				<div class="col-md-2"></div>
 			</div>
 		</div>
 		<div class="sub-wrap" ng-if="docobject.type!='enums'">
-			<div class="j-sm-sub-list" ng-repeat="(key,subdata) in filtersubobjects(docobject.data)" data-name="{{docobject.type!='modules' ? (key|toClassStyleType) : key}}">
+			<div class="j-sm-sub-list" ng-repeat="(key,subdata) in filtersubobjects(docobject.data)" data-name="{{docobject.type!='modules' ? (key|toClassStyleType) : key}}" ng-show="istreedisplay[docobject.type][key]">
 				<ul class="sub-list" ng-if="key!='variables'">
 					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata"><a ng-if='docobject.type=="modules"' class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a><a ng-if='docobject.type!="modules"' class="sub-link {{key|toStyleType|toClassStyleType}}">{{subkey}}</a></li>
 				</ul>
