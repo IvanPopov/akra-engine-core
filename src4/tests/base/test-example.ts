@@ -10,10 +10,11 @@ module akra {
 			{ path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
 			{ path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
 			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
-		]
+		],
+		deps: addons.getNavigationDependences()
 	};
 
-	export var pEngine = akra.createEngine({ deps: pDeps });
+	export var pEngine = createEngine({ deps: pDeps });
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
@@ -292,16 +293,16 @@ module akra {
 
 		createKeymap(pCamera);
 
-		//createSceneEnvironment();
+		createSceneEnvironment();
 		//createLighting();
 		createSkyBox();
 		createSky();
 
-		pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
+		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
 		//loadHero();
 		//loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(150, data + "models/box/opened_box.dae");
-		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+		loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
 		pEngine.exec();
 		//pEngine.renderFrame();

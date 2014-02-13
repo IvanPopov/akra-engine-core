@@ -506,6 +506,7 @@
     <None Include="akra\render\RenderEntry.ts" />
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
+    <TypeScriptCompile Include="akra\idl\3d-party\es6-promises.d.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
@@ -551,6 +552,7 @@
     <TypeScriptCompile Include="akra\webgl\WebGLTextureBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexBuffer.ts" />
     <TypeScriptCompile Include="akra\webgl\WebGLVertexTexture.ts" />
+    <TypeScriptCompile Include="akra\states.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="akra\net\server\ConnectionWrapper.js" />

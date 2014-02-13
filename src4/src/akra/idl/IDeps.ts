@@ -1,47 +1,49 @@
-
-/// <reference path="IEventProvider.ts" />
-
 module akra {
 	export enum EDependenceStatuses {
-		NOT_LOADED,
-		INITIALIZATION,
-		CHECKING,
-		LOADING,
-		UNPACKING,
-		LOADED
+		PENDING,			///< Pending...	
+		INITIALIZATION,		///< Added in queue to load.
+		CHECKING,			///< Check integrity hashes and other .
+		LOADING,			///< Started loading.
+		DOWNLOADING,		///< Downlaoding, second argment - progresss.
+		UNPACKING,			///< Unpacking/extraction/undumping process started. 
+		EXTRACTION,			///< Extraction from arhive, second argument - progress.
+		LOADED,				///< Loaded. Content will be passed as the second argument
+
+		REJECTED			///< Rejected with error. 
 	}
 	
 	export interface IDep {
-		//system
-		index?: int;
-		deps?: IDependens;
-		//if primary dependence?
-		primary?: boolean; 
-	
-		//additional
+		//system fiels
 		status?: EDependenceStatuses;
-		content?: any;
-	
-		//user
-		path: string;
-		name?: string;
-		comment?: string;
-		type?: string;
+		bytesLoaded?: uint;
+		byteLength?: uint;				///< Byte length.
+		unpacked?: float;				///< Unpacked from 0. to 1.;
+
+		//user files
+		path: string;		///< Path to file/resource.
+		name?: string;		///< Name of resource.
+		comment?: string;	///< Comment.
+		type?: string;		///< Type of resource.
 	}
 
 	
 	export interface IDependens {
-	    //system paramaters
-		parent?: IDependens;   //parent dep.
-		depth?: uint;           //current depth of this Dep
-		
-		loaded?: uint;          //files loaded
-		total?: uint;           //files total
-	
 		//user defined
-		files?: IDep[];        //files for loading
-		deps?: IDependens;     //sub dependens
-		root?: string;          //root for this.level only
+		files?: IDep[];        ///< files for loading
+		deps?: IDependens;     ///< sub dependens
+		root?: string;         ///< root for this.level only
+	}
+
+	export interface IDepEvent {
+		time: uint;						///< Time from begin of loading.
+
+		loaded: uint;					///< Files loaded.
+		total: uint;					///< Total files to be loaded.
+
+		bytesLoaded: uint;				///< Bytes loaded.
+		bytesTotal: uint;				///< Bytes total.
+
+		unpacked: float;				/// From 0. to 1.;
 	}
 	
 }

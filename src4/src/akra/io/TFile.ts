@@ -52,9 +52,9 @@ module akra.io {
 		protected _pFileMeta: IFileMeta = null;
 		protected _isLocal: boolean = false;
 
-		constructor(sFilename?: string, sMode?: string, cb?: Function);
-		constructor(sFilename?: string, iMode?: int, cb?: Function);
-		constructor(sFilename?: string, sMode?: any, cb: Function = TFile.defaultCallback) {
+		constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
+		constructor(sFilename?: string, iMode?: int, cb?: (e: Error, pMeta: IFileMeta) => void);
+		constructor(sFilename?: string, sMode?: any, cb: (e: Error, pMeta: IFileMeta) => void = <any>TFile.defaultCallback) {
 			this.setupSignals();
 
 			if (isDef(sMode)) {
@@ -90,11 +90,6 @@ module akra.io {
 			return path.parse(this._pUri.getPath()).getBaseName();
 		}
 
-		getMeta(): IFileMeta {
-			logger.assert(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
-			return this._pFileMeta;
-		}
-
 		getByteLength(): uint {
 			return this._pFileMeta ? this._pFileMeta.size : 0;
 		}
@@ -119,11 +114,11 @@ module akra.io {
 			this._nCursorPosition = iOffset;
 		}
 
-		open(sFilename: string, iMode: int, cb?: Function): void;
-		open(sFilename: string, sMode: string, cb?: Function): void;
-		open(sFilename: string, cb?: Function): void;
-		open(iMode: int, cb?: Function): void;
-		open(cb?: Function): void;
+		open(sFilename: string, iMode: int, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(sFilename: string, sMode: string, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(sFilename: string, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(iMode: int, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(cb?: (e: Error, pMeta: IFileMeta) => void): void;
 		open(sFilename?: any, iMode?: any, cb?: any): void {
 			var pFile: IFile = this;
 			var hasMode: boolean = !isFunction(iMode);
@@ -425,11 +420,9 @@ module akra.io {
 			return this._isLocal;
 		}
 
-		getMetaData(cb: Function): void {
-			logger.assert(isDefAndNotNull(this._pFileMeta), 'There is no file handle open.');
-			cb(null, {
-				lastModifiedDate: this._pFileMeta.lastModifiedDate
-			});
+		getMetaData(cb: (e: Error, pMeta: IFileMeta) => void): void {
+			logger.assert(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
+			cb(null, this._pFileMeta);
 		}
 		private setAndValidateUri(sFilename: IURI);
 		private setAndValidateUri(sFilename: string);

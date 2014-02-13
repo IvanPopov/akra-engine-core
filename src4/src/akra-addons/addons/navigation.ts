@@ -379,6 +379,13 @@ module akra.addons {
 		pCallback(null);
 	}
 
+	export function getNavigationDependences(sPath?: string): IDependens {
+		return deps.createDependenceByPath(
+			AE_NAVIGATION_DEPENDENCIES.path,
+			AE_NAVIGATION_DEPENDENCIES.type,
+			sPath || <string>addons['navigation'].path);
+	}
+
 	/**
 	 * @param pGeneralViewport Target viewport.
 	 * @param pParameters Parameters.
@@ -394,17 +401,26 @@ module akra.addons {
 			pParameters = {};
 		}
 
-		if (isNull(pCallback)) {
-			pCallback = (e: Error) => {
-				throw e;
-			}
+		pCallback = pCallback || ((e: Error) => {
+			if (e) throw e;
+		});
+
+
+		if (pGeneralViewport
+			.getTarget()
+			.getRenderer()
+			.getEngine()
+			.getResourceManager()
+			.getModelPoolByFormat(EModelFormats.COLLADA)
+			.findResource("akra.navigation.ORIENTATION_CUBE")) {
+			return _navigation(pGeneralViewport, pParameters, pCallback);
 		}
 
 		deps.load(
 			pGeneralViewport.getTarget().getRenderer().getEngine(),
-			deps.createDependenceByPath(AE_NAVIGATION_DEPENDENCIES.path, AE_NAVIGATION_DEPENDENCIES.type),
-			pParameters.path || <string>addons['navigation'].path,
-			(e: Error, pDep: IDependens): void => {
+			getNavigationDependences(pParameters.path),
+			null,
+			(e: Error): void => {
 				if (!isNull(e)) {
 					pCallback(new Error("Could not load resources for akra.addon.navigation"));
 				}

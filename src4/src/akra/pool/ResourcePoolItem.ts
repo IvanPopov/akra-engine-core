@@ -40,7 +40,7 @@ module akra.pool {
 		private _pResourceCode: IResourceCode;
 		private _pResourcePool: IResourcePool<IResourcePoolItem> = null;
 		private _iResourceHandle: int = 0;
-		private _iResourceFlags: int = 0;					//состояния самого ресурса
+		private _iResourceFlags: int = 0;						//состояния самого ресурса
 		private _iResourceSyncFlags: int = 0xFFFFFF;			//состояния зависимых ресурсов
 		private _pCallbackSlots: ICallbackSlot[][];
 

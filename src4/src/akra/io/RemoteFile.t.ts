@@ -1,37 +1,37 @@
 /// <reference path="FileInterface.t.ts" />
 
 function base64_encode(data) {
-    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-        ac = 0,
-        enc = "",
-        tmp_arr = [];
+	var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+		ac = 0,
+		enc = "",
+		tmp_arr = [];
 
-    if (!data) {
-        return data;
-    }
+	if (!data) {
+		return data;
+	}
 
-    do { // pack three octets into four hexets
-        o1 = data.charCodeAt(i++);
-        o2 = data.charCodeAt(i++);
-        o3 = data.charCodeAt(i++);
+	do { // pack three octets into four hexets
+		o1 = data.charCodeAt(i++);
+		o2 = data.charCodeAt(i++);
+		o3 = data.charCodeAt(i++);
 
-        bits = o1 << 16 | o2 << 8 | o3;
+		bits = o1 << 16 | o2 << 8 | o3;
 
-        h1 = bits >> 18 & 0x3f;
-        h2 = bits >> 12 & 0x3f;
-        h3 = bits >> 6 & 0x3f;
-        h4 = bits & 0x3f;
+		h1 = bits >> 18 & 0x3f;
+		h2 = bits >> 12 & 0x3f;
+		h3 = bits >> 6 & 0x3f;
+		h4 = bits & 0x3f;
 
-        // use hexets to index into b64, and append result to encoded string
-        tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-    } while (i < data.length);
+		// use hexets to index into b64, and append result to encoded string
+		tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+	} while (i < data.length);
 
-    enc = tmp_arr.join('');
+	enc = tmp_arr.join('');
 
-    var r = data.length % 3;
+	var r = data.length % 3;
 
-    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+	return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 }
 
 // var EFileBinaryType = {
@@ -41,189 +41,192 @@ function base64_encode(data) {
 // }
 
 
-function createCORSRequest(method, url){
-    var xhr = new XMLHttpRequest();
-    if ("withCredentials" in xhr){
-        xhr.open(method, url, true);
-    } else if (typeof XDomainRequest != "undefined"){
-        xhr = new (<any><XMLHttpRequest>XDomainRequest());
-        xhr.open(method, url);
-    } else {
-        xhr = null;
-    }
-    return xhr;
+function createCORSRequest(method, url) {
+	var xhr = new XMLHttpRequest();
+
+	if ("withCredentials" in xhr) {
+		xhr.open(method, url, true);
+	} else if (typeof XDomainRequest != "undefined") {
+		xhr = new (<any><XMLHttpRequest>XDomainRequest());
+		xhr.open(method, url);
+	} else {
+		xhr = null;
+	}
+
+	return xhr;
 }
 
-function read (pFile, fnReaded, fnProgress) {
-    // var pXhr = new XMLHttpRequest();
-    // pXhr.open('GET', pFile.name, true);
+function read(pFile, fnReaded, fnProgress) {
+	// var pXhr = new XMLHttpRequest();
+	// pXhr.open('GET', pFile.name, true);
 
-    var pXhr = createCORSRequest("GET", pFile.name);
+	var pXhr = createCORSRequest("GET", pFile.name);
 
-    pXhr.onload = function (e) {
-        if (parseInt(<any>pXhr.status) != 200 && parseInt(<any>pXhr.status) != 0) {
-            throw pXhr.status;
-        }
+	pXhr.onload = function (e) {
+		if (parseInt(<any>pXhr.status) != 200 && parseInt(<any>pXhr.status) != 0) {
+			throw pXhr.status;
+		}
 
-        var pData = pXhr.response;
-    
-        if (pFile.pos > 0) {
-            pData = pData.slice(pFile.pos);
+		var pData = pXhr.response;
 
-            if (isJSON(pFile.mode)) {
-                pData = JSON.parse(pData);
-            }
-        }
+		if (pFile.pos > 0) {
+			pData = pData.slice(pFile.pos);
 
-        if (isURL(pFile.mode)) {
-            pData = URL.createObjectURL(pData);
-        }
+			if (isJSON(pFile.mode)) {
+				pData = JSON.parse(pData);
+			}
+		}
 
-        if (isJSON(pFile.mode)) {
-            if (typeof pData === "string") {
-                pData = JSON.parse(pData);
-            }
-        }
+		if (isURL(pFile.mode)) {
+			pData = URL.createObjectURL(pData);
+		}
 
-        fnReaded(pData);
-    }
+		if (isJSON(pFile.mode)) {
+			if (typeof pData === "string") {
+				pData = JSON.parse(pData);
+			}
+		}
 
-    if (fnProgress) {
-        pXhr.onprogress = function (e) {
-            fnProgress(e.loaded, e.total);
-        }
-    }
-    
+		fnReaded(pData);
+	}
 
-    if (isBinary(pFile.mode)) {
-        pXhr.overrideMimeType('application/octet-stream');
-        pXhr.responseType = 'arraybuffer';
-    }
-    else if (isJSON(pFile.mode) && pFile.pos === 0) {
-        pXhr.overrideMimeType('application/json');
-        pXhr.responseType = 'json';
-    }
-    else if (isURL(pFile.mode)) {
-        pXhr.responseType = 'blob';
-    }
-    else {
-        pXhr.responseType = 'text';
-    }
+	if (fnProgress) {
+		pXhr.onprogress = function (e) {
+			fnProgress(e.loaded, e.total);
+		}
+	}
 
-    pXhr.send();
+
+	if (isBinary(pFile.mode)) {
+		pXhr.overrideMimeType('application/octet-stream');
+		pXhr.responseType = 'arraybuffer';
+	}
+	else if (isJSON(pFile.mode) && pFile.pos === 0) {
+		pXhr.overrideMimeType('application/json');
+		pXhr.responseType = 'json';
+	}
+	else if (isURL(pFile.mode)) {
+		pXhr.responseType = 'blob';
+	}
+	else {
+		pXhr.responseType = 'text';
+	}
+
+	pXhr.send();
 }
 
-function todo () {
-    throw new Error('This functionality is not implemented for remote files.');
+function todo() {
+	throw new Error('This functionality is not implemented for remote files.');
 }
 
-function remove (pFile) {
-    todo();
-    /*var pXhr = send(pFile, {action: 'remove'});
-     throw new Error(pXhr.responseText);
-     return false;*/
+function remove(pFile) {
+	todo();
+	/*var pXhr = send(pFile, {action: 'remove'});
+	 throw new Error(pXhr.responseText);
+	 return false;*/
 }
-function open (pFile) {
-    // if (isTrunc(pFile.mode) && pFile.entry.file().size) {
-    //             clear(pFile);
-    //         }
-}
-
-function queryString (pObj, sPrefix?) {
-    if (typeof pObj == 'string') {
-        return pObj;
-    }
-
-    var str = [];
-    for (var p in pObj) {
-        var k = sPrefix ? sPrefix + "[" + p + "]" : p, v = pObj[p];
-        str.push(typeof v == "object" ?
-                     queryString(v, k) :
-                     encodeURIComponent(k) + "=" + encodeURIComponent(v));
-    }
-
-    return str.join("&");
+function open(pFile) {
+	// if (isTrunc(pFile.mode) && pFile.entry.file().size) {
+	//             clear(pFile);
+	//         }
 }
 
-function buf2str (pBuffer) {
-    pBuffer = new Uint8Array(pBuffer);
-    var sString = '', c;
-    for (var n = 0; n < pBuffer.length; ++n) {
-        c = String.fromCharCode(pBuffer[n]);
-        sString += c;
-    }
-    return sString;
+function queryString(pObj, sPrefix?) {
+	if (typeof pObj == 'string') {
+		return pObj;
+	}
+
+	var str = [];
+	for (var p in pObj) {
+		var k = sPrefix ? sPrefix + "[" + p + "]" : p, v = pObj[p];
+		str.push(typeof v == "object" ?
+			queryString(v, k) :
+			encodeURIComponent(k) + "=" + encodeURIComponent(v));
+	}
+
+	return str.join("&");
 }
 
-function str2buf (s) {
-    var len = s.length;
-    var pArr = new Uint8Array(len);
-    for (var i = 0; i < len; ++i) {
-        pArr[ i ] = s.charCodeAt(i) & 0xFF;
-    }
-
-    return pArr.buffer;
+function buf2str(pBuffer) {
+	pBuffer = new Uint8Array(pBuffer);
+	var sString = '', c;
+	for (var n = 0; n < pBuffer.length; ++n) {
+		c = String.fromCharCode(pBuffer[n]);
+		sString += c;
+	}
+	return sString;
 }
 
-function write (pFile, pData, sContentType) {
-    var pQuery = {}
-    pQuery['action'] = 'write';
-    
-    if (typeof pData == 'object') {
-        pData = buf2str(pData);
-    }
+function str2buf(s) {
+	var len = s.length;
+	var pArr = new Uint8Array(len);
+	for (var i = 0; i < len; ++i) {
+		pArr[i] = s.charCodeAt(i) & 0xFF;
+	}
 
-    if (isBinary(pFile.mode)) {
-        pData = base64_encode(pData);
-        pQuery['encode'] = 'base64';
-    }
-
-    pQuery['data'] = pData;
-    pQuery['pos'] = pFile.pos;
-    pQuery['content-type'] = sContentType;
-
-    send(pFile, pQuery);
+	return pArr.buffer;
 }
 
-function send (pFile, pQuery) {
-    var pXhr = new XMLHttpRequest();
-    pXhr.open('POST', pFile.name, true);
-    pXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
-    pXhr.send(queryString(pQuery));
-    return pXhr;
+function write(pFile, pData, sContentType) {
+	var pQuery = {}
+	pQuery['action'] = 'write';
+
+	if (typeof pData == 'object') {
+		pData = buf2str(pData);
+	}
+
+	if (isBinary(pFile.mode)) {
+		pData = base64_encode(pData);
+		pQuery['encode'] = 'base64';
+	}
+
+	pQuery['data'] = pData;
+	pQuery['pos'] = pFile.pos;
+	pQuery['content-type'] = sContentType;
+
+	send(pFile, pQuery);
 }
 
-function clear (pFile) {
-    todo();
+function send(pFile, pQuery) {
+	var pXhr = new XMLHttpRequest();
+	pXhr.open('POST', pFile.name, true);
+	pXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
+	pXhr.send(queryString(pQuery));
+	return pXhr;
 }
 
-function meta (pFile) {
-    var pXhr = new XMLHttpRequest();
-
-    //HEAD request disallow for blob data.
-
-    if (isBlobURL(pFile.name)) {
-        return {};
-    }
-
-    pXhr.open('HEAD', pFile.name, false);
-    pXhr.send(null);
-    
-    if (pXhr.status == 200) {
-        return {
-            size: parseInt(pXhr.getResponseHeader('Content-Length')),
-            lastModifiedDate: pXhr.getResponseHeader('Last-Modified') || null,
-
-            eTag: pXhr.getResponseHeader('ETag') || null,
-        };
-    }
-
-    return {};
+function clear(pFile) {
+	todo();
 }
 
-function file (pCmd) {
-    return {};
+function meta(file) {
+	var name = file.name;
+	var xhr = null;
+	var meta = {};
+
+	//HEAD request disallow for blob data.
+	if (!isBlobURL(name)) {
+
+		xhr = new XMLHttpRequest();
+		xhr.open('HEAD', name, false);
+		xhr.send(null);
+
+		if (xhr.status == 200) {
+			meta = {
+				size: parseInt(xhr.getResponseHeader('Content-Length')),
+				lastModifiedDate: xhr.getResponseHeader('Last-Modified') || null,
+
+				eTag: xhr.getResponseHeader('ETag') || null,
+			};
+		}
+	}
+
+	return meta;
+}
+
+function file(pCmd) {
+	return {};
 }
 
 if (!self["$INTERFACE_DEFINED"])
-    importScripts('FileInterface.t.js');
+	importScripts('FileInterface.t.js');

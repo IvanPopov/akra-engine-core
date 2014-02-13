@@ -10,7 +10,8 @@ var akra;
             { path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
             { path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
             { path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
-        ]
+        ],
+        deps: akra.addons.getNavigationDependences()
     };
 
     akra.pEngine = akra.createEngine({ deps: pDeps });
@@ -37,11 +38,11 @@ var akra;
         var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
         pSceneQuad.attachToParent(akra.pScene.getRootNode());
 
-        ////pSceneQuad.addPosition(0., 1., 0.);
-        //var pSceneSurface = akra.addons.createSceneSurface(akra.pScene, 40);
-        //pSceneSurface.addPosition(0, 0.01, 0);
-        //pSceneSurface.scale(5.);
-        //pSceneSurface.attachToParent(akra.pScene.getRootNode());
+        //pSceneQuad.addPosition(0., 1., 0.);
+        var pSceneSurface = akra.addons.createSceneSurface(akra.pScene, 40);
+        pSceneSurface.addPosition(0, 0.01, 0);
+        pSceneSurface.scale(5.);
+        pSceneSurface.attachToParent(akra.pScene.getRootNode());
     }
 
     function createCamera() {
@@ -279,29 +280,27 @@ var akra;
     }
 
     function main(pEngine) {
-
         setup(akra.pCanvas);
 
         akra.pCamera = createCamera();
         akra.pViewport = createViewport();
 
-        akra.addons.navigation(akra.pViewport, null, function () {
-      
-        });
+        akra.addons.navigation(akra.pViewport);
 
         createKeymap(akra.pCamera);
 
-        //createSceneEnvironment();
+        createSceneEnvironment();
+
         //createLighting();
         createSkyBox();
         createSky();
 
-        //akra.pTerrain = createTerrain(akra.pScene, true, 67 /* TERRAIN_ROAM */);
-
+        //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
         //loadHero();
         //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(150, data + "models/box/opened_box.dae");
         loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+
         pEngine.exec();
         //pEngine.renderFrame();
     }

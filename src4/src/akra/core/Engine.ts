@@ -180,14 +180,13 @@ module akra.core {
 					}
 					debug.log("\t\tloaded / ", arguments);
 
-					logger.info("%cEngine dependecies loaded.", "color: green;");
-
 					this._isDepsLoaded = true;
 
+					logger.info("%cEngine dependecies loaded.", "color: green;");
 					this.depsLoaded.emit(pDep);
 				},
-				(pDep: IDep, pProgress: any): void => {
-					debug.log("\t\tchanged / ", pDep.status, path.parse(pDep.path).getBaseName(), pProgress? pProgress.loaded + " / " + pProgress.total: "- / -");
+				(e: IDepEvent): void => {
+					debug.log(e);
 				});
 		}
 
@@ -227,6 +226,8 @@ module akra.core {
 		isDepsLoaded(): boolean {
 			return this._isDepsLoaded;
 		}
+
+		
 
 		exec(bValue: boolean = true): void {
 			var pRenderer: IRenderer = this._pRenderer;

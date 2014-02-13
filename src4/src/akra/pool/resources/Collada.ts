@@ -2838,7 +2838,7 @@ module akra.pool.resources {
 		}
 
 		loadResource(sFilename: string = null, pOptions: IColladaLoadOptions = null): boolean {
-			debug.group("Collada %s", this.findResourceName());
+			// debug.group("Collada %s", this.findResourceName());
 			debug.time("loaded " + this.findResourceName());
 
 			if (isNull(sFilename)) {
@@ -2867,17 +2867,19 @@ module akra.pool.resources {
 			pFile.read((e: Error, sXML: string): void => {
 				if (!isNull(e)) {
 					logger.error(e);
-					debug.groupEnd();
+					//debug.groupEnd();
 					return;
 				}
 				
 				this.notifyRestored();
 
 				if (this.parse(sXML, pOptions)) {
-					this.notifyLoaded();
 					debug.timeEnd("loaded " + this.findResourceName());
-					debug.groupEnd();
+					//debug.groupEnd();
+
+					this.notifyLoaded();
 				}
+				//TODO: else....
 			});
 
 			return true;

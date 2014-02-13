@@ -292,7 +292,6 @@ module akra.data {
 				//this.startIndex = pVertexData.getStartIndex();
 				isOk = this.checkData(pVertexData);
 				debug.assert(isOk, "You can use several unmappable data flows from one buffer.");
-
 				this.trackData(pVertexData);
 			}
 			else {
@@ -418,10 +417,15 @@ module akra.data {
 		}
 
 		private trackData(pData: IVertexData): void {
-			//only one vertex data may be used in one veetex buffer
+			var iHandle: int = pData.getBufferHandle();
+
+			if (isDefAndNotNull(this._pBuffersCompatibleMap[iHandle])) {
+				return;
+			}
+
+			//only one vertex data may be used in one veretex buffer
 			//случаи, когда выделяются 2 vertex data'ы в одной области памяти не рассматриваются
-			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
-			debug.error("OUAT TAK VOT", this.guid, pData.guid);
+			this._pBuffersCompatibleMap[iHandle] = pData;
 			pData.declarationChanged.connect(this.modified);
 		}
 

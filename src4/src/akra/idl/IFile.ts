@@ -13,7 +13,6 @@ module akra {
 		getPath(): string;
 		getName(): string;
 		getByteLength(): uint;
-		getMeta(): IFileMeta;
 		
 		getMode(): int;
 		setMode(sMode: string): void;
@@ -24,11 +23,11 @@ module akra {
 	
 		// binarayType: EFileBinaryType;
 	
-		open(sFilename: string, iMode: int, cb?: Function): void;
-		open(sFilename: string, sMode: string, cb?: Function): void;
-		open(sFilename: string, cb?: Function): void;
-		open(iMode: int, cb?: Function): void;
-		open(cb?: Function): void;
+		open(sFilename: string, iMode: int, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(sFilename: string, sMode: string, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(sFilename: string, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(iMode: int, cb?: (e: Error, pMeta: IFileMeta) => void): void;
+		open(cb?: (e: Error, pMeta: IFileMeta) => void): void;
 	
 		close(): void;
 		clear(cb?: Function): void;
@@ -49,7 +48,7 @@ module akra {
 		isExists(cb: Function): void;
 		isLocal(): boolean;
 	
-		getMetaData(cb: Function): void;
+		getMetaData(cb: (e: Error, pMeta: IFileMeta) => void): void;
 	}
 	
 }
