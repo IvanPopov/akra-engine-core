@@ -109,7 +109,6 @@ module akra.parser {
 		rule: IRule;
 	}
 
-
 	interface ITest0 {
 	}
 
@@ -119,7 +118,17 @@ module akra.parser {
 	interface ITest2 extends ITest1 {
 	}
 
-	interface ITest3 extends ITest2, ITest0 {
+	interface ITest3<T> extends ITest2, ITest0 {
+	}
+
+	interface ITest4 extends ITest3<number> {
+		setX(): number;
+		setX(x: number): number;
+		setX(x: string): string;
+	}
+
+	interface ITest5<T> extends ITest3<T> {
+		setX(x: T): ITest3<T>;
 	}
 
 	class CTest0 implements ITest0 {

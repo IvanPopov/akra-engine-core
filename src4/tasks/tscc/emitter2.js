@@ -216,6 +216,12 @@ var TypeScript;
             this.obfuscatedSymbolList = [];
             this.obfuscatedSymbolNameMap = {};
             this.obfuscatorCounter = 0;
+            this.thisFullInterfaceName = null;
+            this.emittedInterfaceSymbols = [];
+            this.usedButNotEmittedInterfaces = [];
+            this.isEmitJSDocForTypeDef = false;
+            this.isEnumEmitted = false;
+            this.isEmittedEnumExported = false;
             this._emittedModuleNames = [];
         }
         Emitter.prototype.pushDecl = function (decl) {
@@ -842,6 +848,8 @@ var TypeScript;
             //this.recordSourceMappingEnd(moduleDecl);
             //this.emitIndent();
             //}
+            this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(moduleDecl), this.getJSDocForEnumDeclaration(moduleDecl)));
+
             var enumName = this.moduleName;
 
             if (!isExported) {
@@ -859,7 +867,7 @@ var TypeScript;
             this.recordSourceMappingStart(moduleDecl.identifier);
             this.writeToOutput(this.moduleName);
             this.recordSourceMappingEnd(moduleDecl.identifier);
-            this.writeLineToOutput(" = {};");
+            this.writeLineToOutput(" = { ");
             this.recordSourceMappingEnd(moduleDecl);
 
             //this.emitIndent();
@@ -870,7 +878,14 @@ var TypeScript;
             //if (this.shouldCaptureThis(moduleDecl)) {
             //	this.writeCaptureThisStatement(moduleDecl);
             //}
-            this.emitSeparatedList(moduleDecl.enumElements);
+            this.isEmittedEnumExported = isExported;
+            this.isEnumEmitted = true;
+
+            this.emitCommaSeparatedList(moduleDecl, moduleDecl.enumElements, "", true);
+
+            //this.emitSeparatedList(moduleDecl.enumElements);
+            this.isEnumEmitted = false;
+            this.isEmittedEnumExported = false;
 
             //this.indenter.decreaseIndent();
             this.emitIndent();
@@ -900,6 +915,8 @@ var TypeScript;
             //	this.writeToOutput(")();");
             //}
             this.recordSourceMappingEnd(moduleDecl);
+
+            this.writeLineToOutput("};");
 
             //if (temp !== EmitContainer.Prog && isExported) {
             //	this.recordSourceMappingStart(moduleDecl);
@@ -1149,27 +1166,28 @@ var TypeScript;
             this.recordSourceMappingStart(varDecl);
             var name = varDecl.propertyName.text();
             var quoted = TypeScript.isQuoted(name);
-            this.writeToOutput(this.moduleName);
-            this.writeToOutput('[');
-            this.writeToOutput(this.moduleName);
-            this.writeToOutput('[');
-            this.writeToOutput(quoted ? name : '"' + name + '"');
-            this.writeToOutput(']');
+            var isNeedQuoted = this.isEmittedEnumExported && !quoted;
 
+            //this.writeToOutput(this.moduleName);
+            //this.writeToOutput('[');
+            //this.writeToOutput(this.moduleName);
+            //this.writeToOutput('[');
+            this.writeToOutput((isNeedQuoted ? ('"' + name + '"') : name) + ": ");
+
+            //this.writeToOutput(']');
             if (varDecl.equalsValueClause) {
                 this.emit(varDecl.equalsValueClause);
             } else if (pullDecl.constantValue !== null) {
-                this.writeToOutput(' = ');
                 this.writeToOutput(pullDecl.constantValue.toString());
             } else {
-                this.writeToOutput(' = null');
+                this.writeToOutput('null');
             }
 
-            this.writeToOutput('] = ');
-            this.writeToOutput(quoted ? name : '"' + name + '"');
+            //this.writeToOutput('] = ');
+            //this.writeToOutput(quoted ? name : '"' + name + '"');
             this.recordSourceMappingEnd(varDecl);
             this.emitComments(varDecl, false);
-            this.writeToOutput(';');
+            //this.writeToOutput(';');
         };
 
         Emitter.prototype.emitElementAccessExpression = function (expression) {
@@ -1537,7 +1555,11 @@ var TypeScript;
             var pullDecl = this.semanticInfoChain.getDeclForAST(varDecl);
             this.pushDecl(pullDecl);
 
-            this.emitComments(varDecl, true);
+            //this.emitComments(varDecl, true);
+            var symbol = pullDecl.getSymbol();
+            var jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+            this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+
             this.recordSourceMappingStart(varDecl);
 
             var varDeclName = varDecl.variableDeclarator.propertyName.text();
@@ -1585,7 +1607,17 @@ var TypeScript;
             if (pullDecl && (pullDecl.flags & 8 /* Ambient */) === 8 /* Ambient */) {
                 this.emitAmbientVarDecl(varDecl);
             } else {
-                this.emitComments(varDecl, true);
+                var symbol = pullDecl.getSymbol();
+                var jsDocComments = null;
+                if (symbol.isProperty()) {
+                    jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+                } else {
+                    jsDocComments = this.getJSDocForVariableDeclaration(symbol);
+                }
+
+                this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+
+                //this.emitComments(varDecl, true);
                 this.recordSourceMappingStart(this.currentVariableDeclaration);
                 this.recordSourceMappingStart(varDecl);
 
@@ -1930,6 +1962,9 @@ var TypeScript;
                     if (TypeScript.hasFlag(parameterDecl.flags, 8388608 /* PropertyParameter */)) {
                         this.emitIndent();
                         this.recordSourceMappingStart(parameter);
+
+                        this.emitJSDocComment(this.getJSDocForClassMemberVariable(this.semanticInfoChain.getSymbolForAST(parameter)));
+
                         this.writeToOutputWithSourceMapRecord("this." + parameter.identifier.text(), parameter.identifier);
                         this.writeToOutput(" = ");
                         this.writeToOutputWithSourceMapRecord(parameter.identifier.text(), parameter.identifier);
@@ -2250,6 +2285,14 @@ var TypeScript;
                 this.moduleName = svModuleName;
                 this.popDecl(externalModule);
             }
+
+            if (this.usedButNotEmittedInterfaces.length > 0) {
+                for (var i = 0; i < this.usedButNotEmittedInterfaces.length; i++) {
+                    this.emitInterfaceDeclaration(this.semanticInfoChain.getASTForDecl(this.usedButNotEmittedInterfaces[i].getDeclarations()[0]));
+                }
+
+                this.writeLineToOutput("");
+            }
         };
 
         Emitter.prototype.emitConstructorStatements = function (funcDecl) {
@@ -2276,7 +2319,9 @@ var TypeScript;
 
                 if (this.shouldEmit(node)) {
                     this.emitSpaceBetweenConstructs(lastEmittedNode, node);
-
+                    if (node.kind() === 164) {
+                        console.log(node.expression.kind());
+                    }
                     this.emitJavascript(node, true);
                     this.writeLineToOutput("");
 
@@ -2398,8 +2443,13 @@ var TypeScript;
 
             var className = classDecl.identifier.text();
             var fullClassName = className;
+            var constrDecl = getLastConstructor(classDecl);
 
-            this.emitComments(classDecl, true);
+            //this.emitComments(classDecl, true);
+            if (!constrDecl) {
+                this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(classDecl), this.getJSDocForClass(classDecl)));
+            }
+
             var temp = this.setContainer(3 /* Class */);
 
             var hasBaseClass = TypeScript.getExtendsHeritageClause(classDecl.heritageClauses) !== null;
@@ -2413,8 +2463,6 @@ var TypeScript;
             this.thisFullClassName = fullClassName;
 
             if (hasBaseClass) {
-                this.getJSDocForExtends(classDecl.heritageClauses);
-
                 baseTypeReference = TypeScript.getExtendsHeritageClause(classDecl.heritageClauses).typeNames.nonSeparatorAt(0);
 
                 var emitSymbol = this.getSymbolForEmit(baseTypeReference);
@@ -2442,8 +2490,6 @@ var TypeScript;
             }
 
             this.recordSourceMappingNameStart(className);
-
-            var constrDecl = getLastConstructor(classDecl);
 
             // output constructor
             if (constrDecl) {
@@ -3252,7 +3298,10 @@ var TypeScript;
         };
 
         Emitter.prototype.emitEqualsValueClause = function (clause) {
-            this.writeToOutput(" = ");
+            if (!this.isEnumEmitted) {
+                this.writeToOutput(" = ");
+            }
+
             this.emit(clause.value);
         };
 
@@ -3341,11 +3390,10 @@ var TypeScript;
             var name = symbol.getDisplayName();
             var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
-            if (name === "IStringDMap") {
-                console.log("Norm");
+            if (name === "IMap") {
+                debugger;
             }
-
-            if (name === "String" || name === "Number" || name === "Array") {
+            if (name === "String" || name === "Number" || name === "Array" || name === "Function" || TypeScript.isDTSFile(declaration.fileName())) {
                 return;
             }
 
@@ -3356,13 +3404,82 @@ var TypeScript;
             } else {
                 this.emitJSDocComment(Emitter.joinJSDocComments(userComments, this.getJSDocForInterfaceDeclaration(declaration)));
             }
-            this.writeToOutput(this.getFullSymbolName(symbol));
 
-            if (!this.isNeedObfuscateName(symbol) && !hasCallOrIndex) {
+            if (this.isNeedObfuscateName(symbol)) {
+                this.writeToOutput("var ");
+            }
+
+            var svFullInterfaceName = this.thisFullInterfaceName;
+            this.thisFullInterfaceName = this.getFullSymbolName(symbol);
+
+            this.emittedInterfaceSymbols.push(symbol);
+
+            this.writeToOutput(this.thisFullInterfaceName);
+
+            if (!hasCallOrIndex) {
                 this.writeToOutput(" = function(){}");
             }
 
             this.writeToOutput(";");
+
+            if (!hasCallOrIndex) {
+                this.emitInterfaceMembers(declaration);
+            }
+
+            this.thisFullInterfaceName = svFullInterfaceName;
+
+            var index = this.usedButNotEmittedInterfaces.indexOf(symbol);
+            if (index >= 0) {
+                this.usedButNotEmittedInterfaces.splice(index);
+            }
+        };
+
+        Emitter.prototype.emitInterfaceMembers = function (declaration) {
+            var lastEmittedMember = null;
+            var isFirstLine = true;
+            var alreadyEmittedMethods = [];
+
+            var members = declaration.body.typeMembers;
+
+            var isExportedInterface = TypeScript.hasModifier(declaration.modifiers, 1 /* Exported */);
+
+            for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
+                var memberDecl = members.nonSeparatorAt(i);
+
+                if (memberDecl.kind() === 158 /* ConstructSignature */) {
+                    continue;
+                }
+
+                var symbol = this.getSymbolForEmit(memberDecl).symbol;
+                var name = symbol.getDisplayName();
+
+                if (alreadyEmittedMethods.indexOf(name) >= 0) {
+                    continue;
+                }
+
+                alreadyEmittedMethods.push(name);
+
+                if (isFirstLine) {
+                    this.writeLineToOutput('');
+                    isFirstLine = false;
+                }
+
+                this.writeLineToOutput('');
+
+                if (symbol.type === null) {
+                    debugger;
+                }
+
+                var jsDocComments = this.getJSDocForType(symbol.type);
+
+                if (isExportedInterface && !symbol.type.isFunction()) {
+                    jsDocComments.push("@expose");
+                }
+
+                this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
+                this.writeToOutput(this.thisFullInterfaceName + '.prototype.' + name + ';');
+                lastEmittedMember = memberDecl;
+            }
         };
 
         Emitter.prototype.firstVariableDeclarator = function (statement) {
@@ -3694,11 +3811,93 @@ var TypeScript;
 
             var symbolName = this.getObfuscatedName(correctSymbol, correctSymbol.getDisplayName());
 
+            if (correctSymbol.isInterface() && this.emittedInterfaceSymbols.indexOf(correctSymbol) < 0) {
+                this.usedButNotEmittedInterfaces.push(correctSymbol);
+            }
+
             return moduleName + symbolName;
         };
 
+        Emitter.prototype.getFullSymbolNameType = function (symbol) {
+            var baseName = this.getFullSymbolName(symbol);
+            var baseType = symbol.isTypeReference() ? symbol : symbol.type;
+
+            if (baseType.isGeneric()) {
+                if (baseName === "akra.Signal") {
+                    debugger;
+                }
+                var genericPart = "";
+                var typeParameters = baseType.getTypeArgumentsOrTypeParameters();
+
+                if (typeParameters) {
+                    genericPart = ".<";
+
+                    for (var i = 0; i < typeParameters.length; i++) {
+                        var param = typeParameters[i];
+                        if (param.isTypeParameter()) {
+                            genericPart += param.getDisplayName();
+                        } else {
+                            genericPart += this.formatJSDocType(param);
+                        }
+
+                        if (i < typeParameters.length - 1) {
+                            genericPart += ", ";
+                        }
+                    }
+
+                    genericPart += ">";
+                }
+                baseName += genericPart;
+            }
+
+            return baseName;
+        };
+
         Emitter.prototype.getJSDocForInterfaceDeclaration = function (interfaceDecl) {
-            return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.heritageClauses));
+            return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.heritageClauses), this.getJSDocForTemplatesForAST(interfaceDecl));
+        };
+
+        Emitter.prototype.getJSDocForTemplatesForAST = function (ast) {
+            return this.getJSDocForTemplates(this.semanticInfoChain.getSymbolForAST(ast));
+        };
+
+        Emitter.prototype.getJSDocForTemplates = function (symbol) {
+            if (!symbol.type.isGeneric()) {
+                return "";
+            }
+
+            var typeParameters = symbol.type.getTypeParameters();
+
+            if (typeParameters && typeParameters.length === 0) {
+                return "";
+            }
+
+            return "@template " + typeParameters.map(function (param) {
+                return param.getDisplayName();
+            }).join(", ");
+        };
+
+        Emitter.prototype.getJSDocForClass = function (classDecl) {
+            return ['@constructor', '@struct', TypeScript.hasModifier(classDecl.modifiers, 268435456 /* Final */) ? '@final' : ''].concat(this.getJSDocForExtends(classDecl.heritageClauses), this.getJSDocForImplements(classDecl.heritageClauses), this.getJSDocForTemplatesForAST(classDecl));
+        };
+
+        Emitter.prototype.getJSDocForImplements = function (herigateList) {
+            var implementsClause = TypeScript.getImplementsHeritageClause(herigateList);
+
+            if (implementsClause === null) {
+                return Emitter.EMPTY_STRING_LIST;
+            }
+
+            var implementsList = implementsClause.typeNames;
+            var count = implementsList.nonSeparatorCount();
+            var result = new Array(count);
+
+            for (var i = 0; i < count; i++) {
+                var member = implementsList.nonSeparatorAt(i);
+                result[i] = '@implements {' + this.formatJSDocType(this.semanticInfoChain.getSymbolForAST(member).type) + '}';
+            }
+
+            return result;
         };
 
         Emitter.prototype.getJSDocForExtends = function (herigateList) {
@@ -3714,7 +3913,7 @@ var TypeScript;
 
             for (var i = 0; i < count; i++) {
                 var member = extendsList.nonSeparatorAt(i);
-                result[i] = '@extends {' + this.getFullSymbolName(this.semanticInfoChain.getSymbolForAST(member)) + '}';
+                result[i] = '@extends {' + this.formatJSDocType(this.semanticInfoChain.getSymbolForAST(member).type) + '}';
             }
 
             return result;
@@ -3735,8 +3934,55 @@ var TypeScript;
             this.emitIndent();
         };
 
+        Emitter.prototype.emitInlineJSDocComment = function (user, jsDoc) {
+            if (user.length === 0)
+                this.writeToOutput('/** ' + jsDoc.join(' ') + ' */ ');
+            else
+                this.emitJSDocComment(Emitter.joinJSDocComments(user, jsDoc));
+        };
+
         Emitter.prototype.getJSDocForTypedef = function (type) {
-            return ['@typedef {' + this.formatJSDocType(type, true) + '}'];
+            /** Need for change typeParameter to ?, because templates are not support in @typedef in closure*/
+            this.isEmitJSDocForTypeDef = true;
+            var result = ['@typedef {' + this.formatJSDocType(type, true) + '}'];
+            this.isEmitJSDocForTypeDef = false;
+
+            return result;
+        };
+
+        Emitter.prototype.getJSDocForType = function (type) {
+            return ['@type {' + this.formatJSDocType(type) + '}'];
+        };
+
+        Emitter.prototype.getJSDocForReturnType = function (returnType) {
+            return ['@returns {' + this.formatJSDocType(returnType) + '}'];
+        };
+
+        Emitter.prototype.getJSDocForEnumDeclaration = function (enumDecl) {
+            return ['@enum {number}'];
+        };
+
+        Emitter.prototype.getJSDocForVariableDeclaration = function (symbol) {
+            return this.getJSDocForType(symbol.type);
+        };
+
+        Emitter.prototype.getJSDocForClassMemberVariable = function (symbol) {
+            var jsDocComments = this.getJSDocForVariableDeclaration(symbol);
+            var isClassExports = TypeScript.hasModifier(this.thisClassNode.modifiers, 1 /* Exported */);
+
+            if (symbol.anyDeclHasFlag(134217728 /* Protected */)) {
+                jsDocComments.push("@protected");
+            } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
+                jsDocComments.push("@public");
+
+                if (isClassExports) {
+                    jsDocComments.push("@expose");
+                }
+            } else if (symbol.anyDeclHasFlag(2 /* Private */)) {
+                jsDocComments.push("@private");
+            }
+
+            return jsDocComments;
         };
 
         Emitter.prototype.formatJSDocType = function (type, ignoreName) {
@@ -3744,13 +3990,15 @@ var TypeScript;
             var _this = this;
             // Google Closure Compiler's type system is not powerful enough to work
             // with type parameters, especially type parameters with constraints
-            if (type.kind & 8192 /* TypeParameter */) {
+            if (type.isTypeParameter() && this.isEmitJSDocForTypeDef) {
                 return '?';
+            } else if (type.isTypeParameter()) {
+                return type.getDisplayName();
             }
 
             // Simple types
             if (type.isNamedTypeSymbol() && ignoreName === false) {
-                var name = this.getFullSymbolName(type);
+                var name = this.getFullSymbolNameType(type);
                 if (name === 'any')
                     return '?';
                 if (name === 'void')
