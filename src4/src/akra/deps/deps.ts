@@ -169,11 +169,16 @@ module akra.deps {
 						return fnReject(new Error("could not determ byte length of " + pDep.path));
 					}
 
-					pDep.byteLength = pMeta.size;
-					pDep.bytesLoaded = 0;
-					pDep.unpacked = 0.;
+					var pStats: IDepStats = {
+						status: EDependenceStatuses.PENDING,
+						byteLength: pMeta.size,
+						bytesLoaded: 0,
+						unpacked: 0.
+					};
+					
+					pDep.stats = pStats;
 
-					fnResolve(pDep.byteLength);
+					fnResolve(pStats.byteLength);
 				});
 			}));
 		});
@@ -271,6 +276,20 @@ module akra.deps {
 		loadFromPool(pEngine.getResourceManager().getColladaPool(), pDep, cb);
 	}
 
+	function redirectProgress(pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): (e: IDepEvent) => void {
+		return (e: IDepEvent): void => {
+			switch (e.source.stats.status) {
+				case EDependenceStatuses.CHECKING:
+					return cb(pDep, EDependenceStatuses.CHECKING);
+				case EDependenceStatuses.UNPACKING:
+				case EDependenceStatuses.EXTRACTION:
+					return cb(pDep, EDependenceStatuses.UNPACKING, e.unpacked);
+				case EDependenceStatuses.DOWNLOADING:
+					return cb(pDep, EDependenceStatuses.DOWNLOADING, { loaded: e.bytesLoaded, total: e.bytesTotal });
+			}
+		}
+	}
+
 	export function loadMap(
 		pEngine: IEngine,
 		pDep: IDep,
@@ -288,13 +307,15 @@ module akra.deps {
 			}
 
 
-			load(pEngine, pMap, pDep.path, (e: Error): void => {
-				if (e) {
-					return cb(pDep, EDependenceStatuses.REJECTED, e);
-				}
+			load(pEngine, pMap, pDep.path,
+				(e: Error): void => {
+					if (e) {
+						return cb(pDep, EDependenceStatuses.REJECTED, e);
+					}
 
-				cb(pDep, EDependenceStatuses.LOADED, pMap);
-			});
+					cb(pDep, EDependenceStatuses.LOADED, pMap);
+				},
+				redirectProgress(pDep, cb));
 		});
 	}
 
@@ -482,7 +503,7 @@ module akra.deps {
 				}
 
 				cb(pArchiveDep, EDependenceStatuses.LOADED, null);
-			});
+			}, redirectProgress(pArchiveDep, cb));
 		};
 
 		var fnLoadArchive = (): void => {
@@ -555,7 +576,7 @@ module akra.deps {
 			};
 
 			var fnDataURIReaded = (sBase64Data: string): void => {
-				cb(pArchiveDep, EDependenceStatuses.UNPACKING);
+				cb(pArchiveDep, EDependenceStatuses.UNPACKING, 0.);
 
 				zip.createReader(new zip.Data64URIReader(sBase64Data),
 					fnZipReadedCallback, (e: Error): void => {
@@ -569,7 +590,7 @@ module akra.deps {
 					return cb(pArchiveDep, EDependenceStatuses.REJECTED, e);
 				}
 
-				cb(pArchiveDep, EDependenceStatuses.UNPACKING);
+				cb(pArchiveDep, EDependenceStatuses.UNPACKING, 0.);
 
 				zip.createReader(new zip.ArrayBufferReader(pData),
 					fnZipReadedCallback, (e: Error): void => {
@@ -707,6 +728,16 @@ module akra.deps {
 		var nTotalFiles: uint = countFiles(pDeps);
 		var iBeginTime: uint = time();
 
+		var pProgress: IDepEvent = {
+			source: null,
+			unpacked: 0,
+			time: 0,
+			loaded: 0,
+			total: 0,
+			bytesLoaded: 0,
+			bytesTotal: 0,
+		};
+
 
 		computeProperties(pDepsPointer, (e: Error, iBytesTotal: uint) => {
 			if (e) return fnLoaded(e, pDeps);
@@ -718,7 +749,7 @@ module akra.deps {
 			function countLoadedOnLevel(pDeps: IDependens): uint {
 				var n: uint = 0;
 				each({ files: pDeps.files }, (pDep: IDep) => {
-					if (pDep.status === EDependenceStatuses.LOADED) {
+					if (pDep.stats.status === EDependenceStatuses.LOADED) {
 						n++;
 					}
 				});
@@ -726,7 +757,8 @@ module akra.deps {
 				return n;
 			}
 
-			function notifyProgress(pDeps: IDependens): void {
+			/** @param pDep Dependence, which generates change in progress. */
+			function notifyProgress(pDep: IDep): void {
 				var nDeps: uint = 0;
 				var nLoadedOnLevel: uint = countLoadedOnLevel(pDeps);
 				var nLoaded: uint = 0;
@@ -735,58 +767,61 @@ module akra.deps {
 				var iBytesTotal: uint = 0;
 
 				each(pDeps, (pDep: IDep) => {
-					iBytesLoaded += pDep.bytesLoaded;
-					nUnpacked += (pDep.unpacked || 0.) * pDep.byteLength;
-					iBytesTotal += pDep.byteLength;
+					var pStats: IDepStats = pDep.stats;
+					iBytesLoaded += pStats.bytesLoaded;
+					nUnpacked += (pStats.unpacked || 0.) * pStats.byteLength;
+					iBytesTotal += pStats.byteLength;
 					nDeps++;
 
-					if (pDep.status === EDependenceStatuses.LOADED) {
+					if (pStats.status === EDependenceStatuses.LOADED) {
 						nLoaded++;
 					}
 				});
 
-				var e = {
-					time: time() - iBeginTime,
+				///< Dependence, which generates change in progress.
+				pProgress.source = pDep;
 
-					loaded: nLoaded,
-					total: nTotalFiles,
+				pProgress.unpacked = <float>nUnpacked / iBytesTotal;
 
-					bytesLoaded: iBytesLoaded,
-					bytesTotal: iBytesTotal,
+				pProgress.time = time() - iBeginTime;
 
-					unpacked: <float>nUnpacked / <float>nDeps / iBytesTotal
-				};
+				pProgress.loaded = nLoaded;
+				pProgress.total = nTotalFiles;
 
-				fnProgress(e);
+				pProgress.bytesLoaded = iBytesLoaded;
+				pProgress.bytesTotal = iBytesTotal;
+
+				fnProgress(pProgress);
 			}
 
 			/** Watch deps states. */
 			function depWatcher(pDep: IDep, eStatus: EDependenceStatuses, pData?): void {
-				pDep.status = eStatus;
+				pDep.stats.status = eStatus;
 
 				switch (eStatus) {
 					case EDependenceStatuses.REJECTED:
 						return fnLoaded(<Error>arguments[2], pDepsPointer);
 
 					case EDependenceStatuses.DOWNLOADING:
-						pDep.bytesLoaded = arguments[2].loaded;
-						notifyProgress(pDeps);
+						pDep.stats.bytesLoaded = arguments[2].loaded;
+						notifyProgress(pDep);
 						return;
 					case EDependenceStatuses.UNPACKING:
-						pDep.unpacked = 0.;
-						notifyProgress(pDeps);
+						pDep.stats.unpacked = <float>arguments[2] || 0.;
+						notifyProgress(pDep);
 						return;
 
 					case EDependenceStatuses.EXTRACTION:
-						pDep.unpacked = <float>arguments[2].loaded / <float>arguments[2].total;
-						
-						notifyProgress(pDeps);
+						pDep.stats.unpacked = <float>arguments[2].loaded / <float>arguments[2].total;
+						notifyProgress(pDep);
 						return;
 
 					case EDependenceStatuses.LOADED:
-						pDep.bytesLoaded = pDep.byteLength;
-						pDep.unpacked = 1.;
-						notifyProgress(pDeps);
+						pDep.stats.bytesLoaded = pDep.stats.byteLength;
+						pDep.stats.unpacked = 1.;
+						pDep.content = arguments[2] || null;
+
+						notifyProgress(pDep);
 
 
 						//all loaded

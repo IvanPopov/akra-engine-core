@@ -12,12 +12,17 @@ module akra {
 		REJECTED			///< Rejected with error. 
 	}
 	
+	export interface IDepStats {
+		status: EDependenceStatuses;
+		bytesLoaded: uint;
+		byteLength: uint;				///< Byte length.
+		unpacked: float;				///< Unpacked from 0. to 1.;
+	}
+
 	export interface IDep {
 		//system fiels
-		status?: EDependenceStatuses;
-		bytesLoaded?: uint;
-		byteLength?: uint;				///< Byte length.
-		unpacked?: float;				///< Unpacked from 0. to 1.;
+		stats?: IDepStats;
+		content?: any;
 
 		//user files
 		path: string;		///< Path to file/resource.
@@ -35,6 +40,8 @@ module akra {
 	}
 
 	export interface IDepEvent {
+		source: IDep;					///< Dependence, which generates change in progress.
+
 		time: uint;						///< Time from begin of loading.
 
 		loaded: uint;					///< Files loaded.

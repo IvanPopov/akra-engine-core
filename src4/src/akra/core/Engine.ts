@@ -186,7 +186,22 @@ module akra.core {
 					this.depsLoaded.emit(pDep);
 				},
 				(e: IDepEvent): void => {
-					debug.log(e);
+					//debug.log(e);
+					var s = "unpacked: ";
+					for (var i = 0; i < 25 * e.unpacked; ++i) {
+						s += "="
+					}
+
+					s += "> " + (e.unpacked * 100).toFixed(2) + "%";
+
+					console.error(s);
+
+					var s = "  loaded: ";
+					for (var i = 0; i < 25 * (e.bytesLoaded / e.bytesTotal); ++i) {
+						s += "="
+					}
+
+					s += "> " + (e.unpacked * 100).toFixed(2) + "%";
 				});
 		}
 
