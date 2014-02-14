@@ -20,38 +20,44 @@ jQuery(document).ready(function ($) {
 	sidebar.content = $('.j-content');
 	sidebar.switcher = $('.j-left-bar');
 	sidebar.width = sidebar.self.width();
+	sidebar.padding = parseInt($('.b-page').css('paddingLeft'));
+	sidebar.contentMargin = parseInt(sidebar.content.css('marginLeft'));
 
 	sidebar.switcher.click(function () {
 		if (sidebar.switcher.hasClass('opened')) {
 			//hide sidebar
 			sidebar.self.animate({
-				'left': -sidebar.width + 'px'
+				'marginLeft': -sidebar.width-sidebar.padding
 			}, sidebar.animateSpeed);
 			//move the button to the left
 			sidebar.switcher.animate({
-				'left': 0
+				'marginLeft': 0
+			}, sidebar.animateSpeed).parent().animate({
+				'marginLeft': -sidebar.width
 			}, sidebar.animateSpeed, function () {
 				sidebar.switcher.removeClass('opened').addClass('closed');
 			});
 			//move content to the left
 			sidebar.content.animate({
-				'marginLeft': 0
+				'marginLeft': sidebar.padding
 			}, sidebar.animateSpeed);
 
 		} else if (sidebar.switcher.hasClass('closed')) {
 			//show sidebar
 			sidebar.self.animate({
-				'left': 0
+				'marginLeft': 0
 			}, sidebar.animateSpeed);
 			//move the button to the right
 			sidebar.switcher.animate({
-				'left': (sidebar.width - 18) + 'px'
+				'marginLeft': 0
+			}, sidebar.animateSpeed).parent().animate({
+				'marginLeft': 0
 			}, sidebar.animateSpeed, function () {
 				sidebar.switcher.removeClass('closed').addClass('opened');
 			});
 			//move content to the right
 			sidebar.content.animate({
-				'marginLeft': sidebar.width + 'px'
+				'marginLeft': sidebar.contentMargin
 			}, sidebar.animateSpeed);
 
 		}

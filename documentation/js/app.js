@@ -1,8 +1,8 @@
 var app = angular.module("docsApp", ['ngRoute']);
 
 var keywords = ["modules","classes","functions","interfaces","enums","variables","typeDefs"];
-var subobjects = ["modules","classes","interfaces","functions","enums","variables","typeDefs","constants","getters","setters"];
-var systemtypes = ['string','number','bool','void','int','float','uint','any'];
+var subobjects = ["modules","classes","functions","interfaces","enums","variables","typeDefs","constants","getters","setters"];
+var systemtypes = ['string','number','bool','void','int','float','uint','any','ArrayBuffer','Uint8Array'];
 var searchBlocks = ['modules','interfaces','interfaceMembers','classes','classMembers','functions','enums','enumKeys','variables'];
 
 app.factory('docobjects', function($location) {
@@ -31,7 +31,7 @@ app.factory('templates', function() {
 		classView: '/templates/class-view.html',
 		searchView: '/templates/search-view.html',
 		columnView: '/templates/column-view.html',
-		moduleColumnView: '/templates/column-view.html',
+		moduleColumnView: '/templates/module-column-view.html',
 		moduleView: '/templates/module-view.html',
 		functionView: '/templates/function-view.html',
 		enumView: '/templates/enum-view.html',
@@ -70,16 +70,23 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 
 		$scope.searchResults.name = $scope.searchText;
 		$scope.lastSearchID = setTimeout(function(){
-			$http.get('//localhost:3000/search/'+$scope.searchText).success(function(data){
+			$http.get('http://'+location.hostname+':3000/search/'+$scope.searchText).success(function(data){
 				$scope.searchResults.data = data;
 				console.log($scope.searchResults.data);
 			});
 		},150);
 	};
 
+	$scope.displayFilter = '';
+
 	$scope.clearSearch = function() {
 		$scope.searchText='';
 		$scope.search();
+	}
+
+	$scope.handleSearchInput = function($event) {
+		if($event.keyCode==27)
+			$scope.clearSearch();
 	}
 
 	$scope.isSearchEmpty = function() {
@@ -113,6 +120,66 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 		data: {}
 	};
 
+	$scope.isDisplay = {
+		modules: {
+			modules: true,
+			classes: true,
+			functions: true,
+			interfaces: true,
+			enums: true,
+			variables: true,
+			typeDefs: true,
+			constants: true,
+		},
+		classes: {
+			variables: true,
+			functions: true,
+			getters: true,
+			setters: true,
+		},
+		interfaces: {
+			variables: true,
+			functions: true,
+		}
+	}
+
+	$scope.isTreeDisplay = {
+		modules: {
+			modules: true,
+			classes: true,
+			functions: true,
+			interfaces: true,
+			enums: true,
+			variables: true,
+			typeDefs: true,
+			constants: true,
+		},
+		classes: {
+			variables: true,
+			functions: true,
+			getters: true,
+			setters: true,
+		},
+		interfaces: {
+			variables: true,
+			functions: true,
+		}
+	}
+
+	$scope.expandSection = function (section,isExpand) {
+		if(!section) return;
+
+		for (i in section) {
+			section[i]=isExpand;
+		}
+	}
+
+	$scope.isDisplaySearch = {};
+	for(i in searchBlocks) {
+		$scope.isDisplaySearch[searchBlocks[i]] = true;
+	}
+
+
 	/**
 	 * Коряво написанная(но работает) функция для преобразования
 	 * аналогичного $scope.filtersubobjects, но с учетом порядка 
@@ -125,12 +192,12 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 
 		angular.forEach(object, function (val, key) {
 			if ((val instanceof Object) && !(val instanceof Array)) {
-				result.push({ key: key, value: val });
+				result.push({ name: key, value: val });
 			}
 		});
 
 		result.sort(function(a, b) {
-			return subobjects.indexOf(a.key) < subobjects.indexOf(b.key)? -1: 1;
+			return subobjects.indexOf(a.name) < subobjects.indexOf(b.name)? -1: 1;
 		});
 
 		return result;
@@ -151,7 +218,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
-					setTimeout(setupHiders,100);
+					// setTimeout(setupHiders,100);
 					$scope.isHidersSetup=true;
 				}
 				// setTimeout(alphabeticColumnSort,100);
@@ -180,7 +247,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 			
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
-					setTimeout(setupHiders,100);
+					// setTimeout(setupHiders,100);
 					$scope.isHidersSetup=true;
 				}
 
@@ -232,10 +299,8 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 					result[key] = val;
 				}
 			});
-
 			return result;
 		}
-
 
 		$scope.currentObject.name = (objname!='') ? objname : 'index';
 		$scope.currentObject.location = location;
@@ -246,13 +311,14 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	};
 
 	$scope.$on('$locationChangeSuccess', function() {
+		$scope.displayFilter = '';
 		$scope.searchText = '';
 		$scope.isShowSearchResults = false;
 		tryFileExists();
 	});
 
 	$scope.currLocation = $location.path().replace(/\/[^\/]*\/?$/, "/");
-	$location.path('/');
+	if ($location.path().length==0) $location.path('/');
 	/*$scope.location = $location;
 	$scope.http = $http;
 	$http.get('/data/index.json').success(function(data){
@@ -267,6 +333,90 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	});*/
 });
 
+app.controller('ColumnDisplayCtrl', function($scope) {
+	$scope.filter = function(input, prop, filter) {
+		filtered=[];
+		// i=0;
+		for (i in input) {
+		// while (i<input.length) {
+			check=[];
+			check[0]=!(filter[0]&&input[i][prop][0].toUpperCase()!=filter[0]);
+			check[1]=!(filter[1]&&input[i][prop][1].toUpperCase()!=filter[1]);
+			if (check[0]&&check[1]) {
+			// if (!(check[0]&&check[1])) {
+				// input.splice(i,1);
+				filtered.push(input[i]);
+			}
+			// else i++;
+		}
+		return filtered;
+	}
+	$scope.splitPagesRowsColumns = function (array,pageSize,rowSize,columnSize) {
+		var entriesNum = array.length;
+		var colsNum = Math.ceil(entriesNum/columnSize);
+		var rowsNum = Math.ceil(entriesNum/rowSize/columnSize);
+		var pagesNum = Math.ceil(entriesNum/rowSize/columnSize/pageSize);
+		// console.log(entriesNum,colsNum,rowsNum,pagesNum);
+		var len=[];
+		for(var k=0;k<pagesNum;k++) {
+			len.push([]);
+			// console.log("<",len,">");
+			for(var i=k*pageSize;i<Math.min((k+1)*pageSize,rowsNum);i++) {
+				len[k].push([]);
+				// console.log("<",len,">");
+				for(var j=i*rowSize;j<Math.min((i+1)*rowSize,colsNum);j++) {
+					// console.log("Indexes: ",k,i,j);
+					// console.log(array.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+					len[k][i%pageSize].push(array.slice(j*columnSize,Math.min((j+1)*columnSize,entriesNum)));
+				}
+			}
+		}
+		return len;
+	}
+	$scope.sectiontype;
+	$scope.docobject;
+	$scope.pagenum=0;
+	if(!$scope.rowsinpage) $scope.rowsinpage = 2;
+	if(!$scope.columnsinrow) $scope.columnsinrow = 4;
+	if(!$scope.entriesincolumn) $scope.entriesincolumn = 6;
+	$scope.entriesinpage = $scope.rowsinpage*$scope.columnsinrow*$scope.entriesincolumn;
+	$scope.columnsinpage = $scope.rowsinpage*$scope.columnsinrow;
+	$scope.entriesinrow = $scope.columnsinrow*$scope.entriesincolumn;
+	$scope.sectiondata;
+	$scope.pagesnum = (Math.ceil($scope.sectiondata.length/$scope.entriesincolumn/$scope.columnsinrow/$scope.rowsinpage));
+	$scope.rowsnum = (Math.ceil($scope.sectiondata.length/$scope.entriesincolumn/$scope.columnsinrow));
+	$scope.columnsnum = (Math.ceil($scope.sectiondata.length/$scope.entriesincolumn));
+	$scope.entriesnum = $scope.sectiondata.length;
+	$scope.displayfilter;
+	// $scope.sectiondatafiltered=$scope.filter($scope.sectiondata,'name',$scope.displayfilter);
+	$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',$scope.displayfilter),$scope.rowsinpage,$scope.columnsinrow,$scope.entriesincolumn);
+	$scope.$watch('displayfilter', function(newValue,oldValue) {
+		$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',newValue),$scope.rowsinpage,$scope.columnsinrow,$scope.entriesincolumn);
+		$scope.pagesnum = $scope.sectiondatasorted.length;
+		$scope.rowsnum = ($scope.pagesnum>0 && $scope.sectiondatasorted[0])?$scope.sectiondatasorted[0].length:0;
+		$scope.columnsnum = ($scope.rowsnum>0 && $scope.sectiondatasorted[0][0])?$scope.sectiondatasorted[0][0].length:0;
+		// $scope.sectiondatafiltered=$scope.filter($scope.sectiondata,'name',$scope.displayfilter);
+		// $scope.pagesnum = (Math.ceil($scope.sectiondatasorted.length/$scope.entriesincolumn/$scope.columnsinrow/$scope.rowsinpage));
+		// $scope.rowsnum = (Math.ceil($scope.sectiondatasorted.length/$scope.entriesincolumn/$scope.columnsinrow));
+		// $scope.columnsnum = (Math.ceil($scope.sectiondatasorted.length/$scope.entriesincolumn));
+		$scope.pagenum=Math.min(Math.max($scope.pagenum,0),$scope.pagesnum-1);
+	});
+});
+
+app.directive('modulesectionctrl', function() {
+	return {
+		scope: {
+			displayfilter:'=',
+			sectiondata:'=',
+			sectiontype:'=',
+			rowsinpage:'=',
+			columnsinrow:'=',
+			entriesincolumn:'=',
+			docobject:'='
+		}
+	}
+});
+
 app.directive('documobject', function() {
 	return {
 		restrict:'E',
@@ -275,7 +425,10 @@ app.directive('documobject', function() {
 			arrow: '=',
 			filtersubobjects: '=',
 			docobjectdata: '=',
-			isparent: '='
+			isparent: '=',
+			displayfilter: '=',
+			isdisplay:'=',
+			istreedisplay:'=',
 		}
 	};
 });
@@ -293,6 +446,7 @@ app.directive('columndisplay', function() {
 	return {
 		restrict:'E',
 		scope: {
+			displayfilter:'=',
 			sectiontype:'=',
 			sectiondata:'='
 		}
@@ -303,8 +457,10 @@ app.directive('modulecolumndisplay', function() {
 	return {
 		restrict:'E',
 		scope: {
+			displayfilter:'=',
 			sectiondata:'=',
 			sectiontype:'=',
+			pagenum:'=',
 			elementlocation:'='
 		}
 	}
@@ -395,7 +551,6 @@ app.directive('nullView', function(templates) {
 	};
 });
 
-
 app.filter('capitalize', function () {
 	return function (input, scope) {
 		if (input != null)
@@ -440,6 +595,7 @@ app.filter('checkSystemType', function() {
 
 app.filter('systemTypeToLoc', function() {
 	return function(input) {
+		if(!input) return null;
 		var name = input.split(".")[input.split(".").length-1];
 		if (systemtypes.indexOf(name)<0) {
 			return '/'+input.replace(/\./g,'/');
@@ -507,6 +663,41 @@ app.filter('makeRange', function() {
 		};
 	});
 
+app.filter('makeRangeFromNumber', function() {
+	return function(input) {
+		var lowBound = 0;
+		var highBound = parseInt(input);
+		var result = [];
+		for (var i = lowBound; i < highBound; i++)
+			result.push(i);
+		return result;
+	};
+});
+
+app.filter('notGreater', function() {
+	return function(input,maxval) {
+		return Math.min(parseFloat(input),maxval).toString();
+	}
+});
+
+app.filter('notLess', function() {
+	return function(input,minval) {
+		return Math.max(parseFloat(input),minval).toString();
+	}
+});
+
+app.filter('mathCeil', function() {
+	return function(input) {
+		return Math.ceil(parseFloat(input)).toString();
+	}
+});
+
+app.filter('mathFloor', function() {
+	return function(input) {
+		return Math.floor(parseFloat(input)).toString();
+	}
+});
+
 app.filter('isSearchObjectEmpty', function() {
 	return function(object) {
 		// console.log('checking search object')
@@ -553,6 +744,20 @@ app.filter('objectToArray', function() {
 	}
 });
 
+app.filter('variablesObjectToArray', function() {
+	return function(object) {
+		if(object instanceof Array) return object;
+		var keys=['private','public','protected','static']
+		var array = [];
+		for(j in keys) {
+			for(i in object[keys[j]]) {
+				array.push({name:i,data:object[keys[j]][i]});
+			}
+		}
+		return array;
+	}
+});
+
 app.filter('splitPagesRowsColumns', function() {
 	return function (array,pageSize,rowSize,columnSize) {
 		var entriesNum = array.length;
@@ -578,6 +783,53 @@ app.filter('splitPagesRowsColumns', function() {
 	}
 });
 
+app.filter('isDisplayFilteredEmpty', function() {
+	return function(input, prop, filter) {
+		visible=true;
+		for (i in input) {
+			check=[];
+			t=(input[i][prop][0]=='_') ? 1 : 0;
+			check[0]=!(filter[0]&&input[i][prop][t].toUpperCase()!=filter[0]);
+			check[1]=!(filter[1]&&input[i][prop][t+1].toUpperCase()!=filter[1]);
+			if (check[0]&&check[1]) {
+				visible = false;
+				break;
+			}
+		}
+		return visible;
+	}
+});
+
+app.filter('displayFilterString', function() {
+	return function(input, filter) {
+		check=[];
+		t=(input[0]=='_') ? 1 : 0;
+		check[0]=!(filter[0]&&input[t].toUpperCase()!=filter[0]);
+		check[1]=!(filter[1]&&input[t+1].toUpperCase()!=filter[1]);
+		return check[0]&&check[1];
+	}
+});
+
+app.filter('filtersubobjects', function () {
+	return function(input) {
+		var result = {};
+		for(key in input) {
+			if((input[key] instanceof Object) && !(input[key] instanceof Array))
+				result[key] = input[key];
+		}
+		return result;
+	}
+});
+
+app.filter('getPrimaryLetter', function() {
+	return function(input,sectiontype) {
+		return (sectiontype=='enums'||sectiontype=='interfaces')
+		? (input.name[0].toUpperCase()!=sectiontype[0].toUpperCase()
+			?input.name[0].toUpperCase()
+			:input.name[1].toUpperCase())
+		:(input.name[0].toUpperCase());
+	}
+});
 
 app.filter('fullPath', function () {
 	return function (docobject) {

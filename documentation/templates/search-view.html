@@ -11,7 +11,7 @@
 					<div ng-repeat="section in docobject.data" class="j-search-chapter" data-name="{{section.type|toStyleType}}">
 						<h2 class="b-description-title {{section.type|toStyleType}}" ng-if="section.data.length>0">{{section.type|toStyleType}}</h2>
 
-						<div class="b-description-wrap" ng-if="section.data.length>0" ng-init="sorted_sections_data = (section.data|objectToArray|orderBy:'name'|splitPagesRowsColumns:2:4:6)">
+						<div class="b-description-wrap" ng-if="section.data.length>0" ng-init="sorted_sections_data = (section.data|objectToArray|orderBy:'name'|splitPagesRowsColumns:2:2:6)">
 							<!-- <p>Section Data: {{section.data}}</p> -->
 							<!-- <p>Sorted Sections Data: {{sorted_sections_data}}</p> -->
 							<columndisplay column-view sectiontype="section.type" sectiondata="sorted_sections_data"></columndisplay>
@@ -24,19 +24,19 @@
 				<div class="b-intro">
 					<div class="menu">
 						<ul class="wrap">
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'modules'"><a class="link j-search-chapter-button namespaces" href="javascript:void(0)" data-name="namespaces">NameSpaces</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'interfaces'"><a class="link j-search-chapter-button interfaces" href="javascript:void(0)" data-name="interfaces">Interfaces</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'interfaceMembers'"><a class="link j-search-chapter-button interfaces" href="javascript:void(0)" data-name="interfaceMembers">InterfaceMembers</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'classes'"><a class="link j-search-chapter-button classes" href="javascript:void(0)" data-name="classes">Classes</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'classMembers'"><a class="link j-search-chapter-button classes" href="javascript:void(0)" data-name="classMembers">ClassMembers</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'enums'"><a class="link j-search-chapter-button enums" href="javascript:void(0)" data-name="enums">Enums</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'enumKeys'"><a class="link j-search-chapter-button enums" href="javascript:void(0)" data-name="enumKeys">EnumKeys</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'functions'"><a class="link j-search-chapter-button functions" href="javascript:void(0)" data-name="functions">Functions</a></li>
-							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'variables'"><a class="link j-search-chapter-button members" href="javascript:void(0)" data-name="members">Members</a></li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'modules'"><a class="link j-search-chapter-button namespaces" href="javascript:void(0)" data-name="namespaces">NameSpaces</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'interfaces'"><a class="link j-search-chapter-button interfaces" href="javascript:void(0)" data-name="interfaces">Interfaces</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'interfaceMembers'"><a class="link j-search-chapter-button interfaces" href="javascript:void(0)" data-name="interfaceMembers">InterfaceMembers</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'classes'"><a class="link j-search-chapter-button classes" href="javascript:void(0)" data-name="classes">Classes</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'classMembers'"><a class="link j-search-chapter-button classes" href="javascript:void(0)" data-name="classMembers">ClassMembers</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'functions'"><a class="link j-search-chapter-button functions" href="javascript:void(0)" data-name="functions">Functions</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'enums'"><a class="link j-search-chapter-button enums" href="javascript:void(0)" data-name="enums">Enums</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'enumKeys'"><a class="link j-search-chapter-button enums" href="javascript:void(0)" data-name="enumKeys">EnumKeys</a> |</li>
+							<li class="item" ng-show="docobject.data|isContainsKeyVal:'type':'variables'"><a class="link j-search-chapter-button members" href="javascript:void(0)" data-name="members">Members</a> |</li>
 						</ul>
 					</div>
 					<div class="title">
-						<span class="icon"><img src="images/magnifier-big.png" alt=""/></span>
+						<span class="icon" style="display:inline-block;width:32px;height:25px;margin-top:4px;line-height:36px;background:url(/images/icon_search.png) -8px 0px;">&nbsp;</span>
 						<span class="way">{{docobject.location | locationToDocStyle}}</span>
 						<h1 class="text">{{docobject.name}}</h1>
 					</div>

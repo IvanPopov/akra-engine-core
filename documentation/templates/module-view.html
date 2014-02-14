@@ -1,16 +1,22 @@
 <div class="b-description">
-	<div ng-repeat="el in docobjectdata" class="j-content-chapter" data-name="{{el.key|toStyleType}}">
-		<h2 class="b-description-title {{el.key|toStyleType}}">{{el.key|toStyleType|capitalize}}</h2>
+	<div class="j-content-chapter" ng-show="displayfilter.length>0">
+		<h2 class="b-description-title">filter: "{{displayfilter}}..."</h2>
+	</div>
+	<div ng-repeat="el in docobjectdata" class="j-content-chapter" data-name="{{el.key|toStyleType}}" ng-init="sectiontype=(el.name|toStyleType);
+				contents=(el.value|objectToArray|orderBy:'name')">
+		<div ng-controller="ColumnDisplayCtrl" ng-show="isdisplay.modules[el.name]" modulesectionctrl displayfilter="displayfilter" sectiontype="sectiontype" docobject="docobject" sectiondata="contents" rowsinpage="2" columnsinrow="2" entriesincolumn="8">
+			<div ng-show="pagesnum>0">
+				<h2 class="b-description-title {{el.key|toStyleType}}">{{el.key|toStyleType|capitalize}}</h2>
 
-		<div class="b-description-wrap"
-			 ng-init="
-			 section_sorted_data = (filtersubobjects(el.value)|objectToArray|orderBy:'nme'|splitPagesRowsColumns:1:2:10);
-			 sectiontype = el.key;
-			 elementlocation = (docobject.name == 'index' && docobject.location=='') ?
-				'' : docobject.location ?
-					docobject.location + '.' + docobject.name: docobject.name">
-			<!-- pageSize,rowSize,columnSize-->
-			<modulecolumndisplay module-column-view sectiondata="section_sorted_data" sectiontype="sectiontype" elementlocation="elementlocation|locationToDocStyle" />
+				<div class="b-description-wrap"
+					 ng-init="
+					 elementlocation = (docobject.name == 'index' && docobject.location=='') ?
+						'' : docobject.location ?
+							docobject.location + '.' + docobject.name: docobject.name">
+					<!-- pageSize,rowSize,columnSize-->
+					<modulecolumndisplay module-column-view displayfilter="displayfilter" pagenum="pagenum" sectiondata="sectiondatasorted" sectiontype="sectiontype" elementlocation="elementlocation|locationToDocStyle" />
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

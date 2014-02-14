@@ -21,7 +21,7 @@
 </head>
 <body>
 	<div class="b-page" ng-controller="MainCtrl">
-		<div class="b-header">
+		<div class="b-header" ng-click="clearSearch();">
 			<div class="row1">
 				<a class="logo" href="#/">API REFERENCE</a>
 				<div id="searchParent">
@@ -73,19 +73,19 @@
 		<div class="searchblock-big" ng-if="isShowSearchResults">
 			<searchobject docobject="searchResults" search-view></searchobject>
 		</div>
-		<div class="b-navigate-row">
+		<div class="b-navigate-row" ng-click="clearSearch();">
 			<div class="api-nav-title"><strong>Akra APIs</strong></div>
 			<a class="left-column-bar j-left-bar opened" href="javascript:void(0);"><i class="fa fa-caret-left"></i></a>
 		</div>
 		
-		<div class="b-center">
+		<div class="b-center" ng-click="clearSearch();">
 			<div class="b-left j-sidebar">
 				<ul class="b-side-menu j-side-menu">
 					<li  class="item parent" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
 						<documobject docobject="currParent" isparent="true" treeview arrow="'opened'" />
 					</li>
 					<li class="item parent has-sub-menu">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'" />
+						<documobject istreedisplay="isTreeDisplay" docobjectdata="currentObject.dataAsArray" docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'" />
 					</li>
 					<li class="item" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
 						<documobject ng-if="currSibling.type=='modules'"  docobject="currSibling" treeview arrow="'closed'" />
@@ -97,85 +97,199 @@
 					<div class="menu">
 						<ul class="wrap" ng-show='currentObject.type=="modules"'>
 							display: 
-							<li class="item"><a class="link j-content-chapter-button namespaces" href="javascript:void(0)" data-name="namespaces">NameSpaces</a> | </li>
-							<li class="item"><a class="link j-content-chapter-button enums" href="javascript:void(0)" data-name="enums">Enums</a> | </li>
-							<li class="item"><a class="link j-content-chapter-button interfaces" href="javascript:void(0)" data-name="interfaces">Interfaces</a> | </li>
-							<li class="item"><a class="link j-content-chapter-button classes" href="javascript:void(0)" data-name="classes">Classes</a> | </li>
-							<li class="item"><a class="link j-content-chapter-button functions" href="javascript:void(0)" data-name="functions">Functions</a> | </li>
-							<li class="item"><a class="link j-content-chapter-button members" href="javascript:void(0)" data-name="members">Members</a> | </li>
-							<li class="item"><a class="link" href="javascript:void(0)" >[Expand All]</a></li>
+							<li class="item"><a class="link j-content-chapter-button namespaces {{isDisplay.modules.modules?'':'inactive'}}" ng-click="isDisplay.modules.modules=!isDisplay.modules.modules" href="javascript:void(0)" data-name="namespaces">NameSpaces</a> | </li>
+							<li class="item"><a class="link j-content-chapter-button classes {{isDisplay.modules.classes?'':'inactive'}}" ng-click="isDisplay.modules.classes=!isDisplay.modules.classes" href="javascript:void(0)" data-name="classes">Classes</a> | </li>
+							<li class="item"><a class="link j-content-chapter-button functions {{isDisplay.modules.functions?'':'inactive'}}" ng-click="isDisplay.modules.functions=!isDisplay.modules.functions" href="javascript:void(0)" data-name="functions">Functions</a> | </li>
+							<li class="item"><a class="link j-content-chapter-button interfaces {{isDisplay.modules.interfaces?'':'inactive'}}" ng-click="isDisplay.modules.interfaces=!isDisplay.modules.interfaces" href="javascript:void(0)" data-name="interfaces">Interfaces</a> | </li>
+							<li class="item"><a class="link j-content-chapter-button enums {{isDisplay.modules.enums?'':'inactive'}}" ng-click="isDisplay.modules.enums=!isDisplay.modules.enums" href="javascript:void(0)" data-name="enums">Enums</a> | </li>
+							<li class="item"><a class="link j-content-chapter-button members {{isDisplay.modules.variables?'':'inactive'}}" ng-click="isDisplay.modules.variables=!isDisplay.modules.variables" href="javascript:void(0)" data-name="members">Members</a> | </li>
+							<li class="item"><a class="link j-content-chapter-button typeDefs {{isDisplay.modules.typeDefs?'':'inactive'}}" ng-click="isDisplay.modules.typeDefs=!isDisplay.modules.typeDefs" href="javascript:void(0)" data-name="typeDefs">TypeDefs</a> | </li>
+							<li class="item"><a class="link" ng-click="expandSection(isDisplay.modules,true)" href="javascript:void(0)" >[Expand All]</a></li>
 						</ul>
 						<ul class="wrap" ng-show='currentObject.type=="classes"'>
-							<li class="item"><a class="link j-content-chapter-button methods" data-name="methods" href="javasript:void(0);">Methods</a></li>
-							<li class="item"><a class="link j-content-chapter-button members" data-name="members" href="javasript:void(0);">Members</a></li>
-							<li class="item"><a class="link j-content-chapter-button accessors" data-name="getters" href="javasript:void(0);">Getters</a></li>
-							<li class="item"><a class="link j-content-chapter-button accessors" data-name="setters" href="javasript:void(0);">Setters</a></li>
+							display: 
+							<li class="item"><a class="link j-content-chapter-button methods {{isDisplay.classes.functions?'':'inactive'}}" ng-click="isDisplay.classes.functions=!isDisplay.classes.functions" data-name="methods" href="javasript:void(0);">Methods</a> |</li>
+							<li class="item"><a class="link j-content-chapter-button members {{isDisplay.classes.variables?'':'inactive'}}" ng-click="isDisplay.classes.variables=!isDisplay.classes.variables" data-name="members" href="javasript:void(0);">Members</a> |</li>
+							<li class="item"><a class="link j-content-chapter-button accessors {{isDisplay.classes.getters?'':'inactive'}}" ng-click="isDisplay.classes.getters=!isDisplay.classes.getters" data-name="getters" href="javasript:void(0);">Getters</a> |</li>
+							<li class="item"><a class="link j-content-chapter-button accessors {{isDisplay.classes.setters?'':'inactive'}}" ng-click="isDisplay.classes.setters=!isDisplay.classes.setters" data-name="setters" href="javasript:void(0);">Setters</a> |</li>
+							<li class="item"><a class="link" ng-click="expandSection(isDisplay.classes,true)" href="javascript:void(0)" >[Expand All]</a></li>
 						</ul>
 						<ul class="wrap" ng-show='docobject.type=="interfaces"'>
-							<li class="item"><a class="link members j-content-chapter-button" data-name="members" href="javascript:void(0);">Members</a></li>
-							<li class="item"><a class="link methods j-content-chapter-button" data-name="methods" href="javascript:void(0);">Methods</a></li>
+							display: 
+							<li class="item"><a class="link members j-content-chapter-button {{isDisplay.interfaces.variables?'':'inactive'}}" ng-click="isDisplay.interfaces.variables=!isDisplay.interfaces.variables" data-name="members" href="javascript:void(0);">Members</a> |</li>
+							<li class="item"><a class="link methods j-content-chapter-button {{isDisplay.interfaces.functions?'':'inactive'}}" ng-click="isDisplay.interfaces.functions=!isDisplay.interfaces.functions" data-name="methods" href="javascript:void(0);">Methods</a> |</li>
+							<li class="item"><a class="link" ng-click="expandSection(isDisplay.interfaces,true)" href="javascript:void(0)" >[Expand All]</a></li>
 						</ul>
 						<div class="b-intro-sep">
 							<div class="b-alphabet">
 								<div class="row1">
-									<!--<a href="javascript:void(0)" ng-repeat='char in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]'>
-										<span class="letter">{{char}}</span>
-									</a>-->
+									<!-- <input type="text" ng-model="displayFilter"> -->
+									<!-- <p>filter: &lt;{{displayFilter}}&gt;</p> -->
+									<!-- <span ng-repeat="char in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']">
+										<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!=char[0]?char[0]:''">
+											<span class="letter {{displayFilter[0]==char?'active':''}}">{{char[0]}} {{displayFilter}}</span>
+										</a>
+										<span ng-if="char!='Z'">|</span>
+									</span> -->
 
-									<a href="javascript:void(0)"><span class="letter">A</span></a> |
-									<a href="javascript:void(0)"><span class="letter">B</span></a> |
-									<a href="javascript:void(0)"><span class="letter">C</span></a> |
-									<a href="javascript:void(0)"><span class="letter">D</span></a> |
-									<a href="javascript:void(0)"><span class="letter">E</span></a> |
-									<a href="javascript:void(0)"><span class="letter">F</span></a> |
-									<a href="javascript:void(0)"><span class="letter">G</span></a> |
-									<a href="javascript:void(0)"><span class="letter">H</span></a> |
-									<a href="javascript:void(0)"><span class="letter">I</span></a> |
-									<a href="javascript:void(0)"><span class="letter">J</span></a> |
-									<a href="javascript:void(0)"><span class="letter">K</span></a> |
-									<a href="javascript:void(0)"><span class="letter">L</span></a> |
-									<a href="javascript:void(0)"><span class="letter">M</span></a> |
-									<a href="javascript:void(0)"><span class="letter">N</span></a> |
-									<a href="javascript:void(0)"><span class="letter">O</span></a> |
-									<a href="javascript:void(0)"><span class="letter">P</span></a> |
-									<a href="javascript:void(0)"><span class="letter">Q</span></a> |
-									<a href="javascript:void(0)"><span class="letter">R</span></a> |
-									<a href="javascript:void(0)"><span class="letter">S</span></a> |
-									<a href="javascript:void(0)"><span class="letter">T</span></a> |
-									<a href="javascript:void(0)"><span class="letter">U</span></a> |
-									<a href="javascript:void(0)"><span class="letter">V</span></a> |
-									<a href="javascript:void(0)"><span class="letter">W</span></a> |
-									<a href="javascript:void(0)"><span class="letter">X</span></a> |
-									<a href="javascript:void(0)"><span class="letter">Y</span></a> |
-									<a href="javascript:void(0)"><span class="letter">Z</span></a>
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='A'?'A':''">
+									<span class="letter {{displayFilter[0]=='A'?'active':''}}">A</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='B'?'B':''">
+									<span class="letter {{displayFilter[0]=='B'?'active':''}}">B</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='C'?'C':''">
+									<span class="letter {{displayFilter[0]=='C'?'active':''}}">C</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='D'?'D':''">
+									<span class="letter {{displayFilter[0]=='D'?'active':''}}">D</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='E'?'E':''">
+									<span class="letter {{displayFilter[0]=='E'?'active':''}}">E</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='F'?'F':''">
+									<span class="letter {{displayFilter[0]=='F'?'active':''}}">F</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='G'?'G':''">
+									<span class="letter {{displayFilter[0]=='G'?'active':''}}">G</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='H'?'H':''">
+									<span class="letter {{displayFilter[0]=='H'?'active':''}}">H</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='I'?'I':''">
+									<span class="letter {{displayFilter[0]=='I'?'active':''}}">I</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='J'?'J':''">
+									<span class="letter {{displayFilter[0]=='J'?'active':''}}">J</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='K'?'K':''">
+									<span class="letter {{displayFilter[0]=='K'?'active':''}}">K</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='L'?'L':''">
+									<span class="letter {{displayFilter[0]=='L'?'active':''}}">L</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='M'?'M':''">
+									<span class="letter {{displayFilter[0]=='M'?'active':''}}">M</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='N'?'N':''">
+									<span class="letter {{displayFilter[0]=='N'?'active':''}}">N</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='O'?'O':''">
+									<span class="letter {{displayFilter[0]=='O'?'active':''}}">O</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='P'?'P':''">
+									<span class="letter {{displayFilter[0]=='P'?'active':''}}">P</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='Q'?'Q':''">
+									<span class="letter {{displayFilter[0]=='Q'?'active':''}}">Q</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='R'?'R':''">
+									<span class="letter {{displayFilter[0]=='R'?'active':''}}">R</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='S'?'S':''">
+									<span class="letter {{displayFilter[0]=='S'?'active':''}}">S</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='T'?'T':''">
+									<span class="letter {{displayFilter[0]=='T'?'active':''}}">T</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='U'?'U':''">
+									<span class="letter {{displayFilter[0]=='U'?'active':''}}">U</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='V'?'V':''">
+									<span class="letter {{displayFilter[0]=='V'?'active':''}}">V</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='W'?'W':''">
+									<span class="letter {{displayFilter[0]=='W'?'active':''}}">W</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='X'?'X':''">
+									<span class="letter {{displayFilter[0]=='X'?'active':''}}">X</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='Y'?'Y':''">
+									<span class="letter {{displayFilter[0]=='Y'?'active':''}}">Y</span>
+									</a> |
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[0]!='Z'?'Z':''">
+									<span class="letter {{displayFilter[0]=='Z'?'active':''}}">Z</span>
+									</a>
 								</div>
-								<div class="row2">
-									<!--<a href="javascript:void(0)"><span class="letter">A</span></a>
-									<a href="javascript:void(0)"><span class="letter">B</span></a>
-									<a href="javascript:void(0)"><span class="letter">C</span></a>
-									<a href="javascript:void(0)"><span class="letter">D</span></a>
-									<a href="javascript:void(0)"><span class="letter">E</span></a>
-									<a href="javascript:void(0)"><span class="letter">F</span></a>
-									<a href="javascript:void(0)"><span class="letter">G</span></a>
-									<a href="javascript:void(0)"><span class="letter">H</span></a>
-									<a href="javascript:void(0)"><span class="letter">I</span></a>
-									<a href="javascript:void(0)"><span class="letter">J</span></a>
-									<a href="javascript:void(0)"><span class="letter">K</span></a>
-									<a href="javascript:void(0)"><span class="letter">L</span></a>
-									<a href="javascript:void(0)"><span class="letter">M</span></a>
-									<a href="javascript:void(0)"><span class="letter">N</span></a>
-									<a href="javascript:void(0)"><span class="letter">O</span></a>
-									<a href="javascript:void(0)"><span class="letter">P</span></a>
-									<a href="javascript:void(0)"><span class="letter">Q</span></a>
-									<a href="javascript:void(0)"><span class="letter">R</span></a>
-									<a href="javascript:void(0)"><span class="letter">S</span></a>
-									<a href="javascript:void(0)"><span class="letter">T</span></a>
-									<a href="javascript:void(0)"><span class="letter">U</span></a>
-									<a href="javascript:void(0)"><span class="letter">V</span></a>
-									<a href="javascript:void(0)"><span class="letter">W</span></a>
-									<a href="javascript:void(0)"><span class="letter">X</span></a>
-									<a href="javascript:void(0)"><span class="letter">Y</span></a>
-									<a href="javascript:void(0)"><span class="letter">Z</span></a>-->
+								<div class="row2" ng-show="displayFilter.length>0">
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='A'?displayFilter[0]+'A':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='Y'?'active':''}}">A</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='B'?displayFilter[0]+'B':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='B'?'active':''}}">B</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='C'?displayFilter[0]+'C':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='C'?'active':''}}">C</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='D'?displayFilter[0]+'D':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='D'?'active':''}}">D</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='E'?displayFilter[0]+'E':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='E'?'active':''}}">E</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='F'?displayFilter[0]+'F':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='F'?'active':''}}">F</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='G'?displayFilter[0]+'G':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='G'?'active':''}}">G</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='H'?displayFilter[0]+'H':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='H'?'active':''}}">H</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='I'?displayFilter[0]+'I':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='I'?'active':''}}">I</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='J'?displayFilter[0]+'J':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='J'?'active':''}}">J</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='K'?displayFilter[0]+'K':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='K'?'active':''}}">K</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='L'?displayFilter[0]+'L':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='L'?'active':''}}">L</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='M'?displayFilter[0]+'M':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='M'?'active':''}}">M</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='N'?displayFilter[0]+'N':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='N'?'active':''}}">N</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='O'?displayFilter[0]+'O':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='O'?'active':''}}">O</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='P'?displayFilter[0]+'P':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='P'?'active':''}}">P</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='Q'?displayFilter[0]+'Q':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='Q'?'active':''}}">Q</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='R'?displayFilter[0]+'R':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='R'?'active':''}}">R</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='S'?displayFilter[0]+'S':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='S'?'active':''}}">S</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='T'?displayFilter[0]+'T':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='T'?'active':''}}">T</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='U'?displayFilter[0]+'U':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='U'?'active':''}}">U</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='V'?displayFilter[0]+'V':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='V'?'active':''}}">V</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='W'?displayFilter[0]+'W':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='W'?'active':''}}">W</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='X'?displayFilter[0]+'X':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='X'?'active':''}}">X</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='Y'?displayFilter[0]+'Y':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='Y'?'active':''}}">Y</span>
+									</a>&nbsp;
+									<a href="javascript:void(0)" ng-click="displayFilter=displayFilter[1]!='Z'?displayFilter[0]+'Z':displayFilter[0];">
+										<span class="letter {{displayFilter[1]=='Z'?'active':''}}">Z</span>
+									</a>
 								</div>
 							</div>
 							<div class="clr"></div>
@@ -192,33 +306,32 @@
 					</div>
 					<div class="clr"></div>
 				</div>
-				
-				<div ng-switch="currentObject.type">
-					<div ng-switch-when="modules">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' docobjectdata='currentObject.dataAsArray' module-view></documobject>
-					</div>
-					<div ng-switch-when="classes">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' class-view></documobject>
-					</div>
-					<div ng-switch-when="interfaces">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' interface-view></documobject>
-					</div>
-					<div ng-switch-when="functions">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
-					</div>
-					<div ng-switch-when="enums">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' enum-view></documobject>
-					</div>
-					<div ng-switch-when="variables">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
-					</div>
-					<div ng-switch-when="typedefs">
-						<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
-					</div>
-					<div ng-switch-default>
-						<documobject null-view></documobject>
-					</div>
+			<div ng-switch="currentObject.type">
+				<div ng-switch-when="modules">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' docobjectdata="currentObject.dataAsArray" module-view />
 				</div>
+				<div ng-switch-when="classes">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' docobjectdata="currentObject.dataAsArray" class-view />
+				</div>
+				<div ng-switch-when="interfaces">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' docobjectdata="currentObject.dataAsArray" interface-view />
+				</div>
+				<div ng-switch-when="functions">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' function-view />
+				</div>
+				<div ng-switch-when="enums">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' enum-view />
+				</div>
+				<div ng-switch-when="variables">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' function-view />
+				</div>
+				<div ng-switch-when="typedefs">
+					<documobject isdisplay="isDisplay" displayfilter="displayFilter" docobject="currentObject" filtersubobjects='filtersubobjects' function-view />
+				</div>
+				<div ng-switch-default>
+					<documobject null-view />
+				</div>
+			</div>
 			</div>
 		</div>
 	</div>

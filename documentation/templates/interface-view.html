@@ -1,65 +1,58 @@
 		<div class="b-description">
-			<div ng-repeat="(key,val) in filtersubobjects(docobject.data)">
-				<div class="j-content-chapter" ng-switch="key" data-name="{{key|toStyleType|toClassStyleType}}">
-					<h2 class="b-description-title {{key|toStyleType|toClassStyleType}}">{{key|toStyleType|toClassStyleType}}</h2>
-					<div ng-switch-when="variables">
-						<div ng-repeat="(subkey,subval) in filtersubobjects(val)">
-							<h3 class="b-description-title2 {{subkey}}-{{key|toStyleType}}">{{subkey}} {{key|toStyleType}}</h3>
-							<div class="b-single-methods-wrap">
-								<div ng-repeat="(subsubkey,subsubval) in filtersubobjects(subval)">
-									<div class="b-single-method j-single-method closed">
-										<div class="top-row">
-											<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
-											<div class="type"></div>
-											<div class="title">{{subsubkey}}<span ng-if="subval[subsubkey].type"> : <span class="blue" ng-if="subval[subsubkey].type|systemTypeToLoc"><a href='#{{subval[subsubkey].type|systemTypeToLoc}}'>{{subval[subsubkey].type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval[subsubkey].type|systemTypeToLoc)">{{subval[subsubkey].type}}</span></span></div>
-											<div class="intro">{{subval.comments[0][1]}}</div>
-										</div>
-										<div class="bottom-row">
-											<div class="description"><p>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p></div>
-											<!-- <p><span class="bold">Parameters</span>:<br></p>
-											<p><span class="bold">Returns</span>:</p>
-											<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div> -->
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div ng-switch-when="functions" class="b-single-methods-wrap">
-						<div ng-repeat="(subkey,subval) in filtersubobjects(val)" class="b-single-method j-single-method closed">
-							<div class="top-row">
-								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
-								<div class="type"></div>
-								<div class="title">{{subkey}} (<span ng-repeat="arg in subval.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue" ng-if="arg.type|systemTypeToLoc"><a href='#{{arg.type|systemTypeToLoc}}'>{{arg.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(arg.type|systemTypeToLoc)">{{arg.type}}</span><span ng-if="$index < subval.arguments.length-1">,</span><br ng-if="$index%3==2 && $index != subval.arguments.length-1"></span>) : <span class="blue" ng-if="subval.type|systemTypeToLoc"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval.type|systemTypeToLoc)">{{subval.type}}</span></div>
-								<div class="intro">{{subval.comments[0][1]}}</div>
-							</div>
-							<div class="bottom-row">
-								<div class="description"><p><br>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p><p ng-if="subval.arguments"><span class="bold">Parameters</span>:<br><span ng-repeat="n in [3+1,3+subval.arguments.length] | makeRange">{{subval.comments[0][n]}}<br></span></p>
-									<!-- <p><span class="bold">Returns</span>:<br>On success, true is returned.<br>On failure, false is returned.</p>
-									<span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span>
-									<p><span class="bold">See also:</span><br><span class="bold blue">next, next, isVisible</span></p>
-									<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p> -->
-								</div>
-							</div>
-						</div>
-					</div>
-					<div ng-switch-default>
+			<div class="j-content-chapter" ng-show="displayfilter.length>0">
+				<h2 class="b-description-title">filter: "{{displayfilter}}..."</h2>
+			</div>
+			<div ng-repeat="entry in docobjectdata" class="j-content-chapter" data-name="{{entry.name | toStyleType | toClassStyleType}}" ng-switch="entry.name" ng-init="sectionarray=(entry.value|objectToArray)" ng-show="isdisplay.interfaces[entry.name]">
+				<div ng-switch-when="variables" ng-init="vararray=(entry.value|variablesObjectToArray)">
+					<div style="{{(vararray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+					<h2 class="b-description-title {{entry.name | toStyleType | toClassStyleType}}">{{entry.name | toStyleType | toClassStyleType | capitalize}}</h2>
+					<div ng-repeat="(subkey,subval) in entry.value" style="{{(subval|objectToArray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+						<h3 class="b-description-title2 {{subkey}}-{{entry.name|toStyleType}}">{{subkey}} {{entry.name|toStyleType}}</h3>
 						<div class="b-single-methods-wrap">
-							<div ng-repeat="(subkey,subval) in filtersubobjects(val)">
+							<div ng-repeat="(subsubkey,subsubval) in subval" style="{{!(subsubkey|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
 								<div class="b-single-method j-single-method closed">
 									<div class="top-row">
 										<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 										<div class="type"></div>
-										<div class="title">{{subkey}}<!-- <span class="blue">int</span> --></div>
+										<div class="title">{{subsubkey}}<span ng-if="subval[subsubkey].type"> : <span class="blue" ng-if="subval[subsubkey].type|systemTypeToLoc"><a href='#{{subval[subsubkey].type|systemTypeToLoc}}'>{{subval[subsubkey].type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval[subsubkey].type|systemTypeToLoc)">{{subval[subsubkey].type}}</span></span></div>
 										<div class="intro">{{subval.comments[0][1]}}</div>
 									</div>
 									<div class="bottom-row">
 										<div class="description"><p>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p></div>
-										<!-- <p><span class="bold">Parameters</span>:<br></p>
-										<p><span class="bold">Returns</span>:</p>
-										<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div> -->
 									</div>
 								</div>
+							</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div class="b-single-methods-wrap" ng-switch-when="functions" style="{{(sectionarray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+					<h2 class="b-description-title {{entry.name | toStyleType | toClassStyleType}}">{{entry.name | toStyleType | toClassStyleType | capitalize}}</h2>
+					<div ng-repeat="(subkey,subval) in entry.value" class="b-single-method j-single-method closed" style="{{!(subkey|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">{{subkey}} (<span ng-repeat="arg in subval.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue" ng-if="arg.type|systemTypeToLoc"><a href='#{{arg.type|systemTypeToLoc}}'>{{arg.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(arg.type|systemTypeToLoc)">{{arg.type}}</span><span ng-if="$index < subval.arguments.length-1">,</span><br ng-if="$index%3==2 && $index != subval.arguments.length-1"></span>) : <span class="blue" ng-if="subval.type|systemTypeToLoc"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span><span class="blue" ng-if="!(subval.type|systemTypeToLoc)">{{subval.type}}</span></div>
+							<div class="intro">{{subval.comments[0][1]}}</div>
+						</div>
+						<div class="bottom-row">
+							<div class="description"><p><br>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p><p ng-if="subval.arguments"><span class="bold">Parameters</span>:<br><span ng-repeat="n in [3+1,3+subval.arguments.length] | makeRange">{{subval.comments[0][n]}}<br></span></p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="b-single-methods-wrap" ng-switch-default style="{{(sectionarray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+					<h2 class="b-description-title {{entry.name | toStyleType | toClassStyleType}}">{{entry.name | toStyleType | toClassStyleType | capitalize}}</h2>
+					<div ng-repeat="(subkey,subval) in filtersubobjects(val)">
+						<div class="b-single-method j-single-method closed" style="{{!(subkey|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
+							<div class="top-row">
+								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+								<div class="type"></div>
+								<div class="title">{{subkey}}<!-- <span class="blue">int</span> --></div>
+								<div class="intro">{{subval.comments[0][1]}}</div>
+							</div>
+							<div class="bottom-row">
+								<div class="description"><p>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p></div>
 							</div>
 						</div>
 					</div>

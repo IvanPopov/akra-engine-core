@@ -1,11 +1,15 @@
 			<div class="b-description">
-				<div ng-repeat="(key,val) in filtersubobjects(docobject.data)" class="j-content-chapter" data-name="{{key | toStyleType | toClassStyleType}}" ng-switch="key">
-					<h2 class="b-description-title {{key | toStyleType | toClassStyleType}}">{{key|toStyleType|toClassStyleType|capitalize}}</h2>
-					<div ng-switch-when="variables">
-						<div ng-repeat="(subkey,subval) in val">
-							<h2 class="b-description-title2 {{subkey}}-{{key|toStyleType}}">{{subkey}} {{key|toStyleType}}</h2>
+				<div class="j-content-chapter" ng-show="displayfilter.length>0">
+					<h2 class="b-description-title">filter: "{{displayfilter}}..."</h2>
+				</div>
+				<div ng-repeat="entry in docobjectdata" class="j-content-chapter" data-name="{{entry.name | toStyleType | toClassStyleType}}" ng-switch="entry.name" ng-init="sectionarray=(entry.value|objectToArray)" ng-show="isdisplay.classes[entry.name]">
+					<div ng-switch-when="variables" ng-init="vararray=(entry.value|variablesObjectToArray)">
+						<div style="{{(vararray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+						<h2 class="b-description-title {{entry.name | toStyleType | toClassStyleType}}">{{entry.name|toStyleType|toClassStyleType|capitalize}}</h2>
+						<div ng-repeat="(subkey,subval) in entry.value" style="{{(subval|objectToArray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+							<h2 class="b-description-title2 {{subkey}}-{{entry.name|toStyleType}}">{{subkey}} {{entry.name|toStyleType}}</h2>
 							<div class="b-single-methods-wrap">
-								<div ng-repeat="(subsubkey,subsubval) in subval" class="b-single-method j-single-method closed">
+								<div ng-repeat="(subsubkey,subsubval) in subval" class="b-single-method j-single-method closed" style="{{!(subsubkey|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
 									<div class="top-row">
 										<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 										<div class="type"></div>
@@ -14,18 +18,16 @@
 									</div>
 									<div class="bottom-row">
 										<div class="description">{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}<p><p ng-if="subval.arguments"><span class="bold">Parameters</span>:<br><span ng-repeat="n in [3+1,3+subval.arguments.length] | makeRange">{{subval.comments[0][n]}}<br></span></p>
-											<!-- <p><span class="bold">Returns</span>:<br>On success, true is returned.<br>On failure, false is returned.</p>
-											<span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span>
-											<p><span class="bold">See also:</span><br><span class="bold blue">next, next, isVisible</span></p>
-											<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p> -->
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+						</div>
 					</div>
-					<div class="b-single-methods-wrap" ng-switch-when="functions">
-						<div ng-repeat="(subkey,subval) in val" class="b-single-method j-single-method closed">
+					<div class="b-single-methods-wrap" ng-switch-when="functions" style="{{(sectionarray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+						<h2 class="b-description-title {{entry.name | toStyleType | toClassStyleType}}">{{entry.name|toStyleType|toClassStyleType|capitalize}}</h2>
+						<div ng-repeat="(subkey,subval) in entry.value" class="b-single-method j-single-method closed" style="{{!(subkey|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
 							<div class="top-row">
 								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 								<div class="type"></div>
@@ -34,16 +36,13 @@
 							</div>
 							<div class="bottom-row">
 								<div class="description"><p><br>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p><p ng-if="subval.arguments"><span class="bold">Parameters</span>:<br><span ng-repeat="n in [3+1,3+subval.arguments.length] | makeRange">{{subval.comments[0][n]}}<br></span></p>
-									<!-- <p><span class="bold">Returns</span>:<br>On success, true is returned.<br>On failure, false is returned.</p>
-									<span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span>
-									<p><span class="bold">See also:</span><br><span class="bold blue">next, next, isVisible</span></p>
-									<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p> -->
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="b-single-methods-wrap" ng-switch-default>
-						<div ng-repeat="(subkey,subval) in val" class="b-single-method j-single-method closed">
+					<div class="b-single-methods-wrap" ng-switch-default style="{{(sectionarray|isDisplayFilteredEmpty:'name':displayfilter)?'opacity:0.5;':''}}">
+						<h2 class="b-description-title {{entry.name | toStyleType | toClassStyleType}}">{{entry.name|toStyleType|toClassStyleType|capitalize}}</h2>
+						<div ng-repeat="(subkey,subval) in entry.value" class="b-single-method j-single-method closed" style="{{!(subkey|displayFilterString:displayfilter)?'opacity:0.5;':''}}">
 							<div class="top-row">
 								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 								<div class="type"></div>
@@ -52,10 +51,6 @@
 							</div>
 							<div class="bottom-row">
 								<div class="description"><p>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p><p><span class="bold">Parameters</span>:</p>
-									<!-- <p><span class="bold">Returns</span>:<br>On success, true is returned.<br>On failure, false is returned.</p>
-									<span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span>
-									<p><span class="bold">See also:</span><br><span class="bold blue">next, next, isVisible</span></p>
-									<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p> -->
 								</div>
 							</div>
 						</div>
