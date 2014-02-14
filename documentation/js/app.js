@@ -311,6 +311,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 	};
 
 	$scope.$on('$locationChangeSuccess', function() {
+		$('body').scrollTop(0);
 		$scope.displayFilter = '';
 		$scope.searchText = '';
 		$scope.isShowSearchResults = false;
