@@ -199,7 +199,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
 				$scope.currentObject.dataAsArray = objectToArray(data);
-			
+
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
 					// setTimeout(setupHiders,100);
@@ -228,7 +228,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 						$scope.currentObject.parents[i].location += '/'+hierarchy[j];
 					};
 				};
-			
+
 				enableSideScroll({self:$('.j-sidebar')});
 				if(!$scope.isHidersSetup) {
 					// setTimeout(setupHiders,100);
@@ -243,65 +243,65 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				var dir=path.match(/\/[^\/]*\/?$/);
 
 				$http.get(path+"/"+(dir ? dir[0] : 'index').replace(/\//g,"")+".json")
-					.success(function(data,status) {
-						for(key in data) {
-							if(!(data[key] instanceof Object))
-								continue;
+				.success(function(data,status) {
+					for(key in data) {
+						if(!(data[key] instanceof Object))
+							continue;
 
-							for(subkey in data[key]){
-								$scope.currentObject.siblings.push({name:subkey, type:key, location:path.replace(/data/,'').replace(/\/modules/g,'')});
-							}
+						for(subkey in data[key]){
+							$scope.currentObject.siblings.push({name:subkey, type:key, location:path.replace(/data/,'').replace(/\/modules/g,'')});
 						}
-			
-						enableSideScroll({self:$('.j-sidebar')});
+					}
+
+					enableSideScroll({self:$('.j-sidebar')});
 						// setTimeout(setupHiders,100);
 					});
 			})
-			.error(function(data,status) {
-				if(keywords.indexOf(type) != keywords.length-1) {
-					getData(path,objname,keywords[keywords.indexOf(type)+1]);
-				}
+.error(function(data,status) {
+	if(keywords.indexOf(type) != keywords.length-1) {
+		getData(path,objname,keywords[keywords.indexOf(type)+1]);
+	}
 				// else {
 				// 	console.log(objname, path, $scope.currentObject.parents);
 				// }
 			});
-		}
+}
+}
+
+function tryFileExists() {
+	var _locat = $location.path().replace(/\/+/g,'/').replace(/\/[^\/]*\/?$/, "");
+	var _name = $location.path().replace(/\/+/g,'/').match(/\/[^\/]*\/?$/)[0].replace(/\//g,"");
+
+	var objname = _name
+	var location = _locat;
+	var path = "data"+_locat.replace(/\//g,"/modules/");
+
+	$scope.filtersubobjects = function(object) {
+		var result = {};
+		angular.forEach(object, function(val,key) {
+			if((val instanceof Object) && !(val instanceof Array))
+				result[key] = val;
+		});
+		return result;
 	}
 
-	function tryFileExists() {
-		var _locat = $location.path().replace(/\/+/g,'/').replace(/\/[^\/]*\/?$/, "");
-		var _name = $location.path().replace(/\/+/g,'/').match(/\/[^\/]*\/?$/)[0].replace(/\//g,"");
+	$scope.currentObject.name = (objname!='') ? objname : 'index';
+	$scope.currentObject.location = location;
+	$scope.currentObject.path = path;
+	$scope.currentObject.parents = [];
+	$scope.currentObject.siblings = [];
+	getData(path, objname, keywords[0]);
+};
 
-		var objname = _name
-		var location = _locat;
-		var path = "data"+_locat.replace(/\//g,"/modules/");
+$scope.$on('$locationChangeSuccess', function() {
+	$scope.displayFilter = '';
+	$scope.searchText = '';
+	$scope.isShowSearchResults = false;
+	tryFileExists();
+});
 
-		$scope.filtersubobjects = function(object) {
-			var result = {};
-			angular.forEach(object, function(val,key) {
-				if((val instanceof Object) && !(val instanceof Array))
-					result[key] = val;
-			});
-			return result;
-		}
-
-		$scope.currentObject.name = (objname!='') ? objname : 'index';
-		$scope.currentObject.location = location;
-		$scope.currentObject.path = path;
-		$scope.currentObject.parents = [];
-		$scope.currentObject.siblings = [];
-		getData(path, objname, keywords[0]);
-	};
-
-	$scope.$on('$locationChangeSuccess', function() {
-		$scope.displayFilter = '';
-		$scope.searchText = '';
-		$scope.isShowSearchResults = false;
-		tryFileExists();
-	});
-
-	$scope.currLocation = $location.path().replace(/\/[^\/]*\/?$/, "/");
-	if ($location.path().length==0) $location.path('/');
+$scope.currLocation = $location.path().replace(/\/[^\/]*\/?$/, "/");
+if ($location.path().length==0) $location.path('/');
 	/*$scope.location = $location;
 	$scope.http = $http;
 	$http.get('/data/index.json').success(function(data){
@@ -359,12 +359,30 @@ app.controller('ColumnDisplayCtrl', function($scope) {
 	$scope.sectiontype;
 	$scope.docobject;
 	$scope.pagenum=0;
-	$scope.displayfilter;
+	if(!$scope.rowsinpage) $scope.rowsinpage = 2;
+	if(!$scope.columnsinrow) $scope.columnsinrow = 4;
+	if(!$scope.entriesincolumn) $scope.entriesincolumn = 6;
+	$scope.entriesinpage = $scope.rowsinpage*$scope.columnsinrow*$scope.entriesincolumn;
+	$scope.columnsinpage = $scope.rowsinpage*$scope.columnsinrow;
+	$scope.entriesinrow = $scope.columnsinrow*$scope.entriesincolumn;
 	$scope.sectiondata;
-	$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',$scope.displayfilter),3,4,6);
+	$scope.pagesnum = (Math.ceil($scope.sectiondata.length/$scope.entriesincolumn/$scope.columnsinrow/$scope.rowsinpage));
+	$scope.rowsnum = (Math.ceil($scope.sectiondata.length/$scope.entriesincolumn/$scope.columnsinrow));
+	$scope.columnsnum = (Math.ceil($scope.sectiondata.length/$scope.entriesincolumn));
+	$scope.entriesnum = $scope.sectiondata.length;
+	$scope.displayfilter;
+	// $scope.sectiondatafiltered=$scope.filter($scope.sectiondata,'name',$scope.displayfilter);
+	$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',$scope.displayfilter),$scope.rowsinpage,$scope.columnsinrow,$scope.entriesincolumn);
 	$scope.$watch('displayfilter', function(newValue,oldValue) {
-		$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',newValue),3,4,6);
-		$scope.pagenum=Math.min($scope.pagenum,$scope.sectiondata.length-1);
+		$scope.sectiondatasorted=$scope.splitPagesRowsColumns($scope.filter($scope.sectiondata,'name',newValue),$scope.rowsinpage,$scope.columnsinrow,$scope.entriesincolumn);
+		$scope.pagesnum = $scope.sectiondatasorted.length;
+		$scope.rowsnum = ($scope.pagesnum>0 && $scope.sectiondatasorted[0])?$scope.sectiondatasorted[0].length:0;
+		$scope.columnsnum = ($scope.rowsnum>0 && $scope.sectiondatasorted[0][0])?$scope.sectiondatasorted[0][0].length:0;
+		// $scope.sectiondatafiltered=$scope.filter($scope.sectiondata,'name',$scope.displayfilter);
+		// $scope.pagesnum = (Math.ceil($scope.sectiondatasorted.length/$scope.entriesincolumn/$scope.columnsinrow/$scope.rowsinpage));
+		// $scope.rowsnum = (Math.ceil($scope.sectiondatasorted.length/$scope.entriesincolumn/$scope.columnsinrow));
+		// $scope.columnsnum = (Math.ceil($scope.sectiondatasorted.length/$scope.entriesincolumn));
+		$scope.pagenum=Math.min(Math.max($scope.pagenum,0),$scope.pagesnum-1);
 	});
 });
 
@@ -374,6 +392,9 @@ app.directive('modulesectionctrl', function() {
 			displayfilter:'=',
 			sectiondata:'=',
 			sectiontype:'=',
+			rowsinpage:'=',
+			columnsinrow:'=',
+			entriesincolumn:'=',
 			docobject:'='
 		}
 	}
@@ -518,15 +539,15 @@ app.filter('toStyleType', function() {
 	return function(input) {
 		switch(input) {
 			case 'modules':
-				input = 'namespaces'
-				break
+			input = 'namespaces'
+			break
 			case 'variables':
-				input = 'members'
-				break
+			input = 'members'
+			break
 			default:
-				break
- 		}
- 		return input;
+			break
+		}
+		return input;
 	}
 });
 
@@ -534,12 +555,12 @@ app.filter('toClassStyleType', function() {
 	return function(input) {
 		switch(input) {
 			case 'functions':
-				input = 'methods'
-				break
+			input = 'methods'
+			break
 			default:
-				break
- 		}
- 		return input;
+			break
+		}
+		return input;
 	}
 });
 
@@ -551,6 +572,7 @@ app.filter('checkSystemType', function() {
 
 app.filter('systemTypeToLoc', function() {
 	return function(input) {
+		if(!input) return null;
 		var name = input.split(".")[input.split(".").length-1];
 		if (systemtypes.indexOf(name)<0) {
 			return '/'+input.replace(/\./g,'/');
@@ -597,26 +619,61 @@ app.filter('isContainsKeyVal', function() {
 });
 
 app.filter('makeRange', function() {
-        return function(input) {
-            var lowBound, highBound;
-            switch (input.length) {
-            case 1:
-                lowBound = 0;
-                highBound = parseInt(input[0]) - 1;
-                break;
-            case 2:
-                lowBound = parseInt(input[0]);
-                highBound = parseInt(input[1]);
-                break;
-            default:
-                return input;
-            }
-            var result = [];
-            for (var i = lowBound; i <= highBound; i++)
-                result.push(i);
-            return result;
-        };
-    });
+	return function(input) {
+		var lowBound, highBound;
+		switch (input.length) {
+			case 1:
+			lowBound = 0;
+			highBound = parseInt(input[0]) - 1;
+			break;
+			case 2:
+			lowBound = parseInt(input[0]);
+			highBound = parseInt(input[1]);
+			break;
+			default:
+			return input;
+		}
+		var result = [];
+		for (var i = lowBound; i <= highBound; i++)
+			result.push(i);
+		return result;
+	};
+});
+
+app.filter('makeRangeFromNumber', function() {
+	return function(input) {
+		var lowBound = 0;
+		var highBound = parseInt(input);
+		var result = [];
+		for (var i = lowBound; i < highBound; i++)
+			result.push(i);
+		return result;
+	};
+});
+
+app.filter('notGreater', function() {
+	return function(input,maxval) {
+		return Math.min(parseFloat(input),maxval).toString();
+	}
+});
+
+app.filter('notLess', function() {
+	return function(input,minval) {
+		return Math.max(parseFloat(input),minval).toString();
+	}
+});
+
+app.filter('mathCeil', function() {
+	return function(input) {
+		return Math.ceil(parseFloat(input)).toString();
+	}
+});
+
+app.filter('mathFloor', function() {
+	return function(input) {
+		return Math.floor(parseFloat(input)).toString();
+	}
+});
 
 app.filter('isSearchObjectEmpty', function() {
 	return function(object) {
@@ -633,24 +690,24 @@ app.filter('isSearchObjectEmpty', function() {
 	};
 })
 
-	function navigatePath(object,path,symbol) {
-		path = path.replace(/\s/g,'').replace(/\/?$/,'');
-		if(path.length == 0) {
-			return object;
-		}
-
-		var steps = path.split(symbol);
-		var cursor = object;
-		try {
-			for(var i=0;i<steps.length;i++) {
-				cursor = object[steps[i]];
-			}
-			return cursor;
-		}
-		catch(e) {
-			return null;
-		}
+function navigatePath(object,path,symbol) {
+	path = path.replace(/\s/g,'').replace(/\/?$/,'');
+	if(path.length == 0) {
+		return object;
 	}
+
+	var steps = path.split(symbol);
+	var cursor = object;
+	try {
+		for(var i=0;i<steps.length;i++) {
+			cursor = object[steps[i]];
+		}
+		return cursor;
+	}
+	catch(e) {
+		return null;
+	}
+}
 
 app.filter('objectToArray', function() {
 	return function(object) {
@@ -754,5 +811,15 @@ app.filter('filtersubobjects', function () {
 				result[key] = input[i];
 		}
 		return result;
+	}
+});
+
+app.filter('getPrimaryLetter', function() {
+	return function(input,sectiontype) {
+		return (sectiontype=='enums'||sectiontype=='interfaces')
+		? (input.name[0].toUpperCase()!=sectiontype[0].toUpperCase()
+			?input.name[0].toUpperCase()
+			:input.name[1].toUpperCase())
+		:(input.name[0].toUpperCase());
 	}
 });
