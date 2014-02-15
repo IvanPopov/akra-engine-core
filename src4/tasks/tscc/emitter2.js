@@ -219,9 +219,17 @@ var TypeScript;
             this.thisFullInterfaceName = null;
             this.emittedInterfaceSymbols = [];
             this.usedButNotEmittedInterfaces = [];
+            /** For emit typedef comments without type parameters */
             this.isEmitJSDocForTypeDef = false;
+            /** For emit enum */
             this.isEnumEmitted = false;
             this.isEmittedEnumExported = false;
+            /** for emit enum elements */
+            this.totalEmitedConstansts = 0;
+            this.lastEmitConstantValue = null;
+            /** for emitting jsDoc cooments for class properties */
+            this.emittedClassProperties = null;
+            this.isEmitConstructorStatements = false;
             this._emittedModuleNames = [];
         }
         Emitter.prototype.pushDecl = function (decl) {
@@ -557,6 +565,9 @@ var TypeScript;
             if (boundDecl) {
                 var value = boundDecl.constantValue;
                 if (value !== null) {
+                    this.totalEmitedConstansts++;
+                    this.lastEmitConstantValue = value;
+
                     this.recordSourceMappingStart(dotExpr);
                     this.writeToOutput(value.toString());
                     var comment = " /* ";
@@ -1176,7 +1187,12 @@ var TypeScript;
 
             //this.writeToOutput(']');
             if (varDecl.equalsValueClause) {
+                var totalEmittedConstantsBeforeEmit = this.totalEmitedConstansts;
                 this.emit(varDecl.equalsValueClause);
+
+                if (totalEmittedConstantsBeforeEmit + 1 === this.totalEmitedConstansts && varDecl.equalsValueClause.value.kind() === 11 /* IdentifierName */) {
+                    pullDecl.constantValue = this.lastEmitConstantValue;
+                }
             } else if (pullDecl.constantValue !== null) {
                 this.writeToOutput(pullDecl.constantValue.toString());
             } else {
@@ -1555,10 +1571,15 @@ var TypeScript;
             var pullDecl = this.semanticInfoChain.getDeclForAST(varDecl);
             this.pushDecl(pullDecl);
 
-            //this.emitComments(varDecl, true);
             var symbol = pullDecl.getSymbol();
-            var jsDocComments = this.getJSDocForClassMemberVariable(symbol);
-            this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+            if (this.emittedClassProperties.indexOf(symbol) < 0) {
+                var jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+                this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+
+                this.emittedClassProperties.push(symbol);
+            } else {
+                this.emitComments(varDecl, true);
+            }
 
             this.recordSourceMappingStart(varDecl);
 
@@ -1610,7 +1631,12 @@ var TypeScript;
                 var symbol = pullDecl.getSymbol();
                 var jsDocComments = null;
                 if (symbol.isProperty()) {
-                    jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+                    if (this.emittedClassProperties.indexOf(symbol) < 0) {
+                        jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+                        this.emittedClassProperties.push(symbol);
+                    } else {
+                        jsDocComments = [];
+                    }
                 } else {
                     jsDocComments = this.getJSDocForVariableDeclaration(symbol);
                 }
@@ -1808,6 +1834,20 @@ var TypeScript;
                     if (pullSymbolContainer) {
                         var pullSymbolContainerKind = pullSymbolContainer.kind;
 
+                        if (this.isEnumEmitted && pullSymbol.kind === 67108864 /* EnumMember */) {
+                            var value = this.tryGetEnumValue(pullSymbol);
+                            if (value !== null) {
+                                this.totalEmitedConstansts++;
+                                this.lastEmitConstantValue = value;
+
+                                this.writeToOutput(value.toString());
+
+                                this.recordSourceMappingEnd(name);
+                                this.emitComments(name, false);
+                                return;
+                            }
+                        }
+
                         if (pullSymbolContainerKind === 8 /* Class */) {
                             if (pullSymbol.anyDeclHasFlag(16 /* Static */)) {
                                 // This is static symbol
@@ -1963,7 +2003,12 @@ var TypeScript;
                         this.emitIndent();
                         this.recordSourceMappingStart(parameter);
 
-                        this.emitJSDocComment(this.getJSDocForClassMemberVariable(this.semanticInfoChain.getSymbolForAST(parameter)));
+                        var symbol = this.semanticInfoChain.getSymbolForAST(parameter);
+
+                        if (this.emittedClassProperties.indexOf(symbol) < 0) {
+                            this.emitJSDocComment(this.getJSDocForClassMemberVariable(symbol));
+                            this.emittedClassProperties.push(symbol);
+                        }
 
                         this.writeToOutputWithSourceMapRecord("this." + parameter.identifier.text(), parameter.identifier);
                         this.writeToOutput(" = ");
@@ -2308,6 +2353,8 @@ var TypeScript;
             var propertyAssignmentIndex = emitPropertyAssignmentsAfterSuperCall ? 1 : 0;
             var lastEmittedNode = null;
 
+            this.isEmitConstructorStatements = true;
+
             for (var i = 0, n = list.childCount(); i < n; i++) {
                 // In some circumstances, class property initializers must be emitted immediately after the 'super' constructor
                 // call which, in these cases, must be the first statement in the constructor body
@@ -2319,9 +2366,6 @@ var TypeScript;
 
                 if (this.shouldEmit(node)) {
                     this.emitSpaceBetweenConstructs(lastEmittedNode, node);
-                    if (node.kind() === 164) {
-                        console.log(node.expression.kind());
-                    }
                     this.emitJavascript(node, true);
                     this.writeLineToOutput("");
 
@@ -2334,6 +2378,8 @@ var TypeScript;
             }
 
             this.emitComments(list, false);
+
+            this.isEmitConstructorStatements = false;
         };
 
         // tokenId is the id the preceding token
@@ -2491,6 +2537,8 @@ var TypeScript;
 
             this.recordSourceMappingNameStart(className);
 
+            this.emittedClassProperties = [];
+
             // output constructor
             if (constrDecl) {
                 // declared constructor
@@ -2543,6 +2591,8 @@ var TypeScript;
             this.thisClassNode = svClassNode;
             this.thisFullClassName = svFullClassName;
             this.thisFullExtendClassName = svFullExtendClassName;
+
+            this.emittedClassProperties = null;
 
             this.popDecl(pullDecl);
         };
@@ -2915,6 +2965,15 @@ var TypeScript;
                 if (this.canEmitDottedNameMemberAccessExpression(expression)) {
                     this.emitDottedNameMemberAccessExpression(expression);
                 } else {
+                    if (this.isEmitConstructorStatements) {
+                        var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+
+                        if (symbol && symbol.isProperty() && symbol.getContainer() && symbol.getContainer() === this.semanticInfoChain.getSymbolForAST(this.thisClassNode) && this.emittedClassProperties.indexOf(symbol) < 0) {
+                            this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(symbol));
+                            this.emittedClassProperties.push(symbol);
+                        }
+                    }
+
                     this.recordSourceMappingStart(expression);
                     this.emit(expression.expression);
                     this.writeToOutput(".");
@@ -3390,9 +3449,6 @@ var TypeScript;
             var name = symbol.getDisplayName();
             var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
-            if (name === "IMap") {
-                debugger;
-            }
             if (name === "String" || name === "Number" || name === "Array" || name === "Function" || TypeScript.isDTSFile(declaration.fileName())) {
                 return;
             }
@@ -3465,10 +3521,6 @@ var TypeScript;
                 }
 
                 this.writeLineToOutput('');
-
-                if (symbol.type === null) {
-                    debugger;
-                }
 
                 var jsDocComments = this.getJSDocForType(symbol.type);
 
@@ -3823,9 +3875,6 @@ var TypeScript;
             var baseType = symbol.isTypeReference() ? symbol : symbol.type;
 
             if (baseType.isGeneric()) {
-                if (baseName === "akra.Signal") {
-                    debugger;
-                }
                 var genericPart = "";
                 var typeParameters = baseType.getTypeArgumentsOrTypeParameters();
 
@@ -3935,10 +3984,13 @@ var TypeScript;
         };
 
         Emitter.prototype.emitInlineJSDocComment = function (user, jsDoc) {
-            if (user.length === 0)
+            if (arguments.length === 1) {
+                this.writeToOutput('/** ' + arguments[0].join(' ') + ' */ ');
+            } else if (user.length === 0) {
                 this.writeToOutput('/** ' + jsDoc.join(' ') + ' */ ');
-            else
+            } else {
                 this.emitJSDocComment(Emitter.joinJSDocComments(user, jsDoc));
+            }
         };
 
         Emitter.prototype.getJSDocForTypedef = function (type) {
@@ -4087,6 +4139,21 @@ var TypeScript;
 
         Emitter.prototype.formatJSDocArgumentType = function (arg) {
             return arg.isVarArg ? '...[' + Emitter.stripOffArrayType(this.formatJSDocType(arg.type)) + ']' : (this.formatJSDocType(arg.type) + (arg.isOptional ? "=" : ""));
+        };
+
+        Emitter.prototype.tryGetEnumValue = function (pullSymbol) {
+            if (pullSymbol.kind === 67108864 /* EnumMember */) {
+                var pullDecls = pullSymbol.getDeclarations();
+                if (pullDecls.length === 1) {
+                    var pullDecl = pullDecls[0];
+                    if (pullDecl.kind === 67108864 /* EnumMember */) {
+                        var value = pullDecl.constantValue;
+                        return value;
+                    }
+                }
+            }
+
+            return null;
         };
         Emitter.EMPTY_STRING_LIST = [];
         return Emitter;

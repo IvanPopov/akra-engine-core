@@ -36,7 +36,7 @@ module TypeScript {
 		Constructor,
 		Function,
 		Args,
-		Interface,
+		Interface
 	}
 
 	export class EmitState {
