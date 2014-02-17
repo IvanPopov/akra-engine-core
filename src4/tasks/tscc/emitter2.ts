@@ -215,7 +215,7 @@ module TypeScript {
 		private usedButNotEmittedInterfaces: PullSymbol[] = [];
 
 		/** For emit typedef comments without type parameters */
-		private isEmitJSDocForTypeDef = false;
+		private isTypeParametersEmitBlocked = false;
 
 		/** For emit enum */
 		private isEnumEmitted = false;
@@ -1478,7 +1478,8 @@ module TypeScript {
 			var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
 			this.pushDecl(pullDecl);
 
-			this.emitComments(funcDecl, true);
+			//this.emitComments(funcDecl, true);
+			this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), this.getJSDocForFunctionDeclaration(funcDecl)));
 
 			var pullFunctionDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
 
@@ -1687,7 +1688,9 @@ module TypeScript {
 					jsDocComments = this.getJSDocForVariableDeclaration(symbol);
 				}
 
-				this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+				
+
+				//this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
 
 				//this.emitComments(varDecl, true);
 				this.recordSourceMappingStart(this.currentVariableDeclaration);
@@ -1704,8 +1707,11 @@ module TypeScript {
 					// module
 					if (!hasFlag(pullDecl.flags, PullElementFlags.Exported)/* && !varDecl.isProperty() */) {
 						this.emitVarDeclVar();
+						this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
 					}
 					else {
+						this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+
 						if (this.emitState.container === EmitContainer.DynamicModule) {
 							this.writeToOutput("exports.");
 						}
@@ -1718,6 +1724,7 @@ module TypeScript {
 				}
 				else {
 					this.emitVarDeclVar();
+					this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
 				}
 
 				this.writeToOutputWithSourceMapRecord(this.getObfuscatedName(symbol, varDecl.propertyName.text()), varDecl.propertyName);
@@ -2398,11 +2405,12 @@ module TypeScript {
 			}
 
 			if (this.usedButNotEmittedInterfaces.length > 0) {
-				for (var i = 0; i < this.usedButNotEmittedInterfaces.length; i++) {
-					this.emitInterfaceDeclaration(<InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(this.usedButNotEmittedInterfaces[i].getDeclarations()[0]));
-				}
+				var pArr = this.usedButNotEmittedInterfaces;
 
-				this.writeLineToOutput("");
+				while (pArr.length !== 0) {
+					this.emitInterfaceDeclaration(<InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(pArr[0].getDeclarations()[0]));
+					this.writeLineToOutput("");
+				}
 			}
 		}
 
@@ -2562,9 +2570,7 @@ module TypeScript {
 			var constrDecl = getLastConstructor(classDecl);
 
 			//this.emitComments(classDecl, true);
-			if (!constrDecl) {
-				this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(classDecl), this.getJSDocForClass(classDecl)));
-			}
+			this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(classDecl), this.getJSDocForClass(classDecl)));
 
 			var temp = this.setContainer(EmitContainer.Class);
 
@@ -2738,7 +2744,10 @@ module TypeScript {
 		private emitClassMemberFunctionDeclaration(classDecl: ClassDeclaration, funcDecl: MemberFunctionDeclaration): void {
 			this.emitIndent();
 			this.recordSourceMappingStart(funcDecl);
-			this.emitComments(funcDecl, true);
+
+			//this.emitComments(funcDecl, true);
+			this.emitJSDocComment(Emitter.joinJSDocComments(Emitter.getUserComments(funcDecl), this.getJSDocForFunctionDeclaration(funcDecl)));
+
 			var functionName = funcDecl.propertyName.text();
 
 			this.writeToOutput(this.thisFullClassName);
@@ -2803,12 +2812,23 @@ module TypeScript {
 			if (!this.extendsPrologueEmitted) {
 				if (this.requiresExtendsBlock(sourceUnit.moduleElements)) {
 					this.extendsPrologueEmitted = true;
-					this.writeLineToOutput("var __extends = this.__extends || function (d, b) {");
-					this.writeLineToOutput("    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];");
-					this.writeLineToOutput("    function __() { this.constructor = d; }");
-					this.writeLineToOutput("    __.prototype = b.prototype;");
-					this.writeLineToOutput("    d.prototype = new __();");
+					this.emitJSDocComment([
+						'@param {Function} d',
+						'@param {Function} b',
+					]);
+					this.writeLineToOutput("function __extends(d, b) {");
+					this.writeLineToOutput("  for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];");
+					this.writeLineToOutput("  /** @constructor */ function __() { this.constructor = d; }");
+					this.writeLineToOutput("  __.prototype = b.prototype;");
+					this.writeLineToOutput("  d.prototype = new __();");
 					this.writeLineToOutput("};");
+					this.writeLineToOutput("");
+					//this.writeLineToOutput("var __extends = this.__extends || function (d, b) {");
+					//this.writeLineToOutput("    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];");
+					//this.writeLineToOutput("    function __() { this.constructor = d; }");
+					//this.writeLineToOutput("    __.prototype = b.prototype;");
+					//this.writeLineToOutput("    d.prototype = new __();");
+					//this.writeLineToOutput("};");
 				}
 			}
 
@@ -2874,6 +2894,24 @@ module TypeScript {
 			if (parenthesizedExpression.expression.kind() === SyntaxKind.CastExpression && parenthesizedExpression.openParenTrailingComments === null) {
 				// We have an expression of the form: (<Type>SubExpr)
 				// Emitting this as (SubExpr) is really not desirable.  Just emit the subexpr as is.
+				var symbol = this.semanticInfoChain.getSymbolForAST(parenthesizedExpression);
+
+				if (!symbol) {
+					var resolver = this.semanticInfoChain.getResolver();
+
+					symbol = resolver.resolveAST(parenthesizedExpression, false, new PullTypeResolutionContext(resolver));
+
+					if (symbol.isTypeReference()) {
+						symbol = (<PullTypeReferenceSymbol>symbol).referencedTypeSymbol;
+					}
+				}
+
+				var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
+
+				this.isTypeParametersEmitBlocked = true;
+				this.emitInlineJSDocComment([], this.getJSDocForType(symbol.type));
+				this.isTypeParametersEmitBlocked = svIsBlockTemplate;
+
 				this.emit(parenthesizedExpression.expression);
 			}
 			else {
@@ -3553,11 +3591,17 @@ module TypeScript {
 			//if (declaration.preComments() !== null) {
 			//	this.emitComments(declaration, /*pre:*/ true, /*onlyPinnedOrTripleSlashComments:*/ true);
 			//}
-
 			var symbolForEmit = this.getSymbolForEmit(declaration);
 			var symbol = symbolForEmit.symbol;
 			var name = symbol.getDisplayName();
 			var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
+
+			this.emittedInterfaceSymbols.push(symbol);
+
+			var index = this.usedButNotEmittedInterfaces.indexOf(symbol);
+			if (index >= 0) {
+				this.usedButNotEmittedInterfaces.splice(index);
+			}
 
 			if (name === "String" ||
 				name === "Number" ||
@@ -3583,8 +3627,6 @@ module TypeScript {
 			var svFullInterfaceName = this.thisFullInterfaceName;
 			this.thisFullInterfaceName = this.getFullSymbolName(symbol);
 
-			this.emittedInterfaceSymbols.push(symbol);
-
 			this.writeToOutput(this.thisFullInterfaceName);
 
 			if (!hasCallOrIndex) {
@@ -3598,11 +3640,6 @@ module TypeScript {
 			}
 
 			this.thisFullInterfaceName = svFullInterfaceName;
-
-			var index = this.usedButNotEmittedInterfaces.indexOf(symbol);
-			if (index >= 0) {
-				this.usedButNotEmittedInterfaces.splice(index);
-			}
 		}
 
 		private emitInterfaceMembers(declaration: InterfaceDeclaration) {
@@ -4003,12 +4040,7 @@ module TypeScript {
 
 					for (var i = 0; i < typeParameters.length; i++) {
 						var param = typeParameters[i];
-						if (param.isTypeParameter()) {
-							genericPart += param.getDisplayName();
-						}
-						else {
-							genericPart += this.formatJSDocType(param)/*this.getFullSymbolNameType(param)*/;
-						}
+						genericPart += this.formatJSDocType(param)/*this.getFullSymbolNameType(param)*/;
 
 						if (i < typeParameters.length - 1) {
 							genericPart += ", ";
@@ -4029,15 +4061,20 @@ module TypeScript {
 		}
 
 		private getJSDocForTemplatesForAST(ast: AST): string {
-			return this.getJSDocForTemplates(this.semanticInfoChain.getSymbolForAST(ast))
+			return this.getJSDocForTemplates(this.semanticInfoChain.getSymbolForAST(ast).type);
 		}
 
-		private getJSDocForTemplates(symbol: PullSymbol): string {
-			if (!symbol.type.isGeneric()) {
+		private getJSDocForTemplates(signature: PullSignatureSymbol): string;
+		private getJSDocForTemplates(type: PullTypeSymbol): string;
+		private getJSDocForTemplates(typeOrSignature: any): string {
+
+			var type = <PullTypeSymbol>typeOrSignature;
+
+			if (!type.isGeneric()) {
 				return "";
 			}
 
-			var typeParameters: PullTypeParameterSymbol[] = symbol.type.getTypeParameters();
+			var typeParameters: PullTypeParameterSymbol[] = type.getTypeParameters();
 
 			if (typeParameters && typeParameters.length === 0) {
 				return "";
@@ -4049,11 +4086,99 @@ module TypeScript {
 		}
 
 
-		private getJSDocForClass(classDecl: ClassDeclaration): string[] {
+		private getJSDocForClass(classDecl: ClassDeclaration): string[]{
+			var constrDecl = getLastConstructor(classDecl);
+			var jsDocForParams = Emitter.EMPTY_STRING_LIST;
+
+			if (constrDecl) {
+				var constrSignatures = this.semanticInfoChain.getSymbolForAST(constrDecl).type.getConstructSignatures();
+				var parameters = constrSignatures[constrSignatures.length - 1].parameters;
+				jsDocForParams = this.getJSDocForArguments(parameters);
+			}
+
 			return ['@constructor', '@struct', TypeScript.hasModifier(classDecl.modifiers, PullElementFlags.Final) ? '@final' : ''].concat<any>(
 				this.getJSDocForExtends(classDecl.heritageClauses),
 				this.getJSDocForImplements(classDecl.heritageClauses),
-				this.getJSDocForTemplatesForAST(classDecl));
+				this.getJSDocForTemplatesForAST(classDecl),
+				jsDocForParams);
+		}
+		private getJSDocForFunctionDeclaration(funcDecl: MemberFunctionDeclaration): string[];
+		private getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[];
+		private getJSDocForFunctionDeclaration(memberOrFuncDecl: any): string[]{
+			var jsDocComments: string[] = [];
+
+			var funcDecl = <FunctionDeclaration>memberOrFuncDecl;
+			var symbol = this.semanticInfoChain.getSymbolForAST(funcDecl);
+			var callSignatures = symbol.type.getCallSignatures();
+			var signature = callSignatures[callSignatures.length - 1];
+
+			var isClassMember = funcDecl.kind() === SyntaxKind.MemberFunctionDeclaration;
+
+			if (isClassMember) {
+				var isFinalClass = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
+				var isExportedClass = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported);
+				var isFinalMethod = hasModifier(funcDecl.modifiers, PullElementFlags.Final);
+				var isPrivate = hasModifier(funcDecl.modifiers, PullElementFlags.Private);
+				var isProtected = hasModifier(funcDecl.modifiers, PullElementFlags.Protected);
+
+				if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate) {
+					jsDocComments.push("@expose");
+				}
+				else if (isFinalMethod) {
+					jsDocComments.push("@final");
+				}
+
+				if (isProtected) {
+					jsDocComments.push("@protected");
+				}
+
+				if (isPrivate) {
+					jsDocComments.push("private");
+				}
+			}
+
+			if (callSignatures.length === 1) {
+				jsDocComments = jsDocComments.concat(this.getJSDocForArguments(signature.parameters).concat(
+					signature.returnType !== null && signature.returnType.getTypeName() !== 'void'
+					? this.getJSDocForReturnType(signature.returnType)
+					: Emitter.EMPTY_STRING_LIST));
+
+				var templates = this.getJSDocForTemplates(signature);
+
+				if (templates !== "") {
+					jsDocComments.push(templates);
+				}
+			}
+			else {
+				var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
+				if (!isClassMember) {
+					this.isTypeParametersEmitBlocked = true;
+				}
+
+				jsDocComments = jsDocComments.concat(this.getJSDocForType(symbol.type));
+
+				if (!isClassMember) {
+					this.isTypeParametersEmitBlocked = svIsBlockTemplate;
+				}
+			}
+
+			return jsDocComments;
+		}
+
+		private getJSDocForArguments(symbols: PullSymbol[]): string[] {
+			return symbols.map((symbol: PullSymbol): string => {
+				var type: string = this.formatJSDocType(symbol.type);
+
+				if (symbol.isVarArg) {
+					return '@param {...' + Emitter.stripOffArrayType(type) + '} ' + symbol.getDisplayName();
+				}
+
+				if (symbol.isOptional) {
+					type += '=';
+				}
+
+				return '@param {' + type + '} ' + symbol.getDisplayName();
+			});
 		}
 
 		private getJSDocForImplements(herigateList: ISyntaxList2): string[] {
@@ -4120,9 +4245,10 @@ module TypeScript {
 
 		private getJSDocForTypedef(type: PullTypeSymbol): string[] {
 			/** Need for change typeParameter to ?, because templates are not support in @typedef in closure*/
-			this.isEmitJSDocForTypeDef = true;
+			var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
+			this.isTypeParametersEmitBlocked = true;
 			var result = ['@typedef {' + this.formatJSDocType(type, true) + '}'];
-			this.isEmitJSDocForTypeDef = false;
+			this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
 			return result;
 		}
@@ -4139,8 +4265,13 @@ module TypeScript {
 			return ['@enum {number}'];
 		}
 
-		private getJSDocForVariableDeclaration(symbol: PullSymbol): string[] {
-			return this.getJSDocForType(symbol.type);
+		private getJSDocForVariableDeclaration(symbol: PullSymbol): string[]{
+			var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
+			this.isTypeParametersEmitBlocked = true;
+			var result = this.getJSDocForType(symbol.type);
+			this.isTypeParametersEmitBlocked = svIsBlockTemplate;
+
+			return result;
 		}
 
 		private getJSDocForClassMemberVariable(symbol: PullSymbol): string[] {
@@ -4168,7 +4299,7 @@ module TypeScript {
 			// Google Closure Compiler's type system is not powerful enough to work
 			// with type parameters, especially type parameters with constraints
 
-			if (type.isTypeParameter() && this.isEmitJSDocForTypeDef) {
+			if (type.isTypeParameter() && this.isTypeParametersEmitBlocked) {
 				return '?';
 			}
 			else if (type.isTypeParameter()) {
@@ -4273,6 +4404,21 @@ module TypeScript {
 			}
 
 			return null;
+		}
+
+		private getFunctionDeclarationSignature(funcDecl: FunctionDeclaration): PullSignatureSymbol {
+			var type: PullTypeSymbol = this.semanticInfoChain.getSymbolForAST(funcDecl).type;
+			//var signaturesCount = type.getCallSignatures().length;
+			//var signature: PullSignatureSymbol = (signaturesCount > 0) ? type.getCallSignatures()[signaturesCount - 1] : type.getConstructSignatures()[0];
+
+			var signature: PullSignatureSymbol = type.getCallSignatures().concat(type.getConstructSignatures())[0];
+
+			//if (signature.parameters.length !== funcDecl.callSignature.parameterList.parameters.nonSeparatorCount()) {
+			//	//console.log(funcDecl.name.text(), signature.parameters.length, funcDecl.arguments.members.length);
+			//	//throw new Error('Internal error');
+			//}
+
+			return signature;
 		}
 
 	}
