@@ -1101,6 +1101,9 @@ module TypeScript {
 				this.writeToOutput(fullModuleName);
 				this.recordSourceMappingEnd(moduleName);
 				this.writeLineToOutput(" = {};");
+
+				this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
+
 				this.recordSourceMappingEnd(moduleDecl);
 				this.emitIndent();
 
