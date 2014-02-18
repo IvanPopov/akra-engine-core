@@ -96,7 +96,7 @@ module akra {
 	Object.defineProperty(Array.prototype, 'first', {
 		enumerable: false,
 		configurable: true,
-		get: function () {
+		get: /** @this {Array} */ function () {
 			return this[0];
 		}
 	});
@@ -104,7 +104,7 @@ module akra {
 	Object.defineProperty(Array.prototype, 'last', {
 		enumerable: false,
 		configurable: true,
-		get: function () {
+		get: /** @this {Array} */ function () {
 			return this[this.length - 1];
 		}
 	});
@@ -112,19 +112,19 @@ module akra {
 	Object.defineProperty(Array.prototype, 'el', {
 		enumerable: false,
 		configurable: true,
-		value: function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
+		value: /** @this {Array} */ function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
 	});
 
 	Object.defineProperty(Array.prototype, 'clear', {
 		enumerable: false,
 		configurable: true,
-		value: function () { this.length = 0; }
+		value: /** @this {Array} */ function () { this.length = 0; }
 	});
 
 	Object.defineProperty(Array.prototype, 'swap', {
 		enumerable: false,
 		configurable: true,
-		value: function (i, j) {
+		value: /** @this {Array} */ function (i, j) {
 			if (i < this.length && j < this.length) {
 				var t = this[i]; this[i] = this[j]; this[j] = t;
 			}
@@ -134,7 +134,7 @@ module akra {
 	Object.defineProperty(Array.prototype, 'insert', {
 		enumerable: false,
 		configurable: true,
-		value: function (pElement) {
+		value: /** @this {Array} */ function (pElement) {
 			if (typeof pElement.length === 'number') {
 				for (var i = 0, n = pElement.length; i < n; ++i) {
 					this.push(pElement[i]);
