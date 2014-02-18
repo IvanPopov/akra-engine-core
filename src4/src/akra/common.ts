@@ -92,7 +92,8 @@ module akra {
 		return this.substr(0, n) + chr + this.substr(n + chr.length);
 	}
 
-
+	/** @expose */
+	Array.prototype.first;
 	Object.defineProperty(Array.prototype, 'first', {
 		enumerable: false,
 		configurable: true,
@@ -101,6 +102,8 @@ module akra {
 		}
 	});
 
+	/** @expose */
+	Array.prototype.last;
 	Object.defineProperty(Array.prototype, 'last', {
 		enumerable: false,
 		configurable: true,
@@ -109,18 +112,24 @@ module akra {
 		}
 	});
 
+	/** @expose */
+	Array.prototype.el;
 	Object.defineProperty(Array.prototype, 'el', {
 		enumerable: false,
 		configurable: true,
 		value: /** @this {Array} */ function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
 	});
 
+	/** @expose */
+	Array.prototype.clear;
 	Object.defineProperty(Array.prototype, 'clear', {
 		enumerable: false,
 		configurable: true,
 		value: /** @this {Array} */ function () { this.length = 0; }
 	});
 
+	/** @expose */
+	Array.prototype.swap;
 	Object.defineProperty(Array.prototype, 'swap', {
 		enumerable: false,
 		configurable: true,
@@ -131,6 +140,8 @@ module akra {
 		}
 	});
 
+	/** @expose */
+	Array.prototype.insert;
 	Object.defineProperty(Array.prototype, 'insert', {
 		enumerable: false,
 		configurable: true,

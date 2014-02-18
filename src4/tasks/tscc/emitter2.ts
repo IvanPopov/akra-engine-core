@@ -4385,12 +4385,17 @@ module TypeScript {
 		private getJSDocForClassMemberVariable(symbol: PullSymbol): string[] {
 			var jsDocComments: string[] = this.getJSDocForVariableDeclaration(symbol);
 			var isClassExports = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported);
+			var isClassFinal = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
 
 			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
 				jsDocComments.push("@protected");
+
+				if (isClassExports && !isClassFinal) {
+					jsDocComments.push("@expose");
+				}
 			}
 			else if (symbol.anyDeclHasFlag(PullElementFlags.Public)) {
-				jsDocComments.push("@public");
+				//jsDocComments.push("@public");
 
 				if (isClassExports) {
 					jsDocComments.push("@expose");

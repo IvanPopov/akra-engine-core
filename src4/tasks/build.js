@@ -505,7 +505,9 @@ module.exports = function (grunt) {
         var argv = ["-jar", closureJar,
                     "--compilation_level", levelStr,
                     "--js", src,
-                    "--js_output_file", dest];
+                    "--js_output_file", dest,
+                    "--create_source_map", dest + ".map",
+                    "--source_map_format=V3"];
 
         grunt.log.writeln(cmd + " " + argv.join(" "));
 

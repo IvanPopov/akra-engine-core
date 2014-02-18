@@ -4246,12 +4246,16 @@ var TypeScript;
         Emitter.prototype.getJSDocForClassMemberVariable = function (symbol) {
             var jsDocComments = this.getJSDocForVariableDeclaration(symbol);
             var isClassExports = TypeScript.hasModifier(this.thisClassNode.modifiers, 1 /* Exported */);
+            var isClassFinal = TypeScript.hasModifier(this.thisClassNode.modifiers, 268435456 /* Final */);
 
             if (symbol.anyDeclHasFlag(134217728 /* Protected */)) {
                 jsDocComments.push("@protected");
-            } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
-                jsDocComments.push("@public");
 
+                if (isClassExports && !isClassFinal) {
+                    jsDocComments.push("@expose");
+                }
+            } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
+                //jsDocComments.push("@public");
                 if (isClassExports) {
                     jsDocComments.push("@expose");
                 }
