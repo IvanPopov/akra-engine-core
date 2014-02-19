@@ -1292,8 +1292,7 @@ var TypeScript;
             var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
             this.pushDecl(pullDecl);
 
-            this.emitComments(funcDecl, true);
-
+            //this.emitComments(funcDecl, true);
             this.recordSourceMappingStart(funcDecl);
             this.writeToOutput("function ");
 
@@ -1416,6 +1415,7 @@ var TypeScript;
             var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
             this.pushDecl(pullDecl);
 
+            this.emitComments(funcDecl, true);
             this.recordSourceMappingStart(funcDecl);
             this.writeToOutput("function ");
 
@@ -1681,12 +1681,11 @@ var TypeScript;
 
                     isAdditionalDeclaration = names.indexOf(symbol.name) >= 0;
                     this.emittedSymbolNames[id] = names.concat(symbol.name);
-                    if (isAdditionalDeclaration && !hasInitializer && !this.emittedForInStatement) {
-                        this.currentVariableDeclaration = undefined;
-                        this.popDecl(pullDecl);
-
-                        return;
-                    }
+                    //if (isAdditionalDeclaration && !hasInitializer && !this.emittedForInStatement) {
+                    //	this.currentVariableDeclaration = undefined;
+                    //	this.popDecl(pullDecl);
+                    //	return;
+                    //}
                 }
 
                 if (!isAdditionalDeclaration) {
@@ -1717,8 +1716,8 @@ var TypeScript;
                 if (parentIsModule) {
                     // module
                     if (!TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */)) {
+                        this.emitVarDeclVar();
                         if (!isAdditionalDeclaration) {
-                            this.emitVarDeclVar();
                             this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
                         }
                     } else {
@@ -1734,8 +1733,8 @@ var TypeScript;
                         }
                     }
                 } else {
+                    this.emitVarDeclVar();
                     if (!isAdditionalDeclaration) {
-                        this.emitVarDeclVar();
                         this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
                     }
                 }
@@ -2933,10 +2932,11 @@ var TypeScript;
             }
 
             var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
-
-            this.isTypeParametersEmitBlocked = true;
-            this.emitInlineJSDocComment([], this.getJSDocForType(symbol.type));
-            this.isTypeParametersEmitBlocked = svIsBlockTemplate;
+            if (!symbol.type.isAny()) {
+                this.isTypeParametersEmitBlocked = true;
+                this.emitInlineJSDocComment([], this.getJSDocForType(symbol.type));
+                this.isTypeParametersEmitBlocked = svIsBlockTemplate;
+            }
             this.writeToOutput("(");
             this.emit(expression.expression);
             this.writeToOutput(")");
@@ -4092,6 +4092,7 @@ var TypeScript;
                 var isFinalMethod = TypeScript.hasModifier(funcDecl.modifiers, 268435456 /* Final */);
                 var isPrivate = TypeScript.hasModifier(funcDecl.modifiers, 2 /* Private */);
                 var isProtected = TypeScript.hasModifier(funcDecl.modifiers, 134217728 /* Protected */);
+                var isStatic = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */);
 
                 if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate) {
                     jsDocComments.push("@expose");
@@ -4104,7 +4105,11 @@ var TypeScript;
                 }
 
                 if (isPrivate) {
-                    jsDocComments.push("private");
+                    jsDocComments.push("@private");
+                }
+
+                if (isStatic) {
+                    jsDocComments.push("@this {" + this.thisFullClassName + "}");
                 }
             }
 

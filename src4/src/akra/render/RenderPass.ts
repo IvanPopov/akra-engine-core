@@ -59,9 +59,9 @@ module akra.render {
 		}
 
 		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: boolean): void {
-			if (isNeedRelocate) {
-				//pInput._copyFrom(pInput);
-			}
+			//if (isNeedRelocate) {
+			//	pInput._copyFrom(pInput);
+			//}
 
 			if (!isNull(this._pInput)) {
 				this._pInput._release();

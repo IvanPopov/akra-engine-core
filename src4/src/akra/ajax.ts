@@ -179,7 +179,8 @@ module akra {
 
 		sQueryString = queryString(pData);
 
-		pRequest.onreadystatechange = function (): void {
+		pRequest.onreadystatechange =
+		/** @this {XMLHttpRequest} */ function (): void {
 			if (isAborted) {
 				return;
 			}
