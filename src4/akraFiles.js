@@ -35,6 +35,9 @@ akraFiles = {
       ],
       'base3dObjects': [
         'src/akra-addons/addons/base3dObjects.ts'
+      ],
+      'progress': [
+        'src/akra-addons/addons/progress.ts'
       ]
   }
 };

@@ -30,4 +30,13 @@
       </PropertyGroup>
     </Resource>
   </Project>
+  <Project Name="addon-progress">
+    <Resource Name="AE_PROGRESS_DEPENDENCIES">
+      <PropertyGroup>
+        <Data>
+          <Folder Path="progress/css"/>
+        </Data>
+      </PropertyGroup>
+    </Resource>
+  </Project>
 </AkraResources>

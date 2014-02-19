@@ -77,15 +77,11 @@ module akra.core {
 
 			this._pResourceManager = new pool.ResourcePoolManager(this);
 
-			if (!this._pResourceManager.initialize()) {
-				debug.error('cannot initialize ResourcePoolManager');
-			}
+			debug.assert(this._pResourceManager.initialize(), 'cannot initialize ResourcePoolManager');
 
 			this._pSceneManager = new scene.SceneManager(this);
 
-			if (!this._pSceneManager.initialize()) {
-				debug.error("cannot initialize SceneManager");
-			}
+			debug.assert(this._pSceneManager.initialize(), "cannot initialize SceneManager");
 
 			this._pParticleManager = null;
 			this._pSpriteManager = new scene.SpriteManager(this);
@@ -101,12 +97,7 @@ module akra.core {
 
 			this._pComposer = new fx.Composer(this);
 
-			// Register image codecs
-			pixelUtil.DDSCodec.startup();
-
-
 			this.pause(false);
-
 			this.parseOptions(pOptions);
 		}
 
@@ -156,53 +147,35 @@ module akra.core {
 
 		private parseOptions(pOptions: IEngineOptions): void {
 			//== Depends Managment ====================================
+			var pDeps: IDependens = config.coreDeps;
 
-			var pDeps: IDependens = Engine.DEPS;
-			var sDepsRoot: string = Engine.DEPS_ROOT;
-			
 			//read options 
 			if (!isNull(pOptions)) {
-				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
+				var sDepsRoot: string = pOptions.path || config.data;
+
 				//default deps has higher priority!
 				if (isDefAndNotNull(pOptions.deps)) {
-					Engine.depends(pOptions.deps);
+					pDeps = deps.link(pDeps, pOptions.deps);
 				}
 
-				if (pOptions.gamepads === true) {
+				if (pOptions.gamepads) {
 					this.enableGamepads();
 				}
 			}
-
+	
 			deps.load(this, pDeps, sDepsRoot,
 				(e: Error, pDep: IDependens): void => {
 					if (!isNull(e)) {
 						logger.critical(e);
 					}
+
 					debug.log("\t\tloaded / ", arguments);
 
 					this._isDepsLoaded = true;
 
 					logger.info("%cEngine dependecies loaded.", "color: green;");
 					this.depsLoaded.emit(pDep);
-				},
-				(e: IDepEvent): void => {
-					//debug.log(e);
-					var s = "unpacked: ";
-					for (var i = 0; i < 25 * e.unpacked; ++i) {
-						s += "="
-					}
-
-					s += "> " + (e.unpacked * 100).toFixed(2) + "%";
-
-					console.error(s);
-
-					var s = "  loaded: ";
-					for (var i = 0; i < 25 * (e.bytesLoaded / e.bytesTotal); ++i) {
-						s += "="
-					}
-
-					s += "> " + (e.unpacked * 100).toFixed(2) + "%";
-				});
+				}, pOptions.progress || null);
 		}
 
 		getSpriteManager(): ISpriteManager {
@@ -242,7 +215,7 @@ module akra.core {
 			return this._isDepsLoaded;
 		}
 
-		
+
 
 		exec(bValue: boolean = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
@@ -254,12 +227,15 @@ module akra.core {
 
 			// Infinite loop, until broken out of by frame listeners
 			// or break out by calling queueEndRendering()
-			bValue ? this.active.emit() : this.inactive.emit();
+			if (bValue) {
+				this.active.emit();
+			}
+			else {
+				this.inactive.emit();
+			}
 
 			function render(iTime: uint): void {
-				if (config.DEBUG && !pRenderer.isValid()) {
-					logger.error(pRenderer.getError());
-				}
+				debug.assert(!config.DEBUG || pRenderer.isValid(), pRenderer.getError());
 
 				if (pEngine.isActive() && pEngine.isDepsLoaded()) {
 					if (!pEngine.renderFrame()) {
@@ -360,33 +336,6 @@ module akra.core {
 		final protected _activate(): void {
 			this._isActive = true;
 		}
-
-		static depends(sData: string): void;
-		static depends(pData: IDependens): void;
-		static depends(pData): void {
-			var pDeps: IDependens = Engine.DEPS;
-
-			while (isDefAndNotNull(pDeps.files)) {
-				if (!isDefAndNotNull(pDeps.deps)) {
-					pDeps.deps = {
-						files: null,
-						deps: null
-					};
-				}
-
-				pDeps = pDeps.deps;
-			}
-
-			if (isString(pData)) {
-				pDeps.files = [{ path: pData }];
-			}
-			else {
-				pDeps.deps = pData;
-			}
-		}
-
-		static DEPS_ROOT: string = config.data;
-		static DEPS: IDependens = deps.createDependenceByPath(AE_CORE_DEPENDENCIES.path, AE_CORE_DEPENDENCIES.type);
 	}
 }
 

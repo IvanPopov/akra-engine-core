@@ -1,6 +1,7 @@
 /// <reference path="../../build/akra.d.ts" />
 /// <reference path="../../build/addons/base3dObjects.addon.d.ts" />
 /// <reference path="../../build/addons/navigation.addon.d.ts" />
+/// <reference path="../../build/addons/progress.addon.d.ts" />
 
 module akra {
 	var pDeps = {
@@ -9,12 +10,18 @@ module akra {
 			{ path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP" },
 			{ path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
 			{ path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
-			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
+			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" },
+
+			{ path: "models/hero/movie.DAE", name: "MOVIE_DAE" },
+			{ path: "models/hero/movie_anim.DAE", name: "MOVIE_ANIM_DAE" },
+			{ path: "models/hero/walk.DAE", name: "WALK_DAE" },
 		],
 		deps: addons.getNavigationDependences()
 	};
 
-	export var pEngine = createEngine({ deps: pDeps });
+	export var pProgress = new addons.Progress(document.getElementById("progress"));
+
+	export var pEngine = createEngine({ deps: pDeps, progress: pProgress.getListener() });
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
@@ -240,50 +247,44 @@ module akra {
 	function loadHero() {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pController: IAnimationController = pEngine.createAnimationController("movie");
-		var pHeroData: ICollada = <ICollada>pRmgr.loadModel(data + "models/hero/movie.DAE");
+		var pHeroData: ICollada = <ICollada>pRmgr.loadModel("MOVIE_DAE");
 
 		pModelRoot.attachToParent(pScene.getRootNode());
 
-		pHeroData.loaded.connect(() => {
-			pHeroData.attachToScene(pModelRoot);
 
-			var pMovieData: ICollada = <ICollada>pRmgr.loadModel(data + "models/hero/movie_anim.DAE");
+		pHeroData.attachToScene(pModelRoot);
 
-			pMovieData.loaded.connect(() => {
-				var pAnim: IAnimation = pMovieData.extractAnimation(0);
-				var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
+		var pMovieData: ICollada = <ICollada>pRmgr.loadModel("MOVIE_ANIM_DAE");
 
-				pMovie.useLoop(true);
 
-				// LOG(pMovieData);
-				// window["movieData"] = pMovieData;
+		var pAnim: IAnimation = pMovieData.extractAnimation(0);
+		var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
 
-				// pController.addAnimation(pMovie);
-				// pMovie.rightInfinity(false);
-				// pController.stop();
+		pMovie.useLoop(true);
 
-				var pWalkData: ICollada = <ICollada>pRmgr.loadModel(data + "models/hero/walk.DAE");
-				pWalkData.loaded.connect(() => {
-					var pAnim: IAnimation = pWalkData.extractAnimation(0);
-					var pWalk: IAnimationContainer = animation.createContainer(pAnim, "walk");
+		// LOG(pMovieData);
+		// window["movieData"] = pMovieData;
 
-					pWalk.useLoop(true);
+		// pController.addAnimation(pMovie);
+		// pMovie.rightInfinity(false);
+		// pController.stop();
 
-					var pBlender: IAnimationBlend = animation.createBlend();
-					// pBlender.addAnimation(pMovie, 1);
-					pBlender.addAnimation(pWalk, 1);
+		var pWalkData: ICollada = <ICollada>pRmgr.loadModel("WALK_DAE");
 
-					pController.addAnimation(pBlender);
-					pModelRoot.addController(pController);
+		var pAnim: IAnimation = pWalkData.extractAnimation(0);
+		var pWalk: IAnimationContainer = animation.createContainer(pAnim, "walk");
 
-				});
-			});
-		});
+		pWalk.useLoop(true);
 
+		var pBlender: IAnimationBlend = animation.createBlend();
+		// pBlender.addAnimation(pMovie, 1);
+		pBlender.addAnimation(pWalk, 1);
+
+		pController.addAnimation(pBlender);
+		pModelRoot.addController(pController);
 	}
 
 	function main(pEngine: IEngine) {
-
 		setup(pCanvas);
 
 		pCamera = createCamera();
@@ -299,12 +300,15 @@ module akra {
 		createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
-		//loadHero();
+		loadHero();
 		//loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(150, data + "models/box/opened_box.dae");
-		loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
-		pEngine.exec();
+	
+			pProgress.destroy();
+			pEngine.exec();
+	
 		//pEngine.renderFrame();
 	}
 

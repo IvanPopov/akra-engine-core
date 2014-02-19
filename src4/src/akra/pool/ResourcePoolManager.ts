@@ -402,6 +402,7 @@ module akra.pool {
 				case EModelFormats.OBJ:
 					return this.getObjPool();
 				case EModelFormats.COLLADA:
+				default:
 					return this.getColladaPool();
 			}
 

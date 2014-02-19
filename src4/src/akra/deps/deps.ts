@@ -276,6 +276,7 @@ module akra.deps {
 		loadFromPool(pEngine.getResourceManager().getColladaPool(), pDep, cb);
 	}
 
+	//redirect events from load() function to cb() of custom dep. 
 	function redirectProgress(pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): (e: IDepEvent) => void {
 		return (e: IDepEvent): void => {
 			switch (e.source.stats.status) {
@@ -762,14 +763,15 @@ module akra.deps {
 				var nDeps: uint = 0;
 				var nLoadedOnLevel: uint = countLoadedOnLevel(pDeps);
 				var nLoaded: uint = 0;
-				var nUnpacked: uint = 0;
+				var fUnpacked: uint = 0;
 				var iBytesLoaded: uint = 0;
 				var iBytesTotal: uint = 0;
+				var eStatus: EDependenceStatuses = pDep.stats.status;
 
 				each(pDeps, (pDep: IDep) => {
 					var pStats: IDepStats = pDep.stats;
 					iBytesLoaded += pStats.bytesLoaded;
-					nUnpacked += (pStats.unpacked || 0.) * pStats.byteLength;
+					fUnpacked += (pStats.unpacked || 0.) * /*pStats.byteLength*/ 1.;
 					iBytesTotal += pStats.byteLength;
 					nDeps++;
 
@@ -781,15 +783,33 @@ module akra.deps {
 				///< Dependence, which generates change in progress.
 				pProgress.source = pDep;
 
-				pProgress.unpacked = <float>nUnpacked / iBytesTotal;
-
 				pProgress.time = time() - iBeginTime;
+
+				// prevent similar events
+				if (eStatus === EDependenceStatuses.DOWNLOADING && pProgress.bytesLoaded == iBytesLoaded) {
+					return;
+				}
+
+				pProgress.bytesLoaded = iBytesLoaded;
+				pProgress.bytesTotal = iBytesTotal;
+
+				fUnpacked /= <float>/* iBytesTotal */ nTotalFiles;
+
+				// prevent similar events
+				if (eStatus === EDependenceStatuses.UNPACKING && pProgress.unpacked == fUnpacked) {
+					return;
+				}
+
+				pProgress.unpacked = fUnpacked;
+
+				// prevent similar events
+				if (eStatus === EDependenceStatuses.LOADED && pProgress.loaded == nLoaded) {
+					return;
+				}
 
 				pProgress.loaded = nLoaded;
 				pProgress.total = nTotalFiles;
 
-				pProgress.bytesLoaded = iBytesLoaded;
-				pProgress.bytesTotal = iBytesTotal;
 
 				fnProgress(pProgress);
 			}
@@ -823,7 +843,6 @@ module akra.deps {
 
 						notifyProgress(pDep);
 
-
 						//all loaded
 						if (countLoadedOnLevel(pDepsPointer) === countFilesOnLevel(pDepsPointer)) {
 							pDepsPointer = findNotEmptyLevel(pDepsPointer.deps);
@@ -842,6 +861,20 @@ module akra.deps {
 
 			loadDependencesLevel(pEngine, pDepsPointer, depWatcher);
 		});
+	}
+
+	export function link(pParent: IDependens, pChild: IDependens): IDependens {
+		while (isDefAndNotNull(pParent.files)) {
+			if (!isDefAndNotNull(pParent.deps)) {
+				pParent.deps = pChild;
+				return pParent;
+			}
+
+			pParent = pParent.deps;
+		}
+
+		pParent.deps = pChild;
+		return pParent;
 	}
 
 	export function createDependenceByPath(sPath: string, sType?: string, sRoot?: string): IDependens {

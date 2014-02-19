@@ -34,7 +34,6 @@ module akra.config {
 	export var WEBGL_DEBUG: boolean = false;
 	export var PROFILE_MAKER: boolean = false;
 	export var PROFILE_TESSEALLATION: boolean = false;
-	
 
 	export var SHADOW_DISCARD_DISTANCE: float = 70.;
 	//////////////////////
@@ -44,6 +43,16 @@ module akra.config {
 
 	//path to data folder
 	export var data = config['data'] || uri.currentPath();
+
+	//required deps for Akra Engine
+	export var coreDeps: IDependens = {
+		files: [
+			{
+				path: AE_CORE_DEPENDENCIES.path,
+				type: AE_CORE_DEPENDENCIES.type
+			}
+		]
+	};
 
 	//default <any> name
 	export var defaultName: string = "default";

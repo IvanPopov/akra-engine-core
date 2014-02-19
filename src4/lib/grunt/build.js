@@ -388,7 +388,9 @@ module.exports = function (grunt) {
 
         var mapFile = path.join(outputDir, resourceName + ".map");
 
-        fs.writeFileSync(mapFile, JSON.stringify(map, null, "\t"), "utf8");
+        if (Data.Resource || map.files.length) {
+        	fs.writeFileSync(mapFile, JSON.stringify(map, null, "\t"), "utf8");
+        }
 
         return {
             path: path.relative(destFolder, mapFile).replace(/\\/ig, "/"),
@@ -408,8 +410,8 @@ module.exports = function (grunt) {
 
         for (var i = 0; i < Resource.PropertyGroup.length; ++i) {
             var PropertyGroup = Resource.PropertyGroup[i];
-            //TODO: проверить Condition данной групы и убедиться, что она подходит
-            if (PropertyGroup.$.Condition) {
+        	//TODO: проверить Condition данной групы и убедиться, что она подходит
+            if (PropertyGroup.$ && PropertyGroup.$.Condition) {
                 if (!computeXmlData(PropertyGroup.$.Condition)) {
                     continue;
                 }
