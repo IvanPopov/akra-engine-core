@@ -17,7 +17,7 @@ module akra {
 		/// setting this flag will ignore all other texture usages except AUTOMIPMAP
 		RENDERTARGET = 0x200,
 		/// default to automatic mipmap generation static textures
-		DEFAULT = STATIC
+		DEFAULT = <int>EHardwareBufferFlags.STATIC
 	}
 	
 	export enum ETextureFilters {

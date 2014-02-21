@@ -85,7 +85,7 @@ module akra.webgl {
 
 		getLeft(): int {
 			var el: HTMLElement = this._pCanvas;
-			for (var lx: int = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent);
+			for (var lx: int = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent) { };
 			return lx;
 		}
 
@@ -95,7 +95,7 @@ module akra.webgl {
 
 		getTop(): int {
 			var el: HTMLElement = this._pCanvas;
-			for (var ly: int = 0; el != null; ly += el.offsetTop, el = <HTMLElement>el.offsetParent);
+			for (var ly: int = 0; el != null; ly += el.offsetTop, el = <HTMLElement>el.offsetParent) { };
 			return ly;
 		}
 

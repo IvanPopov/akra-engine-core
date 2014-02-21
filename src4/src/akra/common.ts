@@ -74,6 +74,8 @@ module akra {
 	export var isString = (x: any): boolean => typeof x === "string";
 	export var isNumber = (x: any): boolean => typeof x === "number";
 	export var isFloat = isNumber;
+	//export var isInt = isNumber;
+	//export var isUint = isNumber;
 	export var isInt = (x: any): boolean => isNumber(x) && (~~x === x);
 	export var isUint = (x: any): boolean => isInt(x) && x > 0;
 	export var isFunction = (x: any): boolean => typeOf(x) === "function";
@@ -90,49 +92,60 @@ module akra {
 		return this.substr(0, n) + chr + this.substr(n + chr.length);
 	}
 
-
+	/** @expose */
+	Array.prototype.first;
 	Object.defineProperty(Array.prototype, 'first', {
 		enumerable: false,
 		configurable: true,
-		get: function () {
+		get: /** @this {Array} */ function () {
 			return this[0];
 		}
 	});
 
+	/** @expose */
+	Array.prototype.last;
 	Object.defineProperty(Array.prototype, 'last', {
 		enumerable: false,
 		configurable: true,
-		get: function () {
+		get: /** @this {Array} */ function () {
 			return this[this.length - 1];
 		}
 	});
 
+	/** @expose */
+	Array.prototype.el;
 	Object.defineProperty(Array.prototype, 'el', {
 		enumerable: false,
 		configurable: true,
-		value: function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
+		value: /** @this {Array} */ function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
 	});
 
+	/** @expose */
+	Array.prototype.clear;
 	Object.defineProperty(Array.prototype, 'clear', {
 		enumerable: false,
 		configurable: true,
-		value: function () { this.length = 0; }
+		value: /** @this {Array} */ function () { this.length = 0; }
 	});
 
+	/** @expose */
+	Array.prototype.swap;
 	Object.defineProperty(Array.prototype, 'swap', {
 		enumerable: false,
 		configurable: true,
-		value: function (i, j) {
+		value: /** @this {Array} */ function (i, j) {
 			if (i < this.length && j < this.length) {
 				var t = this[i]; this[i] = this[j]; this[j] = t;
 			}
 		}
 	});
 
+	/** @expose */
+	Array.prototype.insert;
 	Object.defineProperty(Array.prototype, 'insert', {
 		enumerable: false,
 		configurable: true,
-		value: function (pElement) {
+		value: /** @this {Array} */ function (pElement) {
 			if (typeof pElement.length === 'number') {
 				for (var i = 0, n = pElement.length; i < n; ++i) {
 					this.push(pElement[i]);

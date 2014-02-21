@@ -475,9 +475,8 @@ module akra.util {
 					eCode = <uint>arguments[0];
 					if (arguments.length > 1) {
 						pInfo = new Array(arguments.length - 1);
-						var i: uint = 0;
 
-						for (i = 0; i < pInfo.length; i++) {
+						for (var i = 0; i < pInfo.length; i++) {
 							pInfo[i] = arguments[i + 1];
 						}
 					}
@@ -486,9 +485,8 @@ module akra.util {
 					eCode = this._eUnknownCode;
 					// if(arguments.length > 0){
 					pInfo = new Array(arguments.length);
-					var i: uint = 0;
 
-					for (i = 0; i < pInfo.length; i++) {
+					for (var i = 0; i < pInfo.length; i++) {
 						pInfo[i] = arguments[i];
 					}
 					// }

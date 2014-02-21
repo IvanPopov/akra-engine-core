@@ -42,6 +42,13 @@
     <Content Include="akra\resources\fx\TextureToScreen.afx" />
     <Content Include="akra\resources\fx\wireframe.afx" />
     <Content Include="akra\resources\HLSL.gr" />
+    <Content Include="akra\resources\js\webgl-debug.js" />
+    <Content Include="akra\resources\js\zip.js\deflate.js" />
+    <Content Include="akra\resources\js\zip.js\inflate.js" />
+    <Content Include="akra\resources\js\zip.js\mime-types.js" />
+    <Content Include="akra\resources\js\zip.js\zip-ext.js" />
+    <Content Include="akra\resources\js\zip.js\zip-fs.js" />
+    <Content Include="akra\resources\js\zip.js\zip.js" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

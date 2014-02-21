@@ -7,6 +7,12 @@ module akra.geometry.classify {
 	import Vec2 = math.Vec2;
 	import Vec3 = math.Vec3;
 
+	var v2fTemp1 = new Vec2;
+	var v2fTemp2 = new Vec2;
+
+	var v3fTemp1 = new Vec3;
+	var v3fTemp2 = new Vec3;
+
 	export function planeCircle(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications {
 		var fDistance: float = pPlane.signedDistance(pCircle.center);
 		var fRadius: float = pCircle.radius;
@@ -38,8 +44,8 @@ module akra.geometry.classify {
 	}
 
 	export function planeRect2d(pPlane: IPlane2d, pRect: IRect2d): EPlaneClassifications {
-		var v2fMinPoint: IVec2 = Vec2.temp();
-		var v2fMaxPoint: IVec2 = Vec2.temp();
+		var v2fMinPoint: IVec2 = v2fTemp1;
+		var v2fMaxPoint: IVec2 = v2fTemp2;
 
 		var v2fNormal: IVec2 = pPlane.normal;
 
@@ -76,8 +82,8 @@ module akra.geometry.classify {
 	}
 
 	export function planeRect3d(pPlane: IPlane3d, pRect: IRect3d): EPlaneClassifications {
-		var v3fMinPoint: IVec3 = Vec3.temp();
-		var v3fMaxPoint: IVec3 = Vec3.temp();
+		var v3fMinPoint: IVec3 = v3fTemp1;
+		var v3fMaxPoint: IVec3 = v3fTemp2;
 
 		var v3fNormal: IVec3 = pPlane.normal;
 

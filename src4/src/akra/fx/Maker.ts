@@ -11,7 +11,7 @@
 /// <reference path="../debug.ts" />
 /// <reference path="../math/math.ts" />
 
-/// <reference path="Instruction.ts" />
+/// <reference path="instructions/Instruction.ts" />
 /// <reference path="VariableContainer.ts" />
 /// <reference path="SamplerBlender.ts" />
 
@@ -1150,7 +1150,7 @@ module akra.fx {
 			var isArray: boolean = pVarType.isNotBaseArray();
 			var iLength: uint = isArray ? pVarType.getLength() : 1;
 
-			if (isArray && (iLength === Instruction.UNDEFINE_LENGTH || iLength === 0)) {
+			if (isArray && (iLength === instructions.Instruction.UNDEFINE_LENGTH || iLength === 0)) {
 				logger.warn("Length of struct '" + sRealName + "' can not be undefined");
 				return null;
 			}

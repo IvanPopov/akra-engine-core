@@ -165,6 +165,7 @@ module akra.data {
 			var pAttrDecl: IVertexDeclaration =
 				VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
 
+
 			if (this.useAdvancedIndex()) {
 				return this._allocateAdvancedIndex(pAttrDecl, pData);
 			}

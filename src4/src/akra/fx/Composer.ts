@@ -20,7 +20,7 @@
 
 /// <reference path="../util/ObjectArray.ts" />
 
-/// <reference path="VariableInstruction.ts" />
+/// <reference path="instructions/VariableInstruction.ts" />
 /// <reference path="SamplerBlender.ts" />
 /// <reference path="Blender.ts" />
 /// <reference path="Effect.ts" />
@@ -768,39 +768,39 @@ module akra.fx {
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			if (this._bIsFirstApplySystemUnifoms) {
 
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix] = VariableDeclInstruction._getIndex("MODEL_MATRIX");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize] = VariableDeclInstruction._getIndex("FRAMEBUFFER_SIZE");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize] = VariableDeclInstruction._getIndex("VIEWPORT_SIZE");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix] = VariableDeclInstruction._getIndex("VIEW_MATRIX");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ProjMatrix] = VariableDeclInstruction._getIndex("PROJ_MATRIX");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat] = VariableDeclInstruction._getIndex("INV_VIEW_CAMERA_MAT");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition] = VariableDeclInstruction._getIndex("CAMERA_POSITION");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition] = VariableDeclInstruction._getIndex("WORLD_POSITION");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldScale] = VariableDeclInstruction._getIndex("WORLD_SCALE");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldOrientation] = VariableDeclInstruction._getIndex("WORLD_ORIENTATION");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalScale] = VariableDeclInstruction._getIndex("LOCAL_SCALE");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalPosition] = VariableDeclInstruction._getIndex("LOCAL_POSITION");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalOrientation] = VariableDeclInstruction._getIndex("LOCAL_ORIENTATION");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalMatrix] = VariableDeclInstruction._getIndex("LOCAL_MATRIX");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix] = VariableDeclInstruction._getIndex("OPTIMIZED_PROJ_MATRIX");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix] = VariableDeclInstruction._getIndex("BIND_SHAPE_MATRIX");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_RenderObjectId] = VariableDeclInstruction._getIndex("RENDER_OBJECT_ID");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WireframeOverlay] = VariableDeclInstruction._getIndex("WIREFRAME_OVERLAY");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureSize] = VariableDeclInstruction._getIndex("INPUT_TEXTURE_SIZE");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureRatio] = VariableDeclInstruction._getIndex("INPUT_TEXTURE_RATIO");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix] = instructions.VariableDeclInstruction._getIndex("MODEL_MATRIX");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize] = instructions.VariableDeclInstruction._getIndex("FRAMEBUFFER_SIZE");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize] = instructions.VariableDeclInstruction._getIndex("VIEWPORT_SIZE");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix] = instructions.VariableDeclInstruction._getIndex("VIEW_MATRIX");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ProjMatrix] = instructions.VariableDeclInstruction._getIndex("PROJ_MATRIX");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat] = instructions.VariableDeclInstruction._getIndex("INV_VIEW_CAMERA_MAT");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition] = instructions.VariableDeclInstruction._getIndex("CAMERA_POSITION");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition] = instructions.VariableDeclInstruction._getIndex("WORLD_POSITION");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldScale] = instructions.VariableDeclInstruction._getIndex("WORLD_SCALE");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldOrientation] = instructions.VariableDeclInstruction._getIndex("WORLD_ORIENTATION");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalScale] = instructions.VariableDeclInstruction._getIndex("LOCAL_SCALE");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalPosition] = instructions.VariableDeclInstruction._getIndex("LOCAL_POSITION");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalOrientation] = instructions.VariableDeclInstruction._getIndex("LOCAL_ORIENTATION");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalMatrix] = instructions.VariableDeclInstruction._getIndex("LOCAL_MATRIX");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix] = instructions.VariableDeclInstruction._getIndex("OPTIMIZED_PROJ_MATRIX");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix] = instructions.VariableDeclInstruction._getIndex("BIND_SHAPE_MATRIX");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_RenderObjectId] = instructions.VariableDeclInstruction._getIndex("RENDER_OBJECT_ID");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WireframeOverlay] = instructions.VariableDeclInstruction._getIndex("WIREFRAME_OVERLAY");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureSize] = instructions.VariableDeclInstruction._getIndex("INPUT_TEXTURE_SIZE");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureRatio] = instructions.VariableDeclInstruction._getIndex("INPUT_TEXTURE_RATIO");
 
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_useNormal] = VariableDeclInstruction._getIndex("useNormal");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isDebug] = VariableDeclInstruction._getIndex("isDebug");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isRealNormal] = VariableDeclInstruction._getIndex("isRealNormal");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_normalFix] = VariableDeclInstruction._getIndex("normalFix");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isWithBalckSectors] = VariableDeclInstruction._getIndex("isWithBalckSectors");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_showTriangles] = VariableDeclInstruction._getIndex("showTriangles");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_u1] = VariableDeclInstruction._getIndex("u1");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_kFixNormal] = VariableDeclInstruction._getIndex("kFixNormal");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_fSunAmbient] = VariableDeclInstruction._getIndex("fSunAmbient");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_fSunSpecular] = VariableDeclInstruction._getIndex("fSunSpecular");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cHeightFalloff] = VariableDeclInstruction._getIndex("cHeightFalloff");
-				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cGlobalDensity] = VariableDeclInstruction._getIndex("cGlobalDensity");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_useNormal] = instructions.VariableDeclInstruction._getIndex("useNormal");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isDebug] = instructions.VariableDeclInstruction._getIndex("isDebug");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isRealNormal] = instructions.VariableDeclInstruction._getIndex("isRealNormal");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_normalFix] = instructions.VariableDeclInstruction._getIndex("normalFix");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isWithBalckSectors] = instructions.VariableDeclInstruction._getIndex("isWithBalckSectors");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_showTriangles] = instructions.VariableDeclInstruction._getIndex("showTriangles");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_u1] = instructions.VariableDeclInstruction._getIndex("u1");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_kFixNormal] = instructions.VariableDeclInstruction._getIndex("kFixNormal");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_fSunAmbient] = instructions.VariableDeclInstruction._getIndex("fSunAmbient");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_fSunSpecular] = instructions.VariableDeclInstruction._getIndex("fSunSpecular");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cHeightFalloff] = instructions.VariableDeclInstruction._getIndex("cHeightFalloff");
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cGlobalDensity] = instructions.VariableDeclInstruction._getIndex("cGlobalDensity");
 
 				this._bIsFirstApplySystemUnifoms = false;
 			}

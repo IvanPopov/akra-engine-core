@@ -15,55 +15,55 @@
 
 /// <reference path="errors.ts" />
 
-/// <reference path="ArithmeticExprInstruction.ts" />
-/// <reference path="AssignmentExprInstruction.ts" />
-/// <reference path="BoolInstruction.ts" />
-/// <reference path="BreakStmtInstruction.ts" />
-/// <reference path="CastExprInstruction.ts" />
-/// <reference path="ComplexExprInstruction.ts" />
-/// <reference path="ComplexTypeInstruction.ts" />
-/// <reference path="CompileExprInstruction.ts" />
-/// <reference path="ConditionalExprInstruction.ts" />
-/// <reference path="ConstructorCallInstruction.ts" />
-/// <reference path="DeclStmtInstruction.ts" />
-/// <reference path="ExprStmtInstruction.ts" />
+/// <reference path="instructions/ArithmeticExprInstruction.ts" />
+/// <reference path="instructions/AssignmentExprInstruction.ts" />
+/// <reference path="instructions/BoolInstruction.ts" />
+/// <reference path="instructions/BreakStmtInstruction.ts" />
+/// <reference path="instructions/CastExprInstruction.ts" />
+/// <reference path="instructions/ComplexExprInstruction.ts" />
+/// <reference path="instructions/ComplexTypeInstruction.ts" />
+/// <reference path="instructions/CompileExprInstruction.ts" />
+/// <reference path="instructions/ConditionalExprInstruction.ts" />
+/// <reference path="instructions/ConstructorCallInstruction.ts" />
+/// <reference path="instructions/DeclStmtInstruction.ts" />
+/// <reference path="instructions/ExprStmtInstruction.ts" />
 /// <reference path="ExprTemplateTranslator.ts" />
-/// <reference path="ExtractStmtInstruction.ts" />
-/// <reference path="FloatInstruction.ts" />
-/// <reference path="ForStmtInstruction.ts" />
-/// <reference path="FunctionCallInstruction.ts" />
-/// <reference path="FunctionDefInstruction.ts" />
-/// <reference path="IdExprInstruction.ts" />
-/// <reference path="IfStmtInstruction.ts" />
-/// <reference path="IntInstruction.ts" />
-/// <reference path="FunctionInstruction.ts" />
-/// <reference path="IdInstruction.ts" />
-/// <reference path="InitExprInstruction.ts" />
-/// <reference path="InstructionCollector.ts" />
-/// <reference path="LogicalExprInstruction.ts" />
-/// <reference path="MemExprInstruction.ts" />
-/// <reference path="PassInstruction.ts" />
-/// <reference path="PostfixArithmeticInstruction.ts" />
-/// <reference path="PostfixIndexInstruction.ts" />
-/// <reference path="PostfixPointInstruction.ts" />
-/// <reference path="PrimaryExprInstruction.ts" />
+/// <reference path="instructions/ExtractStmtInstruction.ts" />
+/// <reference path="instructions/FloatInstruction.ts" />
+/// <reference path="instructions/ForStmtInstruction.ts" />
+/// <reference path="instructions/FunctionCallInstruction.ts" />
+/// <reference path="instructions/FunctionDefInstruction.ts" />
+/// <reference path="instructions/IdExprInstruction.ts" />
+/// <reference path="instructions/IfStmtInstruction.ts" />
+/// <reference path="instructions/IntInstruction.ts" />
+/// <reference path="instructions/FunctionInstruction.ts" />
+/// <reference path="instructions/IdInstruction.ts" />
+/// <reference path="instructions/InitExprInstruction.ts" />
+/// <reference path="instructions/InstructionCollector.ts" />
+/// <reference path="instructions/LogicalExprInstruction.ts" />
+/// <reference path="instructions/MemExprInstruction.ts" />
+/// <reference path="instructions/PassInstruction.ts" />
+/// <reference path="instructions/PostfixArithmeticInstruction.ts" />
+/// <reference path="instructions/PostfixIndexInstruction.ts" />
+/// <reference path="instructions/PostfixPointInstruction.ts" />
+/// <reference path="instructions/PrimaryExprInstruction.ts" />
 /// <reference path="ProgramScope.ts" />
-/// <reference path="RelationalExprInstruction.ts" />
-/// <reference path="ReturnStmtInstruction.ts" />
-/// <reference path="SamplerStateBlockInstruction.ts" />
-/// <reference path="SemicolonStmtInstruction.ts" />
-/// <reference path="SimpleInstruction.ts" />
-/// <reference path="StmtBlockInstruction.ts" />
-/// <reference path="StringInstruction.ts" />
-/// <reference path="SystemCallInstruction.ts" />
-/// <reference path="SystemFunctionInstruction.ts" />
-/// <reference path="SystemTypeInstruction.ts" />
-/// <reference path="TechniqueInstruction.ts" />
-/// <reference path="TypeInstruction.ts" />
-/// <reference path="VariableTypeInstruction.ts" />
-/// <reference path="VariableInstruction.ts" />
-/// <reference path="UnaryExprInstruction.ts" />
-/// <reference path="WhileStmtInstruction.ts" />
+/// <reference path="instructions/RelationalExprInstruction.ts" />
+/// <reference path="instructions/ReturnStmtInstruction.ts" />
+/// <reference path="instructions/SamplerStateBlockInstruction.ts" />
+/// <reference path="instructions/SemicolonStmtInstruction.ts" />
+/// <reference path="instructions/SimpleInstruction.ts" />
+/// <reference path="instructions/StmtBlockInstruction.ts" />
+/// <reference path="instructions/StringInstruction.ts" />
+/// <reference path="instructions/SystemCallInstruction.ts" />
+/// <reference path="instructions/SystemFunctionInstruction.ts" />
+/// <reference path="instructions/SystemTypeInstruction.ts" />
+/// <reference path="instructions/TechniqueInstruction.ts" />
+/// <reference path="instructions/TypeInstruction.ts" />
+/// <reference path="instructions/VariableTypeInstruction.ts" />
+/// <reference path="instructions/VariableInstruction.ts" />
+/// <reference path="instructions/UnaryExprInstruction.ts" />
+/// <reference path="instructions/WhileStmtInstruction.ts" />
 
 module akra.fx {
 
@@ -91,8 +91,8 @@ module akra.fx {
 		private _sAnalyzedFileName: string = "";
 
 		private _pSystemMacros: IAFXSimpleInstructionMap = null;
-		private _pSystemTypes: IMap<SystemTypeInstruction> = null;
-		private _pSystemFunctionsMap: IMap<SystemFunctionInstruction[]> = null;
+		private _pSystemTypes: IMap<instructions.SystemTypeInstruction> = null;
+		private _pSystemFunctionsMap: IMap<instructions.SystemFunctionInstruction[]> = null;
 		private _pSystemFunctionHashMap: IMap<boolean> = null;
 		private _pSystemVariables: IAFXVariableDeclMap = null;
 
@@ -112,10 +112,10 @@ module akra.fx {
 		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
 		static pSystemMacros: IAFXSimpleInstructionMap = null;
-		static pSystemTypes: IMap<SystemTypeInstruction> = null;
-		static pSystemFunctions: IMap<SystemFunctionInstruction[]> = null;
+		static pSystemTypes: IMap<instructions.SystemTypeInstruction> = null;
+		static pSystemFunctions: IMap<instructions.SystemFunctionInstruction[]> = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
-		static pSystemVertexOut: ComplexTypeInstruction = null;
+		static pSystemVertexOut: instructions.ComplexTypeInstruction = null;
 
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
@@ -219,10 +219,10 @@ module akra.fx {
 			return this._pTechniqueList;
 		}
 
-		static getBaseVertexOutType(): ComplexTypeInstruction {
+		static getBaseVertexOutType(): instructions.ComplexTypeInstruction {
 			return Effect.pSystemVertexOut;
 		}
-		static getSystemType(sTypeName: string): SystemTypeInstruction {
+		static getSystemType(sTypeName: string): instructions.SystemTypeInstruction {
 			//boolean, string, float and others
 			return isDef(Effect.pSystemTypes[sTypeName]) ? Effect.pSystemTypes[sTypeName] : null;
 		}
@@ -237,7 +237,7 @@ module akra.fx {
 
 		static findSystemFunction(sFunctionName: string,
 			pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
-			var pSystemFunctions: SystemFunctionInstruction[] = Effect.pSystemFunctions[sFunctionName];
+			var pSystemFunctions: instructions.SystemFunctionInstruction[] = Effect.pSystemFunctions[sFunctionName];
 
 			if (!isDef(pSystemFunctions)) {
 				return null;
@@ -277,9 +277,9 @@ module akra.fx {
 		}
 
 		static createVideoBufferVariable(): IAFXVariableDeclInstruction {
-			var pBuffer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-			var pBufferType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			var pBufferName: IAFXIdInstruction = new IdInstruction();
+			var pBuffer: IAFXVariableDeclInstruction = new instructions.VariableDeclInstruction();
+			var pBufferType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
+			var pBufferName: IAFXIdInstruction = new instructions.IdInstruction();
 
 			pBufferType.pushType(Effect.getSystemType("video_buffer"));
 
@@ -511,9 +511,9 @@ module akra.fx {
 				return;
 			}
 
-			var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-			var pName: IAFXIdInstruction = new IdInstruction();
-			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pVariableDecl: IAFXVariableDeclInstruction = new instructions.VariableDeclInstruction();
+			var pName: IAFXIdInstruction = new instructions.IdInstruction();
+			var pType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 
 			pName.setName(sName);
 			pName.setRealName(sRealName);
@@ -536,9 +536,9 @@ module akra.fx {
 		}
 
 		private generatePassEngineVariable(): void {
-			var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-			var pName: IAFXIdInstruction = new IdInstruction();
-			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pVariableDecl: IAFXVariableDeclInstruction = new instructions.VariableDeclInstruction();
+			var pName: IAFXIdInstruction = new instructions.IdInstruction();
+			var pType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 
 			pType._canWrite(false);
 
@@ -555,14 +555,14 @@ module akra.fx {
 		private generateBaseVertexOutput(): void {
 			//TODO: fix defenition of this variables
 
-			var pOutBasetype: ComplexTypeInstruction = new ComplexTypeInstruction();
+			var pOutBasetype: instructions.ComplexTypeInstruction = new instructions.ComplexTypeInstruction();
 
-			var pPosition: VariableDeclInstruction = new VariableDeclInstruction();
-			var pPointSize: VariableDeclInstruction = new VariableDeclInstruction();
-			var pPositionType: VariableTypeInstruction = new VariableTypeInstruction();
-			var pPointSizeType: VariableTypeInstruction = new VariableTypeInstruction();
-			var pPositionId: IdInstruction = new IdInstruction();
-			var pPointSizeId: IdInstruction = new IdInstruction();
+			var pPosition: instructions.VariableDeclInstruction = new instructions.VariableDeclInstruction();
+			var pPointSize: instructions.VariableDeclInstruction = new instructions.VariableDeclInstruction();
+			var pPositionType: instructions.VariableTypeInstruction = new instructions.VariableTypeInstruction();
+			var pPointSizeType: instructions.VariableTypeInstruction = new instructions.VariableTypeInstruction();
+			var pPositionId: instructions.IdInstruction = new instructions.IdInstruction();
+			var pPointSizeId: instructions.IdInstruction = new instructions.IdInstruction();
 
 			pPositionType.pushType(Effect.getSystemType("float4"));
 			pPointSizeType.pushType(Effect.getSystemType("float"));
@@ -582,7 +582,7 @@ module akra.fx {
 			pPosition.setSemantic("POSITION");
 			pPointSize.setSemantic("PSIZE");
 
-			var pFieldCollector: IAFXInstruction = new InstructionCollector();
+			var pFieldCollector: IAFXInstruction = new instructions.InstructionCollector();
 			pFieldCollector.push(pPosition, false);
 			pFieldCollector.push(pPointSize, false);
 
@@ -842,11 +842,11 @@ module akra.fx {
 			isForVertex: boolean = true, isForPixel: boolean = true): void {
 
 			var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator(sTranslationExpr);
-			var pSystemFunctions: IMap<SystemFunctionInstruction[]> = this._pSystemFunctionsMap;
+			var pSystemFunctions: IMap<instructions.SystemFunctionInstruction[]> = this._pSystemFunctionsMap;
 			var pTypes: IAFXTypeInstruction[] = null;
 			var sFunctionHash: string = "";
 			var pReturnType: IAFXTypeInstruction = null;
-			var pFunction: SystemFunctionInstruction = null;
+			var pFunction: instructions.SystemFunctionInstruction = null;
 
 			if (!isNull(pTemplateTypes)) {
 				for (var i: uint = 0; i < pTemplateTypes.length; i++) {
@@ -874,7 +874,7 @@ module akra.fx {
 						this._error(EEffectErrors.BAD_SYSTEM_FUNCTION_REDEFINE, { funcName: sFunctionHash });
 					}
 
-					pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
+					pFunction = new instructions.SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
 
 					if (!isDef(pSystemFunctions[sName])) {
 						pSystemFunctions[sName] = [];
@@ -913,7 +913,7 @@ module akra.fx {
 					this._error(EEffectErrors.BAD_SYSTEM_FUNCTION_REDEFINE, { funcName: sFunctionHash });
 				}
 
-				pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
+				pFunction = new instructions.SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
 
 				pFunction._setForVertex(isForVertex);
 				pFunction._setForPixel(isForPixel);
@@ -933,7 +933,7 @@ module akra.fx {
 				return;
 			}
 
-			var pMacros: IAFXSimpleInstruction = new SimpleInstruction(sMacrosCode);
+			var pMacros: IAFXSimpleInstruction = new instructions.SimpleInstruction(sMacrosCode);
 
 			this._pSystemMacros[sMacrosName] = pMacros;
 		}
@@ -949,7 +949,7 @@ module akra.fx {
 			}
 
 			var pReturnType: IAFXTypeInstruction = Effect.getSystemType(sReturnType);
-			var pFunction: SystemFunctionInstruction = new SystemFunctionInstruction(sName, pReturnType, null, null);
+			var pFunction: instructions.SystemFunctionInstruction = new instructions.SystemFunctionInstruction(sName, pReturnType, null, null);
 
 			pFunction.setDeclCode(sDefenition, sImplementation);
 
@@ -995,7 +995,7 @@ module akra.fx {
 				return null;
 			}
 
-			var pSystemType: SystemTypeInstruction = new SystemTypeInstruction();
+			var pSystemType: instructions.SystemTypeInstruction = new instructions.SystemTypeInstruction();
 
 			pSystemType.setName(sName);
 			pSystemType.setRealName(sRealName);
@@ -1019,7 +1019,7 @@ module akra.fx {
 				return null;
 			}
 
-			var pSystemType: SystemTypeInstruction = new SystemTypeInstruction();
+			var pSystemType: instructions.SystemTypeInstruction = new instructions.SystemTypeInstruction();
 			pSystemType.setName(sName);
 			pSystemType.setRealName(sRealName);
 			pSystemType.setSize(iSize);
@@ -1032,7 +1032,7 @@ module akra.fx {
 			this._pSystemTypes[sName] = pSystemType;
 			pSystemType.setBuiltIn(false);
 
-			var pSystemTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+			var pSystemTypeDecl: IAFXTypeDeclInstruction = new instructions.TypeDeclInstruction();
 			pSystemTypeDecl.push(pSystemType, true);
 			pSystemTypeDecl.setBuiltIn(false);
 
@@ -1192,7 +1192,7 @@ module akra.fx {
 				var sFieldTypeName: string = sBaseType + ((sSuffix.length > 1) ? sSuffix.length.toString() : "");
 				var pFieldType: IAFXTypeInstruction = Effect.getSystemType(sFieldTypeName);
 
-				(<SystemTypeInstruction>pType).addField(sSuffix, pFieldType, pSuffixMap[sSuffix]);
+				(<instructions.SystemTypeInstruction>pType).addField(sSuffix, pFieldType, pSuffixMap[sSuffix]);
 			}
 		}
 
@@ -1341,7 +1341,7 @@ module akra.fx {
 		private findConstructor(pType: IAFXTypeInstruction,
 			pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
 
-			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pVariableType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 			pVariableType.pushType(pType);
 
 			return pVariableType;
@@ -1352,7 +1352,7 @@ module akra.fx {
 			return this._pEffectScope.getShaderFunction(sFunctionName, pArguments);
 		}
 
-		private findFunctionByDef(pDef: FunctionDefInstruction): IAFXFunctionDeclInstruction {
+		private findFunctionByDef(pDef: instructions.FunctionDefInstruction): IAFXFunctionDeclInstruction {
 			return this.findFunction(pDef.getName(), pDef.getArguments());
 		}
 
@@ -1730,7 +1730,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var i: uint = 0;
-			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
 				if (pChildren[i].name === "Type") {
@@ -1806,8 +1806,8 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 
-			var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pVarDecl: IAFXVariableDeclInstruction = new instructions.VariableDeclInstruction();
+			var pVariableType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 			var pAnnotation: IAFXAnnotationInstruction = null;
 			var sSemantic: string = "";
 			var pInitExpr: IAFXInitExprInstruction = null;
@@ -1854,7 +1854,7 @@ module akra.fx {
 			var pVariableType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pVariableDecl.getType();
 
 			if (pChildren.length === 1) {
-				var pName: IAFXIdInstruction = new IdInstruction();
+				var pName: IAFXIdInstruction = new instructions.IdInstruction();
 				pName.setName(pChildren[0].value);
 				pVariableDecl.push(pName, true);
 				return;
@@ -1901,7 +1901,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
+			var pInitExpr: IAFXInitExprInstruction = new instructions.InitExprInstruction();
 
 			if (pChildren.length === 2) {
 				pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
@@ -1927,7 +1927,7 @@ module akra.fx {
 				pBuffer = this.getVariable(pChildren[1].value);
 			}
 			else {
-				pBuffer = (<MemExprInstruction>this.analyzeMemExpr(pChildren[1])).getBuffer();
+				pBuffer = (<instructions.MemExprInstruction>this.analyzeMemExpr(pChildren[1])).getBuffer();
 			}
 
 			return pBuffer;
@@ -1937,7 +1937,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
+			var pInitExpr: IAFXInitExprInstruction = new instructions.InitExprInstruction();
 
 			if (pChildren.length === 1) {
 				pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
@@ -2018,7 +2018,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: CompileExprInstruction = new CompileExprInstruction();
+			var pExpr: instructions.CompileExprInstruction = new instructions.CompileExprInstruction();
 			var pExprType: IAFXVariableTypeInstruction;
 			var pArguments: IAFXExprInstruction[] = null;
 			var sShaderFuncName: string = pChildren[pChildren.length - 2].value;
@@ -2067,7 +2067,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: SamplerStateBlockInstruction = new SamplerStateBlockInstruction();
+			var pExpr: instructions.SamplerStateBlockInstruction = new instructions.SamplerStateBlockInstruction();
 			var i: uint = 0;
 
 			pExpr.setOperator("sample_state");
@@ -2081,7 +2081,7 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeSamplerState(pNode: parser.IParseNode, pSamplerStates: SamplerStateBlockInstruction): void {
+		private analyzeSamplerState(pNode: parser.IParseNode, pSamplerStates: instructions.SamplerStateBlockInstruction): void {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
@@ -2242,9 +2242,9 @@ module akra.fx {
 			}
 
 			if (pFunction._getInstructionType() === EAFXInstructionTypes.k_FunctionDeclInstruction) {
-				var pFunctionCallExpr: FunctionCallInstruction = new FunctionCallInstruction();
+				var pFunctionCallExpr: instructions.FunctionCallInstruction = new instructions.FunctionCallInstruction();
 
-				pFunctionId = new IdExprInstruction();
+				pFunctionId = new instructions.IdExprInstruction();
 				pFunctionId.push(pFunction.getNameId(), false);
 
 				pExprType = (<IAFXVariableTypeInstruction>pFunction.getType()).wrap();
@@ -2257,7 +2257,7 @@ module akra.fx {
 						pFunctionCallExpr.push(pArguments[i], true);
 					}
 
-					var pFunctionArguments: IAFXVariableDeclInstruction[] = (<FunctionDeclInstruction>pFunction).getArguments();
+					var pFunctionArguments: IAFXVariableDeclInstruction[] = (<instructions.FunctionDeclInstruction>pFunction).getArguments();
 					for (i = 0; i < pArguments.length; i++) {
 						if (pFunctionArguments[i].getType().hasUsage("out")) {
 							if (!pArguments[i].getType().isWritable()) {
@@ -2307,7 +2307,7 @@ module akra.fx {
 				pExpr = pFunctionCallExpr;
 			}
 			else {
-				var pSystemCallExpr: SystemCallInstruction = new SystemCallInstruction();
+				var pSystemCallExpr: instructions.SystemCallInstruction = new instructions.SystemCallInstruction();
 
 				pSystemCallExpr.setSystemCallFunction(pFunction);
 				pSystemCallExpr.fillByArguments(pArguments);
@@ -2337,7 +2337,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
+			var pExpr: instructions.ConstructorCallInstruction = new instructions.ConstructorCallInstruction();
 			var pExprType: IAFXVariableTypeInstruction = null;
 			var pArguments: IAFXExprInstruction[] = null;
 			var pConstructorType: IAFXTypeInstruction = null;
@@ -2393,7 +2393,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: ComplexExprInstruction = new ComplexExprInstruction();
+			var pExpr: instructions.ComplexExprInstruction = new instructions.ComplexExprInstruction();
 			var pComplexExpr: IAFXExprInstruction;
 			var pExprType: IAFXVariableTypeInstruction;
 
@@ -2412,7 +2412,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: PrimaryExprInstruction = new PrimaryExprInstruction();
+			var pExpr: instructions.PrimaryExprInstruction = new instructions.PrimaryExprInstruction();
 			var pPrimaryExpr: IAFXExprInstruction;
 			var pPointer: IAFXVariableDeclInstruction = null;
 			var pPrimaryExprType: IAFXVariableTypeInstruction;
@@ -2464,7 +2464,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: PostfixIndexInstruction = new PostfixIndexInstruction();
+			var pExpr: instructions.PostfixIndexInstruction = new instructions.PostfixIndexInstruction();
 			var pPostfixExpr: IAFXExprInstruction = null;
 			var pIndexExpr: IAFXExprInstruction = null;
 			var pExprType: IAFXVariableTypeInstruction = null;
@@ -2505,7 +2505,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: PostfixPointInstruction = new PostfixPointInstruction();
+			var pExpr: instructions.PostfixPointInstruction = new instructions.PostfixPointInstruction();
 			var pPostfixExpr: IAFXExprInstruction = null;
 			var sFieldName: string = "";
 			var pFieldNameExpr: IAFXIdExprInstruction = null;
@@ -2553,7 +2553,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pChildren[0].value;
-			var pExpr: PostfixArithmeticInstruction = new PostfixArithmeticInstruction();
+			var pExpr: instructions.PostfixArithmeticInstruction = new instructions.PostfixArithmeticInstruction();
 			var pPostfixExpr: IAFXExprInstruction;
 			var pExprType: IAFXVariableTypeInstruction;
 			var pPostfixExprType: IAFXVariableTypeInstruction;
@@ -2585,7 +2585,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pChildren[1].value;
-			var pExpr: UnaryExprInstruction = new UnaryExprInstruction();
+			var pExpr: instructions.UnaryExprInstruction = new instructions.UnaryExprInstruction();
 			var pUnaryExpr: IAFXExprInstruction;
 			var pExprType: IAFXVariableTypeInstruction;
 			var pUnaryExprType: IAFXVariableTypeInstruction;
@@ -2616,7 +2616,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: CastExprInstruction = new CastExprInstruction();
+			var pExpr: instructions.CastExprInstruction = new instructions.CastExprInstruction();
 			var pExprType: IAFXVariableTypeInstruction;
 			var pCastedExpr: IAFXExprInstruction;
 
@@ -2641,7 +2641,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExpr: ConditionalExprInstruction = new ConditionalExprInstruction();
+			var pExpr: instructions.ConditionalExprInstruction = new instructions.ConditionalExprInstruction();
 			var pConditionExpr: IAFXExprInstruction;
 			var pTrueExpr: IAFXExprInstruction;
 			var pFalseExpr: IAFXExprInstruction;
@@ -2704,7 +2704,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pNode.children[1].value;
-			var pExpr: ArithmeticExprInstruction = new ArithmeticExprInstruction();
+			var pExpr: instructions.ArithmeticExprInstruction = new instructions.ArithmeticExprInstruction();
 			var pLeftExpr: IAFXExprInstruction = null;
 			var pRightExpr: IAFXExprInstruction = null;
 			var pLeftType: IAFXVariableTypeInstruction = null;
@@ -2743,7 +2743,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pNode.children[1].value;
-			var pExpr: RelationalExprInstruction = new RelationalExprInstruction();
+			var pExpr: instructions.RelationalExprInstruction = new instructions.RelationalExprInstruction();
 			var pLeftExpr: IAFXExprInstruction;
 			var pRightExpr: IAFXExprInstruction;
 			var pLeftType: IAFXVariableTypeInstruction;
@@ -2782,7 +2782,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pNode.children[1].value;
-			var pExpr: LogicalExprInstruction = new LogicalExprInstruction();
+			var pExpr: instructions.LogicalExprInstruction = new instructions.LogicalExprInstruction();
 			var pLeftExpr: IAFXExprInstruction;
 			var pRightExpr: IAFXExprInstruction;
 			var pLeftType: IAFXVariableTypeInstruction;
@@ -2823,7 +2823,7 @@ module akra.fx {
 			}
 
 			pExpr.setOperator(sOperator);
-			pExpr.setType((<SystemTypeInstruction>pBoolType).getVariableType());
+			pExpr.setType((<instructions.SystemTypeInstruction>pBoolType).getVariableType());
 			pExpr.push(pLeftExpr, true);
 			pExpr.push(pRightExpr, true);
 
@@ -2837,7 +2837,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pChildren[1].value;
-			var pExpr: AssignmentExprInstruction = new AssignmentExprInstruction();
+			var pExpr: instructions.AssignmentExprInstruction = new instructions.AssignmentExprInstruction();
 			var pLeftExpr: IAFXExprInstruction;
 			var pRightExpr: IAFXExprInstruction;
 			var pLeftType: IAFXVariableTypeInstruction;
@@ -2908,7 +2908,7 @@ module akra.fx {
 				}
 			}
 
-			var pVarId: IdExprInstruction = new IdExprInstruction();
+			var pVarId: instructions.IdExprInstruction = new instructions.IdExprInstruction();
 			pVarId.push(pVariable.getNameId(), false);
 
 			this.checkInstruction(pVarId, ECheckStage.CODE_TARGET_SUPPORT);
@@ -2925,23 +2925,23 @@ module akra.fx {
 
 			switch (sName) {
 				case "T_UINT":
-					pInstruction = new IntInstruction();
+					pInstruction = new instructions.IntInstruction();
 					pInstruction.setValue((<int><any>sValue) * 1);
 					break;
 				case "T_FLOAT":
-					pInstruction = new FloatInstruction();
+					pInstruction = new instructions.FloatInstruction();
 					pInstruction.setValue((<float><any>sValue) * 1.0);
 					break;
 				case "T_STRING":
-					pInstruction = new StringInstruction();
+					pInstruction = new instructions.StringInstruction();
 					pInstruction.setValue(sValue);
 					break;
 				case "T_KW_TRUE":
-					pInstruction = new BoolInstruction();
+					pInstruction = new instructions.BoolInstruction();
 					pInstruction.setValue(true);
 					break;
 				case "T_KW_FALSE":
-					pInstruction = new BoolInstruction();
+					pInstruction = new instructions.BoolInstruction();
 					pInstruction.setValue(false);
 					break;
 			}
@@ -2953,7 +2953,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pMemExpr: MemExprInstruction = new MemExprInstruction();
+			var pMemExpr: instructions.MemExprInstruction = new instructions.MemExprInstruction();
 
 			var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
 			var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
@@ -3029,14 +3029,14 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var i: uint = 0;
-			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
 				if (pChildren[i].name === "StructDecl") {
 					var pMainType: IAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
 					pType.pushType(pMainType);
 
-					var pTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+					var pTypeDecl: IAFXTypeDeclInstruction = new instructions.TypeDeclInstruction();
 					pTypeDecl.push(pMainType, true);
 
 					this.addTypeDecl(pTypeDecl);
@@ -3057,10 +3057,10 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 
-			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new instructions.TypeDeclInstruction();
 
 			if (pChildren.length === 2) {
-				var pStructInstruction: ComplexTypeInstruction = <ComplexTypeInstruction>this.analyzeStructDecl(pChildren[1]);
+				var pStructInstruction: instructions.ComplexTypeInstruction = <instructions.ComplexTypeInstruction>this.analyzeStructDecl(pChildren[1]);
 				pTypeDeclInstruction.push(pStructInstruction, true);
 			}
 			else {
@@ -3085,8 +3085,8 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 
-			var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-			var pFieldCollector: IAFXInstruction = new InstructionCollector();
+			var pStruct: instructions.ComplexTypeInstruction = new instructions.ComplexTypeInstruction();
+			var pFieldCollector: IAFXInstruction = new instructions.InstructionCollector();
 
 			var sName: string = pChildren[pChildren.length - 2].value;
 
@@ -3115,8 +3115,8 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 
-			var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-			var pFieldCollector: IAFXInstruction = new InstructionCollector();
+			var pStruct: instructions.ComplexTypeInstruction = new instructions.ComplexTypeInstruction();
+			var pFieldCollector: IAFXInstruction = new instructions.InstructionCollector();
 
 			this.newScope(EScopeType.k_Struct);
 
@@ -3140,16 +3140,16 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pFunction: FunctionDeclInstruction = null;
-			var pFunctionDef: FunctionDefInstruction = null;
-			var pStmtBlock: StmtBlockInstruction = null;
+			var pFunction: instructions.FunctionDeclInstruction = null;
+			var pFunctionDef: instructions.FunctionDefInstruction = null;
+			var pStmtBlock: instructions.StmtBlockInstruction = null;
 			var pAnnotation: IAFXAnnotationInstruction = null;
 			var sLastNodeValue: string = pChildren[0].value;
 			var bNeedAddFunction: boolean = false;
 
 			pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
 
-			pFunction = <FunctionDeclInstruction>this.findFunctionByDef(pFunctionDef);
+			pFunction = <instructions.FunctionDeclInstruction>this.findFunctionByDef(pFunctionDef);
 
 			if (!isDef(pFunction)) {
 				this._error(EEffectErrors.BAD_CANNOT_CHOOSE_FUNCTION, { funcName: pFunction.getNameId().toString() });
@@ -3162,7 +3162,7 @@ module akra.fx {
 			}
 
 			if (isNull(pFunction)) {
-				pFunction = new FunctionDeclInstruction();
+				pFunction = new instructions.FunctionDeclInstruction();
 				bNeedAddFunction = true;
 			}
 			else {
@@ -3198,20 +3198,20 @@ module akra.fx {
 		}
 
 		private resumeFunctionAnalysis(pAnalzedFunction: IAFXFunctionDeclInstruction): void {
-			var pFunction: FunctionDeclInstruction = <FunctionDeclInstruction>pAnalzedFunction;
+			var pFunction: instructions.FunctionDeclInstruction = <instructions.FunctionDeclInstruction>pAnalzedFunction;
 			var pNode: parser.IParseNode = pFunction._getParseNode();
 
 			this.setAnalyzedNode(pNode);
 			this.setScope(pFunction._getImplementationScope());
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pStmtBlock: StmtBlockInstruction = null;
+			var pStmtBlock: instructions.StmtBlockInstruction = null;
 
 			this.setCurrentAnalyzedFunction(pFunction);
 
 			// LOG("-----Analyze function '" + pFunction.getName() + "'------");
 
-			pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
+			pStmtBlock = <instructions.StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
 			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
 
 			this.setCurrentAnalyzedFunction(null);
@@ -3221,11 +3221,11 @@ module akra.fx {
 			this.checkInstruction(pFunction, ECheckStage.CODE_TARGET_SUPPORT);
 		}
 
-		private analyzeFunctionDef(pNode: parser.IParseNode): FunctionDefInstruction {
+		private analyzeFunctionDef(pNode: parser.IParseNode): instructions.FunctionDefInstruction {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pFunctionDef: FunctionDefInstruction = new FunctionDefInstruction();
+			var pFunctionDef: instructions.FunctionDefInstruction = new instructions.FunctionDefInstruction();
 			var pReturnType: IAFXVariableTypeInstruction = null;
 			var pFuncName: IAFXIdInstruction = null;
 			var pArguments: IAFXVariableDeclInstruction[] = null;
@@ -3238,7 +3238,7 @@ module akra.fx {
 				return null;
 			}
 
-			pFuncName = new IdInstruction();
+			pFuncName = new instructions.IdInstruction();
 			pFuncName.setName(sFuncName);
 
 			pFunctionDef.setReturnType(pReturnType);
@@ -3260,7 +3260,7 @@ module akra.fx {
 			return pFunctionDef;
 		}
 
-		private analyzeParamList(pNode: parser.IParseNode, pFunctionDef: FunctionDefInstruction): void {
+		private analyzeParamList(pNode: parser.IParseNode, pFunctionDef: instructions.FunctionDefInstruction): void {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
@@ -3293,7 +3293,7 @@ module akra.fx {
 		private analyzeParamUsageType(pNode: parser.IParseNode): IAFXVariableTypeInstruction {
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var i: uint = 0;
-			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pType: IAFXVariableTypeInstruction = new instructions.VariableTypeInstruction();
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
 				if (pChildren[i].name === "Type") {
@@ -3315,7 +3315,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
+			var pStmtBlock: instructions.StmtBlockInstruction = new instructions.StmtBlockInstruction();
 			var pStmt: IAFXStmtInstruction;
 			var i: uint = 0;
 
@@ -3391,7 +3391,7 @@ module akra.fx {
 						return this.analyzeExprStmt(pNode);
 					}
 					else {
-						return (new SemicolonStmtInstruction());
+						return (new instructions.SemicolonStmtInstruction());
 					}
 			}
 		}
@@ -3400,7 +3400,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pReturnStmtInstruction: ReturnStmtInstruction = new ReturnStmtInstruction();
+			var pReturnStmtInstruction: instructions.ReturnStmtInstruction = new instructions.ReturnStmtInstruction();
 
 			var pFunctionReturnType: IAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction().getReturnType();
 
@@ -3438,7 +3438,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pBreakStmtInstruction: BreakStmtInstruction = new BreakStmtInstruction();
+			var pBreakStmtInstruction: instructions.BreakStmtInstruction = new instructions.BreakStmtInstruction();
 			var sOperatorName: string = pChildren[1].value;
 
 			pBreakStmtInstruction.setOperator(sOperatorName);
@@ -3457,7 +3457,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var sNodeName: string = pNode.name;
-			var pDeclStmtInstruction: DeclStmtInstruction = new DeclStmtInstruction();
+			var pDeclStmtInstruction: instructions.DeclStmtInstruction = new instructions.DeclStmtInstruction();
 
 			switch (sNodeName) {
 				case "TypeDecl":
@@ -3480,7 +3480,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pExprStmtInstruction: ExprStmtInstruction = new ExprStmtInstruction();
+			var pExprStmtInstruction: instructions.ExprStmtInstruction = new instructions.ExprStmtInstruction();
 			var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
 			pExprStmtInstruction.push(pExprInstruction, true);
@@ -3497,7 +3497,7 @@ module akra.fx {
 			var isDoWhile: boolean = (pChildren[pChildren.length - 1].value === "do");
 			var isNonIfStmt: boolean = (pNode.name === "NonIfStmt") ? true : false;
 
-			var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
+			var pWhileStmt: instructions.WhileStmtInstruction = new instructions.WhileStmtInstruction();
 			var pCondition: IAFXExprInstruction = null;
 			var pConditionType: IAFXVariableTypeInstruction = null;
 			var pBoolType: IAFXTypeInstruction = Effect.getSystemType("bool");
@@ -3547,7 +3547,7 @@ module akra.fx {
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var isIfElse: boolean = (pChildren.length === 7);
 
-			var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
+			var pIfStmtInstruction: instructions.IfStmtInstruction = new instructions.IfStmtInstruction();
 			var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
 			var pConditionType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pCondition.getType();
 			var pBoolType: IAFXTypeInstruction = Effect.getSystemType("bool");
@@ -3603,7 +3603,7 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var isNonIfStmt: boolean = (pNode.name === "NonIfStmt");
-			var pForStmtInstruction: ForStmtInstruction = new ForStmtInstruction();
+			var pForStmtInstruction: instructions.ForStmtInstruction = new instructions.ForStmtInstruction();
 			var pStmt: IAFXStmtInstruction = null;
 
 			this.newScope();
@@ -3635,7 +3635,7 @@ module akra.fx {
 			return pForStmtInstruction;
 		}
 
-		private analyzeForInit(pNode: parser.IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+		private analyzeForInit(pNode: parser.IParseNode, pForStmtInstruction: instructions.ForStmtInstruction): void {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
@@ -3658,7 +3658,7 @@ module akra.fx {
 			return;
 		}
 
-		private analyzeForCond(pNode: parser.IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+		private analyzeForCond(pNode: parser.IParseNode, pForStmtInstruction: instructions.ForStmtInstruction): void {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
@@ -3674,7 +3674,7 @@ module akra.fx {
 			return;
 		}
 
-		private analyzeForStep(pNode: parser.IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+		private analyzeForStep(pNode: parser.IParseNode, pForStmtInstruction: instructions.ForStmtInstruction): void {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
@@ -3695,7 +3695,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: parser.IParseNode[] = pNode.children;
-			var pTechnique: IAFXTechniqueInstruction = new TechniqueInstruction();
+			var pTechnique: IAFXTechniqueInstruction = new instructions.TechniqueInstruction();
 			var sTechniqueName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
 			var isComplexName: boolean = pChildren[pChildren.length - 2].children.length !== 1;
 
@@ -3750,7 +3750,7 @@ module akra.fx {
 				this.analyzeImportDecl(pChildren[0], pTechnique);
 			}
 			else if (pChildren.length > 1) {
-				var pPass: IAFXPassInstruction = new PassInstruction();
+				var pPass: IAFXPassInstruction = new instructions.PassInstruction();
 				//TODO: add annotation and id
 				this.analyzePassStateBlockForShaders(pChildren[0], pPass);
 
@@ -3805,7 +3805,7 @@ module akra.fx {
 
 			var pStateExprNode: parser.IParseNode = pChildren[pChildren.length - 3];
 			var pExprNode: parser.IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
-			var pCompileExpr: CompileExprInstruction = <CompileExprInstruction>this.analyzeExpr(pExprNode);
+			var pCompileExpr: instructions.CompileExprInstruction = <instructions.CompileExprInstruction>this.analyzeExpr(pExprNode);
 			var pShaderFunc: IAFXFunctionDeclInstruction = pCompileExpr.getFunction();
 
 			if (eShaderType === EFunctionType.k_Vertex) {
@@ -4473,8 +4473,8 @@ module akra.fx {
 			}
 
 			var pReturnType: IAFXVariableTypeInstruction = null;
-			var pLeftBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
-			var pRightBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
+			var pLeftBaseType: IAFXVariableTypeInstruction = (<instructions.SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
+			var pRightBaseType: IAFXVariableTypeInstruction = (<instructions.SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
 
 
 			if (pLeftType.isConst() && this.isAssignmentOperator(sOperator)) {
@@ -4602,7 +4602,7 @@ module akra.fx {
 					return null;
 				}
 				else {
-					return (<SystemTypeInstruction>pType.getBaseType()).getVariableType();
+					return (<instructions.SystemTypeInstruction>pType.getBaseType()).getVariableType();
 				}
 			}
 
@@ -4652,7 +4652,7 @@ module akra.fx {
 				pWhatExtractedType = pWhatExtracted.getType();
 
 				if (!pWhatExtractedType.isComplex()) {
-					var pSingleExtract: ExtractStmtInstruction = new ExtractStmtInstruction();
+					var pSingleExtract: instructions.ExtractStmtInstruction = new instructions.ExtractStmtInstruction();
 					pSingleExtract.generateStmtForBaseType(
 						pWhatExtracted,
 						pWhatExtractedType.getPointer(),
@@ -4688,7 +4688,7 @@ module akra.fx {
 			var pFieldNameList: string[] = pVarType.getFieldNameList();
 			var pField: IAFXVariableDeclInstruction = null;
 			var pFieldType: IAFXVariableTypeInstruction = null;
-			var pSingleExtract: ExtractStmtInstruction = null;
+			var pSingleExtract: instructions.ExtractStmtInstruction = null;
 
 			var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
@@ -4703,7 +4703,7 @@ module akra.fx {
 
 				if (pFieldType.isPointer()) {
 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
-					pSingleExtract = new ExtractStmtInstruction();
+					pSingleExtract = new instructions.ExtractStmtInstruction();
 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
 
 					this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
@@ -4719,7 +4719,7 @@ module akra.fx {
 					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
 				}
 				else {
-					pSingleExtract = new ExtractStmtInstruction();
+					pSingleExtract = new instructions.ExtractStmtInstruction();
 					pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), null);
 
 					this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);

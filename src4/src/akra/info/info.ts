@@ -47,7 +47,7 @@ module akra.info {
 
 
 	//TODO: move it to [akra.info.is] module, when typescript access this.
-	Object.defineProperty(is, 'online', {
+	Object.defineProperty(akra.info.is, 'online', {
 		get: function () {
 			return navigator.onLine;
 		}

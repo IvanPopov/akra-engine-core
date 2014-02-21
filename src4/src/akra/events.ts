@@ -220,7 +220,7 @@ module akra {
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0]);
 						}
@@ -237,7 +237,7 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if (this._pSender === null) {
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0]);
 							}
@@ -280,7 +280,7 @@ module akra {
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1]);
 						}
@@ -297,7 +297,7 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if (this._pSender === null) {
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1]);
 							}
@@ -340,7 +340,7 @@ module akra {
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2]);
 						}
@@ -357,7 +357,7 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if (this._pSender === null) {
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2]);
 							}
@@ -387,13 +387,21 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(arguments[0], arguments[1], arguments[2], arguments[3]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](arguments[0], arguments[1], arguments[2], arguments[3]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3]);
 						}
@@ -410,7 +418,7 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if (this._pSender === null) {
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3]);
 							}
@@ -440,13 +448,21 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 						}
@@ -463,7 +479,7 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if (this._pSender === null) {
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 							}
@@ -494,14 +510,26 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5]);
@@ -521,12 +549,12 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if(this._pSender === null){
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5]);	
+									arguments[5]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5]);
@@ -555,14 +583,26 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6]);
@@ -582,12 +622,12 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if(this._pSender === null){
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6]);	
+									arguments[5], arguments[6]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6]);
@@ -616,14 +656,26 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7]);
@@ -643,12 +695,12 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if(this._pSender === null){
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6], arguments[7]);	
+									arguments[5], arguments[6], arguments[7]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6], arguments[7]);
@@ -677,14 +729,26 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7], arguments[8]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7], arguments[8]);
@@ -704,12 +768,12 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if(this._pSender === null){
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6], arguments[7], arguments[8]);	
+									arguments[5], arguments[6], arguments[7], arguments[8]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6], arguments[7], arguments[8]);
@@ -738,14 +802,26 @@ module akra {
 					}
 
 					if (this._fnForerunnerTrigger !== null) {
-						this._fnForerunnerTrigger.call(this._pSender,
-							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						if (this._pSender === null) {
+							this._fnForerunnerTrigger(
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						}
+						else if (this._sForerunnerTriggerName !== null) {
+							this._pSender[this._sForerunnerTriggerName](
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						}
+						else {
+							this._fnForerunnerTrigger.call(this._pSender,
+								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						}
 					}
 
 					if (this._eType === EEventTypes.UNICAST && this._pUnicastListener !== null) {
 						pListener = this._pUnicastListener;
-						if (this._pSender === null) {
+						if (pListener.reciever === null) {
 							pListener.callback(this._pSender,
 								arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 								arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
@@ -765,12 +841,12 @@ module akra {
 						for (var i: int = 0; i < this._nBroadcastListenersCount; i++) {
 							pListener = this._pBroadcastListeners[i];
 							if (pListener === null) continue;
-							if(this._pSender === null){
+							if (pListener.reciever === null) {
 								pListener.callback(this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
-									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);	
+									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
 							}
-							else if(pListener.callbackName !== null){
+							else if (pListener.callbackName !== null) {
 								pListener.reciever[pListener.callbackName](this._pSender,
 									arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 									arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);

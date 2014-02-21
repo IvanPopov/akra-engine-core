@@ -27,7 +27,7 @@ module akra.math {
 		constructor(x: float, yz: IVec2, w: float);
 		constructor(xy: IVec2, z: float, w: float);
 		constructor(x: float, y: float, z: float, w: float);
-		constructor(x?, y?, z?, w?) {
+		constructor() {
 			var n: uint = arguments.length;
 			var v: IVec4 = this;
 
@@ -2113,10 +2113,116 @@ module akra.math {
 		static temp(x: float, yz: IVec2, w: float): IVec4;
 		static temp(xy: IVec2, z: float, w: float): IVec4;
 		static temp(x: float, y: float, z: float, w: float): IVec4;
-		static temp(x?, y?, z?, w?): IVec4 {
+		static temp(): IVec4 {
 			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
 			var p = pBuffer[iElement++];
-			return p.set.apply(p, arguments);
+			var nArgumentsLength: uint = arguments.length;
+
+			switch (nArgumentsLength) {
+				case 0:
+					p.x = p.y = p.z = p.w = 0.;
+					break;
+				case 1:
+					if (isFloat(arguments[0])) {
+						p.x = p.y = p.z = p.w = arguments[0];
+					}
+					else if (arguments[0] instanceof Vec4) {
+						var v4fVec: IVec4 = arguments[0];
+
+						p.x = v4fVec.x;
+						p.y = v4fVec.y;
+						p.z = v4fVec.z;
+						p.w = v4fVec.w;
+					}
+					//color
+					else if (isDef(arguments[0].r)) {
+						p.x = arguments[0].r;
+						p.y = arguments[0].g;
+						p.z = arguments[0].b;
+						p.w = arguments[0].a;
+					}
+					else {
+						//array
+						var pArray: float[] = arguments[0];
+
+						p.x = pArray[0];
+						p.y = pArray[1];
+						p.z = pArray[2];
+						p.w = pArray[3];
+					}
+					break;
+				case 2:
+					if (isFloat(arguments[0])) {
+						var fValue: float = arguments[0];
+						var v3fVec: IVec3 = arguments[1];
+
+						p.x = fValue;
+						p.y = v3fVec.x;
+						p.z = v3fVec.y;
+						p.w = v3fVec.z;
+					}
+					else if (arguments[0] instanceof Vec2) {
+						var v2fVec1: IVec2 = arguments[0];
+						var v2fVec2: IVec2 = arguments[1];
+
+						p.x = v2fVec1.x;
+						p.y = v2fVec1.y;
+						p.z = v2fVec2.x;
+						p.w = v2fVec2.y;
+					}
+					else {
+						var v3fVec: IVec3 = arguments[0];
+						var fValue: float = arguments[1];
+
+						p.x = v3fVec.x;
+						p.y = v3fVec.y;
+						p.z = v3fVec.z;
+						p.w = fValue;
+					}
+					break;
+				case 3:
+					if (isFloat(arguments[0])) {
+						var fValue1: float = arguments[0];
+
+						if (isFloat(arguments[1])) {
+							var fValue2: float = arguments[1];
+							var v2fVec: IVec2 = arguments[2];
+
+							p.x = fValue1;
+							p.y = fValue2;
+							p.z = v2fVec.x;
+							p.w = v2fVec.y;
+						}
+						else {
+							var v2fVec: IVec2 = arguments[1];
+							var fValue2: float = arguments[2];
+
+							p.x = fValue1;
+							p.y = v2fVec.x;
+							p.z = v2fVec.y;
+							p.w = fValue2;
+						}
+					}
+					else {
+						var v2fVec: IVec2 = arguments[0];
+						var fValue1: float = arguments[1];
+						var fValue2: float = arguments[2];
+
+						p.x = v2fVec.x;
+						p.y = v2fVec.y;
+						p.z = fValue1;
+						p.w = fValue2;
+					}
+					break;
+				case 4:
+					p.x = arguments[0];
+					p.y = arguments[1];
+					p.z = arguments[2];
+					p.w = arguments[3];
+					break;
+			}
+
+			return p;
 		}
 
 	}

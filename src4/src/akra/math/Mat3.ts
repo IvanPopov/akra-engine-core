@@ -53,9 +53,7 @@ module akra.math {
 			f4: float, f5: float, f6: float,
 			f7: float, f8: float, f9: float);
 
-		constructor(f1?, f2?, f3?,
-			f4?, f5?, f6?,
-			f7?, f8?, f9?) {
+		constructor() {
 
 
 			var nArgumentsLength: uint = arguments.length;
@@ -105,9 +103,7 @@ module akra.math {
 			f4: float, f5: float, f6: float,
 			f7: float, f8: float, f9: float): IMat3;
 
-		set(f1?, f2?, f3?,
-			f4?, f5?, f6?,
-			f7?, f8?, f9?): IMat3 {
+		set(): IMat3 {
 
 			var pData: Float32Array = this.data;
 
@@ -855,12 +851,28 @@ module akra.math {
 			f1: float, f2: float, f3: float,
 			f4: float, f5: float, f6: float,
 			f7: float, f8: float, f9: float): IMat3;
-		static temp(f1?, f2?, f3?,
-			f4?, f5?, f6?,
-			f7?, f8?, f9?): IMat3 {
+		static temp(): IMat3 {
 				iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
 			var p = pBuffer[iElement++];
-			return p.set.apply(p, arguments);
+				var n: uint = arguments.length;
+				switch (n) {
+					case 1:
+						p.set(arguments[0]);
+						break;
+					case 3:
+						p.set(arguments[0], arguments[1], arguments[2]);
+						break;
+					case 9:
+						p.set(arguments[0], arguments[1], arguments[2],
+							arguments[3], arguments[4], arguments[5],
+							arguments[6], arguments[7], arguments[8]);
+						break;
+					default:
+						p.set();
+						break;
+				}
+
+				return p;
 		}
 
 		//ALLOCATE_STORAGE(Mat3, MATH_STACK_SIZE);

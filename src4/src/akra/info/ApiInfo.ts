@@ -71,16 +71,14 @@ module akra.info {
 		constructor() {
 			super();
 
-			var pApi = {};
-
-			this._bWebAudio = ((<any>window).AudioContext && (<any>window).webkitAudioContext ? true : false);
-			this._bFile = ((<any>window).File && (<any>window).FileReader && (<any>window).FileList && (<any>window).Blob ? true : false);
-			this._bFileSystem = (this._bFile && (<any>window).URL && ((<any>window).requestFileSystem || (<any>window).webkitRequestFileSystem) ? true : false);
-			this._bWebWorker = isDef((<any>window).Worker);
-			this._bLocalStorage = isDef((<any>window).localStorage);
-			this._bWebSocket = isDef((<any>window).WebSocket);
-			this._bGamepad = !!(<any>navigator).webkitGetGamepads || !!(<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
-			this._bPromise = isDefAndNotNull((<any>window).Promise);
+			this._bWebAudio = (window["AudioContext"] && window["webkitAudioContext"] ? true : false);
+			this._bFile = (window["File"] && window["FileReader"] && window["FileList"] && window["Blob"] ? true : false);
+			this._bFileSystem = (this._bFile && window["URL"] && window["requestFileSystem"] ? true : false);
+			this._bWebWorker = isDef(window["Worker"]);
+			this._bLocalStorage = isDef(window["localStorage"]);
+			this._bWebSocket = isDef(window["WebSocket"]);
+			this._bGamepad = !!navigator["webkitGetGamepads"] || !!navigator["webkitGamepads"] || (navigator.userAgent.indexOf('Firefox/') != -1);
+			this._bPromise = isDefAndNotNull(window["Promise"]);
 		}
 
 		private chechTransferableObjects(): boolean {

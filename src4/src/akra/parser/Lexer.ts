@@ -14,10 +14,6 @@ module akra.parser {
 	logger.registerCode(LEXER_UNKNOWN_TOKEN, "Unknown token: {tokenValue}");
 	logger.registerCode(LEXER_BAD_TOKEN, "Bad token: {tokenValue}");
 
-	//interface AIStateMap {
-	//    [index: string]: AIState;
-	//}
-
 	final export class Lexer implements ILexer {
 		private _iLineNumber: uint;
 		private _iColumnNumber: uint;

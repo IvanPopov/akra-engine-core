@@ -7,6 +7,22 @@
 
 module akra.math {
 
+	import __11 = math.__11;
+	import __12 = math.__12;
+	import __13 = math.__13;
+	import __14 = math.__14;
+	import __21 = math.__21;
+	import __22 = math.__22;
+	import __23 = math.__23;
+	import __24 = math.__24;
+	import __31 = math.__31;
+	import __32 = math.__32;
+	import __33 = math.__33;
+	import __34 = math.__34;
+	import __41 = math.__41;
+	import __42 = math.__42;
+	import __43 = math.__43;
+	import __44 = math.__44;
 
 	var pBuffer: IVec3[];
 	var iElement: uint;
@@ -23,7 +39,7 @@ module akra.math {
 		constructor(x: float, yz: IVec2);
 		constructor(xy: IVec2, z: float);
 		constructor(x: float, y: float, z: float);
-		constructor(x?, y?, z?) {
+		constructor() {
 			var nArg: uint = arguments.length;
 
 			switch (nArg) {
@@ -49,7 +65,7 @@ module akra.math {
 		set(x: float, yz: IVec2): IVec3;
 		set(xy: IVec2, z: float): IVec3;
 		set(x: float, y: float, z: float): IVec3;
-		set(x?, y?, z?): IVec3 {
+		set(): IVec3 {
 			var nArgumentsLength = arguments.length;
 
 			switch (nArgumentsLength) {
@@ -599,10 +615,60 @@ module akra.math {
 		static temp(x: float, yz: IVec2): IVec3;
 		static temp(xy: IVec2, z: float): IVec3;
 		static temp(x: float, y: float, z: float): IVec3;
-		static temp(x?, y?, z?): IVec3 {
+		static temp(): IVec3 {
 			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
 			var p = pBuffer[iElement++];
-			return p.set.apply(p, arguments);
+			var nArgumentsLength = arguments.length;
+
+			switch (nArgumentsLength) {
+				case 0:
+					p.x = p.y = p.z = 0.;
+					break;
+				case 1:
+					if (isFloat(arguments[0])) {
+						p.x = p.y = p.z = arguments[0];
+					}
+					else if (arguments[0] instanceof Vec3) {
+						var v3fVec: IVec3 = <IVec3>arguments[0];
+
+						p.x = v3fVec.x;
+						p.y = v3fVec.y;
+						p.z = v3fVec.z;
+					}
+					else {
+						var pArray: float[] = arguments[0];
+
+						p.x = pArray[0];
+						p.y = pArray[1];
+						p.z = pArray[2];
+					}
+					break;
+				case 2:
+					if (isFloat(arguments[0])) {
+						var fValue: float = arguments[0];
+						var v2fVec: IVec2 = <IVec2>arguments[1];
+
+						p.x = fValue;
+						p.y = v2fVec.x;
+						p.z = v2fVec.y;
+					}
+					else {
+						var v2fVec: IVec2 = arguments[0];
+						var fValue: float = arguments[1];
+
+						p.x = v2fVec.x;
+						p.y = v2fVec.y;
+						p.z = fValue;
+					}
+					break;
+				case 3:
+					p.x = arguments[0];
+					p.y = arguments[1];
+					p.z = arguments[2];
+					break;
+			}
+
+			return p;
 		}
 	}
 
