@@ -11,9 +11,6 @@ var path = require("path");
 var util = require('./lib/grunt/utils.js');
 
 module.exports = function (grunt) {
-	var extend = require('util')._extend,
-		resolve = require('path').resolve;
-
 	require(path.resolve('lib/grunt/build.js'))(grunt);
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
@@ -28,10 +25,12 @@ module.exports = function (grunt) {
 	require('time-grunt')(grunt);
 
 	//TODO: util.getVersion() from package.json
+	// ReSharper disable once InconsistentNaming
 	var AE_VERSION = {
 		full: "0.4.1"
 	};
 
+	// ReSharper disable once UnusedLocals
 	var dist = "akraengine-" + AE_VERSION.full;
 
 	grunt.initConfig({
@@ -71,46 +70,46 @@ module.exports = function (grunt) {
 				}
 			},
 			//addons: {
-				"addon-navigation": {
-					src: files.akraAddons.navigation,
-					dest: "build/addons/navigation.addon.js",
-					options: {
-						target: "es3",
-						removeComments: true,
-						propagateEnumConstants: true,
-						sourceMap: true
-					}
-				},
-				"addon-filedrop": {
-					src: files.akraAddons.filedrop,
-					dest: "build/addons/filedrop.addon.js",
-					options: {
-						target: "es3",
-						removeComments: true,
-						propagateEnumConstants: true,
-						sourceMap: true
-					}
-				},
-				"addon-base3dObjects": {
-					src: files.akraAddons.base3dObjects,
-					dest: "build/addons/base3dObjects.addon.js",
-					options: {
-						target: "es3",
-						removeComments: true,
-						propagateEnumConstants: true,
-						sourceMap: true
-					}
-				},
-				"addon-progress": {
-					src: files.akraAddons.progress,
-					dest: "build/addons/progress.addon.js",
-					options: {
-						target: "es3",
-						removeComments: true,
-						propagateEnumConstants: true,
-						sourceMap: true
-					}
+			"addon-navigation": {
+				src: files.akraAddons.navigation,
+				dest: "build/addons/navigation.addon.js",
+				options: {
+					target: "es3",
+					removeComments: true,
+					propagateEnumConstants: true,
+					sourceMap: true
 				}
+			},
+			"addon-filedrop": {
+				src: files.akraAddons.filedrop,
+				dest: "build/addons/filedrop.addon.js",
+				options: {
+					target: "es3",
+					removeComments: true,
+					propagateEnumConstants: true,
+					sourceMap: true
+				}
+			},
+			"addon-base3dObjects": {
+				src: files.akraAddons.base3dObjects,
+				dest: "build/addons/base3dObjects.addon.js",
+				options: {
+					target: "es3",
+					removeComments: true,
+					propagateEnumConstants: true,
+					sourceMap: true
+				}
+			},
+			"addon-progress": {
+				src: files.akraAddons.progress,
+				dest: "build/addons/progress.addon.js",
+				options: {
+					target: "es3",
+					removeComments: true,
+					propagateEnumConstants: true,
+					sourceMap: true
+				}
+			}
 			//}
 		},
 		clean: {
@@ -148,16 +147,16 @@ module.exports = function (grunt) {
 		}
 	});
 
-	
+
 	grunt.config("AE_ZIP", !grunt.option('no-zip'));
 	grunt.log.writeln("Using external zip: " + grunt.config.get("AE_ZIP"));
 
 	grunt.config("AE_CONFIGURATION", grunt.option('configuration') || 'Debug');
 	grunt.log.writeln("Configuration: " + grunt.config.get("AE_CONFIGURATION"));
 
-	grunt.registerTask('decl', 'Build with declaration.', function(target) {
-	  grunt.config("build." + target + ".options.declaration", true);
-	  grunt.task.run("build:" + target);
+	grunt.registerTask('decl', 'Build with declaration.', function (target) {
+		grunt.config("build." + target + ".options.declaration", true);
+		grunt.task.run("build:" + target);
 	});
 
 	grunt.registerTask("lint", ["tslint"]);
@@ -169,7 +168,7 @@ module.exports = function (grunt) {
 		"decl:addon-filedrop",
 		"decl:addon-base3dObjects",
 		"decl:addon-progress",
-		"decl:ui",
+		"decl:ui"
 	]);
 
 

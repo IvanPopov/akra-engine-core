@@ -51,7 +51,7 @@ module.exports = function (grunt) {
 			minimizationLevel = options.min_level;
 		}
 
-		var tsBin = "";
+		var tsBin;
 		if (options.tscc || grunt.option("tscc") || minimizationLevel > 0) {
 			tsBin = path.normalize(__dirname + '/tscc/tscc.js');
 		}
