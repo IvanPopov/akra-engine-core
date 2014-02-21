@@ -326,11 +326,11 @@ module akra.fx {
 				var pMaterial: IMaterial = pSurfaceMaterial.getMaterial();
 				var pMatContainer: any = this._pMaterialContainer;
 
-				pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
-				pMatContainer.AMBIENT.set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
-				pMatContainer.SPECULAR.set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
-				pMatContainer.EMISSIVE.set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
-				pMatContainer.SHININESS = pMaterial.shininess;
+				pMatContainer["DIFFUSE"].set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
+				pMatContainer["AMBIENT"].set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
+				pMatContainer["SPECULAR"].set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
+				pMatContainer["EMISSIVE"].set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
+				pMatContainer["SHININESS"] = pMaterial.shininess;
 
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}

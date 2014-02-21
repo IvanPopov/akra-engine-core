@@ -211,8 +211,8 @@ module TypeScript {
 
 		private thisFullInterfaceName: string = null;
 
-		private emittedInterfaceSymbols: PullSymbol[] = [];
-		private usedButNotEmittedInterfaces: PullSymbol[] = [];
+		private emittedInterfaces: InterfaceDeclaration[] = [];
+		private usedButNotEmittedInterfaces: InterfaceDeclaration[] = [];
 
 		/** For emit typedef comments without type parameters */
 		private isTypeParametersEmitBlocked = false;
@@ -1815,7 +1815,7 @@ module TypeScript {
 			this.currentVariableDeclaration = undefined;
 			this.popDecl(pullDecl);
 
-			if (!isAdditionalDeclaration && hasFlag(pullDecl.flags, PullElementFlags.Exported)/* && symbol.type.isFunction()*/) {
+			if (!isAdditionalDeclaration && hasFlag(pullDecl.flags, PullElementFlags.Exported) && symbol.type.isFunction()) {
 				this.exportSymbol(symbol);
 			}
 		}
@@ -2487,8 +2487,8 @@ module TypeScript {
 			if (this.usedButNotEmittedInterfaces.length > 0) {
 				var pArr = this.usedButNotEmittedInterfaces;
 
-				while (pArr.length !== 0) {
-					this.emitInterfaceDeclaration(<InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(pArr[0].getDeclarations()[0]));
+				while (this.usedButNotEmittedInterfaces.length !== 0) {
+					this.emitInterfaceDeclaration(this.usedButNotEmittedInterfaces[0]);
 					this.writeLineToOutput("");
 				}
 			}
@@ -2647,6 +2647,7 @@ module TypeScript {
 
 			var className = classDecl.identifier.text();
 			var fullClassName = className;
+			var emittedClassName = className;
 			var constrDecl = getLastConstructor(classDecl);
 
 			//this.emitComments(classDecl, true);
@@ -2660,10 +2661,10 @@ module TypeScript {
 
 			if ((temp === EmitContainer.Module || temp === EmitContainer.DynamicModule) && hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
 				var modName = temp === EmitContainer.Module ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
-				this.thisFullClassName = fullClassName = modName + "." + className;
+				fullClassName = modName + "." + className;
 			}
 
-			this.thisFullClassName = fullClassName;
+			this.thisFullClassName = emittedClassName = fullClassName;
 
 			if (hasBaseClass) {
 
@@ -2688,8 +2689,8 @@ module TypeScript {
 
 			if (fullClassName.indexOf(".") < 0) {
 				var symbol = (<PullTypeSymbol>pullDecl.getSymbol()).getConstructorMethod();
-				this.thisFullClassName = fullClassName = this.getObfuscatedName(symbol, className);
-				this.writeToOutput("var " + fullClassName + " = ");
+				this.thisFullClassName = emittedClassName = this.getObfuscatedName(symbol, className, true);
+				this.writeToOutput("var " + emittedClassName + " = ");
 			}
 			else {
 				this.writeToOutput(fullClassName + " = ");
@@ -2732,11 +2733,15 @@ module TypeScript {
 
 			if (hasBaseClass) {
 				this.emitIndent();
-				this.writeLineToOutput("__extends(" + fullClassName + ", " + fullExtendClassName + ");");
+				this.writeLineToOutput("__extends(" + emittedClassName + ", " + fullExtendClassName + ");");
 			}
 
 			if (hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
-				this.exportSymbol(pullDecl.getSymbol());
+				this.exportSymbol(pullDecl.getSymbol(), emittedClassName);
+			}
+
+			if (fullClassName.indexOf(".") >= 0 && fullClassName !== emittedClassName) {
+				this.writeLineToOutput("/** @type {" + emittedClassName + "} */ " + fullClassName + " = " + emittedClassName + ";");
 			}
 
 			this.emitClassMembers(classDecl);
@@ -2871,7 +2876,9 @@ module TypeScript {
 
 			this.writeLineToOutput(";");
 
-			if (hasFlag(pullDecl.flags, PullElementFlags.Public)) {
+			if (hasFlag(pullDecl.flags, PullElementFlags.Public) && hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported) &&
+				(hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final) || hasModifier(funcDecl.modifiers, PullElementFlags.Final)) &&
+				!Emitter.isAkraSystemFunctionName(functionName)) {
 				var className = this.thisFullClassName;
 				var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (className + ".prototype");
 				var exportLocation = className === location ? location : (className + "['prototype']");
@@ -3706,18 +3713,14 @@ module TypeScript {
 			var name = symbol.getDisplayName();
 			var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
-			this.emittedInterfaceSymbols.push(symbol);
+			this.emittedInterfaces.push(declaration);
 
-			var index = this.usedButNotEmittedInterfaces.indexOf(symbol);
+			var index = this.usedButNotEmittedInterfaces.indexOf(declaration);
 			if (index >= 0) {
-				this.usedButNotEmittedInterfaces.splice(index);
+				this.usedButNotEmittedInterfaces.splice(index, 1);
 			}
 
-			if (name === "String" ||
-				name === "Number" ||
-				name === "Array" ||
-				name === "Function" ||
-				isDTSFile(declaration.fileName())) {
+			if (isDTSFile(declaration.fileName())) {
 				return;
 			}
 
@@ -3791,7 +3794,13 @@ module TypeScript {
 				}
 
 				this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
-				this.writeToOutput(this.thisFullInterfaceName + '.prototype.' + name + ';');
+				this.writeToOutput(this.thisFullInterfaceName + '.prototype');
+				if (isQuoted(name)) {
+					this.writeToOutput("[" + name + "];");
+				}
+				else {
+					this.writeToOutput('.' + name + ';');
+				}
 				lastEmittedMember = memberDecl;
 			}
 		}
@@ -4061,8 +4070,8 @@ module TypeScript {
 			return PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(PullElementFlags.Exported) && !symbol.isPrimitive();
 		}
 
-		private getObfuscatedName(symbol: PullSymbol, origName: string): string {
-			if (!this.isNeedObfuscateName(symbol)) {
+		private getObfuscatedName(symbol: PullSymbol, origName: string, force: boolean = false): string {
+			if (!force && !this.isNeedObfuscateName(symbol)) {
 				return origName;
 			}
 
@@ -4130,8 +4139,11 @@ module TypeScript {
 
 			var symbolName = this.getObfuscatedName(correctSymbol, correctSymbol.getDisplayName());
 
-			if (correctSymbol.isInterface() && this.emittedInterfaceSymbols.indexOf(correctSymbol) < 0) {
-				this.usedButNotEmittedInterfaces.push(correctSymbol);
+			if (correctSymbol.isInterface()){
+				var decl = <InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(correctSymbol.getDeclarations()[0]);
+				if (this.emittedInterfaces.indexOf(decl) < 0 && this.usedButNotEmittedInterfaces.indexOf(decl) < 0) {
+					this.usedButNotEmittedInterfaces.push(decl);
+				}
 			}
 
 			return moduleName + symbolName;
@@ -4231,8 +4243,9 @@ module TypeScript {
 				var isPrivate = hasModifier(funcDecl.modifiers, PullElementFlags.Private);
 				var isProtected = hasModifier(funcDecl.modifiers, PullElementFlags.Protected);
 				var isStatic = hasModifier(funcDecl.modifiers, PullElementFlags.Static);
+				var isAkraSystemFunction = Emitter.isAkraSystemFunctionName(symbol.getDisplayName());
 
-				if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate) {
+				if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
 					jsDocComments.push("@expose");
 				}
 				else if (isFinalMethod) {
@@ -4384,6 +4397,10 @@ module TypeScript {
 			var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
 			this.isTypeParametersEmitBlocked = true;
 			var result = this.getJSDocForType(symbol.type);
+
+			if (symbol.anyDeclHasFlag(PullElementFlags.Exported) && !symbol.type.isFunction()) {
+				result.push("@expose");
+			}
 			this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
 			return result;
@@ -4395,11 +4412,11 @@ module TypeScript {
 			var isClassFinal = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
 
 			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
-				jsDocComments.push("@protected");
-
 				if (isClassExports && !isClassFinal) {
 					jsDocComments.push("@expose");
 				}
+
+				jsDocComments.push("@protected");
 			}
 			else if (symbol.anyDeclHasFlag(PullElementFlags.Public)) {
 				//jsDocComments.push("@public");
@@ -4530,7 +4547,7 @@ module TypeScript {
 			return symbol.getDisplayName() + "$rest";
 		}
 
-		private exportSymbol(symbol: PullSymbol): void {			
+		private exportSymbol(symbol: PullSymbol, symbolName?: string): void {			
 			this.writeLineToOutput("");
 			this.emitIndent();
 			var pullDecl = symbol.getDeclarations()[0];
@@ -4556,11 +4573,23 @@ module TypeScript {
 				return pullDecl.getSymbol().name;
 			});
 
-			var externalPath = "global['" + names.join("']['") + "']";
+			//var externalPath = "global['" + names.join("']['") + "']";
 			var internalPath: string = names.join(".");
 
-			this.writeToOutput(externalPath + "['" + symbol.name + "'] = " + internalPath + "." + symbol.name + ";");
+			this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
+
+			if (symbolName) {
+				this.writeToOutput(symbolName + ";");
+			}
+			else {
+				this.writeToOutput(internalPath + "." + symbol.name + ";");
+			}
+
 			this.writeLineToOutput("");
+		}
+
+		private static isAkraSystemFunctionName(name: string): boolean {
+			return name[0] === "_";
 		}
 
 	}

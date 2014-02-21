@@ -13,7 +13,7 @@
 
 
 module akra.io {
-	enum AEFileActions {
+	export enum AEFileActions {
 		k_Open = 1,
 		k_Read = 2,
 		k_Write,
@@ -22,7 +22,7 @@ module akra.io {
 		k_Remove
 	}
 
-	interface AIFileCommand {
+	export interface AIFileCommand {
 		act: AEFileActions;
 		name: string;
 		mode: int;

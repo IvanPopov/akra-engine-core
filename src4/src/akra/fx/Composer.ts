@@ -113,18 +113,18 @@ module akra.fx {
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
 		private _pComposerState: any = {
-			mesh: {
-				isSkinned: false,
-				isOptimizedSkinned: false
+			"mesh": {
+				"isSkinned": false,
+				"isOptimizedSkinned": false
 			},
-			object: {
-				isBillboard: false
+			"object": {
+				"isBillboard": false
 			},
-			terrain: {
-				isROAM: false
+			"terrain": {
+				"isROAM": false
 			},
-			renderable: {
-				isAdvancedIndex: false
+			"renderable": {
+				"isAdvancedIndex": false
 			}
 		};
 
@@ -887,26 +887,26 @@ module akra.fx {
 
 		private prepareComposerState(): void {
 			if (!isNull(this._pCurrentRenderable)) {
-				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.getData().useAdvancedIndex();
-				this._pComposerState.object.isBillboard = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
+				this._pComposerState["renderable"]["isAdvancedIndex"] = this._pCurrentRenderable.getData().useAdvancedIndex();
+				this._pComposerState["object"]["isBillboard"] = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
 
 
 				if (MeshSubset.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()) {
-					this._pComposerState.mesh.isSkinned = true;
-					this._pComposerState.mesh.isOptimizedSkinned = (<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned();
+					this._pComposerState["mesh"]["isSkinned"] = true;
+					this._pComposerState["mesh"]["isOptimizedSkinned"] = (<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned();
 				}
 				else {
-					this._pComposerState.mesh.isSkinned = false;
-					this._pComposerState.mesh.isOptimizedSkinned = false;
+					this._pComposerState["mesh"]["isSkinned"] = false;
+					this._pComposerState["mesh"]["isOptimizedSkinned"] = false;
 				}
 			}
 
 			if (!isNull(this._pCurrentSceneObject)) {
 				if (this._pCurrentSceneObject.getType() === EEntityTypes.TERRAIN_ROAM) {
-					this._pComposerState.terrain.isROAM = true;
+					this._pComposerState["terrain"]["isROAM"] = true;
 				}
 				else {
-					this._pComposerState.terrain.isROAM = false;
+					this._pComposerState["terrain"]["isROAM"] = false;
 				}
 			}
 		}

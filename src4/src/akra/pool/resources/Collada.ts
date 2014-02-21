@@ -99,18 +99,18 @@ module akra.pool.resources {
 		};
 
 		private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
-			{lib : 'library_images',        element : 'image',          loader : "COLLADAImage"         },
-			{lib : 'library_effects',       element : 'effect',         loader : "COLLADAEffect"        },
-			{lib : 'library_materials',     element : 'material',       loader : "COLLADAMaterial"      },
-			{lib : 'library_geometries',    element : 'geometry',       loader : "COLLADAGeometrie"     },
-			{lib : 'library_controllers',   element : 'controller',     loader : "COLLADAController"    },
-			{lib : 'library_cameras',       element : 'camera',         loader : "COLLADACamera"        },
-			{lib : 'library_lights',        element : 'light',          loader : "COLLADALight"         },
-			{lib : 'library_visual_scenes', element : 'visual_scene',   loader : "COLLADAVisualScene"   }
+			{lib : 'library_images',        element : 'image'        },
+			{lib : 'library_effects',       element : 'effect'       },
+			{lib : 'library_materials',     element : 'material'     },
+			{lib : 'library_geometries',    element : 'geometry'     },
+			{lib : 'library_controllers',   element : 'controller'   },
+			{lib : 'library_cameras',       element : 'camera'       },
+			{lib : 'library_lights',        element : 'light'        },
+			{lib : 'library_visual_scenes', element : 'visual_scene' }
 		];
 
 		private static ANIMATION_TEMPLATE: IColladaLibraryTemplate[] = [
-			{lib : 'library_animations',    element : 'animation',      loader : "COLLADAAnimation"     }
+			{lib : 'library_animations',    element : 'animation'    }
 		];
 
 		private static COLLADA_MATERIAL_NAMES: string[] = [
@@ -155,11 +155,13 @@ module akra.pool.resources {
 			return this._pOptions;
 		}
 
-
 		getByteLength(): uint {
 			return this._iByteLength;
 		}
-	
+
+		_setByteLength(iByteLength: uint): void {
+			this._iByteLength = iByteLength;
+		}
 
 		constructor () {
 			super();
@@ -689,7 +691,35 @@ module akra.pool.resources {
 					return;
 				}
 
-				pData = (<IColladaEntryLoader>((<any>this)[pTemplate.loader]))(pXMLData);
+				switch (sTag) {
+					case 'image':
+						pData = this.COLLADAImage(pXMLData);
+						break;
+					case 'effect':
+						pData = this.COLLADAEffect(pXMLData);
+						break;
+					case 'material':
+						pData = this.COLLADAMaterial(pXMLData);
+						break;
+					case 'geometry':
+						pData = this.COLLADAGeometrie(pXMLData);
+						break;
+					case 'controller':
+						pData = this.COLLADAController(pXMLData);
+						break;
+					case 'camera':
+						pData = this.COLLADACamera(pXMLData);
+						break;
+					case 'light':
+						pData = this.COLLADALight(pXMLData);
+						break;
+					case 'visual_scene':
+						pData = this.COLLADAVisualScene(pXMLData);
+						break;
+					case 'animation':
+						pData = this.COLLADAAnimation(pXMLData); 
+						break;
+				}
 
 				if (isNull(pData)) {
 					return;
@@ -2880,7 +2910,7 @@ module akra.pool.resources {
 
 			pFile.open(function (err, meta): void {
 				//FIXME: setuop byteLength correctly..
-				(<any>pModel)["_iByteLength"] = meta.size || 0;
+				pModel._setByteLength(meta.size || 0);
 			});
 		
 			pFile.read(function (pErr: Error, sXML: string) {

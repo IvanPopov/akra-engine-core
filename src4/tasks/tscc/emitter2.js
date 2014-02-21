@@ -217,7 +217,7 @@ var TypeScript;
             this.obfuscatedSymbolNameMap = {};
             this.obfuscatorCounter = 0;
             this.thisFullInterfaceName = null;
-            this.emittedInterfaceSymbols = [];
+            this.emittedInterfaces = [];
             this.usedButNotEmittedInterfaces = [];
             /** For emit typedef comments without type parameters */
             this.isTypeParametersEmitBlocked = false;
@@ -1757,7 +1757,7 @@ var TypeScript;
             this.currentVariableDeclaration = undefined;
             this.popDecl(pullDecl);
 
-            if (!isAdditionalDeclaration && TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */)) {
+            if (!isAdditionalDeclaration && TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */) && symbol.type.isFunction()) {
                 this.exportSymbol(symbol);
             }
         };
@@ -2413,8 +2413,8 @@ var TypeScript;
             if (this.usedButNotEmittedInterfaces.length > 0) {
                 var pArr = this.usedButNotEmittedInterfaces;
 
-                while (pArr.length !== 0) {
-                    this.emitInterfaceDeclaration(this.semanticInfoChain.getASTForDecl(pArr[0].getDeclarations()[0]));
+                while (this.usedButNotEmittedInterfaces.length !== 0) {
+                    this.emitInterfaceDeclaration(this.usedButNotEmittedInterfaces[0]);
                     this.writeLineToOutput("");
                 }
             }
@@ -2569,6 +2569,7 @@ var TypeScript;
 
             var className = classDecl.identifier.text();
             var fullClassName = className;
+            var emittedClassName = className;
             var constrDecl = getLastConstructor(classDecl);
 
             //this.emitComments(classDecl, true);
@@ -2581,10 +2582,10 @@ var TypeScript;
 
             if ((temp === 1 /* Module */ || temp === 2 /* DynamicModule */) && TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */)) {
                 var modName = temp === 1 /* Module */ ? pullDecl.getSymbol().getContainer().fullName() : "exports";
-                this.thisFullClassName = fullClassName = modName + "." + className;
+                fullClassName = modName + "." + className;
             }
 
-            this.thisFullClassName = fullClassName;
+            this.thisFullClassName = emittedClassName = fullClassName;
 
             if (hasBaseClass) {
                 baseTypeReference = TypeScript.getExtendsHeritageClause(classDecl.heritageClauses).typeNames.nonSeparatorAt(0);
@@ -2607,8 +2608,8 @@ var TypeScript;
 
             if (fullClassName.indexOf(".") < 0) {
                 var symbol = pullDecl.getSymbol().getConstructorMethod();
-                this.thisFullClassName = fullClassName = this.getObfuscatedName(symbol, className);
-                this.writeToOutput("var " + fullClassName + " = ");
+                this.thisFullClassName = emittedClassName = this.getObfuscatedName(symbol, className, true);
+                this.writeToOutput("var " + emittedClassName + " = ");
             } else {
                 this.writeToOutput(fullClassName + " = ");
             }
@@ -2651,11 +2652,15 @@ var TypeScript;
 
             if (hasBaseClass) {
                 this.emitIndent();
-                this.writeLineToOutput("__extends(" + fullClassName + ", " + fullExtendClassName + ");");
+                this.writeLineToOutput("__extends(" + emittedClassName + ", " + fullExtendClassName + ");");
             }
 
             if (TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */)) {
-                this.exportSymbol(pullDecl.getSymbol());
+                this.exportSymbol(pullDecl.getSymbol(), emittedClassName);
+            }
+
+            if (fullClassName.indexOf(".") >= 0 && fullClassName !== emittedClassName) {
+                this.writeLineToOutput("/** @type {" + emittedClassName + "} */ " + fullClassName + " = " + emittedClassName + ";");
             }
 
             this.emitClassMembers(classDecl);
@@ -2782,7 +2787,7 @@ var TypeScript;
 
             this.writeLineToOutput(";");
 
-            if (TypeScript.hasFlag(pullDecl.flags, 4 /* Public */)) {
+            if (TypeScript.hasFlag(pullDecl.flags, 4 /* Public */) && TypeScript.hasModifier(this.thisClassNode.modifiers, 1 /* Exported */) && (TypeScript.hasModifier(this.thisClassNode.modifiers, 268435456 /* Final */) || TypeScript.hasModifier(funcDecl.modifiers, 268435456 /* Final */)) && !Emitter.isAkraSystemFunctionName(functionName)) {
                 var className = this.thisFullClassName;
                 var location = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (className + ".prototype");
                 var exportLocation = className === location ? location : (className + "['prototype']");
@@ -3588,14 +3593,14 @@ var TypeScript;
             var name = symbol.getDisplayName();
             var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
-            this.emittedInterfaceSymbols.push(symbol);
+            this.emittedInterfaces.push(declaration);
 
-            var index = this.usedButNotEmittedInterfaces.indexOf(symbol);
+            var index = this.usedButNotEmittedInterfaces.indexOf(declaration);
             if (index >= 0) {
-                this.usedButNotEmittedInterfaces.splice(index);
+                this.usedButNotEmittedInterfaces.splice(index, 1);
             }
 
-            if (name === "String" || name === "Number" || name === "Array" || name === "Function" || TypeScript.isDTSFile(declaration.fileName())) {
+            if (TypeScript.isDTSFile(declaration.fileName())) {
                 return;
             }
 
@@ -3668,7 +3673,12 @@ var TypeScript;
                 }
 
                 this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
-                this.writeToOutput(this.thisFullInterfaceName + '.prototype.' + name + ';');
+                this.writeToOutput(this.thisFullInterfaceName + '.prototype');
+                if (TypeScript.isQuoted(name)) {
+                    this.writeToOutput("[" + name + "];");
+                } else {
+                    this.writeToOutput('.' + name + ';');
+                }
                 lastEmittedMember = memberDecl;
             }
         };
@@ -3936,8 +3946,9 @@ var TypeScript;
             return TypeScript.PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.isPrimitive();
         };
 
-        Emitter.prototype.getObfuscatedName = function (symbol, origName) {
-            if (!this.isNeedObfuscateName(symbol)) {
+        Emitter.prototype.getObfuscatedName = function (symbol, origName, force) {
+            if (typeof force === "undefined") { force = false; }
+            if (!force && !this.isNeedObfuscateName(symbol)) {
                 return origName;
             }
 
@@ -4002,8 +4013,11 @@ var TypeScript;
 
             var symbolName = this.getObfuscatedName(correctSymbol, correctSymbol.getDisplayName());
 
-            if (correctSymbol.isInterface() && this.emittedInterfaceSymbols.indexOf(correctSymbol) < 0) {
-                this.usedButNotEmittedInterfaces.push(correctSymbol);
+            if (correctSymbol.isInterface()) {
+                var decl = this.semanticInfoChain.getASTForDecl(correctSymbol.getDeclarations()[0]);
+                if (this.emittedInterfaces.indexOf(decl) < 0 && this.usedButNotEmittedInterfaces.indexOf(decl) < 0) {
+                    this.usedButNotEmittedInterfaces.push(decl);
+                }
             }
 
             return moduleName + symbolName;
@@ -4093,8 +4107,9 @@ var TypeScript;
                 var isPrivate = TypeScript.hasModifier(funcDecl.modifiers, 2 /* Private */);
                 var isProtected = TypeScript.hasModifier(funcDecl.modifiers, 134217728 /* Protected */);
                 var isStatic = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */);
+                var isAkraSystemFunction = Emitter.isAkraSystemFunctionName(symbol.getDisplayName());
 
-                if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate) {
+                if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
                     jsDocComments.push("@expose");
                 } else if (isFinalMethod) {
                     jsDocComments.push("@final");
@@ -4243,6 +4258,10 @@ var TypeScript;
             var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
             this.isTypeParametersEmitBlocked = true;
             var result = this.getJSDocForType(symbol.type);
+
+            if (symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.type.isFunction()) {
+                result.push("@expose");
+            }
             this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
             return result;
@@ -4254,11 +4273,11 @@ var TypeScript;
             var isClassFinal = TypeScript.hasModifier(this.thisClassNode.modifiers, 268435456 /* Final */);
 
             if (symbol.anyDeclHasFlag(134217728 /* Protected */)) {
-                jsDocComments.push("@protected");
-
                 if (isClassExports && !isClassFinal) {
                     jsDocComments.push("@expose");
                 }
+
+                jsDocComments.push("@protected");
             } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
                 //jsDocComments.push("@public");
                 if (isClassExports) {
@@ -4394,7 +4413,7 @@ var TypeScript;
             return symbol.getDisplayName() + "$rest";
         };
 
-        Emitter.prototype.exportSymbol = function (symbol) {
+        Emitter.prototype.exportSymbol = function (symbol, symbolName) {
             this.writeLineToOutput("");
             this.emitIndent();
             var pullDecl = symbol.getDeclarations()[0];
@@ -4420,11 +4439,22 @@ var TypeScript;
                 return pullDecl.getSymbol().name;
             });
 
-            var externalPath = "global['" + names.join("']['") + "']";
+            //var externalPath = "global['" + names.join("']['") + "']";
             var internalPath = names.join(".");
 
-            this.writeToOutput(externalPath + "['" + symbol.name + "'] = " + internalPath + "." + symbol.name + ";");
+            this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
+
+            if (symbolName) {
+                this.writeToOutput(symbolName + ";");
+            } else {
+                this.writeToOutput(internalPath + "." + symbol.name + ";");
+            }
+
             this.writeLineToOutput("");
+        };
+
+        Emitter.isAkraSystemFunctionName = function (name) {
+            return name[0] === "_";
         };
         Emitter.EMPTY_STRING_LIST = [];
         return Emitter;

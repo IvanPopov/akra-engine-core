@@ -16,12 +16,12 @@ module akra.fx.instructions {
 		private _sFunctionCode: string = "";
 
 		private _isComlexPass: boolean = false;
-		private _pShadersMap: IAFXFunctionDeclMap = null;
+		protected _pShadersMap: IAFXFunctionDeclMap = null;
 		private _fnPassFunction: { (engine: any, foreigtn: any, uniforms: any): void; } = null;
 
 		private _pVertexShader: IAFXFunctionDeclInstruction = null;
 		private _pPixelShader: IAFXFunctionDeclInstruction = null;
-		private _pPassStateMap: IMap<ERenderStateValues> = null;
+		protected _pPassStateMap: IMap<ERenderStateValues> = null;
 
 
 		private _pSharedVariableMapV: IAFXVariableDeclMap = null;
