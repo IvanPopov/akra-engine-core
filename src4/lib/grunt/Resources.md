@@ -42,3 +42,52 @@
   </Project>
 </AkraResources>
 ```
+
+## Common
+
+The root tag must be:
+
+```
+ <AkraResources></AkraResources>
+```
+
+Inside the tag **&lt;AkraResources /&gt;** can be used only tag **&lt;Project /&gt;**.
+
+### Project
+
+***
+
+#### Introduction
+
+Declares the project section.
+
+#### Concepts
+
+The **&lt;Project/&gt;** element describe all information about project.
+
+#### Attributes
+
+The **&lt;Project/&gt;** element has the folowing attributes:
+
+| Attribute    | Type       | Description                                 |
+| ------------ | ---------- | ------------------------------------------- |
+| **Name**     | **string** | The name of project specified in gruntfile. |
+
+
+#### Child Elements
+
+| Name/Example            | Description         | Default  | Occurrences |
+| ----------------------- | ------------------- | -------- | ----------- |
+| **&lt;Variable/&gt;**   | Declare variable.   |    N/A   | 0 or more   |
+| **&lt;Attachment/&gt;** | Declare attachment. |    N/A   | 0 or more   |
+| **&lt;Resource/&gt;**   | Declare resource.   |    N/A   | 0 or more   |
+
+#### Details
+
+#### Example
+
+```xml
+  <Project Name="project1">
+    <Variable Name="AE_DEBUG">$('Configuration') == 'Debug'</Variable>
+  </Project>
+```
