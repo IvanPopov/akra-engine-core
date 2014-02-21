@@ -331,7 +331,7 @@ module TypeScript {
 				if (usePropertyAssignmentInsteadOfVarDecl) {
 					this.writeToOutput(moduleNamePrefix);
 				} else {
-					this.writeToOutput("var ");
+					this.writeToOutput("var /** @const */");
 				}
 
 				this.writeToOutput(this.getObfuscatedName(importSymbol, importDeclAST.identifier.text()) + " = ");
@@ -1708,7 +1708,6 @@ module TypeScript {
 			var pullDecl = this.semanticInfoChain.getDeclForAST(varDecl);
 			this.pushDecl(pullDecl);
 
-
 			if (pullDecl && (pullDecl.flags & PullElementFlags.Ambient) === PullElementFlags.Ambient) {
 				this.emitAmbientVarDecl(varDecl);
 			}
@@ -1718,7 +1717,12 @@ module TypeScript {
 				var hasInitializer = varDecl.equalsValueClause !== null;
 				var jsDocComments = null;
 				var isAdditionalDeclaration = false;
-				
+
+
+				//if (symbol.getDisplayName() === "END_SYMBOL") {
+				//	debugger;
+				//}
+
 				this.recordSourceMappingStart(this.currentVariableDeclaration);
 
 				// Google's Closure Compiler requires one variable statement per function.
@@ -1740,9 +1744,22 @@ module TypeScript {
 				}
 
 				if (!isAdditionalDeclaration) {
+					var userComments = null;
+
+					if (this.currentVariableDeclaration && this.currentVariableDeclaration.kind() === SyntaxKind.VariableDeclaration) {
+						userComments = Emitter.getUserComments(this.currentVariableDeclaration.parent);
+					}
+					else {
+						userComments = Emitter.getUserComments(varDecl);
+					}
+
+					var isConst = userComments.join(' ').search("@const") >= 0 || userComments.join(' ').search("@define") >= 0;
+				}
+
+				if (!isAdditionalDeclaration) {
 					if (symbol.isProperty()) {
 						if (this.emittedClassProperties.indexOf(symbol) < 0) {
-							jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+							jsDocComments = this.getJSDocForClassMemberVariable(symbol, isConst);
 							this.emittedClassProperties.push(symbol);
 						}
 						else {
@@ -1750,9 +1767,9 @@ module TypeScript {
 						}
 					}
 					else {
-						jsDocComments = this.getJSDocForVariableDeclaration(symbol);
+						jsDocComments = this.getJSDocForVariableDeclaration(symbol, isConst);
 					}
-				}				
+				}
 
 				//this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
 
@@ -1772,12 +1789,12 @@ module TypeScript {
 					if (!hasFlag(pullDecl.flags, PullElementFlags.Exported)/* && !varDecl.isProperty() */) {
 						this.emitVarDeclVar();
 						if (!isAdditionalDeclaration) {
-							this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
-						}					
+							this.emitInlineJSDocComment(userComments, jsDocComments);
+						}
 					}
 					else {
 						if (!isAdditionalDeclaration) {
-							this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+							this.emitInlineJSDocComment(userComments, jsDocComments);
 						}
 
 						if (this.emitState.container === EmitContainer.DynamicModule) {
@@ -1793,7 +1810,7 @@ module TypeScript {
 				else {
 					this.emitVarDeclVar();
 					if (!isAdditionalDeclaration) {
-						this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+						this.emitInlineJSDocComment(userComments, jsDocComments);
 					}					
 				}
 
@@ -4100,7 +4117,7 @@ module TypeScript {
 			}
 			return Emitter.EMPTY_STRING_LIST.concat<any>(comments.map((comment: Comment) => {
 				return comment.fullText().split('\n');
-			})).map((line: string) => (line + '').replace(/^\/\/\s?/, ''));
+			})).map((line: string) => (line + '').replace(/^\/\/\s?/, '').replace(/^\/\*\*/, '').replace(/\*\/$/,''));
 		}
 
 		private static joinJSDocComments(first: string[], second: string[]): string[] {
@@ -4393,12 +4410,12 @@ module TypeScript {
 			return ['@enum {number}'];
 		}
 
-		private getJSDocForVariableDeclaration(symbol: PullSymbol): string[]{
+		private getJSDocForVariableDeclaration(symbol: PullSymbol, isConst: boolean = false): string[]{
 			var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
 			this.isTypeParametersEmitBlocked = true;
 			var result = this.getJSDocForType(symbol.type);
 
-			if (symbol.anyDeclHasFlag(PullElementFlags.Exported) && !symbol.type.isFunction()) {
+			if (symbol.anyDeclHasFlag(PullElementFlags.Exported) && !symbol.type.isFunction() && !isConst) {
 				result.push("@expose");
 			}
 			this.isTypeParametersEmitBlocked = svIsBlockTemplate;
@@ -4406,13 +4423,13 @@ module TypeScript {
 			return result;
 		}
 
-		private getJSDocForClassMemberVariable(symbol: PullSymbol): string[] {
-			var jsDocComments: string[] = this.getJSDocForVariableDeclaration(symbol);
+		private getJSDocForClassMemberVariable(symbol: PullSymbol, isConst: boolean = false): string[] {
+			var jsDocComments: string[] = this.getJSDocForVariableDeclaration(symbol, isConst);
 			var isClassExports = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported);
 			var isClassFinal = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
 
 			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
-				if (isClassExports && !isClassFinal) {
+				if (isClassExports && !isClassFinal && !isConst) {
 					jsDocComments.push("@expose");
 				}
 
@@ -4421,7 +4438,7 @@ module TypeScript {
 			else if (symbol.anyDeclHasFlag(PullElementFlags.Public)) {
 				//jsDocComments.push("@public");
 
-				if (isClassExports) {
+				if (isClassExports && !isConst) {
 					jsDocComments.push("@expose");
 				}
 			}

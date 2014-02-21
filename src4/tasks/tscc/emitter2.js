@@ -319,7 +319,7 @@ var TypeScript;
                 if (usePropertyAssignmentInsteadOfVarDecl) {
                     this.writeToOutput(moduleNamePrefix);
                 } else {
-                    this.writeToOutput("var ");
+                    this.writeToOutput("var /** @const */");
                 }
 
                 this.writeToOutput(this.getObfuscatedName(importSymbol, importDeclAST.identifier.text()) + " = ");
@@ -1670,6 +1670,9 @@ var TypeScript;
                 var jsDocComments = null;
                 var isAdditionalDeclaration = false;
 
+                //if (symbol.getDisplayName() === "END_SYMBOL") {
+                //	debugger;
+                //}
                 this.recordSourceMappingStart(this.currentVariableDeclaration);
 
                 // Google's Closure Compiler requires one variable statement per function.
@@ -1689,15 +1692,27 @@ var TypeScript;
                 }
 
                 if (!isAdditionalDeclaration) {
+                    var userComments = null;
+
+                    if (this.currentVariableDeclaration && this.currentVariableDeclaration.kind() === 239 /* VariableDeclaration */) {
+                        userComments = Emitter.getUserComments(this.currentVariableDeclaration.parent);
+                    } else {
+                        userComments = Emitter.getUserComments(varDecl);
+                    }
+
+                    var isConst = userComments.join(' ').search("@const") >= 0 || userComments.join(' ').search("@define") >= 0;
+                }
+
+                if (!isAdditionalDeclaration) {
                     if (symbol.isProperty()) {
                         if (this.emittedClassProperties.indexOf(symbol) < 0) {
-                            jsDocComments = this.getJSDocForClassMemberVariable(symbol);
+                            jsDocComments = this.getJSDocForClassMemberVariable(symbol, isConst);
                             this.emittedClassProperties.push(symbol);
                         } else {
                             jsDocComments = [];
                         }
                     } else {
-                        jsDocComments = this.getJSDocForVariableDeclaration(symbol);
+                        jsDocComments = this.getJSDocForVariableDeclaration(symbol, isConst);
                     }
                 }
 
@@ -1718,11 +1733,11 @@ var TypeScript;
                     if (!TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */)) {
                         this.emitVarDeclVar();
                         if (!isAdditionalDeclaration) {
-                            this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+                            this.emitInlineJSDocComment(userComments, jsDocComments);
                         }
                     } else {
                         if (!isAdditionalDeclaration) {
-                            this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+                            this.emitInlineJSDocComment(userComments, jsDocComments);
                         }
 
                         if (this.emitState.container === 2 /* DynamicModule */) {
@@ -1735,7 +1750,7 @@ var TypeScript;
                 } else {
                     this.emitVarDeclVar();
                     if (!isAdditionalDeclaration) {
-                        this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+                        this.emitInlineJSDocComment(userComments, jsDocComments);
                     }
                 }
 
@@ -3973,7 +3988,7 @@ var TypeScript;
             return Emitter.EMPTY_STRING_LIST.concat(comments.map(function (comment) {
                 return comment.fullText().split('\n');
             })).map(function (line) {
-                return (line + '').replace(/^\/\/\s?/, '');
+                return (line + '').replace(/^\/\/\s?/, '').replace(/^\/\*\*/, '').replace(/\*\/$/, '');
             });
         };
 
@@ -4254,12 +4269,13 @@ var TypeScript;
             return ['@enum {number}'];
         };
 
-        Emitter.prototype.getJSDocForVariableDeclaration = function (symbol) {
+        Emitter.prototype.getJSDocForVariableDeclaration = function (symbol, isConst) {
+            if (typeof isConst === "undefined") { isConst = false; }
             var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
             this.isTypeParametersEmitBlocked = true;
             var result = this.getJSDocForType(symbol.type);
 
-            if (symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.type.isFunction()) {
+            if (symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.type.isFunction() && !isConst) {
                 result.push("@expose");
             }
             this.isTypeParametersEmitBlocked = svIsBlockTemplate;
@@ -4267,20 +4283,21 @@ var TypeScript;
             return result;
         };
 
-        Emitter.prototype.getJSDocForClassMemberVariable = function (symbol) {
-            var jsDocComments = this.getJSDocForVariableDeclaration(symbol);
+        Emitter.prototype.getJSDocForClassMemberVariable = function (symbol, isConst) {
+            if (typeof isConst === "undefined") { isConst = false; }
+            var jsDocComments = this.getJSDocForVariableDeclaration(symbol, isConst);
             var isClassExports = TypeScript.hasModifier(this.thisClassNode.modifiers, 1 /* Exported */);
             var isClassFinal = TypeScript.hasModifier(this.thisClassNode.modifiers, 268435456 /* Final */);
 
             if (symbol.anyDeclHasFlag(134217728 /* Protected */)) {
-                if (isClassExports && !isClassFinal) {
+                if (isClassExports && !isClassFinal && !isConst) {
                     jsDocComments.push("@expose");
                 }
 
                 jsDocComments.push("@protected");
             } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
                 //jsDocComments.push("@public");
-                if (isClassExports) {
+                if (isClassExports && !isConst) {
                     jsDocComments.push("@expose");
                 }
             } else if (symbol.anyDeclHasFlag(2 /* Private */)) {
