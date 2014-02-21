@@ -186,7 +186,7 @@ module akra.model {
 
 			this._pSkyBlitBox = new pixelUtil.PixelBox(this._nSize, this._nSize, 1, EPixelFormats.FLOAT32_RGBA, new Uint8Array(this._pSkyBuffer.getByteLength()));
 
-			if (config.SKY_GPU) {
+			if (config.USE_ATMOSPHERIC_SCATTERING_GPU_MODE) {
 				var pScreen: IRenderableObject = this._pScreen = new render.Screen(pEngine.getRenderer());
 
 				var pSkyDomeUpdateMethod: IRenderMethod = pRsmgr.createRenderMethod(".skydomeupdate");
@@ -215,7 +215,7 @@ module akra.model {
 
 
 		_onSkyDomeTexRender(pTechnique: IRenderTechnique, iPass: uint): void {
-			if (config.SKY_GPU) {
+			if (config.USE_ATMOSPHERIC_SCATTERING_GPU_MODE) {
 				debug.assert(iPass === 0, "invalid pass");
 
 				var pPass: IRenderPass = pTechnique.getPass(iPass);
@@ -253,7 +253,7 @@ module akra.model {
 
 
 		updateSkyBuffer(pPass: IRenderPass): void {
-			if (!config.SKY_GPU) {
+			if (!config.USE_ATMOSPHERIC_SCATTERING_GPU_MODE) {
 				var pPixelBuffer: IPixelBuffer = this.getWrite().getBuffer();
 				// var pBox: IBox = geometry.box(0, 0, 0, this._nSize, this._nSize, 1);
 

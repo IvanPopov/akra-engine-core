@@ -23,7 +23,7 @@ module akra.webgl {
 		var pWebGLTexture: WebGLTexture = pWebGLVertexTexture.getWebGLTexture();
 
 		/*update skinned position program*/
-
+		
 		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().findResource(".WEBGL_skinning_update");
 		if (isNull(pWebGLProgram)) {
 			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().createResource(".WEBGL_skinning_update");

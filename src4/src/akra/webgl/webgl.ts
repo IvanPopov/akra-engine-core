@@ -77,7 +77,6 @@ module akra.webgl {
 		if (isDef((<any>window).WebGLDebugUtils)) {
 			pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext,
 				(err: int, funcName: string, args: IArguments): void => {
-					//debug.log(__CALLSTACK__);
 					throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
 				},
 				(funcName: string, args: IArguments): void => {
@@ -215,7 +214,7 @@ module akra.webgl {
 		}
 
 		if (isDefAndNotNull(pWebGLContext)) {
-			if (config.WEBGL_DEBUG) {
+			if (WebGLDebugUtils) {
 				return makeDebugContext(setupContext(pWebGLContext));
 			}
 			else {

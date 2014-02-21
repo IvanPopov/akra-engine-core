@@ -35,8 +35,10 @@ module.exports = function (grunt) {
 	var dist = "akraengine-" + AE_VERSION.full;
 
 	grunt.initConfig({
+		//global configuration
 		AE_CONFIGURATION: 'Debug',
 		AE_VERSION: AE_VERSION,
+		AE_ZIP: true,					//include extrenal zip reader to core.
 
 		pkg: grunt.file.readJSON("package.json"),
 		build: {
@@ -146,8 +148,12 @@ module.exports = function (grunt) {
 		}
 	});
 
-	grunt.config("configuration", grunt.option('configuration') || 'Debug');
-	grunt.log.debug("Configuration: " + grunt.config.get("configuration"));
+	
+	grunt.config("AE_ZIP", !grunt.option('no-zip'));
+	grunt.log.writeln("Using external zip: " + grunt.config.get("AE_ZIP"));
+
+	grunt.config("AE_CONFIGURATION", grunt.option('configuration') || 'Debug');
+	grunt.log.writeln("Configuration: " + grunt.config.get("AE_CONFIGURATION"));
 
 	grunt.registerTask('decl', 'Build with declaration.', function(target) {
 	  grunt.config("build." + target + ".options.declaration", true);

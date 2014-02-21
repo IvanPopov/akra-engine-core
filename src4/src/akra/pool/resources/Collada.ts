@@ -2094,6 +2094,8 @@ module akra.pool.resources {
 				return this.buildDefaultMaterials(pMesh);
 			}
 
+			// debug.time("Build materials #" + pGeometryInstance.geometry.id);
+
 			for (var sMaterial in pMaterials) {
 				var pMaterialInst: IColladaInstanceMaterial = pMaterials[sMaterial];
 				var pInputMap: IColladaBindVertexInputMap = pMaterialInst.vertexInput;
@@ -2158,15 +2160,16 @@ module akra.pool.resources {
 						}
 					}
 				}
-				//trace('try to apply mat:', pMaterial);
 			}
 
+			// debug.timeEnd("Build materials #" + pGeometryInstance.geometry.id);
 
 			return pMesh;
 		}
 
 
 		private buildSkeleton(pSkeletonsList: string[]): ISkeleton {
+			// debug.time("Build skeleton " + this.findResourceName());
 			var pSkeleton: ISkeleton = null;
 
 			pSkeleton = model.createSkeleton(pSkeletonsList[0]);
@@ -2180,11 +2183,12 @@ module akra.pool.resources {
 			}
 
 			this.addSkeleton(pSkeleton);
-
+			// debug.timeEnd("Build skeleton " + this.findResourceName());
 			return pSkeleton;
 		}
 
 		private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh {
+			
 			var pMesh: IMesh = null;
 			var pGeometry: IColladaGeometrie = pGeometryInstance.geometry;
 			var pNodeData: IColladaMesh = pGeometry.mesh;
@@ -2201,6 +2205,8 @@ module akra.pool.resources {
 					pGeometryInstance);
 			}
 
+			// debug.time("Build mesh #" + pGeometry.id);
+
 			var iBegin: int = Date.now();
 
 			pMesh = this.getEngine().createMesh(
@@ -2215,7 +2221,7 @@ module akra.pool.resources {
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
 				pMesh.createSubset("submesh-" + i, pPolyGroup[i].type);
 			}
-
+			
 			//filling data
 			for (var i: int = 0, pUsedSemantics: IMap<boolean> = <IMap<boolean>>{}; i < pPolyGroup.length; ++i) {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
@@ -2272,7 +2278,7 @@ module akra.pool.resources {
 					}
 				}
 			}
-
+			
 			//add indices to data
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
@@ -2318,12 +2324,13 @@ module akra.pool.resources {
 
 			//adding all data to cahce data
 			this.addMesh(pMesh);
-
+			// debug.timeEnd("Build mesh #" + pGeometry.id);
 
 			return this.buildMaterials(pMesh, pGeometryInstance);
 		}
 
 		private buildSkinMesh(pControllerInstance: IColladaInstanceController): IMesh {
+			// debug.time("Build skinned mesh #" + pControllerInstance.controller.id);
 			var pController: IColladaController = pControllerInstance.controller;
 			var pMaterials: IColladaBindMaterial = pControllerInstance.material;
 
@@ -2360,10 +2367,12 @@ module akra.pool.resources {
 				logger.error("cannot set vertex weight info to skin");
 			}
 
+			// debug.time("\t\t Mesh::setSkin()");
 			pMesh.setSkin(pSkin);
+			// debug.timeEnd("\t\t Mesh::setSkin()");
 			pMesh.setSkeleton(pSkeleton);
 			pSkeleton.attachMesh(pMesh);
-
+			// debug.timeEnd("Build skinned mesh #" + pControllerInstance.controller.id);
 			return pMesh;
 		}
 
@@ -2811,7 +2820,7 @@ module akra.pool.resources {
 				return false;
 			}
 
-			debug.time("parsed");
+			// debug.time("parsed");
 
 			var pParser: DOMParser = new DOMParser();
 			var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
@@ -2832,14 +2841,14 @@ module akra.pool.resources {
 				this.readLibraries(pXMLRoot, Collada.ANIMATION_TEMPLATE);
 			}
 
-			debug.timeEnd("parsed");
+			// debug.timeEnd("parsed");
 
 			return true;
 		}
 
 		loadResource(sFilename: string = null, pOptions: IColladaLoadOptions = null): boolean {
 			// debug.group("Collada %s", this.findResourceName());
-			debug.time("loaded " + this.findResourceName());
+			// debug.time("loaded " + this.findResourceName());
 
 			if (isNull(sFilename)) {
 				sFilename = this.findResourceName();
@@ -2867,16 +2876,13 @@ module akra.pool.resources {
 			pFile.read((e: Error, sXML: string): void => {
 				if (!isNull(e)) {
 					logger.error(e);
-					//debug.groupEnd();
 					return;
 				}
 				
 				this.notifyRestored();
 
 				if (this.parse(sXML, pOptions)) {
-					debug.timeEnd("loaded " + this.findResourceName());
-					//debug.groupEnd();
-
+					// debug.timeEnd("loaded " + this.findResourceName());
 					this.notifyLoaded();
 				}
 				//TODO: else....

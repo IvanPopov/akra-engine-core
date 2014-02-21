@@ -194,7 +194,6 @@ module akra.core {
 			return null;
 		}
 
-
 		getResourceManager(): IResourcePoolManager {
 			return this._pResourceManager;
 		}

@@ -4,8 +4,6 @@
 /// <reference path="../idl/IShaderInput.ts" />
 /// <reference path="../idl/IShaderProgram.ts" />
 
-//define PROFILE_MAKER
-
 /// <reference path="../config/config.ts" />
 /// <reference path="../webgl/webgl.ts" />
 /// <reference path="../logger.ts" />
@@ -583,10 +581,6 @@ module akra.fx {
 
 		_make(pPassInput: IAFXPassInputBlend, pBufferMap: IBufferMap): IShaderInput {
 
-			if (config.PROFILE_MAKER) {
-				var tStartTime: float = (<any>window).performance.now();
-				var tEndTime: float = 0.;
-			}
 
 			var pUniforms: any = pPassInput.uniforms;
 			var pTextures: any = pPassInput.textures
@@ -607,12 +601,6 @@ module akra.fx {
 				}
 			}
 
-			if (config.PROFILE_MAKER) {
-				tEndTime = (<any>window).performance.now();
-				this._pMakeTime[0] += tEndTime - tStartTime;
-				tStartTime = tEndTime;
-			}
-
 			for (var i: uint = 0; i < this._pInputSamplerInfoList.length; i++) {
 				var pInfo: IInputUniformInfo = this._pInputSamplerInfoList[i];
 
@@ -631,12 +619,6 @@ module akra.fx {
 				this.setSamplerState(pInput.uniforms[pInfo.shaderVarInfo.location], pTexture, pState);
 			}
 
-			if (config.PROFILE_MAKER) {
-				tEndTime = (<any>window).performance.now();
-				this._pMakeTime[1] += tEndTime - tStartTime;
-				tStartTime = tEndTime;
-			}
-
 			for (var i: uint = 0; i < this._pInputSamplerArrayInfoList.length; i++) {
 				var pInfo: IInputUniformInfo = this._pInputSamplerArrayInfoList[i];
 
@@ -647,12 +629,6 @@ module akra.fx {
 					var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerStates[j]);
 					this.setSamplerState(pInputStates[j], pTexture, pSamplerStates[j]);
 				}
-			}
-
-			if (config.PROFILE_MAKER) {
-				tEndTime = (<any>window).performance.now();
-				this._pMakeTime[2] += tEndTime - tStartTime;
-				tStartTime = tEndTime;
 			}
 
 			for (var i: uint = 0; i < this._pShaderAttrInfoList.length; i++) {
@@ -687,12 +663,6 @@ module akra.fx {
 
 			}
 
-			if (config.PROFILE_MAKER) {
-				tEndTime = (<any>window).performance.now();
-				this._pMakeTime[3] += tEndTime - tStartTime;
-				tStartTime = tEndTime;
-			}
-
 			if (this._isUsedZero2D) {
 				pInput.uniforms[this._pShaderUniformInfoMap["as0"].location] = 19;
 			}
@@ -703,29 +673,6 @@ module akra.fx {
 
 			render.mergeRenderStateMap(pPassInputRenderStates, this._pPassBlend._getRenderStates(), pInput.renderStates);
 
-			if (config.PROFILE_MAKER) {
-				tEndTime = (<any>window).performance.now();
-				this._pMakeTime[4] += tEndTime - tStartTime;
-				tStartTime = tEndTime;
-
-				if (this._iCount % (100 * 300) === 0) {
-					logger.log("----------------")
-				logger.log("uniforms: ", this._pMakeTime[0])
-				logger.log("samplers: ", this._pMakeTime[1])
-				logger.log("sampler arrays: ", this._pMakeTime[2])
-				logger.log("attrs: ", this._pMakeTime[3])
-				logger.log("states: ", this._pMakeTime[4])
-				logger.log("----------------")
-				this._pMakeTime[0] = 0.;
-					this._pMakeTime[1] = 0.;
-					this._pMakeTime[2] = 0.;
-					this._pMakeTime[3] = 0.;
-					this._pMakeTime[4] = 0.;
-					this._iCount = 0;
-				}
-
-				this._iCount++;
-			}
 			return pInput;
 		}
 

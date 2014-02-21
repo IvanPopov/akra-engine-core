@@ -305,10 +305,10 @@ module akra {
 		//loadManyModels(150, data + "models/box/opened_box.dae");
 		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 
-	
-			pProgress.destroy();
-			pEngine.exec();
-	
+
+		pProgress.destroy();
+		pEngine.exec();
+
 		//pEngine.renderFrame();
 	}
 

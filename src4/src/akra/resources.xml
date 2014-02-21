@@ -1,13 +1,42 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <AkraResources>
   <Project Name="core">
-    
+    <!-- AE_DEBUG/AE_VERSION used in config/config.ts -->
     <Variable Name="AE_DEBUG">$('Configuration') == 'Debug'</Variable>
     <Variable Name="AE_VERSION">$('Version').full</Variable>
-    
+
+    <!-- AE_THREAD_* used in config/config.ts -->
+    <Attachment Name="AE_THREAD_FILEINTERFACE">
+      <File Path="io/FileInterface.t.js" />
+      <Format>ObjectURL</Format>
+    </Attachment>
+
+    <Attachment Name="AE_THREAD_REMOTEFILE">
+      <File Path="io/RemoteFile.t.js" />
+      <Format>ObjectURL</Format>
+    </Attachment>
+
+    <Attachment Name="AE_THREAD_LOCALFILE">
+      <File Path="io/LocalFile.t.js" />
+      <Format>ObjectURL</Format>
+    </Attachment>
+
+    <!-- AE_ZIP_READER used in akra.ts -->
+    <Attachment Name="AE_ZIP_READER">
+      <PropertyGroup Condition="$('Zip')">
+        <Folder Path="resources/js/zip.js">
+          <Exclude Path="zip-fs.js" />
+          <Exclude Path="deflate.js" />
+        </Folder>
+        <Format>Text</Format>
+        <Minify>YUI</Minify>
+      </PropertyGroup>
+    </Attachment>
+
+    <!-- AE_CORE_DEPENDENCIES used in config/config.ts -->
     <Resource Name="AE_CORE_DEPENDENCIES">
       <Filename>akra</Filename>
-      
+
       <PropertyGroup  Condition="$('Configuration') == 'Debug'">
         <Archive>True</Archive>
         <UseInlining>False</UseInlining>

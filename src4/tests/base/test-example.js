@@ -244,26 +244,32 @@ var akra;
     }
 
     function loadHero() {
-        var pModelRoot = akra.pScene.createNode();
+    	var pModelRoot = akra.pScene.createNode();
+    	console.time("load movie");
         var pController = akra.pEngine.createAnimationController("movie");
         var pHeroData = akra.pRmgr.loadModel("MOVIE_DAE");
-
         pModelRoot.attachToParent(akra.pScene.getRootNode());
-
+        console.time("load movie::attach");
         pHeroData.attachToScene(pModelRoot);
+        console.timeEnd("load movie::attach");
+        console.timeEnd("load movie");
 
-        var pMovieData = akra.pRmgr.loadModel("MOVIE_ANIM_DAE");
+        console.time("load movie anim");
 
-        var pAnim = pMovieData.extractAnimation(0);
-        var pMovie = akra.animation.createContainer(pAnim, "movie");
+       // var pMovieData = akra.pRmgr.loadModel("MOVIE_ANIM_DAE");
 
-        pMovie.useLoop(true);
+       // var pAnim = pMovieData.extractAnimation(0);
+       // var pMovie = akra.animation.createContainer(pAnim, "movie");
 
+        //pMovie.useLoop(true);
+        console.timeEnd("load movie anim");
         // LOG(pMovieData);
         // window["movieData"] = pMovieData;
         // pController.addAnimation(pMovie);
         // pMovie.rightInfinity(false);
-        // pController.stop();
+    	// pController.stop();
+
+        console.time("load walk");
         var pWalkData = akra.pRmgr.loadModel("WALK_DAE");
 
         var pAnim = pWalkData.extractAnimation(0);
@@ -275,6 +281,7 @@ var akra;
 
         // pBlender.addAnimation(pMovie, 1);
         pBlender.addAnimation(pWalk, 1);
+        console.timeEnd("load walk");
 
         pController.addAnimation(pBlender);
         pModelRoot.addController(pController);
@@ -282,26 +289,33 @@ var akra;
 
     function main(pEngine) {
         setup(akra.pCanvas);
+    	console.time("camera / viewport");
 
         akra.pCamera = createCamera();
         akra.pViewport = createViewport();
-
+        console.timeEnd("camera / viewport");
+        console.time("navigation");
         akra.addons.navigation(akra.pViewport);
-
+        console.timeEnd("navigation");
         createKeymap(akra.pCamera);
 
+        console.time("scene enviroment");
         createSceneEnvironment();
+        console.timeEnd("scene enviroment");
 
+        console.time("skybox / sky");
         //createLighting();
         createSkyBox();
         createSky();
-
-        //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
+        console.timeEnd("skybox / sky");
+    	//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN_ROAM);
+        console.time("hero");
         loadHero();
+        console.timeEnd("hero");
 
         //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(150, data + "models/box/opened_box.dae");
-        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+    	//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         akra.pProgress.destroy();
         pEngine.exec();
         //pEngine.renderFrame();

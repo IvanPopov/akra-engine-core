@@ -3,6 +3,14 @@
 /// <reference path="exchange/Importer.ts" />
 /// <reference path="core/Engine.ts" />
 
+
+/**
+ * External dependence zip.js
+ */
+declare var AE_ZIP_READER;
+AE_ZIP_READER;
+
+
 module akra {
 	// Register image codecs
 	pixelUtil.DDSCodec.startup();

@@ -342,73 +342,54 @@ module akra.model {
 			var pPositionFlow: IDataFlow;
 			var pNormalFlow: IDataFlow;
 			var pMetaData: Float32Array;
-			//мета данные разметки
+			// markup meta-data 
 			var pInfMetaData: IVertexData;
-			//адресс мета данных во флотах
+			// meta-data address (in floats)
 			var iInfMetaDataLoc: int;
-			//шаг мета данных во флотах
+			// meta-data step (in floats)
 			var iInfMetaDataStride: int;
-			/*
-			 Получаем данные вершин, чтобы проложить в {W} компоненту адерес мета информации,
-			 о влиянии на данную вершины.
-			 */
 
-			//получаем поток данных с вершиными
+			
+			// Get vertex data to put in {W} component, 
+			// address of meta information about the impact of this on vertex.
+			 
+
+			// getting vertex flow
 			pPositionFlow = pRenderData._getFlow(DeclUsages.POSITION);
 			debug.assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset");
 
 			pPosData = pPositionFlow.data;
 
-			//проверяем, что данные еще не подвязаны к другому Skin'у
+			// check that the data has not yet been tied to another Skin
 			if (pPosData.hasSemantics(DeclUsages.BLENDMETA)) {
-				//тоже самый skin?
+				// Is the same skin?
 				if (pSkin.isAffect(pPosData)) {
 					return true;
 				}
 
-				debug.error("mesh subset already has another skin");
+				debug.error("Mesh subset already has another skin.");
 				return false;
 			}
 
-			//проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
-			//или его клону.
+			// Check, that current mesh subset in Mesh, which stretched skin,
+			// or his clone.
 			debug.assert(this.getData().getBuffer() == pSkin.getData(),
 				"can not bind to skin mesh subset that does not belong skin's mesh.")
 
-		    //подвязывем скин, к данным с вершинами текущего подмеша.
-		    //т.е. добавляем разметку в конец каждого пикселя
+		    // tie up the skin, according to the vertices of the current mesh susbset
+			// ie add markup at the end of each pixel
 		    pSkin.attach(pPosData);
-
-			/*
-			//получаем данные разметки
-			pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
-
-			//если по каким то причинам нет разметки...
-			debug.assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data");
-
-			//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
-			pInfMetaData = pSkin.getInfluenceMetaData();
-			iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-			iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
-
-			for (var i: int = 0; i < pMetaData.length; ++ i) {
-				pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
-			}
-
-			//обновляем адреса мета данных вершин
-			pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
-
-			*/
 
 			var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
 			var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
+			
 			//if BLENDMETA not found
 			debug.assert(isDefAndNotNull(pVEMeta), "you must specify location for storage blending data");
 
 			//read all data for acceleration
 			pMetaData = new Float32Array(pPosData.getData(0, pDeclaration.stride));
 
-			//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+			// setup vertices metadata markup, so they immediately addressable data
 			pInfMetaData = pSkin.getInfluenceMetaData();
 			iInfMetaDataLoc = pInfMetaData.getByteOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
 			iInfMetaDataStride = pInfMetaData.getStride() / EDataTypeSizes.BYTES_PER_FLOAT;
@@ -418,6 +399,7 @@ module akra.model {
 			var iStride: uint = pDeclaration.stride / EDataTypeSizes.BYTES_PER_FLOAT;
 
 			for (var i: uint = 0; i < iCount; ++i) {
+				//setuo meta data addresses
 				pMetaData[iOffset + i * iStride] = iInfMetaDataLoc + i * iInfMetaDataStride;
 			}
 
@@ -427,40 +409,45 @@ module akra.model {
 
 			pNormalFlow = pRenderData._getFlow(DeclUsages.NORMAL);
 
-			var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
-			var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
+			var pPositionIndexData: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
+			var pNormalIndexData: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
 
 			var iAdditionPosition: uint = pPosData.getByteOffset();
 			var iAdditionNormal: uint = pNormalFlow.data.getByteOffset();
 
-			for (var i: uint = 0; i < pIndex0.length; i++) {
-				pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.getStride();
-				pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.getStride();
+			for (var i: uint = 0; i < pPositionIndexData.length; i++) {
+				// calc real indexes ??
+				pPositionIndexData[i] = (pPositionIndexData[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.getStride();
+				pNormalIndexData[i] = (pNormalIndexData[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.getStride();
 			}
 
 			//update position index
 			var pUPPositionIndex: Float32Array = new Float32Array(pPosData.getLength());
+
 			for (var i: uint = 0; i < pPosData.getLength(); i++) {
 				pUPPositionIndex[i] = i;
 			}
 
 			//update normal index
 
-			var pTmp: any = {};
+			var pTmp: any = {};								//unique pairs <position, normal>
 
-			var pSkinnedNormalIndex: uint[] = [];
-			var pUNPositionIndex: uint[] = []; /*update normal position index*/
-			var pUNNormalIndex: uint[] = []; /*update normal normal index*/
+			var pSkinnedNormalIndex: uint[] = [];			//indexes of <position, normal> pairs
+
+			var pUNPositionIndex: uint[] = [];				/*update normal position index*/ //unique position indexes
+			var pUNNormalIndex: uint[] = [];				/*update normal normal index*/	 //unique normal indexes
 			var pDestinationSkinnedNormalIndex: uint[] = [];
 
 			var iCounter: uint = 0;
 
-			for (var i : uint= 0; i < pIndex0.length; i++) {
-				var sKey: string = pIndex0[i].toString() + "_" + pIndex1[i];
+			for (var i: uint = 0; i < pPositionIndexData.length; i++) {
+				//real pair position & normal
+				var sKey: string = pPositionIndexData[i].toString() + "_" + pNormalIndexData[i].toString();
+
 				if (!isDef(pTmp[sKey])) {
 					pTmp[sKey] = iCounter;
-					pUNPositionIndex.push(pIndex0[i]);
-					pUNNormalIndex.push(pIndex1[i]);
+					pUNPositionIndex.push(pPositionIndexData[i]);
+					pUNNormalIndex.push(pNormalIndexData[i]);
 					pSkinnedNormalIndex.push(iCounter);
 					pDestinationSkinnedNormalIndex.push(iCounter);
 					iCounter++;
@@ -470,49 +457,53 @@ module akra.model {
 				}
 			}
 
-			var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.getLength() * 4));
-			/*skinned vertices uses same index as vertices*/
-			pRenderData.allocateIndex([VE.float("SP_INDEX")], pIndex0);
-			pRenderData.index(iSkinnedPos, "SP_INDEX");
+			//debug.time("\t\t\tMesh::setSkin allocations");
+
+			var iSkinnedPos: uint = pRenderData.allocateData(
+				[VE.float3("SKINNED_POSITION"), VE.end(16)],
+				new Float32Array(pPosData.getLength() * 4));
+
+			// skinned vertices uses same index as vertices
+			//FIXME: call VertexData resize...
+			pRenderData.allocateIndex([VE.float("SP_INDEX")], pPositionIndexData);
+			// skinned normals uses new index
+			pRenderData.allocateIndex([VE.float("SN_INDEX")], new Float32Array(pSkinnedNormalIndex));
 
 			var iSkinnedNorm: uint = pRenderData.allocateData([VE.float3("SKINNED_NORMAL"), VE.end(16)], new Float32Array(pUNNormalIndex.length * 4));
-			/*skinned normals uses new index*/
-			pRenderData.allocateIndex([VE.float("SN_INDEX")], new Float32Array(pSkinnedNormalIndex));
+
+			pRenderData.index(iSkinnedPos, "SP_INDEX");
 			pRenderData.index(iSkinnedNorm, "SN_INDEX");
 
 			var iPreviousSet: uint = pRenderData.getIndexSet();
 
+			//////////////////////////////////////////////////////////////////// [iUPIndexSet]
+
 			var iUPIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_position");
+
+
 			pRenderData.allocateIndex([VE.float("UPP_INDEX")], pUPPositionIndex);
+			pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);	//FIXME: call VertexData resize...
+
 			pRenderData.index(pPosData.getByteOffset(), "UPP_INDEX");
-			pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);
 			pRenderData.index(iSkinnedPos, "DESTINATION_SP");
+
+			//////////////////////////////////////////////////////////////////// [iUNIndexSet]
 
 			var iUNIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_normal");
 			pRenderData.allocateIndex([VE.float("UNP_INDEX")], new Float32Array(pUNPositionIndex));
-			pRenderData.index(pPosData.getByteOffset(), "UNP_INDEX");
+			pRenderData.allocateIndex([VE.float("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));	//FIXME: call VertexData resize...
 			pRenderData.allocateIndex([VE.float("UNN_INDEX")], new Float32Array(pUNNormalIndex));
+
+			pRenderData.index(pPosData.getByteOffset(), "UNP_INDEX");
 			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.getByteOffset(), "UNN_INDEX");
-			pRenderData.allocateIndex([VE.float("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));
 			pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
+			//debug.timeEnd("\t\t\tMesh::setSkin allocations");
+			//////////////////////////
 
 			pRenderData.selectIndexSet(iPreviousSet);
-			// LOG(pRenderData.toString());
-
-			// pRenderData.selectIndexSet(iUPIndexSet);
-			// LOG(pRenderData.toString());
-
-			// pRenderData.selectIndexSet(iUNIndexSet);
-			// LOG(pRenderData.toString());
 
 			pRenderData.setRenderable(iUPIndexSet, false);
 			pRenderData.setRenderable(iUNIndexSet, false);
-
-			// LOG(iPreviousSet, iUPIndexSet);
-
-			// LOG(pSkinnedNormalIndex);
-			// LOG(pUNPositionIndex);
-			// LOG(pUNNormalIndex);
 
 			this._pSkin = pSkin;
 			this.skinAdded.emit(pSkin);

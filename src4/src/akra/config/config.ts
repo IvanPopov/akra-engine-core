@@ -5,41 +5,58 @@
 
 declare var AE_DEBUG: boolean;
 declare var AE_VERSION: string;
+declare var AE_THREAD_FILEINTERFACE: string;
+declare var AE_THREAD_LOCALFILE: string;
+declare var AE_THREAD_REMOTEFILE: string;
 
 module akra.config {
-	//unknown constants
-	export var unknown = {
-		code: 0,
-		message: "Unknown code.",
-		name: "unknown"
-	}
 
-	//global
 	export var DEBUG: boolean = AE_DEBUG;
 	export var VERSION: string = AE_VERSION;
 	export var WEBGL: boolean = true;
+
+	/**
+	 * Will be TRUE if ui extension presented.
+	 */
 	export var UI: boolean = false;
 
+	/** 
+	 * Display debugging information while parsing effects. 
+	 */
+	export var AFX_DEBUG_PARSER: boolean = false;
 
-	//temporary 
-	export var DEBUG_PARSER: boolean = false;
-	export var SKY: boolean = true;
-	export var SKY_GPU: boolean = false;
+	/**
+	 * If there is support for loading effects in text form, is TRUE.
+	 */
 	export var AFX_ENABLE_TEXT_EFFECTS: boolean = true;
+
+	/**
+	 * Use GPU for pre-calculation of atmospheric scattering.
+	 */  
+	export var USE_ATMOSPHERIC_SCATTERING_GPU_MODE: boolean = false;
+
+	/**
+	 * Do not use this, if you dont know what it.
+	 * @debug
+	 */
 	export var __VIEW_INTERNALS__: boolean = false;
-	export var DETAILED_LOG: boolean = false;
-	export var LOGGER_API: boolean = true;
-	export var CRYPTO_API: boolean = false;
-	export var FILEDROP_API: boolean = false;
+
+	/**
+	 * If [WebGLDebugUtils](https://www.khronos.org/registry/webgl/sdk/debug/webgl-debug.js) presented,
+	 * they will use to create a context.
+	 */
 	export var WEBGL_DEBUG: boolean = false;
-	export var PROFILE_MAKER: boolean = false;
+
+	/**
+	 * Calculate profile information for terrain tesselation
+	 * @debug
+	 */
 	export var PROFILE_TESSEALLATION: boolean = false;
 
+	/**
+	 * Distance in meters, after which the shadow of the object will not be rendered.
+	 */
 	export var SHADOW_DISCARD_DISTANCE: float = 70.;
-	//////////////////////
-
-	///render targets
-	///end of render targets
 
 	//path to data folder
 	export var data = config['data'] || uri.currentPath();
@@ -54,16 +71,25 @@ module akra.config {
 		]
 	};
 
-	//default <any> name
+	/** Unknown constants. */
+	export var unknown = {
+		code: 0,
+		message: "Unknown code.",
+		name: "unknown"
+	}
+
+
+	/** Default <any> name */
 	export var defaultName: string = "default";
 
+	/** Type of used renderer. Default to ERenderers::WEBGL. */
 	export var renderer = ERenderers.UNKNOWN;
 
 	if (WEBGL) {
 		renderer = ERenderers.WEBGL;
 	}
 
-	//default ajax parameters
+	/** Ajax default parameters. */
 	export var ajax = {
 		async: false,
 		statusCode: {},
@@ -87,9 +113,9 @@ module akra.config {
 	export var io = {
 		//thread file config
 		tfile: {
-			interface: "FileInterface.t.js",
-			local: "../../../src2/data/js/LocalFile.t.js",
-			remote: "../../../src2/data/js/RemoteFile.t.js"
+			interface: AE_THREAD_FILEINTERFACE,
+			local: AE_THREAD_LOCALFILE,
+			remote: AE_THREAD_REMOTEFILE
 		},
 		//local file config
 		local: {

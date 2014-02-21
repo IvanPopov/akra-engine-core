@@ -299,6 +299,7 @@ module akra.model {
 			debug.assert(pData.getStride() === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" +
 			                                  "\nyou need POSITION: {x, y, z, w}");
 
+			//adding BLENDMETA usage to [{X, Y, Z}, T_END] ==> [{X, Y, Z, BLENDMETA}];
 			pData.getVertexDeclaration().append(VE.float(DeclUsages.BLENDMETA, 12));
 
 			this._pTiedData.push(pData);

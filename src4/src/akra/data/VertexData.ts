@@ -215,6 +215,8 @@ module akra.data {
 					return true;
 				}
 				else {
+					//debug.log("before");
+					//debug.log(this.toString());
 					pOldVertexBuffer = this.getBuffer();
 
 					pOldVertexBuffer.freeVertexData(this);
@@ -224,11 +226,14 @@ module akra.data {
 					}
 
 					if (this.getByteOffset() != iOldOffset) {
+						// debug.log("VD 1", (<any>(new Error())).stack);
 						logger.warn("vertex data moved from " + iOldOffset + " ---> " + this.getByteOffset());
 						this.relocated.emit(iOldOffset, this.getByteOffset());
 					}
 
 					this.resized.emit(this.getByteLength());
+					//debug.log("after");
+					//debug.log(this.toString());
 					return true;
 				}
 			}
@@ -239,6 +244,8 @@ module akra.data {
 					return true;
 				}
 				else {
+					//debug.log("before");
+					//debug.log(this.toString());
 					pOldVertexBuffer = this.getBuffer();
 					pOldVertexDeclaration = this.getVertexDeclaration();
 					iOldStride = this.getStride();
@@ -252,11 +259,14 @@ module akra.data {
 					this.setVertexDeclaration(pOldVertexDeclaration);
 
 					if (this.getByteOffset() != iOldOffset) {
+						// debug.log("VD 2", (<any>(new Error())).stack);
 						logger.warn("vertex data moved from " + iOldOffset + " ---> " + this.getByteOffset());
 						this.relocated.emit(iOldOffset, this.getByteOffset());
 					}
 
 					this.resized.emit(this.getByteLength());
+					//debug.log("after");
+					//debug.log(this.toString());
 					return true;
 				}
 			}
@@ -415,10 +425,29 @@ module akra.data {
 		}
 
 
-		getData(): ArrayBuffer;
+
+		/**
+		 * @param iOffset Offset in bytes.
+		 * @param iSize Size of single lement in bytes.
+		 * @param iFrom=0 Element number with which to begin reading data. 
+		 * @param iCount=::getLength() Number of element to be returned.
+		 */
 		getData(iOffset: int, iSize: uint, iFrom?: uint, iCount?: uint): ArrayBuffer;
+		/**
+		 * @param sUsage Get data by usage.
+		 * @sa Usages, VertexDeclaration
+		 */
 		getData(sUsage: string): ArrayBuffer;
+		/**
+		 * @param sUsage Usage of data.
+		 * @param iFrom Element number with which to begin reading data. 
+		 * @param iCount Number of element to be returned.
+		 */
 		getData(sUsage: string, iFrom: uint, iCount: uint): ArrayBuffer;
+		/**
+		 * Get all data.
+		 */
+		getData(): ArrayBuffer;
 		getData(): ArrayBuffer {
 			switch (arguments.length) {
 				case 4:
@@ -444,9 +473,10 @@ module akra.data {
 
 					for (var i: int = 0; i < iCount; i++) {
 						var iCurrent: uint = iFrom + i;
-						var isOk: boolean = this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.getByteOffset(),
-							iSize, pBufferData.subarray(i * iSize, (i + 1) * iSize));
-						//debug_assert(isOk,"cannot read buffer");
+						var isOk: boolean = this._pVertexBuffer.readData(
+							iStride * iCurrent + iOffset + this.getByteOffset(),
+							iSize,
+							pBufferData.subarray(i * iSize, (i + 1) * iSize));
 					}
 
 					return pBufferData.buffer;
