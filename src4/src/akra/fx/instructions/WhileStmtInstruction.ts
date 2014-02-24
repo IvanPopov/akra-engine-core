@@ -13,19 +13,19 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_WhileStmtInstruction;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
-			if (this.getOperator() === "while") {
+			if (this._getOperator() === "while") {
 				sCode += "while(";
-				sCode += this.getInstructions()[0].toFinalCode();
+				sCode += this._getInstructions()[0]._toFinalCode();
 				sCode += ")";
-				sCode += this.getInstructions()[1].toFinalCode();
+				sCode += this._getInstructions()[1]._toFinalCode();
 			}
 			else {
 				sCode += "do";
-				sCode += this.getInstructions()[1].toFinalCode();
+				sCode += this._getInstructions()[1]._toFinalCode();
 				sCode += "while(";
-				sCode += this.getInstructions()[0].toFinalCode();
+				sCode += this._getInstructions()[0]._toFinalCode();
 				sCode += ");";
 			}
 			return sCode;

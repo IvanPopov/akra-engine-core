@@ -13,13 +13,13 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionCallInstruction;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 
-			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this._getInstructions()[0]._toFinalCode();
 			sCode += "(";
 			for (var i: uint = 1; i < this._nInstructions; i++) {
-				sCode += this.getInstructions()[i].toFinalCode();
+				sCode += this._getInstructions()[i]._toFinalCode();
 				if (i !== this._nInstructions - 1) {
 					sCode += ","
 				}
@@ -30,12 +30,12 @@ module akra.fx.instructions {
 		}
 
 		getFunction(): IAFXFunctionDeclInstruction {
-			return <IAFXFunctionDeclInstruction>(<IAFXIdExprInstruction>this._pInstructionList[0]).getType().getParent().getParent();
+			return <IAFXFunctionDeclInstruction>(<IAFXIdExprInstruction>this._pInstructionList[0]).getType()._getParent()._getParent();
 		}
 
 		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			var pExprList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+			var pExprList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this._getInstructions();
 			var pFunction: IAFXFunctionDeclInstruction = this.getFunction();
 			var pArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pFunction.getArguments();
 

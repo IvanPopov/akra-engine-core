@@ -30,11 +30,11 @@ module akra.fx.instructions {
 
             this._pName = new IdInstruction();
             this._pName.setName(sName);
-            this._pName.setParent(this);
+            this._pName._setParent(this);
 
             this._pReturnType = new VariableTypeInstruction();
             this._pReturnType.pushType(pReturnType);
-            this._pReturnType.setParent(this);
+            this._pReturnType._setParent(this);
 
             this._pArguments = [];
 
@@ -42,7 +42,7 @@ module akra.fx.instructions {
                 for (var i: uint = 0; i < pArgumentTypes.length; i++) {
                     var pArgument: TypedInstruction = new TypedInstruction();
                     pArgument.setType(pArgumentTypes[i]);
-                    pArgument.setParent(this);
+                    pArgument._setParent(this);
 
                     this._pArguments.push(pArgument);
                 }
@@ -59,7 +59,7 @@ module akra.fx.instructions {
         /**
          * Generate code 
          */
-        toFinalCode(): string {
+        _toFinalCode(): string {
             return this._sDefinition + this._sImplementation;
         }
 
@@ -149,7 +149,7 @@ module akra.fx.instructions {
         setImplementation(pImplementation: IAFXStmtInstruction): void {
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): SystemFunctionInstruction {
+        _clone(pRelationMap?: IAFXInstructionMap): SystemFunctionInstruction {
             return this;
         }
 

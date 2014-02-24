@@ -17,20 +17,20 @@ module akra.fx.instructions {
             return <IAFXTypeInstruction>this._pInstructionList[0];
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction {
-            return <IAFXTypeDeclInstruction>super.clone(pRelationMap);
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction {
+            return <IAFXTypeDeclInstruction>super._clone(pRelationMap);
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             return this.getType()._toDeclString() + ";";
         }
 
         getName(): string {
-            return this.getType().getName();
+            return this.getType()._getName();
         }
 
         getRealName(): string {
-            return this.getType().getRealName();
+            return this.getType()._getRealName();
         }
 
         blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction {

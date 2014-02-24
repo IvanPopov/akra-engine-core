@@ -36,13 +36,13 @@ module akra.fx.instructions {
             return <IAFXVariableTypeInstruction>super.getType();
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction {
-            return <IAFXExprInstruction>super.clone(pRelationMap);
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction {
+            return <IAFXExprInstruction>super._clone(pRelationMap);
         }
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this._getInstructions();
 
             if (isNull(pInstructionList)) {
                 return;

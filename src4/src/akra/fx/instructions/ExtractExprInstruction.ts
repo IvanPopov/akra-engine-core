@@ -70,76 +70,76 @@ module akra.fx.instructions {
 			this._pOffsetVar = pOffsetVar;
 			this.setType(pExtractType);
 
-			if (pExtractType.isEqual(Effect.getSystemType("float"))) {
+			if (pExtractType._isEqual(Effect.getSystemType("float"))) {
 				this._eExtractExprType = EExtractExprType.k_Float;
 				this._sExtractFunction += "A_extractFloat(";
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("ptr"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("ptr"))) {
 				this._eExtractExprType = EExtractExprType.k_Float;
 				this._sExtractFunction += "A_extractFloat(";
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("video_buffer_header"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("video_buffer_header"))) {
 				this._eExtractExprType = EExtractExprType.k_Header;
 				this._sExtractFunction += "A_extractTextureHeader(";
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("bool"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("bool"))) {
 				this._eExtractExprType = EExtractExprType.k_Bool;
 				this._sExtractFunction += "boolean(A_extractFloat(";
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("int"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("int"))) {
 				this._eExtractExprType = EExtractExprType.k_Int;
 				this._sExtractFunction += ("int(A_extractFloat(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("float2"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("float2"))) {
 				this._eExtractExprType = EExtractExprType.k_Float2;
 				this._sExtractFunction += ("A_extractVec2(");
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("float3"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("float3"))) {
 				this._eExtractExprType = EExtractExprType.k_Float3;
 				this._sExtractFunction += ("A_extractVec3(");
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("float4"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("float4"))) {
 				this._eExtractExprType = EExtractExprType.k_Float4;
 				this._sExtractFunction += ("A_extractVec4(");
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("int2"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("int2"))) {
 				this._eExtractExprType = EExtractExprType.k_Int2;
 				this._sExtractFunction += ("ivec2(A_extractVec2(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("int3"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("int3"))) {
 				this._eExtractExprType = EExtractExprType.k_Int3;
 				this._sExtractFunction += ("ivec3(A_extractVec3(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("int4"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("int4"))) {
 				this._eExtractExprType = EExtractExprType.k_Int4;
 				this._sExtractFunction += ("ivec4(A_extractVec4(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("bool2"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("bool2"))) {
 				this._eExtractExprType = EExtractExprType.k_Bool2;
 				this._sExtractFunction += ("bvec2(A_extractVec2(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("bool3"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("bool3"))) {
 				this._eExtractExprType = EExtractExprType.k_Bool3;
 				this._sExtractFunction += ("bvec3(A_extractVec3(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("bool4"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("bool4"))) {
 				this._eExtractExprType = EExtractExprType.k_Bool4;
 				this._sExtractFunction += ("bvec4(A_extractVec4(");
 				this._bNeedSecondBracket = true;
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("float4x4"))) {
+			else if (pExtractType._isEqual(Effect.getSystemType("float4x4"))) {
 				this._eExtractExprType = EExtractExprType.k_Float4x4;
 				this._sExtractFunction += ("A_extractMat4(");
 			}
 			else {
-				this.setError(EEffectErrors.UNSUPPORTED_EXTRACT_BASE_TYPE, { typeName: pExtractType.getHash() });
+				this._setError(EEffectErrors.UNSUPPORTED_EXTRACT_BASE_TYPE, { typeName: pExtractType._getHash() });
 			}
 		}
 
@@ -187,7 +187,7 @@ module akra.fx.instructions {
 			pInfo.numUsed++;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 
 			if (this._pBuffer.isDefinedByZero()) {
@@ -243,13 +243,13 @@ module akra.fx.instructions {
 			}
 			else {
 				sCode = this._sExtractFunction;
-				sCode += this._pBuffer._getVideoBufferSampler().getNameId().toFinalCode();
-				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId().toFinalCode();
+				sCode += this._pBuffer._getVideoBufferSampler().getNameId()._toFinalCode();
+				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId()._toFinalCode();
 				if (this._eExtractExprType !== EExtractExprType.k_Header) {
-					sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr;
+					sCode += "," + this._pPointer.getNameId()._toFinalCode() + this._sPaddingExpr;
 
 					if (!isNull(this._pOffsetVar)) {
-						sCode += "+" + this._pOffsetVar.getNameId().toFinalCode();
+						sCode += "+" + this._pOffsetVar.getNameId()._toFinalCode();
 					}
 				}
 				sCode += ")";
@@ -261,9 +261,9 @@ module akra.fx.instructions {
 			return sCode;
 		}
 
-		clone(pRelationMap?: IAFXInstructionMap): ExtractExprInstruction {
-			var pClone: ExtractExprInstruction = <ExtractExprInstruction>super.clone(pRelationMap);
-			pClone._setCloneParams(this._pPointer.clone(pRelationMap), this._pBuffer, this._eExtractExprType,
+		_clone(pRelationMap?: IAFXInstructionMap): ExtractExprInstruction {
+			var pClone: ExtractExprInstruction = <ExtractExprInstruction>super._clone(pRelationMap);
+			pClone._setCloneParams(this._pPointer._clone(pRelationMap), this._pBuffer, this._eExtractExprType,
 				this._sPaddingExpr, this._sExtractFunction, this._bNeedSecondBracket);
 			return pClone;
 		}

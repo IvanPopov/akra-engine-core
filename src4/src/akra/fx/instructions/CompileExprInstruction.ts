@@ -14,7 +14,7 @@ module akra.fx.instructions {
         }
 
         getFunction(): IAFXFunctionDeclInstruction {
-            return <IAFXFunctionDeclInstruction>this._pInstructionList[0].getParent().getParent();
+            return <IAFXFunctionDeclInstruction>this._pInstructionList[0]._getParent()._getParent();
         }
     }
 

@@ -14,11 +14,11 @@ module akra.fx.instructions {
             this._sValue = sValue;
         }
 
-        setValue(sValue: string): void {
+        _setValue(sValue: string): void {
             this._sValue = sValue;
         }
 
-        isValue(sValue: string): boolean {
+        _isValue(sValue: string): boolean {
             return (this._sValue === sValue);
         }
 
@@ -26,13 +26,13 @@ module akra.fx.instructions {
             return this._sValue;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             return this._sValue;
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): SimpleInstruction {
-            var pClone: SimpleInstruction = <SimpleInstruction>super.clone(pRelationMap);
-            pClone.setValue(this._sValue);
+        _clone(pRelationMap?: IAFXInstructionMap): SimpleInstruction {
+            var pClone: SimpleInstruction = <SimpleInstruction>super._clone(pRelationMap);
+            pClone._setValue(this._sValue);
             return pClone;
         }
     }

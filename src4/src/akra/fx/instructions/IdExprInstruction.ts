@@ -9,8 +9,8 @@ module akra.fx.instructions {
 		private _isInPassUnifoms: boolean = false;
 		private _isInPassForeigns: boolean = false;
 
-		isVisible(): boolean {
-			return this._pInstructionList[0].isVisible();
+		_isVisible(): boolean {
+			return this._pInstructionList[0]._isVisible();
 		}
 
 		constructor() {
@@ -25,13 +25,13 @@ module akra.fx.instructions {
 			}
 			else {
 				var pVar: IdInstruction = <IdInstruction>this._pInstructionList[0];
-				this._pType = (<IAFXVariableDeclInstruction>pVar.getParent()).getType();
+				this._pType = (<IAFXVariableDeclInstruction>pVar._getParent()).getType();
 				return this._pType;
 			}
 		}
 
 		isConst(): boolean {
-			return this.getType().isConst();
+			return this.getType()._isConst();
 		}
 
 		evaluate(): boolean {
@@ -46,14 +46,14 @@ module akra.fx.instructions {
 			return false;
 		}
 
-		prepareFor(eUsedMode: EFunctionType): void {
-			if (!this.isVisible()) {
+		_prepareFor(eUsedMode: EFunctionType): void {
+			if (!this._isVisible()) {
 				this._bToFinalCode = false;
 			}
 
 			if (eUsedMode === EFunctionType.k_PassFunction) {
-				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
-				if (!this.getType()._isUnverifiable() && isNull(pVarDecl.getParent())) {
+				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getInstructions()[0]._getParent();
+				if (!this.getType()._isUnverifiable() && isNull(pVarDecl._getParent())) {
 					if (pVarDecl.getType().isForeign()) {
 						this._isInPassForeigns = true;
 					}
@@ -64,11 +64,11 @@ module akra.fx.instructions {
 			}
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 			if (this._bToFinalCode) {
 				if (this._isInPassForeigns || this._isInPassUnifoms) {
-					var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
+					var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getInstructions()[0]._getParent();
 					if (this._isInPassForeigns) {
 						sCode += "foreigns[\"" + pVarDecl._getNameIndex() + "\"]";
 					}
@@ -77,19 +77,19 @@ module akra.fx.instructions {
 					}
 				}
 				else {
-					sCode += this.getInstructions()[0].toFinalCode();
+					sCode += this._getInstructions()[0]._toFinalCode();
 				}
 			}
 			return sCode;
 		}
 
-		clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction {
-			return <IAFXIdExprInstruction>super.clone(pRelationMap);
+		_clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction {
+			return <IAFXIdExprInstruction>super._clone(pRelationMap);
 		}
 
 		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			if (!this.getType().isFromVariableDecl()) {
+			if (!this.getType()._isFromVariableDecl()) {
 				return;
 			}
 

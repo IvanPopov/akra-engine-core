@@ -21,10 +21,10 @@ module akra.fx.instructions {
             this._pType = pType;
         }
 
-        clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
-            var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super.clone(pRelationMap));
+        _clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
+            var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super._clone(pRelationMap));
             if (!isNull(this.getType())) {
-                pClonedInstruction.setType(this.getType().clone(pRelationMap));
+                pClonedInstruction.setType(this.getType()._clone(pRelationMap));
             }
             return pClonedInstruction;
         }

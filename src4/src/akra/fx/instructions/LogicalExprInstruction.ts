@@ -13,11 +13,11 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_LogicalExprInstruction;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
-			sCode += this.getInstructions()[0].toFinalCode();
-			sCode += this.getOperator();
-			sCode += this.getInstructions()[1].toFinalCode();
+			sCode += this._getInstructions()[0]._toFinalCode();
+			sCode += this._getOperator();
+			sCode += this._getInstructions()[1]._toFinalCode();
 			return sCode;
 		}
 
@@ -27,9 +27,9 @@ module akra.fx.instructions {
 		}
 
 		isConst(): boolean {
-			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
-				(<IAFXExprInstruction>this.getInstructions()[1]).isConst() &&
-				(<IAFXExprInstruction>this.getInstructions()[2]).isConst();
+			return (<IAFXExprInstruction>this._getInstructions()[0]).isConst() &&
+				(<IAFXExprInstruction>this._getInstructions()[1]).isConst() &&
+				(<IAFXExprInstruction>this._getInstructions()[2]).isConst();
 		}
 	}
 }

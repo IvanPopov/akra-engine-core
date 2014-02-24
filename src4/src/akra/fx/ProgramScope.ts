@@ -187,7 +187,7 @@ module akra.fx {
                             for (var j: uint = 0; j < pArgumentTypes.length; j++) {
                                 isParamsEqual = false;
 
-                                if (!pArgumentTypes[j].getType().isEqual(pTestedArguments[j].getType())) {
+                                if (!pArgumentTypes[j].getType()._isEqual(pTestedArguments[j].getType())) {
                                     break;
                                 }
 
@@ -263,7 +263,7 @@ module akra.fx {
                                     }
                                 }
                                 else if (pTestedArguments[j].isUniform()) {
-                                    if (!pArgumentTypes[iArg].getType().isEqual(pTestedArguments[j].getType())) {
+                                    if (!pArgumentTypes[iArg].getType()._isEqual(pTestedArguments[j].getType())) {
                                         break;
                                     }
                                     else {
@@ -460,7 +460,7 @@ module akra.fx {
                             for (var j: uint = 0; j < pArgumentTypes.length; j++) {
                                 isParamsEqual = false;
 
-                                if (!pArgumentTypes[j].getType().isEqual(pTestedArguments[j].getType())) {
+                                if (!pArgumentTypes[j].getType()._isEqual(pTestedArguments[j].getType())) {
                                     break;
                                 }
 
@@ -517,7 +517,7 @@ module akra.fx {
                 for (var j: uint = 0; j < pFunctionArguments.length; j++) {
                     isParamsEqual = false;
 
-                    if (!pTestedArguments[j].getType().isEqual(pFunctionArguments[j].getType())) {
+                    if (!pTestedArguments[j].getType()._isEqual(pFunctionArguments[j].getType())) {
                         break;
                     }
 

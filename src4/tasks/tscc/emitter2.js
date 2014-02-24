@@ -3608,11 +3608,16 @@ var TypeScript;
             var name = symbol.getDisplayName();
             var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
+            if (this.emittedInterfaces.indexOf(declaration) >= 0) {
+                return;
+            }
+
             this.emittedInterfaces.push(declaration);
 
             var index = this.usedButNotEmittedInterfaces.indexOf(declaration);
             if (index >= 0) {
                 this.usedButNotEmittedInterfaces.splice(index, 1);
+                index = this.usedButNotEmittedInterfaces.indexOf(declaration);
             }
 
             if (TypeScript.isDTSFile(declaration.fileName())) {

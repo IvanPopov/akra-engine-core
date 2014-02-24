@@ -16,40 +16,40 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
 		}
 
-		prepareFor(eUsedMode: EFunctionType) {
-			if (!this.getInstructions()[0].isVisible()) {
+		_prepareFor(eUsedMode: EFunctionType) {
+			if (!this._getInstructions()[0]._isVisible()) {
 				this._bToFinalFirst = false;
 			}
 
-			if (!this.getInstructions()[1].isVisible()) {
+			if (!this._getInstructions()[1]._isVisible()) {
 				this._bToFinalSecond = false;
 			}
 
-			this.getInstructions()[0].prepareFor(eUsedMode);
-			this.getInstructions()[1].prepareFor(eUsedMode);
+			this._getInstructions()[0]._prepareFor(eUsedMode);
+			this._getInstructions()[1]._prepareFor(eUsedMode);
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 
-			sCode += this._bToFinalFirst ? this.getInstructions()[0].toFinalCode() : "";
+			sCode += this._bToFinalFirst ? this._getInstructions()[0]._toFinalCode() : "";
 			sCode += this._bToFinalFirst ? "." : "";
-			sCode += this._bToFinalSecond ? this.getInstructions()[1].toFinalCode() : "";
+			sCode += this._bToFinalSecond ? this._getInstructions()[1]._toFinalCode() : "";
 
 			return sCode;
 		}
 
 		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-			var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
+			var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
 
 			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
 			pPoint.addUsedData(pUsedDataCollector, eUsedMode);
 		}
 
 		isConst(): boolean {
-			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+			return (<IAFXExprInstruction>this._getInstructions()[0]).isConst();
 		}
 	}
 }

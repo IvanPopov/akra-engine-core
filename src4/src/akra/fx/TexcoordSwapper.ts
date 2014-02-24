@@ -56,7 +56,7 @@ module akra.fx {
 				if (iTexcoord !== i && pAttrConatiner.hasTexcoord(i)) {
 					var pAttr = pAttrConatiner.getTexcoordVar(i);
 
-					this._pTexToTmp[i] = pAttr.getType().getBaseType().getRealName() + " " +
+					this._pTexToTmp[i] = pAttr.getType()._getBaseType()._getRealName() + " " +
 					"T" + i.toString() + "=" + pAttr.getRealName() + ";";
 
 					this._sTexToTmpCode += this._pTexToTmp[i] + "\n";

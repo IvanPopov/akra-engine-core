@@ -15,14 +15,14 @@ module akra.fx.instructions {
         }
 
         // isConst
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
 
-            sCode += this.getInstructions()[0].toFinalCode();
+            sCode += this._getInstructions()[0]._toFinalCode();
             sCode += "(";
 
             for (var i: uint = 1; i < this._nInstructions; i++) {
-                sCode += this.getInstructions()[i].toFinalCode();
+                sCode += this._getInstructions()[i]._toFinalCode();
 
                 if (i !== this._nInstructions - 1) {
                     sCode += ",";
@@ -36,7 +36,7 @@ module akra.fx.instructions {
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this._getInstructions();
             for (var i: uint = 1; i < this._nInstructions; i++) {
                 pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
             }
@@ -44,7 +44,7 @@ module akra.fx.instructions {
 
         isConst(): boolean {
             for (var i: uint = 1; i < this._nInstructions; i++) {
-                if (!(<IAFXExprInstruction>this.getInstructions()[i]).isConst()) {
+                if (!(<IAFXExprInstruction>this._getInstructions()[i]).isConst()) {
                     return false;
                 }
             }
@@ -67,7 +67,7 @@ module akra.fx.instructions {
 
             try {
                 if (Effect.isScalarType(this.getType())) {
-                    var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+                    var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
                     if (this._nInstructions > 2 || !pTestedInstruction.evaluate()) {
                         return false;
                     }
@@ -76,7 +76,7 @@ module akra.fx.instructions {
                 }
                 else {
                     for (var i: uint = 1; i < this._nInstructions; i++) {
-                        var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[i];
+                        var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[i];
 
                         if (pTestedInstruction.evaluate()) {
                             pArguments[i - 1] = pTestedInstruction.getEvalValue();

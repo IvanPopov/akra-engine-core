@@ -12,25 +12,25 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_CastExprInstruction;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
-            sCode += this.getInstructions()[0].toFinalCode();
+            sCode += this._getInstructions()[0]._toFinalCode();
             sCode += "(";
-            sCode += this.getInstructions()[1].toFinalCode();
+            sCode += this._getInstructions()[1]._toFinalCode();
             sCode += ")";
             return sCode;
         }
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+            var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
             pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 
             // pUsedDataCollector[this.getType()._getInstructionID()] = this.getType();
         }
 
         isConst(): boolean {
-            return (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+            return (<IAFXExprInstruction>this._getInstructions()[1]).isConst();
         }
     }
 }

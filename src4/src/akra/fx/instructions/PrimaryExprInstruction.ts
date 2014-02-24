@@ -13,10 +13,10 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 
-			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this._getInstructions()[0]._toFinalCode();
 
 			return sCode;
 		}

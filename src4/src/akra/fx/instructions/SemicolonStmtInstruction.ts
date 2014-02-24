@@ -13,7 +13,7 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			return ";";
 		}
 	}

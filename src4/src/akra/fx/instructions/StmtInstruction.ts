@@ -15,7 +15,7 @@ module akra.fx.instructions {
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this._getInstructions();
 
             if (!isNull(pUsedDataCollector)) {
                 for (var i: uint = 0; i < this._nInstructions; i++) {

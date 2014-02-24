@@ -14,16 +14,16 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_InitExprInstruction;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
 
             if (!isNull(this._pConstructorType)) {
-                sCode += this._pConstructorType.toFinalCode();
+                sCode += this._pConstructorType._toFinalCode();
             }
             sCode += "(";
 
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                sCode += this.getInstructions()[i].toFinalCode();
+                sCode += this._getInstructions()[i]._toFinalCode();
 
                 if (i !== this._nInstructions - 1) {
                     sCode += ",";
@@ -37,7 +37,7 @@ module akra.fx.instructions {
 
         isConst(): boolean {
             if (isNull(this._isConst)) {
-                var pInstructionList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+                var pInstructionList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this._getInstructions();
 
                 for (var i: uint = 0; i < pInstructionList.length; i++) {
                     if (!pInstructionList[i].isConst()) {
@@ -53,27 +53,27 @@ module akra.fx.instructions {
         }
 
         optimizeForVariableType(pType: IAFXVariableTypeInstruction): boolean {
-            if ((pType.isNotBaseArray() && pType._getScope() === 0) ||
-                (pType.isArray() && this._nInstructions > 1)) {
+            if ((pType._isNotBaseArray() && pType._getScope() === 0) ||
+                (pType._isArray() && this._nInstructions > 1)) {
 
 
-                if (pType.getLength() === Instruction.UNDEFINE_LENGTH ||
-                    (pType.isNotBaseArray() && this._nInstructions !== pType.getLength()) ||
-                    (!pType.isNotBaseArray() && this._nInstructions !== pType.getBaseType().getLength())) {
+                if (pType._getLength() === Instruction.UNDEFINE_LENGTH ||
+                    (pType._isNotBaseArray() && this._nInstructions !== pType._getLength()) ||
+                    (!pType._isNotBaseArray() && this._nInstructions !== pType._getBaseType()._getLength())) {
 
                     return false;
                 }
 
-                if (pType.isNotBaseArray()) {
+                if (pType._isNotBaseArray()) {
                     this._isArray = true;
                 }
 
-                var pArrayElementType: IAFXVariableTypeInstruction = pType.getArrayElementType();
+                var pArrayElementType: IAFXVariableTypeInstruction = pType._getArrayElementType();
                 var pTestedInstruction: IAFXExprInstruction = null;
                 var isOk: boolean = false;
 
                 for (var i: uint = 0; i < this._nInstructions; i++) {
-                    pTestedInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
+                    pTestedInstruction = (<IAFXExprInstruction>this._getInstructions()[i]);
 
                     if (pTestedInstruction._getInstructionType() === EAFXInstructionTypes.k_InitExprInstruction) {
                         isOk = (<IAFXInitExprInstruction>pTestedInstruction).optimizeForVariableType(pArrayElementType);
@@ -88,7 +88,7 @@ module akra.fx.instructions {
                             }
                         }
                         else {
-                            isOk = pTestedInstruction.getType().isEqual(pArrayElementType);
+                            isOk = pTestedInstruction.getType()._isEqual(pArrayElementType);
                             if (!isOk) {
                                 return false;
                             }
@@ -96,11 +96,11 @@ module akra.fx.instructions {
                     }
                 }
 
-                this._pConstructorType = pType.getBaseType();
+                this._pConstructorType = pType._getBaseType();
                 return true;
             }
             else {
-                var pFirstInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+                var pFirstInstruction: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
 
                 if (this._nInstructions === 1 &&
                     pFirstInstruction._getInstructionType() !== EAFXInstructionTypes.k_InitExprInstruction) {
@@ -114,7 +114,7 @@ module akra.fx.instructions {
                         }
                     }
 
-                    if (pFirstInstruction.getType().isEqual(pType)) {
+                    if (pFirstInstruction.getType()._isEqual(pType)) {
                         return true;
                     }
                     else {
@@ -125,17 +125,17 @@ module akra.fx.instructions {
                     return false;
                 }
 
-                var pInstructionList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>this.getInstructions();
-                var pFieldNameList: string[] = pType.getFieldNameList();
+                var pInstructionList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>this._getInstructions();
+                var pFieldNameList: string[] = pType._getFieldNameList();
 
                 for (var i: uint = 0; i < pInstructionList.length; i++) {
-                    var pFieldType: IAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
+                    var pFieldType: IAFXVariableTypeInstruction = pType._getFieldType(pFieldNameList[i]);
                     if (!pInstructionList[i].optimizeForVariableType(pFieldType)) {
                         return false;
                     }
                 }
 
-                this._pConstructorType = pType.getBaseType();
+                this._pConstructorType = pType._getBaseType();
                 return true;
             }
         }
@@ -152,7 +152,7 @@ module akra.fx.instructions {
                 pRes = new Array(this._nInstructions);
 
                 for (var i: uint = 0; i < this._nInstructions; i++) {
-                    var pEvalInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
+                    var pEvalInstruction = (<IAFXExprInstruction>this._getInstructions()[i]);
 
                     if (pEvalInstruction.evaluate()) {
                         pRes[i] = pEvalInstruction.getEvalValue();
@@ -160,7 +160,7 @@ module akra.fx.instructions {
                 }
             }
             else if (this._nInstructions === 1) {
-                var pEvalInstruction = (<IAFXExprInstruction>this.getInstructions()[0]);
+                var pEvalInstruction = (<IAFXExprInstruction>this._getInstructions()[0]);
                 pEvalInstruction.evaluate();
                 pRes = pEvalInstruction.getEvalValue();
             }
@@ -174,7 +174,7 @@ module akra.fx.instructions {
 
                 try {
                     if (Effect.isScalarType(this._pConstructorType)) {
-                        var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+                        var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
                         if (this._nInstructions > 2 || !pTestedInstruction.evaluate()) {
                             return false;
                         }
@@ -183,7 +183,7 @@ module akra.fx.instructions {
                     }
                     else {
                         for (var i: uint = 0; i < this._nInstructions; i++) {
-                            var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[i];
+                            var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[i];
 
                             if (pTestedInstruction.evaluate()) {
                                 pArguments[i] = pTestedInstruction.getEvalValue();

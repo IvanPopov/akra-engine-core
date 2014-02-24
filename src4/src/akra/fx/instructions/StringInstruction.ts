@@ -25,7 +25,7 @@ module akra.fx.instructions {
 			return this._sValue;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 			sCode += this._sValue;
 			return sCode;
@@ -40,8 +40,8 @@ module akra.fx.instructions {
 			return true;
 		}
 
-		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+		_clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super._clone(pRelationMap));
 			pClonedInstruction.setValue(this._sValue);
 			return pClonedInstruction;
 		}

@@ -67,8 +67,8 @@ module akra.fx.instructions {
             this._bForVertex = canUse;
         }
 
-        clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXDeclInstruction {
-            var pClonedInstruction: IAFXDeclInstruction = <IAFXDeclInstruction>(super.clone(pRelationMap));
+        _clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXDeclInstruction {
+            var pClonedInstruction: IAFXDeclInstruction = <IAFXDeclInstruction>(super._clone(pRelationMap));
             pClonedInstruction.setSemantic(this._sSemantic);
             pClonedInstruction.setAnnotation(this._pAnnotation);
             return pClonedInstruction;

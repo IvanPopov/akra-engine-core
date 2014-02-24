@@ -8,10 +8,10 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_InstructionCollector;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                sCode += this.getInstructions()[i].toFinalCode();
+                sCode += this._getInstructions()[i]._toFinalCode();
             }
 
             return sCode;

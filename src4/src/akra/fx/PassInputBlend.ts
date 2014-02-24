@@ -377,7 +377,7 @@ module akra.fx {
 		}
 
 		_getUniformLength(iNameIndex: uint): uint {
-			return this._pCreator.getUniforms().getVarByIndex(iNameIndex).getType().getLength();
+			return this._pCreator.getUniforms().getVarByIndex(iNameIndex).getType()._getLength();
 		}
 
 		_getUniformType(iNameIndex: uint): EAFXShaderVariableType {
@@ -670,7 +670,7 @@ module akra.fx {
 		}
 
 		private isVarArray(pVar: IAFXVariableDeclInstruction): boolean {
-			return pVar.getType().isNotBaseArray();
+			return pVar.getType()._isNotBaseArray();
 		}
 
 		private clearSamplerState(pState: IAFXSamplerState): void {

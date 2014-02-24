@@ -87,7 +87,7 @@ module akra.fx {
                 return true;
             }
 
-            var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendInfoList[iIndex].blendType.blend(pVariable.getType(), eBlendMode);
+            var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendInfoList[iIndex].blendType._blend(pVariable.getType(), eBlendMode);
 
             if (pBlendType === this._pVarBlendInfoList[iIndex].blendType) {
                 return true;
@@ -109,12 +109,12 @@ module akra.fx {
             var pType: IAFXVariableTypeInstruction = pInfo.blendType;
             var pVar: IAFXVariableDeclInstruction = this.getVariable(iIndex);
 
-            var sCode: string = pType.toFinalCode() + " ";
+            var sCode: string = pType._toFinalCode() + " ";
             sCode += pVar.getRealName();
 
-            if (pVar.getType().isNotBaseArray()) {
-                var iLength: uint = pVar.getType().getLength();
-                if (webgl.ANGLE && iLength === 1 && pVar.getType().isComplex()) {
+            if (pVar.getType()._isNotBaseArray()) {
+                var iLength: uint = pVar.getType()._getLength();
+                if (webgl.ANGLE && iLength === 1 && pVar.getType()._isComplex()) {
                     sCode += "[" + 2 + "]";
                 }
                 else {
@@ -123,7 +123,7 @@ module akra.fx {
             }
 
             if (bWithInitializer && pVar.hasInitializer()) {
-                sCode += "=" + pVar.getInitializeExpr().toFinalCode();
+                sCode += "=" + pVar.getInitializeExpr()._toFinalCode();
             }
 
             return sCode;

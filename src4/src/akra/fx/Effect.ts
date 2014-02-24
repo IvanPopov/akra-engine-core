@@ -1,4 +1,4 @@
-/// <reference path="../idl/IAFXEffect.ts" />
+﻿/// <reference path="../idl/IAFXEffect.ts" />
 /// <reference path="../idl/parser/IParser.ts" />
 /// <reference path="../idl/IAFXInstruction.ts" />
 /// <reference path="../idl/IAFXComposer.ts" />
@@ -263,7 +263,7 @@ module akra.fx {
 				for (var j: uint = 0; j < pArguments.length; j++) {
 					isOk = false;
 
-					if (!pArguments[j].getType().isEqual(pTestedArguments[j].getType())) {
+					if (!pArguments[j].getType()._isEqual(pTestedArguments[j].getType())) {
 						break;
 					}
 
@@ -283,48 +283,48 @@ module akra.fx {
 
 			pBufferType.pushType(Effect.getSystemType("video_buffer"));
 
-			pBuffer.push(pBufferType, true);
-			pBuffer.push(pBufferName, true);
+			pBuffer._push(pBufferType, true);
+			pBuffer._push(pBufferName, true);
 
 			return pBuffer;
 		}
 
 		static getExternalType(pType: IAFXTypeInstruction): any {
-			if (pType.isEqual(Effect.getSystemType("int")) ||
-				pType.isEqual(Effect.getSystemType("float"))) {
+			if (pType._isEqual(Effect.getSystemType("int")) ||
+				pType._isEqual(Effect.getSystemType("float"))) {
 				return Number;
 			}
-			else if (pType.isEqual(Effect.getSystemType("bool"))) {
+			else if (pType._isEqual(Effect.getSystemType("bool"))) {
 				return Boolean;
 			}
-			else if (pType.isEqual(Effect.getSystemType("float2")) ||
-				pType.isEqual(Effect.getSystemType("bool2")) ||
-				pType.isEqual(Effect.getSystemType("int2"))) {
+			else if (pType._isEqual(Effect.getSystemType("float2")) ||
+				pType._isEqual(Effect.getSystemType("bool2")) ||
+				pType._isEqual(Effect.getSystemType("int2"))) {
 				return Vec2;
 			}
-			else if (pType.isEqual(Effect.getSystemType("float3")) ||
-				pType.isEqual(Effect.getSystemType("bool3")) ||
-				pType.isEqual(Effect.getSystemType("int3"))) {
+			else if (pType._isEqual(Effect.getSystemType("float3")) ||
+				pType._isEqual(Effect.getSystemType("bool3")) ||
+				pType._isEqual(Effect.getSystemType("int3"))) {
 				return Vec3;
 			}
-			else if (pType.isEqual(Effect.getSystemType("float4")) ||
-				pType.isEqual(Effect.getSystemType("bool4")) ||
-				pType.isEqual(Effect.getSystemType("int4"))) {
+			else if (pType._isEqual(Effect.getSystemType("float4")) ||
+				pType._isEqual(Effect.getSystemType("bool4")) ||
+				pType._isEqual(Effect.getSystemType("int4"))) {
 				return Vec4;
 			}
-			// 	else if(pType.isEqual(Effect.getSystemType("float2x2")) ||
-			// pType.isEqual(Effect.getSystemType("bool2x2")) ||
-			// pType.isEqual(Effect.getSystemType("int2x2"))){
+			// 	else if(pType._isEqual(Effect.getSystemType("float2x2")) ||
+			// pType._isEqual(Effect.getSystemType("bool2x2")) ||
+			// pType._isEqual(Effect.getSystemType("int2x2"))){
 			// 		return Vec2;
 			// 	}
-			else if (pType.isEqual(Effect.getSystemType("float3x3")) ||
-				pType.isEqual(Effect.getSystemType("bool3x3")) ||
-				pType.isEqual(Effect.getSystemType("int3x3"))) {
+			else if (pType._isEqual(Effect.getSystemType("float3x3")) ||
+				pType._isEqual(Effect.getSystemType("bool3x3")) ||
+				pType._isEqual(Effect.getSystemType("int3x3"))) {
 				return Mat3;
 			}
-			else if (pType.isEqual(Effect.getSystemType("float4x4")) ||
-				pType.isEqual(Effect.getSystemType("bool4x4")) ||
-				pType.isEqual(Effect.getSystemType("int4x4"))) {
+			else if (pType._isEqual(Effect.getSystemType("float4x4")) ||
+				pType._isEqual(Effect.getSystemType("bool4x4")) ||
+				pType._isEqual(Effect.getSystemType("int4x4"))) {
 				return Mat4;
 			}
 			else {
@@ -333,72 +333,72 @@ module akra.fx {
 		}
 
 		static isMatrixType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("float2x2")) ||
-				pType.isEqual(Effect.getSystemType("float3x3")) ||
-				pType.isEqual(Effect.getSystemType("float4x4")) ||
-				pType.isEqual(Effect.getSystemType("int2x2")) ||
-				pType.isEqual(Effect.getSystemType("int3x3")) ||
-				pType.isEqual(Effect.getSystemType("int4x4")) ||
-				pType.isEqual(Effect.getSystemType("bool2x2")) ||
-				pType.isEqual(Effect.getSystemType("bool3x3")) ||
-				pType.isEqual(Effect.getSystemType("bool4x4"));
+			return pType._isEqual(Effect.getSystemType("float2x2")) ||
+				pType._isEqual(Effect.getSystemType("float3x3")) ||
+				pType._isEqual(Effect.getSystemType("float4x4")) ||
+				pType._isEqual(Effect.getSystemType("int2x2")) ||
+				pType._isEqual(Effect.getSystemType("int3x3")) ||
+				pType._isEqual(Effect.getSystemType("int4x4")) ||
+				pType._isEqual(Effect.getSystemType("bool2x2")) ||
+				pType._isEqual(Effect.getSystemType("bool3x3")) ||
+				pType._isEqual(Effect.getSystemType("bool4x4"));
 		}
 
 		static isVectorType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("float2")) ||
-				pType.isEqual(Effect.getSystemType("float3")) ||
-				pType.isEqual(Effect.getSystemType("float4")) ||
-				pType.isEqual(Effect.getSystemType("bool2")) ||
-				pType.isEqual(Effect.getSystemType("bool3")) ||
-				pType.isEqual(Effect.getSystemType("bool4")) ||
-				pType.isEqual(Effect.getSystemType("int2")) ||
-				pType.isEqual(Effect.getSystemType("int3")) ||
-				pType.isEqual(Effect.getSystemType("int4"));
+			return pType._isEqual(Effect.getSystemType("float2")) ||
+				pType._isEqual(Effect.getSystemType("float3")) ||
+				pType._isEqual(Effect.getSystemType("float4")) ||
+				pType._isEqual(Effect.getSystemType("bool2")) ||
+				pType._isEqual(Effect.getSystemType("bool3")) ||
+				pType._isEqual(Effect.getSystemType("bool4")) ||
+				pType._isEqual(Effect.getSystemType("int2")) ||
+				pType._isEqual(Effect.getSystemType("int3")) ||
+				pType._isEqual(Effect.getSystemType("int4"));
 		}
 
 		static isScalarType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("bool")) ||
-				pType.isEqual(Effect.getSystemType("int")) ||
-				pType.isEqual(Effect.getSystemType("ptr")) ||
-				pType.isEqual(Effect.getSystemType("float"));
+			return pType._isEqual(Effect.getSystemType("bool")) ||
+				pType._isEqual(Effect.getSystemType("int")) ||
+				pType._isEqual(Effect.getSystemType("ptr")) ||
+				pType._isEqual(Effect.getSystemType("float"));
 		}
 
 		static isFloatBasedType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("float")) ||
-				pType.isEqual(Effect.getSystemType("float2")) ||
-				pType.isEqual(Effect.getSystemType("float3")) ||
-				pType.isEqual(Effect.getSystemType("float4")) ||
-				pType.isEqual(Effect.getSystemType("float2x2")) ||
-				pType.isEqual(Effect.getSystemType("float3x3")) ||
-				pType.isEqual(Effect.getSystemType("float4x4")) ||
-				pType.isEqual(Effect.getSystemType("ptr"));
+			return pType._isEqual(Effect.getSystemType("float")) ||
+				pType._isEqual(Effect.getSystemType("float2")) ||
+				pType._isEqual(Effect.getSystemType("float3")) ||
+				pType._isEqual(Effect.getSystemType("float4")) ||
+				pType._isEqual(Effect.getSystemType("float2x2")) ||
+				pType._isEqual(Effect.getSystemType("float3x3")) ||
+				pType._isEqual(Effect.getSystemType("float4x4")) ||
+				pType._isEqual(Effect.getSystemType("ptr"));
 		}
 
 		static isIntBasedType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("int")) ||
-				pType.isEqual(Effect.getSystemType("int2")) ||
-				pType.isEqual(Effect.getSystemType("int3")) ||
-				pType.isEqual(Effect.getSystemType("int4")) ||
-				pType.isEqual(Effect.getSystemType("int2x2")) ||
-				pType.isEqual(Effect.getSystemType("int3x3")) ||
-				pType.isEqual(Effect.getSystemType("int4x4"));
+			return pType._isEqual(Effect.getSystemType("int")) ||
+				pType._isEqual(Effect.getSystemType("int2")) ||
+				pType._isEqual(Effect.getSystemType("int3")) ||
+				pType._isEqual(Effect.getSystemType("int4")) ||
+				pType._isEqual(Effect.getSystemType("int2x2")) ||
+				pType._isEqual(Effect.getSystemType("int3x3")) ||
+				pType._isEqual(Effect.getSystemType("int4x4"));
 		}
 
 		static isBoolBasedType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("bool")) ||
-				pType.isEqual(Effect.getSystemType("bool2")) ||
-				pType.isEqual(Effect.getSystemType("bool3")) ||
-				pType.isEqual(Effect.getSystemType("bool4")) ||
-				pType.isEqual(Effect.getSystemType("bool2x2")) ||
-				pType.isEqual(Effect.getSystemType("bool3x3")) ||
-				pType.isEqual(Effect.getSystemType("bool4x4"));
+			return pType._isEqual(Effect.getSystemType("bool")) ||
+				pType._isEqual(Effect.getSystemType("bool2")) ||
+				pType._isEqual(Effect.getSystemType("bool3")) ||
+				pType._isEqual(Effect.getSystemType("bool4")) ||
+				pType._isEqual(Effect.getSystemType("bool2x2")) ||
+				pType._isEqual(Effect.getSystemType("bool3x3")) ||
+				pType._isEqual(Effect.getSystemType("bool4x4"));
 		}
 
 		static isSamplerType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("sampler")) ||
-				pType.isEqual(Effect.getSystemType("sampler2D")) ||
-				pType.isEqual(Effect.getSystemType("samplerCUBE")) ||
-				pType.isEqual(Effect.getSystemType("video_buffer"));
+			return pType._isEqual(Effect.getSystemType("sampler")) ||
+				pType._isEqual(Effect.getSystemType("sampler2D")) ||
+				pType._isEqual(Effect.getSystemType("samplerCUBE")) ||
+				pType._isEqual(Effect.getSystemType("video_buffer"));
 		}
 
 		private generateSuffixLiterals(pLiterals: string[], pOutput: IMap<boolean>, iDepth: uint = 0): void {
@@ -527,8 +527,8 @@ module akra.fx {
 			pVariableDecl._setForVertex(isForVertex);
 			pVariableDecl._setForPixel(isForPixel);
 
-			pVariableDecl.push(pType, true);
-			pVariableDecl.push(pName, true);
+			pVariableDecl._push(pType, true);
+			pVariableDecl._push(pName, true);
 
 			this._pSystemVariables[sName] = pVariableDecl;
 
@@ -546,8 +546,8 @@ module akra.fx {
 			pName.setName("engine");
 			pName.setRealName("engine");
 
-			pVariableDecl.push(pType, true);
-			pVariableDecl.push(pName, true);
+			pVariableDecl._push(pType, true);
+			pVariableDecl._push(pName, true);
 
 			this._pSystemVariables["engine"] = pVariableDecl;
 		}
@@ -573,22 +573,22 @@ module akra.fx {
 			pPointSizeId.setName("psize");
 			pPointSizeId.setRealName("PSIZE");
 
-			pPosition.push(pPositionType, true);
-			pPosition.push(pPositionId, true);
+			pPosition._push(pPositionType, true);
+			pPosition._push(pPositionId, true);
 
-			pPointSize.push(pPointSizeType, true);
-			pPointSize.push(pPointSizeId, true);
+			pPointSize._push(pPointSizeType, true);
+			pPointSize._push(pPointSizeId, true);
 
 			pPosition.setSemantic("POSITION");
 			pPointSize.setSemantic("PSIZE");
 
 			var pFieldCollector: IAFXInstruction = new instructions.InstructionCollector();
-			pFieldCollector.push(pPosition, false);
-			pFieldCollector.push(pPointSize, false);
+			pFieldCollector._push(pPosition, false);
+			pFieldCollector._push(pPointSize, false);
 
 			pOutBasetype.addFields(pFieldCollector, true);
 
-			pOutBasetype.setName("VS_OUT");
+			pOutBasetype._setName("VS_OUT");
 			pOutBasetype.setRealName("VS_OUT_S");
 
 			Effect.pSystemVertexOut = pOutBasetype;
@@ -959,7 +959,7 @@ module akra.fx {
 
 			if (!isNull(pUsedTypes)) {
 				for (var i: uint = 0; i < pUsedTypes.length; i++) {
-					var pTypeDecl: IAFXTypeDeclInstruction = <IAFXTypeDeclInstruction>Effect.getSystemType(pUsedTypes[i]).getParent();
+					var pTypeDecl: IAFXTypeDeclInstruction = <IAFXTypeDeclInstruction>Effect.getSystemType(pUsedTypes[i])._getParent();
 					if (!isNull(pTypeDecl)) {
 						pUsedExtSystemTypes.push(pTypeDecl);
 					}
@@ -997,7 +997,7 @@ module akra.fx {
 
 			var pSystemType: instructions.SystemTypeInstruction = new instructions.SystemTypeInstruction();
 
-			pSystemType.setName(sName);
+			pSystemType._setName(sName);
 			pSystemType.setRealName(sRealName);
 			pSystemType.setSize(iSize);
 			if (isArray) {
@@ -1005,7 +1005,7 @@ module akra.fx {
 			}
 
 			this._pSystemTypes[sName] = pSystemType;
-			pSystemType.setBuiltIn(true);
+			pSystemType._setBuiltIn(true);
 
 			return pSystemType;
 		}
@@ -1020,7 +1020,7 @@ module akra.fx {
 			}
 
 			var pSystemType: instructions.SystemTypeInstruction = new instructions.SystemTypeInstruction();
-			pSystemType.setName(sName);
+			pSystemType._setName(sName);
 			pSystemType.setRealName(sRealName);
 			pSystemType.setSize(iSize);
 			pSystemType.setDeclString(sDeclString);
@@ -1030,10 +1030,10 @@ module akra.fx {
 			}
 
 			this._pSystemTypes[sName] = pSystemType;
-			pSystemType.setBuiltIn(false);
+			pSystemType._setBuiltIn(false);
 
 			var pSystemTypeDecl: IAFXTypeDeclInstruction = new instructions.TypeDeclInstruction();
-			pSystemTypeDecl.push(pSystemType, true);
+			pSystemTypeDecl._push(pSystemType, true);
 			pSystemTypeDecl.setBuiltIn(false);
 
 			return pSystemType;
@@ -1312,7 +1312,7 @@ module akra.fx {
 
 		private setOperator(sOperator: string): void {
 			if (!isNull(this._pCurrentInstruction)) {
-				this._pCurrentInstruction.setOperator(sOperator);
+				this._pCurrentInstruction._setOperator(sOperator);
 			}
 		}
 
@@ -1711,12 +1711,12 @@ module akra.fx {
 					pVariable = this.analyzeVariable(pChildren[i], pGeneralType);
 
 					if (!isNull(pInstruction)) {
-						pInstruction.push(pVariable, true);
+						pInstruction._push(pVariable, true);
 						if (pInstruction._getInstructionType() === EAFXInstructionTypes.k_DeclStmtInstruction) {
 							var pVariableSubDecls: IAFXVariableDeclInstruction[] = pVariable.getSubVarDecls();
 							if (!isNull(pVariableSubDecls)) {
 								for (var j: uint = 0; j < pVariableSubDecls.length; j++) {
-									pInstruction.push(pVariableSubDecls[j], false);
+									pInstruction._push(pVariableSubDecls[j], false);
 								}
 							}
 						}
@@ -1812,7 +1812,7 @@ module akra.fx {
 			var sSemantic: string = "";
 			var pInitExpr: IAFXInitExprInstruction = null;
 
-			pVarDecl.push(pVariableType, true);
+			pVarDecl._push(pVariableType, true);
 			pVariableType.pushType(pGeneralType);
 			pVarDecl._setScope(this.getScope());
 
@@ -1835,7 +1835,7 @@ module akra.fx {
 						this._error(EEffectErrors.BAD_VARIABLE_INITIALIZER, { varName: pVarDecl.getName() });
 						return null;
 					}
-					pVarDecl.push(pInitExpr, true);
+					pVarDecl._push(pInitExpr, true);
 				}
 			}
 
@@ -1856,7 +1856,7 @@ module akra.fx {
 			if (pChildren.length === 1) {
 				var pName: IAFXIdInstruction = new instructions.IdInstruction();
 				pName.setName(pChildren[0].value);
-				pVariableDecl.push(pName, true);
+				pVariableDecl._push(pName, true);
 				return;
 			}
 
@@ -1872,7 +1872,7 @@ module akra.fx {
 				pVariableType.setVideoBuffer(pBuffer);
 			}
 			else {
-				if (pVariableType.isPointer()) {
+				if (pVariableType._isPointer()) {
 					//TODO: add support for v[][10]
 					this._error(EEffectTempErrors.BAD_ARRAY_OF_POINTERS);
 				}
@@ -1904,12 +1904,12 @@ module akra.fx {
 			var pInitExpr: IAFXInitExprInstruction = new instructions.InitExprInstruction();
 
 			if (pChildren.length === 2) {
-				pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
+				pInitExpr._push(this.analyzeExpr(pChildren[0]), true);
 			}
 			else {
 				for (var i: uint = pChildren.length - 3; i >= 1; i--) {
 					if (pChildren[i].name === "InitExpr") {
-						pInitExpr.push(this.analyzeInitExpr(pChildren[i]), true);
+						pInitExpr._push(this.analyzeInitExpr(pChildren[i]), true);
 					}
 				}
 			}
@@ -1940,12 +1940,12 @@ module akra.fx {
 			var pInitExpr: IAFXInitExprInstruction = new instructions.InitExprInstruction();
 
 			if (pChildren.length === 1) {
-				pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
+				pInitExpr._push(this.analyzeExpr(pChildren[0]), true);
 			}
 			else {
 				for (var i: uint = 0; i < pChildren.length; i++) {
 					if (pChildren[i].name === "InitExpr") {
-						pInitExpr.push(this.analyzeInitExpr(pChildren[i]), true);
+						pInitExpr._push(this.analyzeInitExpr(pChildren[i]), true);
 					}
 				}
 			}
@@ -2048,12 +2048,12 @@ module akra.fx {
 			pExprType = (<IAFXVariableTypeInstruction>pShaderFunc.getType()).wrap();
 
 			pExpr.setType(pExprType);
-			pExpr.setOperator("complile");
-			pExpr.push(pShaderFunc.getNameId(), false);
+			pExpr._setOperator("complile");
+			pExpr._push(pShaderFunc.getNameId(), false);
 
 			if (!isNull(pArguments)) {
 				for (i = 0; i < pArguments.length; i++) {
-					pExpr.push(pArguments[i], true);
+					pExpr._push(pArguments[i], true);
 				}
 			}
 
@@ -2070,7 +2070,7 @@ module akra.fx {
 			var pExpr: instructions.SamplerStateBlockInstruction = new instructions.SamplerStateBlockInstruction();
 			var i: uint = 0;
 
-			pExpr.setOperator("sample_state");
+			pExpr._setOperator("sample_state");
 
 			for (i = pChildren.length - 2; i >= 1; i--) {
 				this.analyzeSamplerState(pChildren[i], pExpr);
@@ -2245,47 +2245,47 @@ module akra.fx {
 				var pFunctionCallExpr: instructions.FunctionCallInstruction = new instructions.FunctionCallInstruction();
 
 				pFunctionId = new instructions.IdExprInstruction();
-				pFunctionId.push(pFunction.getNameId(), false);
+				pFunctionId._push(pFunction.getNameId(), false);
 
 				pExprType = (<IAFXVariableTypeInstruction>pFunction.getType()).wrap();
 
 				pFunctionCallExpr.setType(pExprType);
-				pFunctionCallExpr.push(pFunctionId, true);
+				pFunctionCallExpr._push(pFunctionId, true);
 
 				if (!isNull(pArguments)) {
 					for (i = 0; i < pArguments.length; i++) {
-						pFunctionCallExpr.push(pArguments[i], true);
+						pFunctionCallExpr._push(pArguments[i], true);
 					}
 
 					var pFunctionArguments: IAFXVariableDeclInstruction[] = (<instructions.FunctionDeclInstruction>pFunction).getArguments();
 					for (i = 0; i < pArguments.length; i++) {
 						if (pFunctionArguments[i].getType().hasUsage("out")) {
-							if (!pArguments[i].getType().isWritable()) {
+							if (!pArguments[i].getType()._isWritable()) {
 								this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
 								return null;
 							}
 
-							if (pArguments[i].getType().isStrongEqual(Effect.getSystemType("ptr"))) {
+							if (pArguments[i].getType()._isStrongEqual(Effect.getSystemType("ptr"))) {
 								this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
 							}
 						}
 						else if (pFunctionArguments[i].getType().hasUsage("inout")) {
-							if (!pArguments[i].getType().isWritable()) {
+							if (!pArguments[i].getType()._isWritable()) {
 								this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
 								return null;
 							}
 
-							if (!pArguments[i].getType().isReadable()) {
+							if (!pArguments[i].getType()._isReadable()) {
 								this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 								return null;
 							}
 
-							if (pArguments[i].getType().isStrongEqual(Effect.getSystemType("ptr"))) {
+							if (pArguments[i].getType()._isStrongEqual(Effect.getSystemType("ptr"))) {
 								this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
 							}
 						}
 						else {
-							if (!pArguments[i].getType().isReadable()) {
+							if (!pArguments[i].getType()._isReadable()) {
 								this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 								return null;
 							}
@@ -2293,7 +2293,7 @@ module akra.fx {
 					}
 
 					for (i = pArguments.length; i < pFunctionArguments.length; i++) {
-						pFunctionCallExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
+						pFunctionCallExpr._push(pFunctionArguments[i].getInitializeExpr(), false);
 					}
 
 				}
@@ -2314,7 +2314,7 @@ module akra.fx {
 
 				if (!isNull(pCurrentAnalyzedFunction)) {
 					for (i = 0; i < pArguments.length; i++) {
-						if (!pArguments[i].getType().isReadable()) {
+						if (!pArguments[i].getType()._isReadable()) {
 							this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 							return null;
 						}
@@ -2371,16 +2371,16 @@ module akra.fx {
 			}
 
 			pExpr.setType(pExprType);
-			pExpr.push(pConstructorType, false);
+			pExpr._push(pConstructorType, false);
 
 			if (!isNull(pArguments)) {
 				for (i = 0; i < pArguments.length; i++) {
-					if (!pArguments[i].getType().isReadable()) {
+					if (!pArguments[i].getType()._isReadable()) {
 						this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 						return null;
 					}
 
-					pExpr.push(pArguments[i], true);
+					pExpr._push(pArguments[i], true);
 				}
 			}
 
@@ -2401,7 +2401,7 @@ module akra.fx {
 			pExprType = <IAFXVariableTypeInstruction>pComplexExpr.getType();
 
 			pExpr.setType(pExprType);
-			pExpr.push(pComplexExpr, true);
+			pExpr._push(pComplexExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2423,20 +2423,20 @@ module akra.fx {
 			pPointer = pPrimaryExprType.getPointer();
 
 			if (isNull(pPointer)) {
-				this._error(EEffectErrors.BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.getHash() });
+				this._error(EEffectErrors.BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType._getHash() });
 				return null;
 			}
 
-			var pPointerVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPrimaryExprType.getParent();
-			if (!pPrimaryExprType.isStrictPointer()) {
+			var pPointerVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPrimaryExprType._getParent();
+			if (!pPrimaryExprType._isStrictPointer()) {
 				this.getCurrentAnalyzedFunction()._setForPixel(false);
 				this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
 				pPrimaryExprType._setPointerToStrict();
 			}
 
 			pExpr.setType(pPointer.getType());
-			pExpr.setOperator("@");
-			pExpr.push(pPointer.getNameId(), false);
+			pExpr._setOperator("@");
+			pExpr._push(pPointer.getNameId(), false);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2475,7 +2475,7 @@ module akra.fx {
 			pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
 			pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
-			if (!pPostfixExprType.isArray()) {
+			if (!pPostfixExprType._isArray()) {
 				this._error(EEffectErrors.BAD_POSTIX_NOT_ARRAY, { typeName: pPostfixExprType.toString() });
 				return null;
 			}
@@ -2485,16 +2485,16 @@ module akra.fx {
 
 			pIntType = Effect.getSystemType("int");
 
-			if (!pIndexExprType.isEqual(pIntType)) {
+			if (!pIndexExprType._isEqual(pIntType)) {
 				this._error(EEffectErrors.BAD_POSTIX_NOT_INT_INDEX, { typeName: pIndexExprType.toString() });
 				return null;
 			}
 
-			pExprType = <IAFXVariableTypeInstruction>(pPostfixExprType.getArrayElementType());
+			pExprType = <IAFXVariableTypeInstruction>(pPostfixExprType._getArrayElementType());
 
 			pExpr.setType(pExprType);
-			pExpr.push(pPostfixExpr, true);
-			pExpr.push(pIndexExpr, true);
+			pExpr._push(pPostfixExpr, true);
+			pExpr._push(pIndexExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2530,7 +2530,7 @@ module akra.fx {
 			pExprType = <IAFXVariableTypeInstruction>pFieldNameExpr.getType();
 
 			if (pChildren.length === 4) {
-				if (!pExprType.isPointer()) {
+				if (!pExprType._isPointer()) {
 					this._error(EEffectErrors.BAD_POSTIX_NOT_POINTER, { typeName: pExprType.toString() });
 					return null;
 				}
@@ -2540,8 +2540,8 @@ module akra.fx {
 			}
 
 			pExpr.setType(pExprType);
-			pExpr.push(pPostfixExpr, true);
-			pExpr.push(pFieldNameExpr, true);
+			pExpr._push(pPostfixExpr, true);
+			pExpr._push(pFieldNameExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2572,8 +2572,8 @@ module akra.fx {
 			}
 
 			pExpr.setType(pExprType);
-			pExpr.setOperator(sOperator);
-			pExpr.push(pPostfixExpr, true);
+			pExpr._setOperator(sOperator);
+			pExpr._push(pPostfixExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2603,9 +2603,9 @@ module akra.fx {
 				return null;
 			}
 
-			pExpr.setOperator(sOperator);
+			pExpr._setOperator(sOperator);
 			pExpr.setType(pExprType);
-			pExpr.push(pUnaryExpr, true);
+			pExpr._push(pUnaryExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2623,14 +2623,14 @@ module akra.fx {
 			pExprType = this.analyzeConstTypeDim(pChildren[2]);
 			pCastedExpr = this.analyzeExpr(pChildren[0]);
 
-			if (!(<IAFXVariableTypeInstruction>pCastedExpr.getType()).isReadable()) {
+			if (!(<IAFXVariableTypeInstruction>pCastedExpr.getType())._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
 			pExpr.setType(pExprType);
-			pExpr.push(pExprType, true);
-			pExpr.push(pCastedExpr, true);
+			pExpr._push(pExprType, true);
+			pExpr._push(pCastedExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2661,12 +2661,12 @@ module akra.fx {
 
 			pBoolType = Effect.getSystemType("bool");
 
-			if (!pConditionType.isEqual(pBoolType)) {
+			if (!pConditionType._isEqual(pBoolType)) {
 				this._error(EEffectErrors.BAD_CONDITION_TYPE, { typeName: pConditionType.toString() });
 				return null;
 			}
 
-			if (!pTrueExprType.isEqual(pFalseExprType)) {
+			if (!pTrueExprType._isEqual(pFalseExprType)) {
 				this._error(EEffectErrors.BAD_CONDITION_VALUE_TYPES, {
 					leftTypeName: pTrueExprType.toString(),
 					rightTypeName: pFalseExprType.toString()
@@ -2674,25 +2674,25 @@ module akra.fx {
 				return null;
 			}
 
-			if (!pConditionType.isReadable()) {
+			if (!pConditionType._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
-			if (!pTrueExprType.isReadable()) {
+			if (!pTrueExprType._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
-			if (!pFalseExprType.isReadable()) {
+			if (!pFalseExprType._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
 			pExpr.setType(pTrueExprType);
-			pExpr.push(pConditionExpr, true);
-			pExpr.push(pTrueExpr, true);
-			pExpr.push(pFalseExpr, true);
+			pExpr._push(pConditionExpr, true);
+			pExpr._push(pTrueExpr, true);
+			pExpr._push(pFalseExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2728,10 +2728,10 @@ module akra.fx {
 				return null;
 			}
 
-			pExpr.setOperator(sOperator);
+			pExpr._setOperator(sOperator);
 			pExpr.setType(pExprType);
-			pExpr.push(pLeftExpr, true);
-			pExpr.push(pRightExpr, true);
+			pExpr._push(pLeftExpr, true);
+			pExpr._push(pRightExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2761,16 +2761,16 @@ module akra.fx {
 			if (isNull(pExprType)) {
 				this._error(EEffectErrors.BAD_RELATIONAL_OPERATION, {
 					operator: sOperator,
-					leftTypeName: pLeftType.getHash(),
-					rightTypeName: pRightType.getHash()
+					leftTypeName: pLeftType._getHash(),
+					rightTypeName: pRightType._getHash()
 				});
 				return null;
 			}
 
-			pExpr.setOperator(sOperator);
+			pExpr._setOperator(sOperator);
 			pExpr.setType(pExprType);
-			pExpr.push(pLeftExpr, true);
-			pExpr.push(pRightExpr, true);
+			pExpr._push(pLeftExpr, true);
+			pExpr._push(pRightExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2797,14 +2797,14 @@ module akra.fx {
 
 			pBoolType = Effect.getSystemType("bool");
 
-			if (!pLeftType.isEqual(pBoolType)) {
+			if (!pLeftType._isEqual(pBoolType)) {
 				this._error(EEffectErrors.BAD_LOGICAL_OPERATION, {
 					operator: sOperator,
 					typeName: pLeftType.toString()
 				});
 				return null;
 			}
-			if (!pRightType.isEqual(pBoolType)) {
+			if (!pRightType._isEqual(pBoolType)) {
 				this._error(EEffectErrors.BAD_LOGICAL_OPERATION, {
 					operator: sOperator,
 					typeName: pRightType.toString()
@@ -2812,20 +2812,20 @@ module akra.fx {
 				return null;
 			}
 
-			if (!pLeftType.isReadable()) {
+			if (!pLeftType._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
-			if (!pRightType.isReadable()) {
+			if (!pRightType._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
-			pExpr.setOperator(sOperator);
+			pExpr._setOperator(sOperator);
 			pExpr.setType((<instructions.SystemTypeInstruction>pBoolType).getVariableType());
-			pExpr.push(pLeftExpr, true);
-			pExpr.push(pRightExpr, true);
+			pExpr._push(pLeftExpr, true);
+			pExpr._push(pRightExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2855,8 +2855,8 @@ module akra.fx {
 				if (isNull(pExprType)) {
 					this._error(EEffectErrors.BAD_ARITHMETIC_ASSIGNMENT_OPERATION, {
 						operator: sOperator,
-						leftTypeName: pLeftType.getHash(),
-						rightTypeName: pRightType.getHash()
+						leftTypeName: pLeftType._getHash(),
+						rightTypeName: pRightType._getHash()
 					});
 				}
 			}
@@ -2868,15 +2868,15 @@ module akra.fx {
 
 			if (isNull(pExprType)) {
 				this._error(EEffectErrors.BAD_ASSIGNMENT_OPERATION, {
-					leftTypeName: pLeftType.getHash(),
-					rightTypeName: pRightType.getHash()
+					leftTypeName: pLeftType._getHash(),
+					rightTypeName: pRightType._getHash()
 				});
 			}
 
-			pExpr.setOperator(sOperator);
+			pExpr._setOperator(sOperator);
 			pExpr.setType(pExprType);
-			pExpr.push(pLeftExpr, true);
-			pExpr.push(pRightExpr, true);
+			pExpr._push(pLeftExpr, true);
+			pExpr._push(pRightExpr, true);
 
 			this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2909,7 +2909,7 @@ module akra.fx {
 			}
 
 			var pVarId: instructions.IdExprInstruction = new instructions.IdExprInstruction();
-			pVarId.push(pVariable.getNameId(), false);
+			pVarId._push(pVariable.getNameId(), false);
 
 			this.checkInstruction(pVarId, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2958,7 +2958,7 @@ module akra.fx {
 			var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
 			var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
-			if (!pPostfixExprType.isFromVariableDecl()) {
+			if (!pPostfixExprType._isFromVariableDecl()) {
 				this._error(EEffectErrors.BAD_MEMOF_ARGUMENT);
 				return null;
 			}
@@ -2969,7 +2969,7 @@ module akra.fx {
 				this._error(EEffectErrors.BAD_MEMOF_NO_BUFFER);
 			}
 
-			if (!pPostfixExprType.isStrictPointer() && !isNull(this.getCurrentAnalyzedFunction())) {
+			if (!pPostfixExprType._isStrictPointer() && !isNull(this.getCurrentAnalyzedFunction())) {
 				this.getCurrentAnalyzedFunction()._setForPixel(false);
 				this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
 				pPostfixExprType._setPointerToStrict();
@@ -2994,7 +2994,7 @@ module akra.fx {
 
 			pType = <IAFXVariableTypeInstruction>(this.analyzeType(pChildren[0]));
 
-			if (!pType.isBase()) {
+			if (!pType._isBase()) {
 				this._error(EEffectErrors.BAD_CAST_TYPE_NOT_BASE, { typeName: pType.toString() });
 			}
 
@@ -3018,7 +3018,7 @@ module akra.fx {
 					pVariable = this.analyzeVariable(pChildren[i], pUsageType);
 
 					if (!isNull(pInstruction)) {
-						pInstruction.push(pVariable, true);
+						pInstruction._push(pVariable, true);
 					}
 				}
 			}
@@ -3037,7 +3037,7 @@ module akra.fx {
 					pType.pushType(pMainType);
 
 					var pTypeDecl: IAFXTypeDeclInstruction = new instructions.TypeDeclInstruction();
-					pTypeDecl.push(pMainType, true);
+					pTypeDecl._push(pMainType, true);
 
 					this.addTypeDecl(pTypeDecl);
 				}
@@ -3061,7 +3061,7 @@ module akra.fx {
 
 			if (pChildren.length === 2) {
 				var pStructInstruction: instructions.ComplexTypeInstruction = <instructions.ComplexTypeInstruction>this.analyzeStructDecl(pChildren[1]);
-				pTypeDeclInstruction.push(pStructInstruction, true);
+				pTypeDeclInstruction._push(pStructInstruction, true);
 			}
 			else {
 				this._error(EEffectErrors.UNSUPPORTED_TYPEDECL);
@@ -3074,7 +3074,7 @@ module akra.fx {
 			pNode.isAnalyzed = true;
 
 			if (!isNull(pParentInstruction)) {
-				pParentInstruction.push(pTypeDeclInstruction, true);
+				pParentInstruction._push(pTypeDeclInstruction, true);
 			}
 
 			return pTypeDeclInstruction;
@@ -3090,7 +3090,7 @@ module akra.fx {
 
 			var sName: string = pChildren[pChildren.length - 2].value;
 
-			pStruct.setName(sName);
+			pStruct._setName(sName);
 
 			this.newScope(EScopeType.k_Struct);
 
@@ -3166,7 +3166,7 @@ module akra.fx {
 				bNeedAddFunction = true;
 			}
 			else {
-				if (!pFunction.getReturnType().isEqual(pFunctionDef.getReturnType())) {
+				if (!pFunction.getReturnType()._isEqual(pFunctionDef.getReturnType())) {
 					this._error(EEffectErrors.BAD_FUNCTION_DEF_RETURN_TYPE, { funcName: pFunction.getNameId().toString() });
 					return null;
 				}
@@ -3209,7 +3209,7 @@ module akra.fx {
 
 			this.setCurrentAnalyzedFunction(pFunction);
 
-			// LOG("-----Analyze function '" + pFunction.getName() + "'------");
+			// LOG("-----Analyze function '" + pFunction._getName() + "'------");
 
 			pStmtBlock = <instructions.StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
 			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
@@ -3233,7 +3233,7 @@ module akra.fx {
 
 			pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
-			if (pReturnType.isPointer() || pReturnType._containSampler() || pReturnType._containPointer()) {
+			if (pReturnType._isPointer() || pReturnType._containSampler() || pReturnType._containPointer()) {
 				this._error(EEffectErrors.BAD_RETURN_TYPE_FOR_FUNCTION, { funcName: sFuncName });
 				return null;
 			}
@@ -3326,7 +3326,7 @@ module akra.fx {
 			for (i = pChildren.length - 2; i > 0; i--) {
 				pStmt = this.analyzeStmt(pChildren[i]);
 				if (!isNull(pStmt)) {
-					pStmtBlock.push(pStmt);
+					pStmtBlock._push(pStmt);
 				}
 
 				this.addExtactionStmts(pStmtBlock);
@@ -3404,11 +3404,11 @@ module akra.fx {
 
 			var pFunctionReturnType: IAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction().getReturnType();
 
-			if (pFunctionReturnType.isEqual(Effect.getSystemType("void")) && pChildren.length === 3) {
+			if (pFunctionReturnType._isEqual(Effect.getSystemType("void")) && pChildren.length === 3) {
 				this._error(EEffectErrors.BAD_RETURN_STMT_VOID);
 				return null;
 			}
-			else if (!pFunctionReturnType.isEqual(Effect.getSystemType("void")) && pChildren.length === 2) {
+			else if (!pFunctionReturnType._isEqual(Effect.getSystemType("void")) && pChildren.length === 2) {
 				this._error(EEffectErrors.BAD_RETURN_STMT_EMPTY);
 				return null;
 			}
@@ -3422,11 +3422,11 @@ module akra.fx {
 					return null;
 				}
 
-				if (!pFunctionReturnType.isEqual(pExprInstruction.getType())) {
+				if (!pFunctionReturnType._isEqual(pExprInstruction.getType())) {
 					this._error(EEffectErrors.BAD_RETURN_STMT_NOT_EQUAL_TYPES);
 					return null;
 				}
-				pReturnStmtInstruction.push(pExprInstruction, true);
+				pReturnStmtInstruction._push(pExprInstruction, true);
 			}
 
 			this.checkInstruction(pReturnStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
@@ -3441,7 +3441,7 @@ module akra.fx {
 			var pBreakStmtInstruction: instructions.BreakStmtInstruction = new instructions.BreakStmtInstruction();
 			var sOperatorName: string = pChildren[1].value;
 
-			pBreakStmtInstruction.setOperator(sOperatorName);
+			pBreakStmtInstruction._setOperator(sOperatorName);
 
 			if (sOperatorName === "discard" && !isNull(this.getCurrentAnalyzedFunction())) {
 				this.getCurrentAnalyzedFunction()._setForVertex(false);
@@ -3483,7 +3483,7 @@ module akra.fx {
 			var pExprStmtInstruction: instructions.ExprStmtInstruction = new instructions.ExprStmtInstruction();
 			var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
-			pExprStmtInstruction.push(pExprInstruction, true);
+			pExprStmtInstruction._push(pExprInstruction, true);
 
 			this.checkInstruction(pExprStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -3504,11 +3504,11 @@ module akra.fx {
 			var pStmt: IAFXStmtInstruction = null;
 
 			if (isDoWhile) {
-				pWhileStmt.setOperator("do_while");
+				pWhileStmt._setOperator("do_while");
 				pCondition = this.analyzeExpr(pChildren[2]);
 				pConditionType = <IAFXVariableTypeInstruction>pCondition.getType();
 
-				if (!pConditionType.isEqual(pBoolType)) {
+				if (!pConditionType._isEqual(pBoolType)) {
 					this._error(EEffectErrors.BAD_DO_WHILE_CONDITION, { typeName: pConditionType.toString() });
 					return null;
 				}
@@ -3516,11 +3516,11 @@ module akra.fx {
 				pStmt = this.analyzeStmt(pChildren[0]);
 			}
 			else {
-				pWhileStmt.setOperator("while");
+				pWhileStmt._setOperator("while");
 				pCondition = this.analyzeExpr(pChildren[2]);
 				pConditionType = <IAFXVariableTypeInstruction>pCondition.getType();
 
-				if (!pConditionType.isEqual(pBoolType)) {
+				if (!pConditionType._isEqual(pBoolType)) {
 					this._error(EEffectErrors.BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
 					return null;
 				}
@@ -3532,8 +3532,8 @@ module akra.fx {
 					pStmt = this.analyzeStmt(pChildren[0]);
 				}
 
-				pWhileStmt.push(pCondition, true);
-				pWhileStmt.push(pStmt, true);
+				pWhileStmt._push(pCondition, true);
+				pWhileStmt._push(pStmt, true);
 			}
 
 			this.checkInstruction(pWhileStmt, ECheckStage.CODE_TARGET_SUPPORT);
@@ -3555,26 +3555,26 @@ module akra.fx {
 			var pIfStmt: IAFXStmtInstruction = null;
 			var pElseStmt: IAFXStmtInstruction = null;
 
-			if (!pConditionType.isEqual(pBoolType)) {
+			if (!pConditionType._isEqual(pBoolType)) {
 				this._error(EEffectErrors.BAD_IF_CONDITION, { typeName: pConditionType.toString() });
 				return null;
 			}
 
-			pIfStmtInstruction.push(pCondition, true);
+			pIfStmtInstruction._push(pCondition, true);
 
 			if (isIfElse) {
-				pIfStmtInstruction.setOperator("if_else");
+				pIfStmtInstruction._setOperator("if_else");
 				pIfStmt = this.analyzeNonIfStmt(pChildren[2]);
 				pElseStmt = this.analyzeStmt(pChildren[0]);
 
-				pIfStmtInstruction.push(pIfStmt, true);
-				pIfStmtInstruction.push(pElseStmt, true);
+				pIfStmtInstruction._push(pIfStmt, true);
+				pIfStmtInstruction._push(pElseStmt, true);
 			}
 			else {
-				pIfStmtInstruction.setOperator("if");
+				pIfStmtInstruction._setOperator("if");
 				pIfStmt = this.analyzeNonIfStmt(pChildren[0]);
 
-				pIfStmtInstruction.push(pIfStmt, true);
+				pIfStmtInstruction._push(pIfStmt, true);
 			}
 
 			this.checkInstruction(pIfStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
@@ -3615,7 +3615,7 @@ module akra.fx {
 				this.analyzeForStep(pChildren[2], pForStmtInstruction);
 			}
 			else {
-				pForStmtInstruction.push(null);
+				pForStmtInstruction._push(null);
 			}
 
 
@@ -3626,7 +3626,7 @@ module akra.fx {
 				pStmt = this.analyzeStmt(pChildren[0]);
 			}
 
-			pForStmtInstruction.push(pStmt, true);
+			pForStmtInstruction._push(pStmt, true);
 
 			this.endScope();
 
@@ -3647,11 +3647,11 @@ module akra.fx {
 					break;
 				case "Expr":
 					var pExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
-					pForStmtInstruction.push(pExpr, true);
+					pForStmtInstruction._push(pExpr, true);
 					break;
 				default:
 					// ForInit : ';'
-					pForStmtInstruction.push(null);
+					pForStmtInstruction._push(null);
 					break;
 			}
 
@@ -3664,13 +3664,13 @@ module akra.fx {
 			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length === 1) {
-				pForStmtInstruction.push(null);
+				pForStmtInstruction._push(null);
 				return;
 			}
 
 			var pConditionExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
-			pForStmtInstruction.push(pConditionExpr, true);
+			pForStmtInstruction._push(pConditionExpr, true);
 			return;
 		}
 
@@ -3680,7 +3680,7 @@ module akra.fx {
 			var pChildren: parser.IParseNode[] = pNode.children;
 			var pStepExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
 
-			pForStmtInstruction.push(pStepExpr, true);
+			pForStmtInstruction._push(pStepExpr, true);
 
 			return;
 		}
@@ -4182,9 +4182,9 @@ module akra.fx {
 			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pIfExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
-			pIfExpr.prepareFor(EFunctionType.k_PassFunction);
+			pIfExpr._prepareFor(EFunctionType.k_PassFunction);
 
-			pPass._addCodeFragment("if(" + pIfExpr.toFinalCode() + ")");
+			pPass._addCodeFragment("if(" + pIfExpr._toFinalCode() + ")");
 
 			this.analyzePassStateBlock(pChildren[pChildren.length - 5], pPass);
 
@@ -4208,9 +4208,9 @@ module akra.fx {
 
 			var sCodeFragment: string = "switch";
 			var pSwitchExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
-			pSwitchExpr.prepareFor(EFunctionType.k_PassFunction);
+			pSwitchExpr._prepareFor(EFunctionType.k_PassFunction);
 
-			pPass._addCodeFragment("(" + pSwitchExpr.toFinalCode() + ")");
+			pPass._addCodeFragment("(" + pSwitchExpr._toFinalCode() + ")");
 
 			this.analyzePassCaseBlock(pChildren[0], pPass);
 		}
@@ -4240,9 +4240,9 @@ module akra.fx {
 			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pCaseStateExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 2]);
-			pCaseStateExpr.prepareFor(EFunctionType.k_PassFunction);
+			pCaseStateExpr._prepareFor(EFunctionType.k_PassFunction);
 
-			pPass._addCodeFragment("case " + pCaseStateExpr.toFinalCode() + ": ");
+			pPass._addCodeFragment("case " + pCaseStateExpr._toFinalCode() + ": ");
 
 			for (var i: uint = pChildren.length - 4; i >= 0; i--) {
 				if (pChildren[i].name === "PassState") {
@@ -4416,8 +4416,8 @@ module akra.fx {
 				return pRightType;
 			}
 
-			var isComplex: boolean = pLeftType.isComplex() || pRightType.isComplex();
-			var isArray: boolean = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
+			var isComplex: boolean = pLeftType._isComplex() || pRightType._isComplex();
+			var isArray: boolean = pLeftType._isNotBaseArray() || pRightType._isNotBaseArray();
 			var isSampler: boolean = Effect.isSamplerType(pLeftType) || Effect.isSamplerType(pRightType);
 			var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
 
@@ -4430,38 +4430,38 @@ module akra.fx {
 			}
 
 			if (this.isAssignmentOperator(sOperator)) {
-				if (!pLeftType.isWritable()) {
+				if (!pLeftType._isWritable()) {
 					this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
 					return null;
 				}
 
-				if (pLeftType.isStrongEqual(Effect.getSystemType("ptr"))) {
+				if (pLeftType._isStrongEqual(Effect.getSystemType("ptr"))) {
 					this.addPointerForExtract(pLeftType._getParentVarDecl());
 				}
 
-				if (!pRightType.isReadable()) {
+				if (!pRightType._isReadable()) {
 					this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 					return null;
 				}
 
-				if (sOperator !== "=" && !pLeftType.isReadable()) {
+				if (sOperator !== "=" && !pLeftType._isReadable()) {
 					this._error(EEffectErrors.BAD_TYPE_FOR_READ)
 				}
 			}
 			else {
-				if (!pLeftType.isReadable()) {
+				if (!pLeftType._isReadable()) {
 					this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 					return null;
 				}
 
-				if (!pRightType.isReadable()) {
+				if (!pRightType._isReadable()) {
 					this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 					return null;
 				}
 			}
 
 			if (isComplex) {
-				if (sOperator === "=" && pLeftType.isEqual(pRightType)) {
+				if (sOperator === "=" && pLeftType._isEqual(pRightType)) {
 					return <IAFXVariableTypeInstruction>pLeftType;
 				}
 				else if (this.isEqualOperator(sOperator) && !pLeftType._containArray() && !pLeftType._containSampler()) {
@@ -4473,15 +4473,15 @@ module akra.fx {
 			}
 
 			var pReturnType: IAFXVariableTypeInstruction = null;
-			var pLeftBaseType: IAFXVariableTypeInstruction = (<instructions.SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
-			var pRightBaseType: IAFXVariableTypeInstruction = (<instructions.SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
+			var pLeftBaseType: IAFXVariableTypeInstruction = (<instructions.SystemTypeInstruction>pLeftType._getBaseType()).getVariableType();
+			var pRightBaseType: IAFXVariableTypeInstruction = (<instructions.SystemTypeInstruction>pRightType._getBaseType()).getVariableType();
 
 
-			if (pLeftType.isConst() && this.isAssignmentOperator(sOperator)) {
+			if (pLeftType._isConst() && this.isAssignmentOperator(sOperator)) {
 				return null;
 			}
 
-			if (pLeftType.isEqual(pRightType)) {
+			if (pLeftType._isEqual(pRightType)) {
 				if (this.isArithmeticalOperator(sOperator)) {
 					if (!Effect.isMatrixType(pLeftType) || (sOperator !== "/" && sOperator !== "/=")) {
 						return pLeftBaseType;
@@ -4527,11 +4527,11 @@ module akra.fx {
 
 				if (sOperator === "*" || sOperator === "*=") {
 					if (Effect.isMatrixType(pLeftType) && Effect.isVectorType(pRightType) &&
-						pLeftType.getLength() === pRightType.getLength()) {
+						pLeftType._getLength() === pRightType._getLength()) {
 						return pRightBaseType;
 					}
 					else if (Effect.isMatrixType(pRightType) && Effect.isVectorType(pLeftType) &&
-						pLeftType.getLength() === pRightType.getLength()) {
+						pLeftType._getLength() === pRightType._getLength()) {
 						return pLeftBaseType;
 					}
 					else {
@@ -4560,27 +4560,27 @@ module akra.fx {
 				return pType;
 			}
 
-			var isComplex: boolean = pType.isComplex();
-			var isArray: boolean = pType.isNotBaseArray();
+			var isComplex: boolean = pType._isComplex();
+			var isArray: boolean = pType._isNotBaseArray();
 			var isSampler: boolean = Effect.isSamplerType(pType);
 
 			if (isComplex || isArray || isSampler) {
 				return null;
 			}
 
-			if (!pType.isReadable()) {
+			if (!pType._isReadable()) {
 				this._error(EEffectErrors.BAD_TYPE_FOR_READ);
 				return null;
 			}
 
 
 			if (sOperator === "++" || sOperator === "--") {
-				if (!pType.isWritable()) {
+				if (!pType._isWritable()) {
 					this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
 					return null;
 				}
 
-				if (pType.isStrongEqual(Effect.getSystemType("ptr"))) {
+				if (pType._isStrongEqual(Effect.getSystemType("ptr"))) {
 					this.addPointerForExtract(pType._getParentVarDecl());
 				}
 
@@ -4590,7 +4590,7 @@ module akra.fx {
 			if (sOperator === "!") {
 				var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
 
-				if (pType.isEqual(pBoolType)) {
+				if (pType._isEqual(pBoolType)) {
 					return pBoolType;
 				}
 				else {
@@ -4602,7 +4602,7 @@ module akra.fx {
 					return null;
 				}
 				else {
-					return (<instructions.SystemTypeInstruction>pType.getBaseType()).getVariableType();
+					return (<instructions.SystemTypeInstruction>pType._getBaseType()).getVariableType();
 				}
 			}
 
@@ -4651,7 +4651,7 @@ module akra.fx {
 			while (!isNull(pWhatExtracted)) {
 				pWhatExtractedType = pWhatExtracted.getType();
 
-				if (!pWhatExtractedType.isComplex()) {
+				if (!pWhatExtractedType._isComplex()) {
 					var pSingleExtract: instructions.ExtractStmtInstruction = new instructions.ExtractStmtInstruction();
 					pSingleExtract.generateStmtForBaseType(
 						pWhatExtracted,
@@ -4660,7 +4660,7 @@ module akra.fx {
 
 					this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
 
-					pParentStmt.push(pSingleExtract, true);
+					pParentStmt._push(pSingleExtract, true);
 
 					if (!isNull(pFunction)) {
 						pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
@@ -4685,7 +4685,7 @@ module akra.fx {
 			pBuffer: IAFXVariableDeclInstruction,
 			iPadding: uint): void {
 			var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
-			var pFieldNameList: string[] = pVarType.getFieldNameList();
+			var pFieldNameList: string[] = pVarType._getFieldNameList();
 			var pField: IAFXVariableDeclInstruction = null;
 			var pFieldType: IAFXVariableTypeInstruction = null;
 			var pSingleExtract: instructions.ExtractStmtInstruction = null;
@@ -4693,7 +4693,7 @@ module akra.fx {
 			var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
 			for (var i: uint = 0; i < pFieldNameList.length; i++) {
-				pField = pVarType.getField(pFieldNameList[i]);
+				pField = pVarType._getField(pFieldNameList[i]);
 
 				if (isNull(pField)) {
 					continue;
@@ -4701,21 +4701,21 @@ module akra.fx {
 
 				pFieldType = pField.getType();
 
-				if (pFieldType.isPointer()) {
+				if (pFieldType._isPointer()) {
 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
 					pSingleExtract = new instructions.ExtractStmtInstruction();
 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
 
 					this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
 
-					pParentStmt.push(pSingleExtract, true);
+					pParentStmt._push(pSingleExtract, true);
 					this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
 
 					if (!isNull(pFunction)) {
 						pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
 					}
 				}
-				else if (pFieldType.isComplex()) {
+				else if (pFieldType._isComplex()) {
 					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
 				}
 				else {
@@ -4724,7 +4724,7 @@ module akra.fx {
 
 					this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
 
-					pParentStmt.push(pSingleExtract, true);
+					pParentStmt._push(pSingleExtract, true);
 
 					if (!isNull(pFunction)) {
 						pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
@@ -4744,8 +4744,8 @@ module akra.fx {
 		}
 
 		private checkInstruction(pInst: IAFXInstruction, eStage: ECheckStage): void {
-			if (!pInst.check(eStage)) {
-				this._errorFromInstruction(pInst.getLastError());
+			if (!pInst._check(eStage)) {
+				this._errorFromInstruction(pInst._getLastError());
 			}
 		}
 	}

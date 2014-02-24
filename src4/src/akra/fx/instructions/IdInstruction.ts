@@ -8,8 +8,8 @@ module akra.fx.instructions {
         private _sRealName: string;
         private _isForVarying: boolean = false;
 
-        isVisible(): boolean {
-            return this.getParent().isVisible();
+        _isVisible(): boolean {
+            return this._getParent()._isVisible();
         }
         /**
          * EMPTY_OPERATOR EMPTY_ARGUMENTS
@@ -51,12 +51,12 @@ module akra.fx.instructions {
             return this._sRealName;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             return this.getRealName();
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): IdInstruction {
-            var pClonedInstruction: IdInstruction = <IdInstruction>(super.clone(pRelationMap));
+        _clone(pRelationMap?: IAFXInstructionMap): IdInstruction {
+            var pClonedInstruction: IdInstruction = <IdInstruction>(super._clone(pRelationMap));
             pClonedInstruction.setName(this._sName);
             pClonedInstruction.setRealName(this._sRealName);
             return pClonedInstruction;

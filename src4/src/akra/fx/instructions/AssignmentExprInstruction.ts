@@ -14,19 +14,19 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_AssignmentExprInstruction;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
-            sCode += this.getInstructions()[0].toFinalCode();
-            sCode += this.getOperator();
-            sCode += this.getInstructions()[1].toFinalCode();
+            sCode += this._getInstructions()[0]._toFinalCode();
+            sCode += this._getOperator();
+            sCode += this._getInstructions()[1]._toFinalCode();
             return sCode;
         }
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            var sOperator: string = this.getOperator();
-            var pSubExprLeft: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-            var pSubExprRight: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+            var sOperator: string = this._getOperator();
+            var pSubExprLeft: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
+            var pSubExprRight: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
 
             if (eUsedMode === EVarUsedMode.k_Read || sOperator !== "=") {
                 pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);

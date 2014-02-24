@@ -13,8 +13,8 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
 		}
 
-		toFinalCode(): string {
-			return this.getInstructions()[0].toFinalCode() + ";";
+		_toFinalCode(): string {
+			return this._getInstructions()[0]._toFinalCode() + ";";
 		}
 	}
 }

@@ -82,7 +82,7 @@ module akra.fx {
 
             var pHasVar: IAFXVariableDeclInstruction = this._pUniformsContainer.getVarByRealName(sRealName);
 
-            if (isDefAndNotNull(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())) {
+            if (isDefAndNotNull(pHasVar) && !pHasVar.getType()._isEqual(pVariable.getType())) {
                 debug.warn("You used uniforms with the same real-names. Now we don`t work very well with that.");
                 return;
             }

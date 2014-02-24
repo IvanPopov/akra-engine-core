@@ -13,8 +13,8 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_BreakStmtInstruction;
         }
 
-        toFinalCode(): string {
-            return this.getOperator() + ";";
+        _toFinalCode(): string {
+            return this._getOperator() + ";";
         }
     }
 

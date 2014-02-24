@@ -104,7 +104,7 @@ module akra.fx {
 		getTypeForShaderAttributeBySemanticIndex(iIndex: uint): IAFXTypeInstruction {
 			return this._pIsPointerBySlot[this.getSlotBySemanticIndex(iIndex)] ?
 				Effect.getSystemType("ptr") :
-				this.getTypeBySemanticIndex(iIndex).getBaseType();
+				this.getTypeBySemanticIndex(iIndex)._getBaseType();
 		}
 
 
@@ -179,7 +179,7 @@ module akra.fx {
 
 				if (pAttr.isPointer()) {
 					this._pOffsetVarsBySemanticMap[sSemantic] = [];
-					if (pAttr.getType().isComplex()) {
+					if (pAttr.getType()._isComplex()) {
 						var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr.getSubVarDecls();
 
 						for (var j: uint = 0; j < pAttrSubDecls.length; j++) {
@@ -189,7 +189,7 @@ module akra.fx {
 								var sOffsetName: string = pSubDecl.getRealName();
 
 								this._pOffsetVarsBySemanticMap[sSemantic].push(pSubDecl)
-								this._pOffsetDefaultMap[sOffsetName] = (<IAFXVariableDeclInstruction>pSubDecl.getParent()).getType().getPadding();
+								this._pOffsetDefaultMap[sOffsetName] = (<IAFXVariableDeclInstruction>pSubDecl._getParent()).getType().getPadding();
 							}
 						}
 					}
@@ -311,9 +311,9 @@ module akra.fx {
 
 		private createTypeInfo(iIndex: uint): AITypeInfo {
 			return <AITypeInfo>{
-				isComplex: this.getTypeBySemanticIndex(iIndex).isComplex(),
-				isPointer: this.getTypeBySemanticIndex(iIndex).isPointer(),
-				isStrictPointer: this.getTypeBySemanticIndex(iIndex).isStrictPointer()
+				isComplex: this.getTypeBySemanticIndex(iIndex)._isComplex(),
+				isPointer: this.getTypeBySemanticIndex(iIndex)._isPointer(),
+				isStrictPointer: this.getTypeBySemanticIndex(iIndex)._isStrictPointer()
 			};
 		}
 	}

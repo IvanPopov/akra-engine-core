@@ -13,19 +13,19 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_IfStmtInstruction;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
-			if (this.getOperator() === "if") {
+			if (this._getOperator() === "if") {
 				sCode += "if(";
-				sCode += this.getInstructions()[0].toFinalCode() + ")";
-				sCode += this.getInstructions()[1].toFinalCode();
+				sCode += this._getInstructions()[0]._toFinalCode() + ")";
+				sCode += this._getInstructions()[1]._toFinalCode();
 			}
 			else {
 				sCode += "if(";
-				sCode += this.getInstructions()[0].toFinalCode() + ") ";
-				sCode += this.getInstructions()[1].toFinalCode();
+				sCode += this._getInstructions()[0]._toFinalCode() + ") ";
+				sCode += this._getInstructions()[1]._toFinalCode();
 				sCode += "else ";
-				sCode += this.getInstructions()[2].toFinalCode();
+				sCode += this._getInstructions()[2]._toFinalCode();
 			}
 
 			return sCode;

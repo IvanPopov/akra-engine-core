@@ -24,7 +24,7 @@ module akra.fx.instructions {
             return <string><any>this._bValue;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             if (this._bValue) {
                 return "true";
             }
@@ -42,8 +42,8 @@ module akra.fx.instructions {
             return true;
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-            var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+            var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super._clone(pRelationMap));
             pClonedInstruction.setValue(this._bValue);
             return pClonedInstruction;
         }

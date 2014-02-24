@@ -24,8 +24,8 @@ module akra.fx.instructions {
             iPadding: uint, pOffset: IAFXVariableDeclInstruction = null): void {
             var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
             var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
-            if (pVarType.isComplex() || isNull(pVarNameExpr) || pVarType.getSize() === Instruction.UNDEFINE_SIZE) {
-                this.setError(EEffectErrors.BAD_EXTRACTING);
+            if (pVarType._isComplex() || isNull(pVarNameExpr) || pVarType._getSize() === Instruction.UNDEFINE_SIZE) {
+                this._setError(EEffectErrors.BAD_EXTRACTING);
                 return;
             }
 
@@ -34,22 +34,22 @@ module akra.fx.instructions {
             var pBufferSampler: IAFXVariableDeclInstruction = pBuffer._getVideoBufferSampler();
             var pBufferHeader: IAFXVariableDeclInstruction = pBuffer._getVideoBufferHeader();
 
-            var isArray: boolean = pVarType.isNotBaseArray();
-            var iLength: uint = pVarType.getLength();
+            var isArray: boolean = pVarType._isNotBaseArray();
+            var iLength: uint = pVarType._getLength();
             var sCodeFragment: string = "";
-            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType._getArrayElementType() : pVarType;
 
             if (isArray) {
                 if (iLength === Instruction.UNDEFINE_LENGTH) {
-                    this.setError(EEffectErrors.BAD_EXTRACTING);
+                    this._setError(EEffectErrors.BAD_EXTRACTING);
                     return;
                 }
 
                 sCodeFragment = "for(int i=0;i<" + iLength.toString() + ";i++){";
-                this.push(new SimpleInstruction(sCodeFragment), true);
+                this._push(new SimpleInstruction(sCodeFragment), true);
             }
 
-            this.push(pVarNameExpr, false);
+            this._push(pVarNameExpr, false);
 
 
             if (isArray) {
@@ -59,9 +59,9 @@ module akra.fx.instructions {
                 sCodeFragment = "=";
             }
 
-            this.push(new SimpleInstruction(sCodeFragment), true);
+            this._push(new SimpleInstruction(sCodeFragment), true);
 
-            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType._getArrayElementType() : pVarType;
             var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
             var sPaddingExpr: string = "";
 
@@ -73,17 +73,17 @@ module akra.fx.instructions {
             }
 
             if (isArray) {
-                sPaddingExpr += "+float(i*" + pExtractType.getSize().toString() + ")";
+                sPaddingExpr += "+float(i*" + pExtractType._getSize().toString() + ")";
             }
 
             pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr, pOffset);
 
-            if (pExtractExpr.isErrorOccured()) {
-                this.setError(pExtractExpr.getLastError().code, pExtractExpr.getLastError().info);
+            if (pExtractExpr._isErrorOccured()) {
+                this._setError(pExtractExpr._getLastError().code, pExtractExpr._getLastError().info);
                 return;
             }
 
-            this.push(pExtractExpr, true);
+            this._push(pExtractExpr, true);
 
             sCodeFragment = ";";
 
@@ -91,18 +91,18 @@ module akra.fx.instructions {
                 sCodeFragment += "}";
             }
 
-            this.push(new SimpleInstruction(sCodeFragment), true);
+            this._push(new SimpleInstruction(sCodeFragment), true);
 
             this._pExtactExpr = pExtractExpr;
             this._pExtractInVar = pVarDecl;
             this._pExtractInExpr = pVarNameExpr;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
 
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                sCode += this.getInstructions()[i].toFinalCode();
+                sCode += this._getInstructions()[i]._toFinalCode();
             }
 
             return sCode;
