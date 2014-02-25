@@ -18,7 +18,7 @@ module akra.fx.instructions {
 		}
 
 		_toFinalCode(): string {
-			if (!isNull(this._pSamplerDecl) && this._pSamplerDecl.isDefinedByZero()) {
+			if (!isNull(this._pSamplerDecl) && this._pSamplerDecl._isDefinedByZero()) {
 				return "vec4(0.)";
 			}
 
@@ -33,7 +33,7 @@ module akra.fx.instructions {
 
 		setSystemCallFunction(pFunction: IAFXFunctionDeclInstruction): void {
 			this._pSystemFunction = <SystemFunctionInstruction>pFunction;
-			this.setType(pFunction.getType());
+			this._setType(pFunction._getType());
 		}
 
 		_setInstructions(pInstructionList: IAFXInstruction[]): void {
@@ -48,14 +48,14 @@ module akra.fx.instructions {
 			this._setInstructions(this._pSystemFunction.closeArguments(pArguments));
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this._getInstructions();
 			for (var i: uint = 0; i < this._nInstructions; i++) {
 				if (pInstructionList[i]._getInstructionType() !== EAFXInstructionTypes.k_SimpleInstruction) {
-					pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
-					if ((<IAFXExprInstruction>pInstructionList[i]).getType()._isSampler()) {
-						this._pSamplerDecl = (<IAFXExprInstruction>pInstructionList[i]).getType()._getParentVarDecl();
+					pInstructionList[i]._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+					if ((<IAFXExprInstruction>pInstructionList[i])._getType()._isSampler()) {
+						this._pSamplerDecl = (<IAFXExprInstruction>pInstructionList[i])._getType()._getParentVarDecl();
 					}
 				}
 			}

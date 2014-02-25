@@ -35,11 +35,11 @@ module akra.fx.instructions {
             return this._pTexture;
         }
 
-        isConst(): boolean {
+        _isConst(): boolean {
             return true;
         }
 
-        evaluate(): boolean {
+        _evaluate(): boolean {
             var pSamplerState: IAFXSamplerState = {
                 texture: null,
                 textureName: "",
@@ -52,7 +52,7 @@ module akra.fx.instructions {
             };
 
             if (!isNull(this._pTexture)) {
-                pSamplerState.textureName = this._pTexture.getRealName();
+                pSamplerState.textureName = this._pTexture._getRealName();
             }
 
             if (!isNull(this._pSamplerParams)) {

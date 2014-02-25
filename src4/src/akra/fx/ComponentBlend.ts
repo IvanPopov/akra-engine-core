@@ -282,7 +282,7 @@ module akra.fx {
                 var iShift: int = pInfo.shift - this._iShiftMin;
                 var iPass: int = pInfo.pass;
 
-                var pPass: IAFXPassInstruction = pComponentTechnique.getPass(iPass);
+                var pPass: IAFXPassInstruction = pComponentTechnique._getPass(iPass);
 
                 if (!isDef(this._pPassesDList[iShift])) {
                     this._pPassesDList[iShift] = [];

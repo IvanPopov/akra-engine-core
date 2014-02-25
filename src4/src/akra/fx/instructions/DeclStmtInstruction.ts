@@ -24,7 +24,7 @@ module akra.fx.instructions {
             return sCode;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
             if (isNull(this._getInstructions()) || this._nInstructions === 0) {
                 return;
@@ -36,7 +36,7 @@ module akra.fx.instructions {
 
             var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this._getInstructions();
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                var pVarType: IAFXVariableTypeInstruction = pVariableList[i].getType();
+                var pVarType: IAFXVariableTypeInstruction = pVariableList[i]._getType();
 
                 pUsedDataCollector[pVarType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
                     type: pVarType,
@@ -47,8 +47,8 @@ module akra.fx.instructions {
                     numUsed: 1
                 };
 
-                if (pVariableList[i].hasInitializer()) {
-                    pVariableList[i].getInitializeExpr().addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+                if (pVariableList[i]._hasInitializer()) {
+                    pVariableList[i]._getInitializeExpr()._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
                 }
             }
         }

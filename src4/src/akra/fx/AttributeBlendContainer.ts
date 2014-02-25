@@ -177,25 +177,25 @@ module akra.fx {
 				var sSemantic: string = pAttrInfo.name;
 				var pAttr: IAFXVariableDeclInstruction = this.getAttributeBySemanticIndex(i);
 
-				if (pAttr.isPointer()) {
+				if (pAttr._isPointer()) {
 					this._pOffsetVarsBySemanticMap[sSemantic] = [];
-					if (pAttr.getType()._isComplex()) {
-						var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr.getSubVarDecls();
+					if (pAttr._getType()._isComplex()) {
+						var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr._getSubVarDecls();
 
 						for (var j: uint = 0; j < pAttrSubDecls.length; j++) {
 							var pSubDecl: IAFXVariableDeclInstruction = pAttrSubDecls[j];
 
-							if (pSubDecl.getName() === "offset") {
-								var sOffsetName: string = pSubDecl.getRealName();
+							if (pSubDecl._getName() === "offset") {
+								var sOffsetName: string = pSubDecl._getRealName();
 
 								this._pOffsetVarsBySemanticMap[sSemantic].push(pSubDecl)
-								this._pOffsetDefaultMap[sOffsetName] = (<IAFXVariableDeclInstruction>pSubDecl._getParent()).getType().getPadding();
+								this._pOffsetDefaultMap[sOffsetName] = (<IAFXVariableDeclInstruction>pSubDecl._getParent())._getType()._getPadding();
 							}
 						}
 					}
 					else {
-						var pOffsetVar: IAFXVariableDeclInstruction = pAttr.getType()._getAttrOffset();
-						var sOffsetName: string = pOffsetVar.getRealName();
+						var pOffsetVar: IAFXVariableDeclInstruction = pAttr._getType()._getAttrOffset();
+						var sOffsetName: string = pOffsetVar._getRealName();
 
 						this._pOffsetVarsBySemanticMap[sSemantic].push(pOffsetVar);
 						this._pOffsetDefaultMap[sOffsetName] = 0;

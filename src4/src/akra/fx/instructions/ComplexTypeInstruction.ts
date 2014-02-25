@@ -163,11 +163,11 @@ module akra.fx.instructions {
 				this._pFieldDeclList = [];
 			}
 
-			var sVarName: string = pVariable.getName();
+			var sVarName: string = pVariable._getName();
 			this._pFieldDeclMap[sVarName] = pVariable;
 
 			if (this._iSize !== Instruction.UNDEFINE_SIZE) {
-				var iSize: uint = pVariable.getType()._getSize();
+				var iSize: uint = pVariable._getType()._getSize();
 				if (iSize !== Instruction.UNDEFINE_SIZE) {
 					this._iSize += iSize;
 				}
@@ -182,7 +182,7 @@ module akra.fx.instructions {
 				this._pFieldDeclList.push(pVariable);
 			}
 
-			var pType: IAFXVariableTypeInstruction = pVariable.getType();
+			var pType: IAFXVariableTypeInstruction = pVariable._getType();
 			//pType._markAsField();
 
 			if (pType._isNotBaseArray() || pType._containArray()) {
@@ -264,7 +264,7 @@ module akra.fx.instructions {
 			if (isNull(this._pFieldDeclBySemanticMap)) {
 				this.analyzeSemantics();
 			}
-			return this._bHasAllUniqueSemantics;
+			return this._bHasFieldWithoutSemantic;
 		}
 
 		_getField(sFieldName: string): IAFXVariableDeclInstruction {
@@ -284,7 +284,7 @@ module akra.fx.instructions {
 		}
 
 		_getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
-			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName]._getType() : null;
 		}
 
 		_getFieldNameList(): string[] {
@@ -342,7 +342,7 @@ module akra.fx.instructions {
 
 			for (var i: uint = 0; i < this._pFieldDeclList.length; i++) {
 				var pCloneVar: IAFXVariableDeclInstruction = this._pFieldDeclList[i]._clone(pRelationMap);
-				var sVarName: string = pCloneVar.getName();
+				var sVarName: string = pCloneVar._getName();
 
 				pFieldDeclList[i] = pCloneVar;
 				pFieldNameList[i] = sVarName;
@@ -382,12 +382,12 @@ module akra.fx.instructions {
 			for (var i: uint = 0; i < pFieldList.length; i++) {
 				var pField: IAFXVariableDeclInstruction = pFieldList[i];
 				var pBlendField: IAFXVariableDeclInstruction = null;
-				var sFieldName: string = pField.getName();
-				var sFieldSemantic: string = pField.getSemantic();
+				var sFieldName: string = pField._getName();
+				var sFieldSemantic: string = pField._getSemantic();
 
 				if (eMode === EAFXBlendMode.k_Shared) {
 					if (pType._hasField(sFieldName)) {
-						pBlendField = pField.blend(pType._getField(sFieldName), eMode);
+						pBlendField = pField._blend(pType._getField(sFieldName), eMode);
 					}
 					else {
 						pBlendField = pField._clone(pRelationMap);
@@ -398,15 +398,15 @@ module akra.fx.instructions {
 					eMode === EAFXBlendMode.k_VertexOut) {
 
 					if (pType._hasFieldWithSematic(sFieldSemantic)) {
-						pBlendField = pField.blend(pType._getFieldBySemantic(sFieldSemantic), eMode);
+						pBlendField = pField._blend(pType._getFieldBySemantic(sFieldSemantic), eMode);
 					}
 					else {
 						pBlendField = pField._clone(pRelationMap);
 					}
 
 					if (!isNull(pBlendField)) {
-						pBlendField.getNameId().setName(sFieldSemantic);
-						pBlendField.getNameId().setRealName(sFieldSemantic);
+						pBlendField._getNameId()._setName(sFieldSemantic);
+						pBlendField._getNameId()._setRealName(sFieldSemantic);
 					}
 				}
 
@@ -422,8 +422,8 @@ module akra.fx.instructions {
 			for (var i: uint = 0; i < pFieldList.length; i++) {
 				var pField: IAFXVariableDeclInstruction = pFieldList[i];
 				var pBlendField: IAFXVariableDeclInstruction = null;
-				var sFieldName: string = pField.getName();
-				var sFieldSemantic: string = pField.getSemantic();
+				var sFieldName: string = pField._getName();
+				var sFieldSemantic: string = pField._getSemantic();
 
 				if (eMode === EAFXBlendMode.k_Shared) {
 					if (!this._hasField(sFieldName)) {
@@ -436,8 +436,8 @@ module akra.fx.instructions {
 
 					if (!this._hasFieldWithSematic(sFieldSemantic)) {
 						pBlendField = pField._clone(pRelationMap);
-						pBlendField.getNameId().setName(sFieldSemantic);
-						pBlendField.getNameId().setRealName(sFieldSemantic);
+						pBlendField._getNameId()._setName(sFieldSemantic);
+						pBlendField._getNameId()._setRealName(sFieldSemantic);
 					}
 				}
 
@@ -478,7 +478,7 @@ module akra.fx.instructions {
 			var iSize: uint = 0;
 
 			for (var i: uint = 0; i < this._pFieldDeclList.length; i++) {
-				var iFieldSize: uint = this._pFieldDeclList[i].getType()._getSize();
+				var iFieldSize: uint = this._pFieldDeclList[i]._getType()._getSize();
 
 				if (iFieldSize === Instruction.UNDEFINE_SIZE) {
 					iSize = Instruction.UNDEFINE_SIZE;
@@ -496,7 +496,7 @@ module akra.fx.instructions {
 			var sHash: string = "{";
 
 			for (var i: uint = 0; i < this._pFieldDeclList.length; i++) {
-				sHash += this._pFieldDeclList[i].getType()._getHash() + ";";
+				sHash += this._pFieldDeclList[i]._getType()._getHash() + ";";
 			}
 
 			sHash += "}";
@@ -508,7 +508,7 @@ module akra.fx.instructions {
 			var sStrongHash: string = "{";
 
 			for (var i: uint = 0; i < this._pFieldDeclList.length; i++) {
-				sStrongHash += this._pFieldDeclList[i].getType()._getStrongHash() + ";";
+				sStrongHash += this._pFieldDeclList[i]._getType()._getStrongHash() + ";";
 			}
 
 			sStrongHash += "}";
@@ -521,7 +521,7 @@ module akra.fx.instructions {
 
 			for (var i: uint = 0; i < this._pFieldDeclList.length; i++) {
 				var pVar: IAFXVariableDeclInstruction = this._pFieldDeclList[i];
-				var sSemantic: string = pVar.getSemantic();
+				var sSemantic: string = pVar._getSemantic();
 
 				if (sSemantic === "") {
 					this._bHasFieldWithoutSemantic = true;
@@ -533,9 +533,9 @@ module akra.fx.instructions {
 
 				this._pFieldDeclBySemanticMap[sSemantic] = pVar;
 
-				this._bHasFieldWithoutSemantic = this._bHasFieldWithoutSemantic || pVar.getType()._hasFieldWithoutSemantic();
-				if (this._bHasAllUniqueSemantics && pVar.getType()._isComplex()) {
-					this._bHasAllUniqueSemantics = pVar.getType()._hasAllUniqueSemantics();
+				this._bHasFieldWithoutSemantic = this._bHasFieldWithoutSemantic || pVar._getType()._hasFieldWithoutSemantic();
+				if (this._bHasAllUniqueSemantics && pVar._getType()._isComplex()) {
+					this._bHasAllUniqueSemantics = pVar._getType()._hasAllUniqueSemantics();
 				}
 			}
 
@@ -545,7 +545,7 @@ module akra.fx.instructions {
 			var iPadding: uint = 0;
 
 			for (var i: uint = 0; i < this._pFieldDeclList.length; i++) {
-				var pVarType: IAFXVariableTypeInstruction = this._pFieldDeclList[i].getType();
+				var pVarType: IAFXVariableTypeInstruction = this._pFieldDeclList[i]._getType();
 				var iVarSize: uint = pVarType._getSize();
 
 				if (iVarSize === Instruction.UNDEFINE_SIZE) {
@@ -553,7 +553,7 @@ module akra.fx.instructions {
 					return;
 				}
 
-				pVarType.setPadding(iPadding);
+				pVarType._setPadding(iPadding);
 				iPadding += iVarSize;
 			}
 		}

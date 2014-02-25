@@ -635,7 +635,7 @@ module akra.fx {
 					for (var i: uint = 0; i < pTechniqueList.length; i++) {
 						isOk = this.initComponent(pTechniqueList[i]);
 						if (!isOk) {
-							logger.warn("Cannot initialize fx-component from technique '" + pTechniqueList[i].getName() + "'.");
+							logger.warn("Cannot initialize fx-component from technique '" + pTechniqueList[i]._getName() + "'.");
 							return false;
 						}
 					}
@@ -656,7 +656,7 @@ module akra.fx {
 		}
 
 		private initComponent(pTechnique: IAFXTechniqueInstruction): boolean {
-			var sTechniqueName: string = pTechnique.getName();
+			var sTechniqueName: string = pTechnique._getName();
 			var pComponentPool: IResourcePool<IAFXComponent> = this._pEngine.getResourceManager().getComponentPool();
 
 			if (!isNull(pComponentPool.findResource(sTechniqueName))) {
@@ -667,7 +667,7 @@ module akra.fx {
 			pComponent.create();
 			pComponent.setTechnique(pTechnique);
 
-			pTechnique.finalize(this);
+			pTechnique._finalize(this);
 
 			return true;
 		}

@@ -25,7 +25,7 @@ module akra.fx.instructions {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_SystemTypeInstruction;
 			this._pWrapVariableType = new VariableTypeInstruction();
-			this._pWrapVariableType.pushType(this);
+			this._pWrapVariableType._pushType(this);
 		}
 
 		_toDeclString(): string {
@@ -162,11 +162,11 @@ module akra.fx.instructions {
 			var pFieldType: VariableTypeInstruction = new VariableTypeInstruction();
 			var pFieldId: IAFXIdInstruction = new IdInstruction();
 
-			pFieldType.pushType(pType);
+			pFieldType._pushType(pType);
 			pFieldType._canWrite(isWrite);
 
-			pFieldId.setName(sFieldName);
-			pFieldId.setRealName(sRealFieldName);
+			pFieldId._setName(sFieldName);
+			pFieldId._setRealName(sRealFieldName);
 
 			pField._push(pFieldType, true);
 			pField._push(pFieldId, true);
@@ -258,7 +258,7 @@ module akra.fx.instructions {
 		}
 
 		_getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
-			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName]._getType() : null;
 		}
 
 		_getFieldNameList(): string[] {

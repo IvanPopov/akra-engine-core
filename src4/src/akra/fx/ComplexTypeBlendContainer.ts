@@ -26,8 +26,8 @@ module akra.fx {
 		addComplexType(pComplexType: IAFXTypeInstruction): boolean {
 			var pFieldList: IAFXVariableDeclInstruction[] = (<instructions.ComplexTypeInstruction>pComplexType)._getFieldDeclList();
 			for (var i: uint = 0; i < pFieldList.length; i++) {
-				if (pFieldList[i].getType()._isComplex()) {
-					if (!this.addComplexType(pFieldList[i].getType()._getBaseType())) {
+				if (pFieldList[i]._getType()._isComplex()) {
+					if (!this.addComplexType(pFieldList[i]._getType()._getBaseType())) {
 						return false;
 					}
 				}

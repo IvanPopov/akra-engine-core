@@ -19,24 +19,24 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
 		}
 
-		getType(): IAFXVariableTypeInstruction {
+		_getType(): IAFXVariableTypeInstruction {
 			if (!isNull(this._pType)) {
 				return this._pType;
 			}
 			else {
 				var pVar: IdInstruction = <IdInstruction>this._pInstructionList[0];
-				this._pType = (<IAFXVariableDeclInstruction>pVar._getParent()).getType();
+				this._pType = (<IAFXVariableDeclInstruction>pVar._getParent())._getType();
 				return this._pType;
 			}
 		}
 
-		isConst(): boolean {
-			return this.getType()._isConst();
+		_isConst(): boolean {
+			return this._getType()._isConst();
 		}
 
-		evaluate(): boolean {
-			if (this.getType().isForeign()) {
-				var pVal = this.getType()._getParentVarDecl().getValue();
+		_evaluate(): boolean {
+			if (this._getType()._isForeign()) {
+				var pVal = this._getType()._getParentVarDecl()._getValue();
 				if (!isNull(pVal)) {
 					this._pLastEvalResult = pVal;
 					return true;
@@ -53,8 +53,8 @@ module akra.fx.instructions {
 
 			if (eUsedMode === EFunctionType.k_PassFunction) {
 				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getInstructions()[0]._getParent();
-				if (!this.getType()._isUnverifiable() && isNull(pVarDecl._getParent())) {
-					if (pVarDecl.getType().isForeign()) {
+				if (!this._getType()._isUnverifiable() && isNull(pVarDecl._getParent())) {
+					if (pVarDecl._getType()._isForeign()) {
 						this._isInPassForeigns = true;
 					}
 					else {
@@ -87,18 +87,18 @@ module akra.fx.instructions {
 			return <IAFXIdExprInstruction>super._clone(pRelationMap);
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			if (!this.getType()._isFromVariableDecl()) {
+			if (!this._getType()._isFromVariableDecl()) {
 				return;
 			}
 
 			var pInfo: IAFXTypeUseInfoContainer = null;
-			pInfo = pUsedDataCollector[this.getType()._getInstructionID()];
+			pInfo = pUsedDataCollector[this._getType()._getInstructionID()];
 
 			if (!isDef(pInfo)) {
 				pInfo = <IAFXTypeUseInfoContainer>{
-					type: this.getType(),
+					type: this._getType(),
 					isRead: false,
 					isWrite: false,
 					numRead: 0,
@@ -106,7 +106,7 @@ module akra.fx.instructions {
 					numUsed: 0
 				}
 
-				pUsedDataCollector[this.getType()._getInstructionID()] = pInfo;
+				pUsedDataCollector[this._getType()._getInstructionID()] = pInfo;
 			}
 
 			if (eUsedMode !== EVarUsedMode.k_Write && eUsedMode !== EVarUsedMode.k_Undefined) {

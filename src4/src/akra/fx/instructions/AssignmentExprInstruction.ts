@@ -22,20 +22,20 @@ module akra.fx.instructions {
             return sCode;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
             var sOperator: string = this._getOperator();
             var pSubExprLeft: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
             var pSubExprRight: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
 
             if (eUsedMode === EVarUsedMode.k_Read || sOperator !== "=") {
-                pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+                pSubExprLeft._addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
             }
             else {
-                pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+                pSubExprLeft._addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
             }
 
-            pSubExprRight.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+            pSubExprRight._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
     }
 }

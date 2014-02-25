@@ -13,18 +13,18 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_TypedInstruction;
         }
 
-        getType(): IAFXTypeInstruction {
+        _getType(): IAFXTypeInstruction {
             return this._pType;
         }
 
-        setType(pType: IAFXTypeInstruction): void {
+        _setType(pType: IAFXTypeInstruction): void {
             this._pType = pType;
         }
 
         _clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
             var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super._clone(pRelationMap));
-            if (!isNull(this.getType())) {
-                pClonedInstruction.setType(this.getType()._clone(pRelationMap));
+            if (!isNull(this._getType())) {
+                pClonedInstruction._setType(this._getType()._clone(pRelationMap));
             }
             return pClonedInstruction;
         }

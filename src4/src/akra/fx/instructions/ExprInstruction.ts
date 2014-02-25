@@ -16,31 +16,31 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
         }
 
-        evaluate(): boolean {
+        _evaluate(): boolean {
             return false;
         }
 
-        simplify(): boolean {
+        _simplify(): boolean {
             return false;
         }
 
-        getEvalValue(): any {
+        _getEvalValue(): any {
             return this._pLastEvalResult;
         }
 
-        isConst(): boolean {
+        _isConst(): boolean {
             return false;
         }
 
-        getType(): IAFXVariableTypeInstruction {
-            return <IAFXVariableTypeInstruction>super.getType();
+        _getType(): IAFXVariableTypeInstruction {
+            return <IAFXVariableTypeInstruction>super._getType();
         }
 
         _clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction {
             return <IAFXExprInstruction>super._clone(pRelationMap);
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
             var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this._getInstructions();
 
@@ -49,7 +49,7 @@ module akra.fx.instructions {
             }
 
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+                pInstructionList[i]._addUsedData(pUsedDataCollector, eUsedMode);
             }
         }
     }

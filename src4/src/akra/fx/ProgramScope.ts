@@ -122,7 +122,7 @@ module akra.fx {
             var pTypeDecl: IAFXTypeDeclInstruction = this.getTypeDecl(sTypeName, iScope);
 
             if (!isNull(pTypeDecl)) {
-                return pTypeDecl.getType();
+                return pTypeDecl._getType();
             }
             else {
                 return null;
@@ -175,10 +175,10 @@ module akra.fx {
 
                         for (var i: uint = 0; i < pFunctionList.length; i++) {
                             var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
-                            var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction.getArguments();
+                            var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction._getArguments();
 
                             if (pArgumentTypes.length > pTestedArguments.length ||
-                                pArgumentTypes.length < pTestedFunction.getNumNeededArguments()) {
+                                pArgumentTypes.length < pTestedFunction._getNumNeededArguments()) {
                                 continue;
                             }
 
@@ -187,7 +187,7 @@ module akra.fx {
                             for (var j: uint = 0; j < pArgumentTypes.length; j++) {
                                 isParamsEqual = false;
 
-                                if (!pArgumentTypes[j].getType()._isEqual(pTestedArguments[j].getType())) {
+                                if (!pArgumentTypes[j]._getType()._isEqual(pTestedArguments[j]._getType())) {
                                     break;
                                 }
 
@@ -233,7 +233,7 @@ module akra.fx {
 
                         for (var i: uint = 0; i < pFunctionList.length; i++) {
                             var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
-                            var pTestedArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pTestedFunction.getArguments();
+                            var pTestedArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pTestedFunction._getArguments();
 
                             if (pArgumentTypes.length > pTestedArguments.length) {
                                 continue;
@@ -255,15 +255,15 @@ module akra.fx {
                                 isParamsEqual = false;
 
                                 if (iArg >= pArgumentTypes.length) {
-                                    if (pTestedArguments[j].isUniform()) {
+                                    if (pTestedArguments[j]._isUniform()) {
                                         break;
                                     }
                                     else {
                                         isParamsEqual = true;
                                     }
                                 }
-                                else if (pTestedArguments[j].isUniform()) {
-                                    if (!pArgumentTypes[iArg].getType()._isEqual(pTestedArguments[j].getType())) {
+                                else if (pTestedArguments[j]._isUniform()) {
+                                    if (!pArgumentTypes[iArg]._getType()._isEqual(pTestedArguments[j]._getType())) {
                                         break;
                                     }
                                     else {
@@ -302,9 +302,9 @@ module akra.fx {
                 pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
             }
 
-            var sVariableName: string = pVariable.getName();
+            var sVariableName: string = pVariable._getName();
 
-            if (!pVariable.getType().isShared()) {
+            if (!pVariable._getType()._isShared()) {
                 if (this.hasVariableInScope(sVariableName, iScope)) {
                     return false;
                 }
@@ -318,7 +318,7 @@ module akra.fx {
                     pVariable._setScope(iScope);
                 }
                 else {
-                    var pBlendVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName].blend(pVariable, EAFXBlendMode.k_Shared);
+                    var pBlendVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName]._blend(pVariable, EAFXBlendMode.k_Shared);
                     if (isNull(pBlendVariable)) {
                         return false;
                     }
@@ -342,7 +342,7 @@ module akra.fx {
                 pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
             }
 
-            var sTypeName: string = pType.getName();
+            var sTypeName: string = pType._getName();
 
             if (this.hasTypeInScope(sTypeName, iScope)) {
                 return false;
@@ -366,7 +366,7 @@ module akra.fx {
                 pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
             }
 
-            var sFuncName: string = pFunction.getName();
+            var sFuncName: string = pFunction._getName();
 
             if (this.hasFunctionInScope(pFunction, iScope)) {
                 return false;
@@ -448,10 +448,10 @@ module akra.fx {
 
                         for (var i: uint = 0; i < pFunctionList.length; i++) {
                             var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
-                            var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction.getArguments();
+                            var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction._getArguments();
 
                             if (pArgumentTypes.length > pTestedArguments.length ||
-                                pArgumentTypes.length < pTestedFunction.getNumNeededArguments()) {
+                                pArgumentTypes.length < pTestedFunction._getNumNeededArguments()) {
                                 continue;
                             }
 
@@ -460,7 +460,7 @@ module akra.fx {
                             for (var j: uint = 0; j < pArgumentTypes.length; j++) {
                                 isParamsEqual = false;
 
-                                if (!pArgumentTypes[j].getType()._isEqual(pTestedArguments[j].getType())) {
+                                if (!pArgumentTypes[j]._getType()._isEqual(pTestedArguments[j]._getType())) {
                                     break;
                                 }
 
@@ -496,17 +496,17 @@ module akra.fx {
 
             var pScope: IScope = this._pScopeMap[iScope];
             var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
-            var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[pFunction.getName()];
+            var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[pFunction._getName()];
 
             if (!isDef(pFunctionList)) {
                 return false;
             }
 
-            var pFunctionArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunction.getArguments();
+            var pFunctionArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunction._getArguments();
             var hasFunction: boolean = false;
 
             for (var i: uint = 0; i < pFunctionList.length; i++) {
-                var pTestedArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunctionList[i].getArguments();
+                var pTestedArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunctionList[i]._getArguments();
 
                 if (pTestedArguments.length !== pFunctionArguments.length) {
                     continue;
@@ -517,7 +517,7 @@ module akra.fx {
                 for (var j: uint = 0; j < pFunctionArguments.length; j++) {
                     isParamsEqual = false;
 
-                    if (!pTestedArguments[j].getType()._isEqual(pFunctionArguments[j].getType())) {
+                    if (!pTestedArguments[j]._getType()._isEqual(pFunctionArguments[j]._getType())) {
                         break;
                     }
 

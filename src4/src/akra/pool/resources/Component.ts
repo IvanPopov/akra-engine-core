@@ -26,15 +26,15 @@ module akra.pool.resources {
 		}
 
 		isPostEffect(): boolean {
-			return isNull(this._pTechnique) ? false : this._pTechnique.isPostEffect();
+			return isNull(this._pTechnique) ? false : this._pTechnique._isPostEffect();
 		}
 
 		getName(): string {
-			return this._pTechnique.getName();
+			return this._pTechnique._getName();
 		}
 
 		getTotalPasses(): uint {
-			return this._pTechnique.totalOwnPasses();
+			return this._pTechnique._totalOwnPasses();
 		}
 
 		getHash(iShift: int, iPass: uint): string {

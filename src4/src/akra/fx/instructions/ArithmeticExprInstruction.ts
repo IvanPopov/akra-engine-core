@@ -13,15 +13,15 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_ArithmeticExprInstruction;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+            super._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
 
-        evaluate(): boolean {
+        _evaluate(): boolean {
             var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this._getInstructions();
-            var pValL: any = pOperands[0].evaluate() ? pOperands[0].getEvalValue() : null;
-            var pValR: any = pOperands[1].evaluate() ? pOperands[1].getEvalValue() : null;
+            var pValL: any = pOperands[0]._evaluate() ? pOperands[0]._getEvalValue() : null;
+            var pValR: any = pOperands[1]._evaluate() ? pOperands[1]._getEvalValue() : null;
 
             if (isNull(pValL) || isNull(pValR)) {
                 return false;
@@ -60,9 +60,9 @@ module akra.fx.instructions {
             return sCode;
         }
 
-        isConst(): boolean {
+        _isConst(): boolean {
             var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this._getInstructions();
-            return pOperands[0].isConst() && pOperands[1].isConst();
+            return pOperands[0]._isConst() && pOperands[1]._isConst();
         }
     }
 

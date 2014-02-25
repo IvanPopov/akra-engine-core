@@ -14,7 +14,7 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
         }
 
-        setValue(iValue: int): void {
+        _setValue(iValue: int): void {
             this._iValue = iValue;
         }
 
@@ -28,18 +28,18 @@ module akra.fx.instructions {
             return sCode;
         }
 
-        evaluate(): boolean {
+        _evaluate(): boolean {
             this._pLastEvalResult = this._iValue;
             return true;
         }
 
-        isConst(): boolean {
+        _isConst(): boolean {
             return true;
         }
 
         _clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
             var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super._clone(pRelationMap));
-            pClonedInstruction.setValue(this._iValue);
+            pClonedInstruction._setValue(this._iValue);
             return pClonedInstruction;
         }
     }

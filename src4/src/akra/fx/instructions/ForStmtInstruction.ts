@@ -72,14 +72,14 @@ module akra.fx.instructions {
 			return true;
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			var pForInit: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getInstructions()[0];
 			var pForCondition: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
 			var pForStep: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[2];
 			var pForStmt: IAFXStmtInstruction = <IAFXStmtInstruction>this._getInstructions()[3];
 
-			var pIteratorType: IAFXVariableTypeInstruction = pForInit.getType();
+			var pIteratorType: IAFXVariableTypeInstruction = pForInit._getType();
 
 			pUsedDataCollector[pIteratorType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
 				type: pIteratorType,
@@ -90,9 +90,9 @@ module akra.fx.instructions {
 				numUsed: 1
 			};
 
-			pForCondition.addUsedData(pUsedDataCollector, eUsedMode);
-			pForStep.addUsedData(pUsedDataCollector, eUsedMode);
-			pForStmt.addUsedData(pUsedDataCollector, eUsedMode);
+			pForCondition._addUsedData(pUsedDataCollector, eUsedMode);
+			pForStep._addUsedData(pUsedDataCollector, eUsedMode);
+			pForStmt._addUsedData(pUsedDataCollector, eUsedMode);
 		}
 	}
 }

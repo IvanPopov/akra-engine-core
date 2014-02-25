@@ -69,20 +69,20 @@ module akra.fx.instructions {
 		_toFinalCode(): string {
 			var sCode: string = "";
 			if (!isNull(this._pUsageList)) {
-				if (!this.isShared()) {
+				if (!this._isShared()) {
 					for (var i: uint = 0; i < this._pUsageList.length; i++) {
 						sCode += this._pUsageList[i] + " ";
 					}
 				}
 			}
 
-			sCode += this.getSubType()._toFinalCode();
+			sCode += this._getSubType()._toFinalCode();
 
 			return sCode;
 		}
 
 		_toDeclString(): string {
-			return this.getSubType()._toDeclString();
+			return this._getSubType()._toDeclString();
 		}
 
 		_isBuiltIn(): boolean {
@@ -105,20 +105,20 @@ module akra.fx.instructions {
 		//-----------------------------------------------------------------//
 
 		_isBase(): boolean {
-			return this.getSubType()._isBase() && this._bIsArray === false;
+			return this._getSubType()._isBase() && this._bIsArray === false;
 		}
 
 		_isArray(): boolean {
 			return this._bIsArray ||
-				(this.getSubType()._isArray());
+				(this._getSubType()._isArray());
 		}
 
 		_isNotBaseArray(): boolean {
-			return this._bIsArray || (this.getSubType()._isNotBaseArray());
+			return this._bIsArray || (this._getSubType()._isNotBaseArray());
 		}
 
 		_isComplex(): boolean {
-			return this.getSubType()._isComplex();
+			return this._getSubType()._isComplex();
 		}
 
 		_isEqual(pType: IAFXTypeInstruction): boolean {
@@ -149,15 +149,15 @@ module akra.fx.instructions {
 		}
 
 		_isSampler(): boolean {
-			return this.getSubType()._isSampler();
+			return this._getSubType()._isSampler();
 		}
 
 		_isSamplerCube(): boolean {
-			return this.getSubType()._isSamplerCube();
+			return this._getSubType()._isSamplerCube();
 		}
 
 		_isSampler2D(): boolean {
-			return this.getSubType()._isSampler2D();
+			return this._getSubType()._isSampler2D();
 		}
 
 		_isWritable(): boolean {
@@ -166,11 +166,11 @@ module akra.fx.instructions {
 			}
 
 			if ((this._isArray() && !this._isBase()) ||
-				this.isForeign() || this.isUniform()) {
+				this._isForeign() || this._isUniform()) {
 					this._bIsWritable = false;
 			}
 			else {
-				this._bIsWritable = this.getSubType()._isWritable();
+				this._bIsWritable = this._getSubType()._isWritable();
 			}
 
 			return this._bIsWritable;
@@ -181,42 +181,42 @@ module akra.fx.instructions {
 				return this._bIsReadable;
 			}
 
-			if (this.hasUsage("out")) {
+			if (this._hasUsage("out")) {
 				this._bIsReadable = false;
 			}
 			else {
-				this._bIsReadable = this.getSubType()._isReadable();
+				this._bIsReadable = this._getSubType()._isReadable();
 			}
 
 			return this._bIsReadable;
 		}
 
 		_containArray(): boolean {
-			return this.getSubType()._containArray();
+			return this._getSubType()._containArray();
 		}
 
 		_containSampler(): boolean {
-			return this.getSubType()._containSampler();
+			return this._getSubType()._containSampler();
 		}
 
 		_containPointer(): boolean {
-			return this.getSubType()._containPointer();
+			return this._getSubType()._containPointer();
 		}
 
 		_containComplexType(): boolean {
-			return this.getSubType()._containComplexType();
+			return this._getSubType()._containComplexType();
 		}
 
 		_isPointer(): boolean {
 			return this._bIsPointer ||
-				(this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
-				(<IAFXVariableTypeInstruction>this.getSubType())._isPointer());
+				(this._getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+				(<IAFXVariableTypeInstruction>this._getSubType())._isPointer());
 		}
 
 		_isStrictPointer(): boolean {
 			return this._bIsStrictPointer ||
-				(this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
-				(<IAFXVariableTypeInstruction>this.getSubType())._isStrictPointer());
+				(this._getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+				(<IAFXVariableTypeInstruction>this._getSubType())._isStrictPointer());
 		}
 
 		_isPointIndex(): boolean {
@@ -277,15 +277,15 @@ module akra.fx.instructions {
 			return this._bIsFromTypeDecl;
 		}
 
-		isUniform(): boolean {
+		_isUniform(): boolean {
 			if (isNull(this._bIsUniform)) {
-				this._bIsUniform = this.hasUsage("uniform");
+				this._bIsUniform = this._hasUsage("uniform");
 			}
 
 			return this._bIsUniform;
 		}
 
-		isGlobal(): boolean {
+		_isGlobal(): boolean {
 			if (isNull(this._bIsGlobal)) {
 				this._bIsGlobal = this._getScope() === 0;
 			}
@@ -295,23 +295,23 @@ module akra.fx.instructions {
 
 		_isConst(): boolean {
 			if (isNull(this._bIsConst)) {
-				this._bIsConst = this.hasUsage("const");
+				this._bIsConst = this._hasUsage("const");
 			}
 
 			return this._bIsConst;
 		}
 
-		isShared(): boolean {
+		_isShared(): boolean {
 			if (isNull(this._bIsShared)) {
-				this._bIsShared = this.hasUsage("shared");
+				this._bIsShared = this._hasUsage("shared");
 			}
 
 			return this._bIsShared;
 		}
 
-		isForeign(): boolean {
+		_isForeign(): boolean {
 			if (isNull(this._bIsForeign)) {
-				this._bIsForeign = this.hasUsage("foreign");
+				this._bIsForeign = this._hasUsage("foreign");
 			}
 
 			return this._bIsForeign;
@@ -324,7 +324,7 @@ module akra.fx.instructions {
 
 			if (this._getParent()._getInstructionType() === EAFXInstructionTypes.k_VariableDeclInstruction) {
 				var pParentDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getParent();
-				return pParentDecl.isField();
+				return pParentDecl._isField();
 			}
 
 			return false;
@@ -353,11 +353,11 @@ module akra.fx.instructions {
 		//-----------------------------------------------------------------//
 		//----------------------------INIT API-----------------------------//
 		//-----------------------------------------------------------------//
-		setPadding(iPadding: uint): void {
+		_setPadding(iPadding: uint): void {
 			this._iPadding = iPadding;
 		}
 
-		pushType(pType: IAFXTypeInstruction): void {
+		_pushType(pType: IAFXTypeInstruction): void {
 			var eType: EAFXInstructionTypes = pType._getInstructionType();
 
 			if (eType === EAFXInstructionTypes.k_SystemTypeInstruction ||
@@ -367,14 +367,14 @@ module akra.fx.instructions {
 			else {
 				var pVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pType;
 				if (!pVarType._isNotBaseArray() && !pVarType._isPointer()) {
-					var pUsageList: string[] = pVarType.getUsageList();
+					var pUsageList: string[] = pVarType._getUsageList();
 					if (!isNull(pUsageList)) {
 						for (var i: uint = 0; i < pUsageList.length; i++) {
-							this.addUsage(pUsageList[i]);
+							this._addUsage(pUsageList[i]);
 						}
 					}
 
-					this._pSubType = pVarType.getSubType();
+					this._pSubType = pVarType._getSubType();
 				}
 				else {
 					this._pSubType = pType;
@@ -383,31 +383,31 @@ module akra.fx.instructions {
 
 		}
 
-		addUsage(sUsage: string): void {
+		_addUsage(sUsage: string): void {
 			if (isNull(this._pUsageList)) {
 				this._pUsageList = [];
 			}
 
-			if (!this.hasUsage(sUsage)) {
+			if (!this._hasUsage(sUsage)) {
 				this._pUsageList.push(sUsage);
 			}
 		}
 
-		addArrayIndex(pExpr: IAFXExprInstruction): void {
+		_addArrayIndex(pExpr: IAFXExprInstruction): void {
 			//TODO: add support for v[][10]
 
 			this._pArrayElementType = new VariableTypeInstruction();
-			this._pArrayElementType.pushType(this.getSubType());
+			this._pArrayElementType._pushType(this._getSubType());
 			if (!isNull(this._pUsageList)) {
 				for (var i: uint = 0; i < this._pUsageList.length; i++) {
-					this._pArrayElementType.addUsage(this._pUsageList[i]);
+					this._pArrayElementType._addUsage(this._pUsageList[i]);
 				}
 			}
 			this._pArrayElementType._setParent(this);
 
 			this._pArrayIndexExpr = pExpr;
 
-			this._iLength = this._pArrayIndexExpr.evaluate() ? this._pArrayIndexExpr.getEvalValue() : Instruction.UNDEFINE_LENGTH;
+			this._iLength = this._pArrayIndexExpr._evaluate() ? this._pArrayIndexExpr._getEvalValue() : Instruction.UNDEFINE_LENGTH;
 
 			this._bIsArray = true;
 
@@ -416,7 +416,7 @@ module akra.fx.instructions {
 			}
 		}
 
-		addPointIndex(isStrict: boolean = true): void {
+		_addPointIndex(isStrict: boolean = true): void {
 			this._nPointDim++;
 			this._bIsPointer = true;
 			if (isStrict) {
@@ -424,9 +424,9 @@ module akra.fx.instructions {
 			}
 		}
 
-		setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void {
+		_setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void {
 			if (this._isPointIndex()) {
-				(<IAFXVariableDeclInstruction>this._getParent()._getParent()).getType().setVideoBuffer(pBuffer);
+				(<IAFXVariableDeclInstruction>this._getParent()._getParent())._getType()._setVideoBuffer(pBuffer);
 				return;
 			}
 
@@ -442,16 +442,16 @@ module akra.fx.instructions {
 				var pFieldType: IAFXVariableTypeInstruction = this._getFieldType(pFieldNameList[i]);
 
 				if (pFieldType._isPointer()) {
-					pFieldType.setVideoBuffer(pBuffer);
+					pFieldType._setVideoBuffer(pBuffer);
 				}
 			}
 		}
 
-		initializePointers(): void {
+		_initializePointers(): void {
 			this._pPointerList = [];
 			var pDownPointer: IAFXVariableDeclInstruction = this._getParentVarDecl();
 
-			for (var i: uint = 0; i < this.getPointDim(); i++) {
+			for (var i: uint = 0; i < this._getPointDim(); i++) {
 				var pPointer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
 				var pPointerType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 				var pPointerId: IAFXIdInstruction = new IdInstruction();
@@ -459,12 +459,12 @@ module akra.fx.instructions {
 				pPointer._push(pPointerType, true);
 				pPointer._push(pPointerId, true);
 
-				pPointerType.pushType(Effect.getSystemType("ptr"));
-				pPointerId.setName(Instruction.UNDEFINE_NAME);
-				pPointerId.setName(this._getParentVarDecl().getName() + "_pointer_" + i.toString());
+				pPointerType._pushType(Effect.getSystemType("ptr"));
+				pPointerId._setName(Instruction.UNDEFINE_NAME);
+				pPointerId._setName(this._getParentVarDecl()._getName() + "_pointer_" + i.toString());
 
 				if (i > 0) {
-					(this._pPointerList[i - 1].getType())._setUpDownPointers(pPointer, pDownPointer);
+					(this._pPointerList[i - 1]._getType())._setUpDownPointers(pPointer, pDownPointer);
 					pDownPointer = this._pPointerList[i - 1];
 				}
 				else {
@@ -475,7 +475,7 @@ module akra.fx.instructions {
 				this._pPointerList.push(pPointer);
 			}
 
-			this._pPointerList[this._pPointerList.length - 1].getType()._setUpDownPointers(null, pDownPointer);
+			this._pPointerList[this._pPointerList.length - 1]._getType()._setUpDownPointers(null, pDownPointer);
 			this._pUpPointIndex = this._pPointerList[0];
 			this._pMainPointIndex = this._pPointerList[this._pPointerList.length - 1];
 		}
@@ -494,7 +494,7 @@ module akra.fx.instructions {
 			for (var i: uint = 0; i < pFieldNameList.length; i++) {
 				var pFieldType: IAFXVariableTypeInstruction = this._getFieldType(pFieldNameList[i]);
 				if (!pFieldType._isPointer()) {
-					pFieldType.addPointIndex(false);
+					pFieldType._addPointIndex(false);
 					pFieldType._setVideoBufferInDepth();
 				}
 			}
@@ -502,7 +502,7 @@ module akra.fx.instructions {
 
 		_setVideoBufferInDepth(): void {
 			if (this._isPointer()) {
-				this.setVideoBuffer(Effect.createVideoBufferVariable());
+				this._setVideoBuffer(Effect.createVideoBufferVariable());
 			}
 			else if (this._isComplex() && this._containPointer()) {
 				var pFieldNameList: string[] = this._getFieldNameList();
@@ -568,12 +568,12 @@ module akra.fx.instructions {
 				}
 			}
 			else {
-				return this.getSubType()._getSize();
+				return this._getSubType()._getSize();
 			}
 		}
 
 		_getBaseType(): IAFXTypeInstruction {
-			return this.getSubType()._getBaseType();
+			return this._getSubType()._getBaseType();
 		}
 
 		_getLength(): uint {
@@ -583,13 +583,13 @@ module akra.fx.instructions {
 			}
 
 			if (this._isNotBaseArray() && !this._bIsArray) {
-				this._iLength = this.getSubType()._getLength();
+				this._iLength = this._getSubType()._getLength();
 			}
 			else if (this._iLength === Instruction.UNDEFINE_LENGTH || this._isNeedToUpdateLength) {
-				var isEval: boolean = this._pArrayIndexExpr.evaluate();
+				var isEval: boolean = this._pArrayIndexExpr._evaluate();
 
 				if (isEval) {
-					var iValue: uint = <uint>this._pArrayIndexExpr.getEvalValue();
+					var iValue: uint = <uint>this._pArrayIndexExpr._getEvalValue();
 					this._iLength = isNumber(iValue) ? iValue : Instruction.UNDEFINE_LENGTH;
 				}
 			}
@@ -597,8 +597,8 @@ module akra.fx.instructions {
 			return this._iLength;
 		}
 
-		getPadding(): uint {
-			return this._isPointIndex() ? this._getDownPointer().getType().getPadding() : this._iPadding;
+		_getPadding(): uint {
+			return this._isPointIndex() ? this._getDownPointer()._getType()._getPadding() : this._iPadding;
 		}
 
 		_getArrayElementType(): IAFXVariableTypeInstruction {
@@ -612,10 +612,10 @@ module akra.fx.instructions {
 
 			if (isNull(this._pArrayElementType)) {
 				this._pArrayElementType = new VariableTypeInstruction();
-				this._pArrayElementType.pushType(this.getSubType()._getArrayElementType());
+				this._pArrayElementType._pushType(this._getSubType()._getArrayElementType());
 				if (!isNull(this._pUsageList)) {
 					for (var i: uint = 0; i < this._pUsageList.length; i++) {
-						this._pArrayElementType.addUsage(this._pUsageList[i]);
+						this._pArrayElementType._addUsage(this._pUsageList[i]);
 					}
 				}
 				this._pArrayElementType._setParent(this);
@@ -640,7 +640,7 @@ module akra.fx.instructions {
 		}
 
 		_hasField(sFieldName: string): boolean {
-			return this._isUnverifiable() ? true : this.getSubType()._hasField(sFieldName);
+			return this._isUnverifiable() ? true : this._getSubType()._hasField(sFieldName);
 		}
 
 		_hasFieldWithSematic(sSemantic: string): boolean {
@@ -648,7 +648,7 @@ module akra.fx.instructions {
 				return false;
 			}
 
-			return this.getSubType()._hasFieldWithSematic(sSemantic);
+			return this._getSubType()._hasFieldWithSematic(sSemantic);
 		}
 
 		_hasAllUniqueSemantics(): boolean {
@@ -656,7 +656,7 @@ module akra.fx.instructions {
 				return false;
 			}
 
-			return this.getSubType()._hasAllUniqueSemantics();
+			return this._getSubType()._hasAllUniqueSemantics();
 		}
 
 		_hasFieldWithoutSemantic(): boolean {
@@ -664,7 +664,7 @@ module akra.fx.instructions {
 				return false;
 			}
 
-			return this.getSubType()._hasFieldWithoutSemantic();
+			return this._getSubType()._hasFieldWithoutSemantic();
 		}
 
 		_getField(sFieldName: string): IAFXVariableDeclInstruction {
@@ -683,22 +683,22 @@ module akra.fx.instructions {
 			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
 
 			if (!this._isUnverifiable()) {
-				var pSubField: IAFXVariableDeclInstruction = this.getSubType()._getField(sFieldName);
+				var pSubField: IAFXVariableDeclInstruction = this._getSubType()._getField(sFieldName);
 
 				var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-				pFieldType.pushType(pSubField.getType());
+				pFieldType._pushType(pSubField._getType());
 				// if(!this._isBase()){
-				pFieldType.setPadding(pSubField.getType().getPadding());
+				pFieldType._setPadding(pSubField._getType()._getPadding());
 				// }
 				pField._push(pFieldType, true);
-				pField._push(pSubField.getNameId(), false);
-				pField.setSemantic(pSubField.getSemantic());
+				pField._push(pSubField._getNameId(), false);
+				pField._setSemantic(pSubField._getSemantic());
 			}
 			else {
 				var pFieldName: IAFXIdInstruction = new IdInstruction();
 
-				pFieldName.setName(sFieldName);
-				pFieldName.setRealName(sFieldName);
+				pFieldName._setName(sFieldName);
+				pFieldName._setRealName(sFieldName);
 
 				pField._push(this, false);
 				pField._push(pFieldName, true);
@@ -725,15 +725,15 @@ module akra.fx.instructions {
 			}
 
 			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-			var pSubField: IAFXVariableDeclInstruction = this.getSubType()._getFieldBySemantic(sSemantic);
+			var pSubField: IAFXVariableDeclInstruction = this._getSubType()._getFieldBySemantic(sSemantic);
 
 			var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pFieldType.pushType(pSubField.getType());
+			pFieldType._pushType(pSubField._getType());
 			// if(!this._isBase()){
-			pFieldType.setPadding(pSubField.getType().getPadding());
+			pFieldType._setPadding(pSubField._getType()._getPadding());
 			// }
 			pField._push(pFieldType, true);
-			pField._push(pSubField.getNameId(), false);
+			pField._push(pSubField._getNameId(), false);
 
 
 			pField._setParent(this);
@@ -744,23 +744,23 @@ module akra.fx.instructions {
 		}
 
 		_getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
-			return <IAFXVariableTypeInstruction>this._getField(sFieldName).getType();
+			return <IAFXVariableTypeInstruction>this._getField(sFieldName)._getType();
 		}
 
 		_getFieldNameList(): string[] {
-			return this.getSubType()._getFieldNameList();
+			return this._getSubType()._getFieldNameList();
 		}
 
 
-		getUsageList(): string[] {
+		_getUsageList(): string[] {
 			return this._pUsageList;
 		}
 
-		getSubType(): IAFXTypeInstruction {
+		_getSubType(): IAFXTypeInstruction {
 			return this._pSubType;
 		}
 
-		hasUsage(sUsageName: string): boolean {
+		_hasUsage(sUsageName: string): boolean {
 			if (isNull(this._pUsageList)) {
 				return false;
 			}
@@ -771,26 +771,26 @@ module akra.fx.instructions {
 				}
 			}
 
-			if (!isNull(this.getSubType()) && this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) {
-				return (<IAFXVariableTypeInstruction>this.getSubType()).hasUsage(sUsageName);
+			if (!isNull(this._getSubType()) && this._getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) {
+				return (<IAFXVariableTypeInstruction>this._getSubType())._hasUsage(sUsageName);
 			}
 
 			return false;
 		}
 
-		hasVideoBuffer(): boolean {
-			return !isNull(this.getVideoBuffer());
+		_hasVideoBuffer(): boolean {
+			return !isNull(this._getVideoBuffer());
 		}
 
-		getPointDim(): uint {
+		_getPointDim(): uint {
 			return this._nPointDim ||
-				((this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) ?
-				(<IAFXVariableTypeInstruction>this.getSubType()).getPointDim() : 0);
+				((this._getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) ?
+				(<IAFXVariableTypeInstruction>this._getSubType())._getPointDim() : 0);
 		}
 
-		getPointer(): IAFXVariableDeclInstruction {
+		_getPointer(): IAFXVariableDeclInstruction {
 			if (!this._isFromVariableDecl() ||
-				!(this._isPointer() || this._isPointIndex()) || !this.hasVideoBuffer()) {
+				!(this._isPointer() || this._isPointIndex()) || !this._hasVideoBuffer()) {
 				return null;
 			}
 
@@ -802,32 +802,32 @@ module akra.fx.instructions {
 				return null;
 			}
 
-			this.initializePointers();
+			this._initializePointers();
 
 			return this._pUpPointIndex;
 		}
 
-		getVideoBuffer(): IAFXVariableDeclInstruction {
+		_getVideoBuffer(): IAFXVariableDeclInstruction {
 			if (this._isPointIndex()) {
-				return (<IAFXVariableDeclInstruction>this._getParent()._getParent()).getType().getVideoBuffer();
+				return (<IAFXVariableDeclInstruction>this._getParent()._getParent())._getType()._getVideoBuffer();
 			}
 
 			return this._pVideoBuffer;
 		}
 
-		getFieldExpr(sFieldName: string): IAFXIdExprInstruction {
+		_getFieldExpr(sFieldName: string): IAFXIdExprInstruction {
 			if (!this._hasField(sFieldName)) {
 				return null;
 			}
 			var pField: IAFXVariableDeclInstruction = this._getField(sFieldName);
 			var pExpr: IAFXIdExprInstruction = new IdExprInstruction();
-			pExpr._push(pField.getNameId(), false);
-			pExpr.setType(pField.getType());
+			pExpr._push(pField._getNameId(), false);
+			pExpr._setType(pField._getType());
 
 			return pExpr;
 		}
 
-		getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction {
+		_getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction {
 			if (isNull(this._pFieldDeclMap) && isDef(this._pFieldDeclMap[sFieldName])) {
 				return this._pFieldDeclMap[sFieldName];
 			}
@@ -836,7 +836,7 @@ module akra.fx.instructions {
 			}
 		}
 
-		getSubVarDecls(): IAFXVariableDeclInstruction[] {
+		_getSubVarDecls(): IAFXVariableDeclInstruction[] {
 			if (!this.canHaveSubDecls()) {
 				return null;
 			}
@@ -870,7 +870,7 @@ module akra.fx.instructions {
 			var eParentType: EAFXInstructionTypes = this._getParent()._getInstructionType();
 
 			if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
-				return (<IAFXVariableDeclInstruction>this._getParent()).getName();
+				return (<IAFXVariableDeclInstruction>this._getParent())._getName();
 			}
 			else {
 				return (<IAFXVariableTypeInstruction>this._getParent())._getVarDeclName();
@@ -885,7 +885,7 @@ module akra.fx.instructions {
 			var eParentType: EAFXInstructionTypes = this._getParent()._getInstructionType();
 
 			if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
-				return (<IAFXTypeDeclInstruction>this._getParent()).getName();
+				return (<IAFXTypeDeclInstruction>this._getParent())._getName();
 			}
 			else {
 				return (<IAFXVariableTypeInstruction>this._getParent())._getTypeDeclName();
@@ -935,11 +935,11 @@ module akra.fx.instructions {
 
 		_getMainPointer(): IAFXVariableDeclInstruction {
 			if (isNull(this._pMainPointIndex)) {
-				if (isNull(this.getPointer())) {
-					this._pMainPointIndex = this._getParentVarDecl()
+				if (isNull(this._getPointer())) {
+					this._pMainPointIndex = this._getParentVarDecl();
 				}
 				else {
-					this._pMainPointIndex = this._getUpPointer().getType()._getMainPointer();
+					this._pMainPointIndex = this._getUpPointer()._getType()._getMainPointer();
 				}
 			}
 
@@ -962,9 +962,9 @@ module akra.fx.instructions {
 		//----------------------------SYSTEM-------------------------------//
 		//-----------------------------------------------------------------//		
 
-		wrap(): IAFXVariableTypeInstruction {
+		_wrap(): IAFXVariableTypeInstruction {
 			var pCloneType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pCloneType.pushType(this);
+			pCloneType._pushType(this);
 
 			return pCloneType;
 		}
@@ -983,17 +983,17 @@ module akra.fx.instructions {
 
 			var pClone: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>super._clone(pRelationMap);
 
-			pClone.pushType(this._pSubType._clone(pRelationMap));
+			pClone._pushType(this._pSubType._clone(pRelationMap));
 			if (!isNull(this._pUsageList)) {
 				for (var i: uint = 0; i < this._pUsageList.length; i++) {
-					pClone.addUsage(this._pUsageList[i]);
+					pClone._addUsage(this._pUsageList[i]);
 				}
 			}
 
 			pClone._canWrite(this._bIsWritable);
 			pClone._canRead(this._bIsReadable);
 			pClone._setCloneHash(this._sHash, this._sStrongHash);
-			pClone.setPadding(this.getPadding());
+			pClone._setPadding(this._getPadding());
 
 			if (this._bIsArray) {
 				this._setCloneArrayIndex(this._pArrayElementType._clone(pRelationMap),
@@ -1011,18 +1011,18 @@ module akra.fx.instructions {
 						pClonePointerList[i] = this._pPointerList[i]._clone(pRelationMap);
 
 						if (i > 0) {
-							(pClonePointerList[i - 1].getType())._setUpDownPointers(pClonePointerList[i], pDownPointer);
+							(pClonePointerList[i - 1]._getType())._setUpDownPointers(pClonePointerList[i], pDownPointer);
 							pDownPointer = pClonePointerList[i - 1];
 						}
 						else {
-							pClonePointerList[0].getType()._setUpDownPointers(null, pDownPointer);
+							pClonePointerList[0]._getType()._setUpDownPointers(null, pDownPointer);
 						}
 					}
 
-					pClonePointerList[pClonePointerList.length - 1].getType()._setUpDownPointers(null, pDownPointer);
+					pClonePointerList[pClonePointerList.length - 1]._getType()._setUpDownPointers(null, pDownPointer);
 				}
 
-				this._setClonePointeIndexes(this.getPointDim(), pClonePointerList);
+				this._setClonePointeIndexes(this._getPointDim(), pClonePointerList);
 			}
 
 			if (!isNull(this._pFieldDeclMap)) {
@@ -1065,13 +1065,13 @@ module akra.fx.instructions {
 			}
 
 			var pBlendType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pBlendType.pushType(pBlendBaseType);
+			pBlendType._pushType(pBlendBaseType);
 
 			if (this._isNotBaseArray()) {
 				var iLength: uint = this._getLength();
 				var pLengthExpr: IntInstruction = new IntInstruction();
-				pLengthExpr.setValue(iLength);
-				pBlendType.addArrayIndex(pLengthExpr);
+				pLengthExpr._setValue(iLength);
+				pBlendType._addArrayIndex(pLengthExpr);
 			}
 
 			return pBlendType;
@@ -1111,7 +1111,7 @@ module akra.fx.instructions {
 		}
 
 		private calcHash(): void {
-			var sHash: string = this.getSubType()._getHash();
+			var sHash: string = this._getSubType()._getHash();
 
 			if (this._bIsArray) {
 				sHash += "[";
@@ -1119,7 +1119,7 @@ module akra.fx.instructions {
 				var iLength: uint = this._getLength();
 
 				if (iLength === Instruction.UNDEFINE_LENGTH) {
-					sHash += "undef"
+					sHash += "undef";
 				}
 				else {
 					sHash += iLength.toString();
@@ -1132,7 +1132,7 @@ module akra.fx.instructions {
 		}
 
 		private calcStrongHash(): void {
-			var sStrongHash: string = this.getSubType()._getStrongHash();
+			var sStrongHash: string = this._getSubType()._getStrongHash();
 
 			if (this._bIsArray) {
 				sStrongHash += "[";
@@ -1140,7 +1140,7 @@ module akra.fx.instructions {
 				var iLength: uint = this._getLength();
 
 				if (iLength === Instruction.UNDEFINE_LENGTH) {
-					sStrongHash += "undef"
+					sStrongHash += "undef";
 				}
 				else {
 					sStrongHash += iLength.toString();
@@ -1149,7 +1149,7 @@ module akra.fx.instructions {
 				sStrongHash += "]";
 			}
 			if (this._isPointer()) {
-				for (var i: uint = 0; i < this.getPointDim(); i++) {
+				for (var i: uint = 0; i < this._getPointDim(); i++) {
 					sStrongHash = "@" + sStrongHash;
 				}
 			}
@@ -1173,7 +1173,7 @@ module akra.fx.instructions {
 			if (this._isPointer()) {
 
 				if (isNull(this._getUpPointer())) {
-					this.initializePointers();
+					this._initializePointers();
 				}
 
 				for (i = 0; i < this._pPointerList.length; i++) {
@@ -1186,7 +1186,7 @@ module akra.fx.instructions {
 
 				for (i = 0; i < pFieldNameList.length; i++) {
 					var pField: IAFXVariableDeclInstruction = this._getField(pFieldNameList[i]);
-					var pFieldSubDeclList: IAFXVariableDeclInstruction[] = pField.getSubVarDecls();
+					var pFieldSubDeclList: IAFXVariableDeclInstruction[] = pField._getSubVarDecls();
 
 					if (!isNull(pFieldSubDeclList)) {
 						for (var j: uint = 0; j < pFieldSubDeclList.length; j++) {

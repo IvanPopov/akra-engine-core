@@ -29,11 +29,11 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_SystemFunctionInstruction;
 
             this._pName = new IdInstruction();
-            this._pName.setName(sName);
+            this._pName._setName(sName);
             this._pName._setParent(this);
 
             this._pReturnType = new VariableTypeInstruction();
-            this._pReturnType.pushType(pReturnType);
+            this._pReturnType._pushType(pReturnType);
             this._pReturnType._setParent(this);
 
             this._pArguments = [];
@@ -41,7 +41,7 @@ module akra.fx.instructions {
             if (!isNull(pArgumentTypes)) {
                 for (var i: uint = 0; i < pArgumentTypes.length; i++) {
                     var pArgument: TypedInstruction = new TypedInstruction();
-                    pArgument.setType(pArgumentTypes[i]);
+                    pArgument._setType(pArgumentTypes[i]);
                     pArgument._setParent(this);
 
                     this._pArguments.push(pArgument);
@@ -63,7 +63,7 @@ module akra.fx.instructions {
             return this._sDefinition + this._sImplementation;
         }
 
-        toFinalDefCode(): string {
+        _toFinalDefCode(): string {
             return this._sDefinition;
         }
 
@@ -108,45 +108,45 @@ module akra.fx.instructions {
             this._pExprTranslator = pExprTranslator;
         }
 
-        getNameId(): IAFXIdInstruction {
+        _getNameId(): IAFXIdInstruction {
             return this._pName;
         }
 
-        getArguments(): IAFXTypedInstruction[] {
+        _getArguments(): IAFXTypedInstruction[] {
             return this._pArguments;
         }
 
-        getNumNeededArguments(): uint {
+        _getNumNeededArguments(): uint {
             return this._pArguments.length;
         }
 
-        hasImplementation(): boolean {
+        _hasImplementation(): boolean {
             return true;
         }
 
-        getType(): IAFXVariableTypeInstruction {
-            return this.getReturnType();
+        _getType(): IAFXVariableTypeInstruction {
+            return this._getReturnType();
         }
 
-        getReturnType(): IAFXVariableTypeInstruction {
+        _getReturnType(): IAFXVariableTypeInstruction {
             return this._pReturnType;
         }
 
-        getFunctionType(): EFunctionType {
+        _getFunctionType(): EFunctionType {
             return EFunctionType.k_Function;
         }
 
-        setFunctionType(eFunctionType: EFunctionType): void {
+        _setFunctionType(eFunctionType: EFunctionType): void {
         }
 
         closeArguments(pArguments: IAFXInstruction[]): IAFXInstruction[] {
             return this._pExprTranslator.toInstructionList(pArguments);
         }
 
-        setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
+        _setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
         }
 
-        setImplementation(pImplementation: IAFXStmtInstruction): void {
+        _setImplementation(pImplementation: IAFXStmtInstruction): void {
         }
 
         _clone(pRelationMap?: IAFXInstructionMap): SystemFunctionInstruction {

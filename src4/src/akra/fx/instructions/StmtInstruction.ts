@@ -13,13 +13,13 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_StmtInstruction;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
             var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this._getInstructions();
 
             if (!isNull(pUsedDataCollector)) {
                 for (var i: uint = 0; i < this._nInstructions; i++) {
-                    pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+                    pInstructionList[i]._addUsedData(pUsedDataCollector, eUsedMode);
                 }
             }
         }

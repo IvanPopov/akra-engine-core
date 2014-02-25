@@ -13,7 +13,7 @@ module akra.fx.instructions {
         private _pParameterList: IAFXVariableDeclInstruction[] = null;
         private _pParamListForShaderCompile: IAFXVariableDeclInstruction[] = null;
         private _pParamListForShaderInput: IAFXVariableDeclInstruction[] = null;
-        private _isComplexShaderInput: boolean = false;
+        private _bIsComplexShaderInput: boolean = false;
 
         private _pReturnType: IAFXVariableTypeInstruction = null;
         private _pFunctionName: IAFXIdInstruction = null;
@@ -60,11 +60,11 @@ module akra.fx.instructions {
             return sCode;
         }
 
-        setType(pType: IAFXTypeInstruction): void {
+        _setType(pType: IAFXTypeInstruction): void {
             this.setReturnType(<IAFXVariableTypeInstruction>pType);
         }
 
-        getType(): IAFXTypeInstruction {
+        _getType(): IAFXTypeInstruction {
             return <IAFXTypeInstruction>this.getReturnType();
         }
 
@@ -83,15 +83,15 @@ module akra.fx.instructions {
             return true;
         }
 
-        getName(): string {
-            return this._pFunctionName.getName();
+        _getName(): string {
+            return this._pFunctionName._getName();
         }
 
-        getRealName(): string {
-            return this._pFunctionName.getRealName();
+        _getRealName(): string {
+            return this._pFunctionName._getRealName();
         }
 
-        getNameId(): IAFXIdInstruction {
+        _getNameId(): IAFXIdInstruction {
             return this._pFunctionName;
         }
 
@@ -113,27 +113,27 @@ module akra.fx.instructions {
 
         addParameter(pParameter: IAFXVariableDeclInstruction, isStrictModeOn?: boolean): boolean {
             if (this._pParameterList.length > this._nParamsNeeded &&
-                !pParameter.hasInitializer()) {
+                !pParameter._hasInitializer()) {
 
                 this._setError(EEffectErrors.BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT,
                     {
-                        funcName: this._pFunctionName.getName(),
-                        varName: pParameter.getName()
+                        funcName: this._pFunctionName._getName(),
+                        varName: pParameter._getName()
                     });
                 return false;
             }
 
-            var pParameterType: IAFXVariableTypeInstruction = pParameter.getType();
+            var pParameterType: IAFXVariableTypeInstruction = pParameter._getType();
 
             if (pParameterType._isPointer() || pParameterType._containPointer()) {
-                if (pParameterType.hasUsage("uniform") ||
-                    pParameterType.hasUsage("out") ||
-                    pParameterType.hasUsage("inout")) {
+                if (pParameterType._hasUsage("uniform") ||
+                    pParameterType._hasUsage("out") ||
+                    pParameterType._hasUsage("inout")) {
 
                     this._setError(EEffectErrors.BAD_FUNCTION_PARAMETER_USAGE,
                         {
-                            funcName: this._pFunctionName.getName(),
-                            varName: pParameter.getName()
+                            funcName: this._pFunctionName._getName(),
+                            varName: pParameter._getName()
                         });
                     return false;
                 }
@@ -151,19 +151,19 @@ module akra.fx.instructions {
                     !pParameterType._hasFieldWithoutSemantic() &&
                     pParameterType._hasAllUniqueSemantics()) {
 
-                    if (pParameter.getSemantic() === "" &&
+                    if (pParameter._getSemantic() === "" &&
                         pParameterType._hasAllUniqueSemantics() &&
                         !pParameterType._hasFieldWithoutSemantic()) {
 
                         pParameterType._addPointIndexInDepth();
                     }
                     else {
-                        pParameterType.addPointIndex(false);
+                        pParameterType._addPointIndex(false);
                         pParameterType._setVideoBufferInDepth();
                     }
                 }
-                else if (pParameter.getSemantic() !== "") {
-                    pParameterType.addPointIndex(false);
+                else if (pParameter._getSemantic() !== "") {
+                    pParameterType._addPointIndex(false);
                     pParameterType._setVideoBufferInDepth();
                 }
             }
@@ -171,7 +171,7 @@ module akra.fx.instructions {
             this._pParameterList.push(pParameter);
             pParameter._setParent(this);
 
-            if (!pParameter.hasInitializer()) {
+            if (!pParameter._hasInitializer()) {
                 this._nParamsNeeded++;
             }
 
@@ -183,7 +183,7 @@ module akra.fx.instructions {
         }
 
         isComplexShaderInput(): boolean {
-            return this._isComplexShaderInput;
+            return this._bIsComplexShaderInput;
         }
 
         _clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): FunctionDefInstruction {
@@ -201,7 +201,7 @@ module akra.fx.instructions {
                 pShaderParams.push(this._pParamListForShaderInput[i]._clone(pRelationMap));
             }
 
-            pClone._setShaderParams(pShaderParams, this._isComplexShaderInput);
+            pClone._setShaderParams(pShaderParams, this._bIsComplexShaderInput);
             pClone._setAnalyzedInfo(this._isAnalyzedForVertexUsage,
                 this._isAnalyzedForPixelUsage,
                 this._bCanUsedAsFunction);
@@ -211,7 +211,7 @@ module akra.fx.instructions {
 
         _setShaderParams(pParamList: IAFXVariableDeclInstruction[], isComplexInput: boolean): void {
             this._pParamListForShaderInput = pParamList;
-            this._isComplexShaderInput = isComplexInput;
+            this._bIsComplexShaderInput = isComplexInput;
         }
 
         _setAnalyzedInfo(isAnalyzedForVertexUsage: boolean,
@@ -224,10 +224,10 @@ module akra.fx.instructions {
 
         _getStringDef(): string {
             if (this._sDefinition === "") {
-                this._sDefinition = this._pReturnType._getHash() + " " + this.getName() + "(";
+                this._sDefinition = this._pReturnType._getHash() + " " + this._getName() + "(";
 
                 for (var i: uint = 0; i < this._pParameterList.length; i++) {
-                    this._sDefinition += this._pParameterList[i].getType()._getHash() + ",";
+                    this._sDefinition += this._pParameterList[i]._getType()._getHash() + ",";
                 }
 
                 this._sDefinition += ")";
@@ -339,7 +339,7 @@ module akra.fx.instructions {
                     return false;
                 }
 
-                isGood = (this.getSemantic() === "POSITION");
+                isGood = (this._getSemantic() === "POSITION");
                 if (!isGood) {
                     return false;
                 }
@@ -366,7 +366,7 @@ module akra.fx.instructions {
                 return false;
             }
 
-            isGood = this.getSemantic() === "COLOR";
+            isGood = this._getSemantic() === "COLOR";
             if (!isGood) {
                 return false;
             }
@@ -386,25 +386,25 @@ module akra.fx.instructions {
             for (var i: uint = 0; i < pArguments.length; i++) {
                 var pParam: IAFXVariableDeclInstruction = pArguments[i];
 
-                if (pParam.isUniform()) {
+                if (pParam._isUniform()) {
                     this._pParamListForShaderCompile.push(pParam);
                     continue;
                 }
 
                 if (!isStartAnalyze) {
-                    if (pParam.getSemantic() === "") {
-                        if (pParam.getType()._isBase() ||
-                            pParam.getType()._hasFieldWithoutSemantic() ||
-                            !pParam.getType()._hasAllUniqueSemantics()) {
+                    if (pParam._getSemantic() === "") {
+                        if (pParam._getType()._isBase() ||
+                            pParam._getType()._hasFieldWithoutSemantic() ||
+                            !pParam._getType()._hasAllUniqueSemantics()) {
                             return false;
                         }
 
                         isAttributeByStruct = true;
                     }
-                    else if (pParam.getSemantic() !== "") {
-                        if (pParam.getType()._isComplex() &&
-                            (pParam.getType()._hasFieldWithoutSemantic() ||
-                            !pParam.getType()._hasAllUniqueSemantics())) {
+                    else if (pParam._getSemantic() !== "") {
+                        if (pParam._getType()._isComplex() &&
+                            (pParam._getType()._hasFieldWithoutSemantic() ||
+                            !pParam._getType()._hasAllUniqueSemantics())) {
                             return false;
                         }
 
@@ -417,13 +417,13 @@ module akra.fx.instructions {
                     return false;
                 }
                 else if (isAttributeByParams) {
-                    if (pParam.getSemantic() === "") {
+                    if (pParam._getSemantic() === "") {
                         return false;
                     }
 
-                    if (pParam.getType()._isComplex() &&
-                        (pParam.getType()._hasFieldWithoutSemantic() ||
-                        !pParam.getType()._hasAllUniqueSemantics())) {
+                    if (pParam._getType()._isComplex() &&
+                        (pParam._getType()._hasFieldWithoutSemantic() ||
+                        !pParam._getType()._hasAllUniqueSemantics())) {
                         return false;
                     }
                 }
@@ -432,7 +432,7 @@ module akra.fx.instructions {
             }
 
             if (isAttributeByStruct) {
-                this._isComplexShaderInput = true;
+                this._bIsComplexShaderInput = true;
             }
 
             return true;
@@ -450,39 +450,39 @@ module akra.fx.instructions {
             for (var i: uint = 0; i < pArguments.length; i++) {
                 var pParam: IAFXVariableDeclInstruction = pArguments[i];
 
-                if (pParam.isUniform()) {
+                if (pParam._isUniform()) {
                     this._pParamListForShaderCompile.push(pParam);
                     continue;
                 }
 
                 if (!isStartAnalyze) {
-                    if (pParam.getSemantic() === "") {
-                        if (pParam.getType()._isBase() ||
-                            pParam.getType()._hasFieldWithoutSemantic() ||
-                            !pParam.getType()._hasAllUniqueSemantics() ||
-                            pParam.getType()._containSampler() ||
-                            pParam.getType()._containPointer() ||
-                            pParam.getType()._isPointer()) {
+                    if (pParam._getSemantic() === "") {
+                        if (pParam._getType()._isBase() ||
+                            pParam._getType()._hasFieldWithoutSemantic() ||
+                            !pParam._getType()._hasAllUniqueSemantics() ||
+                            pParam._getType()._containSampler() ||
+                            pParam._getType()._containPointer() ||
+                            pParam._getType()._isPointer()) {
                             return false;
                         }
 
                         isVaryingsByStruct = true;
                     }
-                    else if (pParam.getSemantic() !== "") {
-                        if (pParam.getType()._isStrictPointer() ||
-                            pParam.getType()._containPointer() ||
-                            pParam.getType()._containSampler() ||
-                            Effect.isSamplerType(pParam.getType())) {
-                            //LOG(2, pParam.getType()._isPointer(),
-                            //    pParam.getType()._containPointer(),
-                            //    pParam.getType()._containSampler(),
-                            //    Effect.isSamplerType(pParam.getType()));
+                    else if (pParam._getSemantic() !== "") {
+                        if (pParam._getType()._isStrictPointer() ||
+                            pParam._getType()._containPointer() ||
+                            pParam._getType()._containSampler() ||
+                            Effect.isSamplerType(pParam._getType())) {
+                            //LOG(2, pParam._getType()._isPointer(),
+                            //    pParam._getType()._containPointer(),
+                            //    pParam._getType()._containSampler(),
+                            //    Effect.isSamplerType(pParam._getType()));
                             return false;
                         }
 
-                        if (pParam.getType()._isComplex() &&
-                            (pParam.getType()._hasFieldWithoutSemantic() ||
-                            !pParam.getType()._hasAllUniqueSemantics())) {
+                        if (pParam._getType()._isComplex() &&
+                            (pParam._getType()._hasFieldWithoutSemantic() ||
+                            !pParam._getType()._hasAllUniqueSemantics())) {
                             return false;
                         }
 
@@ -495,20 +495,20 @@ module akra.fx.instructions {
                     return false;
                 }
                 else if (isVaryingsByParams) {
-                    if (pParam.getSemantic() === "") {
+                    if (pParam._getSemantic() === "") {
                         return false;
                     }
 
-                    if (pParam.getType()._isStrictPointer() ||
-                        pParam.getType()._containPointer() ||
-                        pParam.getType()._containSampler() ||
-                        Effect.isSamplerType(pParam.getType())) {
+                    if (pParam._getType()._isStrictPointer() ||
+                        pParam._getType()._containPointer() ||
+                        pParam._getType()._containSampler() ||
+                        Effect.isSamplerType(pParam._getType())) {
                         return false;
                     }
 
-                    if (pParam.getType()._isComplex() &&
-                        (pParam.getType()._hasFieldWithoutSemantic() ||
-                        !pParam.getType()._hasAllUniqueSemantics())) {
+                    if (pParam._getType()._isComplex() &&
+                        (pParam._getType()._hasFieldWithoutSemantic() ||
+                        !pParam._getType()._hasAllUniqueSemantics())) {
                         return false;
                     }
                 }
@@ -517,7 +517,7 @@ module akra.fx.instructions {
             }
 
             if (isVaryingsByStruct) {
-                this._isComplexShaderInput = true;
+                this._bIsComplexShaderInput = true;
             }
 
             return true;

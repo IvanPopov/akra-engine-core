@@ -68,7 +68,7 @@ module akra.fx.instructions {
 			this._pBuffer = pBuffer;
 			this._sPaddingExpr = sPaddingExpr;
 			this._pOffsetVar = pOffsetVar;
-			this.setType(pExtractType);
+			this._setType(pExtractType);
 
 			if (pExtractType._isEqual(Effect.getSystemType("float"))) {
 				this._eExtractExprType = EExtractExprType.k_Float;
@@ -143,10 +143,10 @@ module akra.fx.instructions {
 			}
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			var pPointerType: IAFXVariableTypeInstruction = this._pPointer.getType();
-			var pBufferType: IAFXVariableTypeInstruction = this._pBuffer.getType();
+			var pPointerType: IAFXVariableTypeInstruction = this._pPointer._getType();
+			var pBufferType: IAFXVariableTypeInstruction = this._pBuffer._getType();
 
 			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
 
@@ -190,7 +190,7 @@ module akra.fx.instructions {
 		_toFinalCode(): string {
 			var sCode: string = "";
 
-			if (this._pBuffer.isDefinedByZero()) {
+			if (this._pBuffer._isDefinedByZero()) {
 				switch (this._eExtractExprType) {
 					case EExtractExprType.k_Header:
 						sCode = "A_TextureHeader(0.,0.,0.,0.)";
@@ -243,13 +243,13 @@ module akra.fx.instructions {
 			}
 			else {
 				sCode = this._sExtractFunction;
-				sCode += this._pBuffer._getVideoBufferSampler().getNameId()._toFinalCode();
-				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId()._toFinalCode();
+				sCode += this._pBuffer._getVideoBufferSampler()._getNameId()._toFinalCode();
+				sCode += "," + this._pBuffer._getVideoBufferHeader()._getNameId()._toFinalCode();
 				if (this._eExtractExprType !== EExtractExprType.k_Header) {
-					sCode += "," + this._pPointer.getNameId()._toFinalCode() + this._sPaddingExpr;
+					sCode += "," + this._pPointer._getNameId()._toFinalCode() + this._sPaddingExpr;
 
 					if (!isNull(this._pOffsetVar)) {
-						sCode += "+" + this._pOffsetVar.getNameId()._toFinalCode();
+						sCode += "+" + this._pOffsetVar._getNameId()._toFinalCode();
 					}
 				}
 				sCode += ")";

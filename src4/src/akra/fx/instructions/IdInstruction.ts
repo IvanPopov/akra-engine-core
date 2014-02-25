@@ -21,11 +21,11 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_IdInstruction;
         }
 
-        getName(): string {
+        _getName(): string {
             return this._sName;
         }
 
-        getRealName(): string {
+        _getRealName(): string {
             if (this._isForVarying) {
                 return "V_" + this._sRealName;
             }
@@ -34,12 +34,12 @@ module akra.fx.instructions {
             }
         }
 
-        setName(sName: string): void {
+        _setName(sName: string): void {
             this._sName = sName;
             this._sRealName = sName;
         }
 
-        setRealName(sRealName: string): void {
+        _setRealName(sRealName: string): void {
             this._sRealName = sRealName;
         }
 
@@ -52,13 +52,13 @@ module akra.fx.instructions {
         }
 
         _toFinalCode(): string {
-            return this.getRealName();
+            return this._getRealName();
         }
 
         _clone(pRelationMap?: IAFXInstructionMap): IdInstruction {
             var pClonedInstruction: IdInstruction = <IdInstruction>(super._clone(pRelationMap));
-            pClonedInstruction.setName(this._sName);
-            pClonedInstruction.setRealName(this._sRealName);
+            pClonedInstruction._setName(this._sName);
+            pClonedInstruction._setRealName(this._sRealName);
             return pClonedInstruction;
         }
     }

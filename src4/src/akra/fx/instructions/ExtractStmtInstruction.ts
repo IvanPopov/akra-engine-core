@@ -22,15 +22,15 @@ module akra.fx.instructions {
             pPointer: IAFXVariableDeclInstruction,
             pBuffer: IAFXVariableDeclInstruction,
             iPadding: uint, pOffset: IAFXVariableDeclInstruction = null): void {
-            var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+            var pVarType: IAFXVariableTypeInstruction = pVarDecl._getType();
             var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
             if (pVarType._isComplex() || isNull(pVarNameExpr) || pVarType._getSize() === Instruction.UNDEFINE_SIZE) {
                 this._setError(EEffectErrors.BAD_EXTRACTING);
                 return;
             }
 
-            // var pPointer: IAFXVariableDeclInstruction = isDef(pPointer) ? pPointer : pVarType.getPointer();
-            // var pBuffer: IAFXVariableDeclInstruction = isDef(pBuffer) ?  pBuffer : pVarType.getVideoBuffer();
+            // var pPointer: IAFXVariableDeclInstruction = isDef(pPointer) ? pPointer : pVarType._getPointer();
+            // var pBuffer: IAFXVariableDeclInstruction = isDef(pBuffer) ?  pBuffer : pVarType._getVideoBuffer();
             var pBufferSampler: IAFXVariableDeclInstruction = pBuffer._getVideoBufferSampler();
             var pBufferHeader: IAFXVariableDeclInstruction = pBuffer._getVideoBufferHeader();
 
@@ -108,10 +108,10 @@ module akra.fx.instructions {
             return sCode;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
-            this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+            this._pExtractInExpr._addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+            this._pExtactExpr._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
 
         getExtractFunction(): IAFXFunctionDeclInstruction {

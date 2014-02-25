@@ -39,17 +39,17 @@ module akra.fx.instructions {
 			return sCode;
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
 			var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
 
-			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
-			pPoint.addUsedData(pUsedDataCollector, eUsedMode);
+			pSubExpr._addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
+			pPoint._addUsedData(pUsedDataCollector, eUsedMode);
 		}
 
-		isConst(): boolean {
-			return (<IAFXExprInstruction>this._getInstructions()[0]).isConst();
+		_isConst(): boolean {
+			return (<IAFXExprInstruction>this._getInstructions()[0])._isConst();
 		}
 	}
 }

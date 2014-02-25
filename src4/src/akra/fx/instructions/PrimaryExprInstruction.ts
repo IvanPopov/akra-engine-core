@@ -21,9 +21,9 @@ module akra.fx.instructions {
 			return sCode;
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			var pPointerType: IAFXVariableTypeInstruction = this.getType();
+			var pPointerType: IAFXVariableTypeInstruction = this._getType();
 			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
 
 			if (!isDef(pInfo)) {

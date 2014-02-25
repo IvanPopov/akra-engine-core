@@ -18,17 +18,17 @@ module akra.fx.instructions {
 		_toFinalCode(): string {
 			var sCode: string = "";
 
-			// if((<ExprInstruction>this._getInstructions()[0]).getType()._getLength() === 0){
+			// if((<ExprInstruction>this._getInstructions()[0])._getType()._getLength() === 0){
 			// 	return "";
 			// }
 
-			if (!isNull(this._pSamplerArrayDecl) && this._pSamplerArrayDecl.isDefinedByZero()) {
+			if (!isNull(this._pSamplerArrayDecl) && this._pSamplerArrayDecl._isDefinedByZero()) {
 				sCode += this._getInstructions()[0]._toFinalCode();
 			}
 			else {
 				sCode += this._getInstructions()[0]._toFinalCode();
 
-				if (!(<IAFXExprInstruction>this._getInstructions()[0]).getType()._isCollapsed()) {
+				if (!(<IAFXExprInstruction>this._getInstructions()[0])._getType()._isCollapsed()) {
 					sCode += "[" + this._getInstructions()[1]._toFinalCode() + "]";
 				}
 			}
@@ -36,22 +36,22 @@ module akra.fx.instructions {
 			return sCode;
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
 			var pIndex: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[1];
 
-			pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
-			pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+			pSubExpr._addUsedData(pUsedDataCollector, eUsedMode);
+			pIndex._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 
-			if (pSubExpr.getType()._isFromVariableDecl() && pSubExpr.getType()._isSampler()) {
-				this._pSamplerArrayDecl = pSubExpr.getType()._getParentVarDecl();
+			if (pSubExpr._getType()._isFromVariableDecl() && pSubExpr._getType()._isSampler()) {
+				this._pSamplerArrayDecl = pSubExpr._getType()._getParentVarDecl();
 			}
 		}
 
-		isConst(): boolean {
-			return (<IAFXExprInstruction>this._getInstructions()[0]).isConst() &&
-				(<IAFXExprInstruction>this._getInstructions()[1]).isConst();
+		_isConst(): boolean {
+			return (<IAFXExprInstruction>this._getInstructions()[0])._isConst() &&
+				(<IAFXExprInstruction>this._getInstructions()[1])._isConst();
 		}
 	}
 }

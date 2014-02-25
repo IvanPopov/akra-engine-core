@@ -73,8 +73,8 @@ module akra.fx {
 			}
 
 			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
-			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
-			var pTechComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
+			var pTechComponentList: IAFXComponent[] = pTechnique._getFullComponentList();
+			var pTechComponentShiftList: int[] = pTechnique._getFullComponentShiftList();
 
 			if (iPass === ALL_PASSES) {
 				if (!isNull(pTechComponentList)) {
@@ -144,8 +144,8 @@ module akra.fx {
 			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
 
 			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
-			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
-			var pTechComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
+			var pTechComponentList: IAFXComponent[] = pTechnique._getFullComponentList();
+			var pTechComponentShiftList: int[] = pTechnique._getFullComponentShiftList();
 
 			if (iPass === ALL_PASSES) {
 				if (!isNull(pTechComponentList)) {
@@ -229,10 +229,10 @@ module akra.fx {
 			for (var i: uint = 0; i < pPassList.length; i++) {
 				var pPass: IAFXPassInstruction = pPassList[i];
 
-				pPass.evaluate(pStates, pForeigns, pUniforms);
+				pPass._evaluate(pStates, pForeigns, pUniforms);
 
-				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
-				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();
+				var pVertexShader: IAFXFunctionDeclInstruction = pPass._getVertexShader();
+				var pPixelShader: IAFXFunctionDeclInstruction = pPass._getPixelShader();
 
 				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader._getInstructionID());
 				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader._getInstructionID());

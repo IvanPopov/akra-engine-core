@@ -26,7 +26,7 @@ module akra.fx.instructions {
 			}
 
 			if (eUsedMode === EFunctionType.k_Vertex) {
-				if (pReturn.getType()._isBase()) {
+				if (pReturn._getType()._isBase()) {
 					this._isPositionReturn = true;
 				}
 				else {

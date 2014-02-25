@@ -353,11 +353,11 @@ module akra {
 		_isFromVariableDecl(): boolean;
 		_isFromTypeDecl(): boolean;
 
-		isUniform(): boolean;
-		isGlobal(): boolean;
+		_isUniform(): boolean;
+		_isGlobal(): boolean;
 		_isConst(): boolean;
-		isShared(): boolean;
-		isForeign(): boolean;
+		_isShared(): boolean;
+		_isForeign(): boolean;
 
 		_isTypeOfField(): boolean;
 		_isUnverifiable(): boolean;
@@ -374,13 +374,13 @@ module akra {
 		/**
 		 * init api
 		 */
-		setPadding(iPadding: uint): void;
-		pushType(pType: IAFXTypeInstruction): void;
-		addUsage(sUsage: string): void;
-		addArrayIndex(pExpr: IAFXExprInstruction): void;
-		addPointIndex(isStrict?: boolean): void;
-		setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
-		initializePointers(): void;
+		_setPadding(iPadding: uint): void;
+		_pushType(pType: IAFXTypeInstruction): void;
+		_addUsage(sUsage: string): void;
+		_addArrayIndex(pExpr: IAFXExprInstruction): void;
+		_addPointIndex(isStrict?: boolean): void;
+		_setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
+		_initializePointers(): void;
 
 		_setPointerToStrict(): void;
 		_addPointIndexInDepth(): void;
@@ -391,22 +391,22 @@ module akra {
 		/**
 		 * Type info
 		 */
-		getPadding(): uint;
+		_getPadding(): uint;
 		_getArrayElementType(): IAFXVariableTypeInstruction;
 
-		getUsageList(): string[];
-		getSubType(): IAFXTypeInstruction;
+		_getUsageList(): string[];
+		_getSubType(): IAFXTypeInstruction;
 
-		hasUsage(sUsageName: string): boolean;
-		hasVideoBuffer(): boolean;
+		_hasUsage(sUsageName: string): boolean;
+		_hasVideoBuffer(): boolean;
 
-		getPointDim(): uint;
-		getPointer(): IAFXVariableDeclInstruction;
-		getVideoBuffer(): IAFXVariableDeclInstruction;
-		getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
-		getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction;
+		_getPointDim(): uint;
+		_getPointer(): IAFXVariableDeclInstruction;
+		_getVideoBuffer(): IAFXVariableDeclInstruction;
+		_getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
+		_getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction;
 
-		getSubVarDecls(): IAFXVariableDeclInstruction[];
+		_getSubVarDecls(): IAFXVariableDeclInstruction[];
 
 		_getFullName(): string;
 		_getVarDeclName(): string;
@@ -424,7 +424,7 @@ module akra {
 		/**
 		 * System
 		 */
-		wrap(): IAFXVariableTypeInstruction;
+		_wrap(): IAFXVariableTypeInstruction;
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
 		_blend(pVariableType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction;
 
@@ -439,22 +439,22 @@ module akra {
 	}
 
 	export interface IAFXTypedInstruction extends IAFXInstruction {
-		getType(): IAFXTypeInstruction;
-		setType(pType: IAFXTypeInstruction): void;
+		_getType(): IAFXTypeInstruction;
+		_setType(pType: IAFXTypeInstruction): void;
 
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXTypedInstruction;
 	}
 
 	export interface IAFXDeclInstruction extends IAFXTypedInstruction {
-		setSemantic(sSemantic: string);
-		setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
-		getName(): string;
-		getRealName(): string;
-		getNameId(): IAFXIdInstruction;
-		getSemantic(): string;
+		_setSemantic(sSemantic: string);
+		_setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
+		_getName(): string;
+		_getRealName(): string;
+		_getNameId(): IAFXIdInstruction;
+		_getSemantic(): string;
 
-		isBuiltIn(): boolean;
-		setBuiltIn(isBuiltIn: boolean): void;
+		_isBuiltIn(): boolean;
+		_setBuiltIn(isBuiltIn: boolean): void;
 
 		_isForAll(): boolean;
 		_isForPixel(): boolean;
@@ -469,36 +469,36 @@ module akra {
 
 	export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
-		blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
+		_blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
 	}
 
 	export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
-		hasInitializer(): boolean;
-		getInitializeExpr(): IAFXInitExprInstruction;
-		hasConstantInitializer(): boolean;
+		_hasInitializer(): boolean;
+		_getInitializeExpr(): IAFXInitExprInstruction;
+		_hasConstantInitializer(): boolean;
 
-		lockInitializer(): void;
-		unlockInitializer(): void;
+		_lockInitializer(): void;
+		_unlockInitializer(): void;
 
-		getDefaultValue(): any;
-		prepareDefaultValue(): void;
+		_getDefaultValue(): any;
+		_prepareDefaultValue(): void;
 
-		getValue(): any;
-		setValue(pValue: any): any;
+		_getValue(): any;
+		_setValue(pValue: any): any;
 
-		getType(): IAFXVariableTypeInstruction;
-		setType(pType: IAFXVariableTypeInstruction): void;
+		_getType(): IAFXVariableTypeInstruction;
+		_setType(pType: IAFXVariableTypeInstruction): void;
 
-		isUniform(): boolean;
-		isField(): boolean;
-		isPointer(): boolean;
-		isVideoBuffer(): boolean;
-		isSampler(): boolean;
+		_isUniform(): boolean;
+		_isField(): boolean;
+		_isPointer(): boolean;
+		_isVideoBuffer(): boolean;
+		_isSampler(): boolean;
 
-		getSubVarDecls(): IAFXVariableDeclInstruction[];
+		_getSubVarDecls(): IAFXVariableDeclInstruction[];
 
-		isDefinedByZero(): boolean;
-		defineByZero(isDefine: boolean): void;
+		_isDefinedByZero(): boolean;
+		_defineByZero(isDefine: boolean): void;
 
 		_setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
 		_getAttrExtractionBlock(): IAFXInstruction;
@@ -514,34 +514,34 @@ module akra {
 		_getVideoBufferHeader(): IAFXVariableDeclInstruction;
 		_getVideoBufferInitExpr(): IAFXInitExprInstruction;
 
-		setName(sName: string): void;
-		setRealName(sName: string): void;
-		setVideoBufferRealName(sSampler: string, sHeader: string): void;
+		_setName(sName: string): void;
+		_setRealName(sName: string): void;
+		_setVideoBufferRealName(sSampler: string, sHeader: string): void;
 
 		_setCollapsed(bValue: boolean): void;
 		_isCollapsed(): boolean;
 
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
-		blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
+		_blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
 	}
 
 	export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
-		toFinalDefCode(): string;
+		_toFinalDefCode(): string;
 
-		//getNameId(): IAFXIdInstruction;
-		hasImplementation(): boolean;
-		getArguments(): IAFXTypedInstruction[];
-		getNumNeededArguments(): uint;
-		getReturnType(): IAFXVariableTypeInstruction;
-		getFunctionType(): EFunctionType;
-		setFunctionType(eType: EFunctionType): void;
+		//_getNameId(): IAFXIdInstruction;
+		_hasImplementation(): boolean;
+		_getArguments(): IAFXTypedInstruction[];
+		_getNumNeededArguments(): uint;
+		_getReturnType(): IAFXVariableTypeInstruction;
+		_getFunctionType(): EFunctionType;
+		_setFunctionType(eType: EFunctionType): void;
 
 		_getVertexShader(): IAFXFunctionDeclInstruction;
 		_getPixelShader(): IAFXFunctionDeclInstruction;
 
 		// closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
-		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
-		setImplementation(pImplementation: IAFXStmtInstruction): void;
+		_setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
+		_setImplementation(pImplementation: IAFXStmtInstruction): void;
 
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
 
@@ -621,11 +621,11 @@ module akra {
 	// }
 
 	export interface IAFXIdInstruction extends IAFXInstruction {
-		getName(): string;
-		getRealName(): string;
+		_getName(): string;
+		_getRealName(): string;
 
-		setName(sName: string): void;
-		setRealName(sName: string): void;
+		_setName(sName: string): void;
+		_setRealName(sName: string): void;
 
 		_markAsVarying(bValue: boolean): void;
 
@@ -638,21 +638,21 @@ module akra {
 	}
 
 	export interface IAFXAnalyzedInstruction extends IAFXInstruction {
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
 	}
 
 	export interface IAFXExprInstruction extends IAFXTypedInstruction, IAFXAnalyzedInstruction {
-		evaluate(): boolean;
-		simplify(): boolean;
-		getEvalValue(): any;
-		isConst(): boolean;
-		getType(): IAFXVariableTypeInstruction;
+		_evaluate(): boolean;
+		_simplify(): boolean;
+		_getEvalValue(): any;
+		_isConst(): boolean;
+		_getType(): IAFXVariableTypeInstruction;
 
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
 	}
 
 	export interface IAFXInitExprInstruction extends IAFXExprInstruction {
-		optimizeForVariableType(pType: IAFXVariableTypeInstruction): boolean;
+		_optimizeForVariableType(pType: IAFXVariableTypeInstruction): boolean;
 		// getExternalValue(pType: IAFXVariableTypeInstruction): any;
 	}
 
@@ -661,12 +661,11 @@ module akra {
 	}
 
 	export interface IAFXLiteralInstruction extends IAFXExprInstruction {
-		setValue(pValue: any): void;
+		_setValue(pValue: any): void;
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction;
 	}
 
 	export interface IAFXAnnotationInstruction extends IAFXInstruction {
-
 	}
 
 	export interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction {
@@ -699,50 +698,49 @@ module akra {
 		_getFullForeignMap(): IAFXVariableDeclMap;
 		_getFullTextureMap(): IAFXVariableDeclMap;
 
+		_getVertexShader(): IAFXFunctionDeclInstruction;
+		_getPixelShader(): IAFXFunctionDeclInstruction;
 
-		getVertexShader(): IAFXFunctionDeclInstruction;
-		getPixelShader(): IAFXFunctionDeclInstruction;
+		_addShader(pShader: IAFXFunctionDeclInstruction): void;
+		_setState(eType: ERenderStates, eValue: ERenderStateValues): void;
+		_finalizePass(): void;
 
-		addShader(pShader: IAFXFunctionDeclInstruction): void;
-		setState(eType: ERenderStates, eValue: ERenderStateValues): void;
-		finalizePass(): void;
+		_isComplexPass(): boolean;
+		_evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean;
 
-		isComplexPass(): boolean;
-		evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean;
-
-		getState(eType: ERenderStates): ERenderStateValues;
+		_getState(eType: ERenderStates): ERenderStateValues;
 		_getRenderStates(): IMap<ERenderStateValues>;
 	}
 
 	export interface IAFXTechniqueInstruction extends IAFXDeclInstruction {
-		setName(sName: string, isComplexName: boolean): void;
-		getName(): string;
-		hasComplexName(): boolean;
+		_setName(sName: string, isComplexName: boolean): void;
+		_getName(): string;
+		_hasComplexName(): boolean;
 
-		isPostEffect(): boolean;
+		_isPostEffect(): boolean;
 
-		addPass(pPass: IAFXPassInstruction): void;
-		getPassList(): IAFXPassInstruction[];
-		getPass(iPass: uint): IAFXPassInstruction;
+		_addPass(pPass: IAFXPassInstruction): void;
+		_getPassList(): IAFXPassInstruction[];
+		_getPass(iPass: uint): IAFXPassInstruction;
 
-		totalOwnPasses(): uint;
-		totalPasses(): uint;
+		_totalOwnPasses(): uint;
+		_totalPasses(): uint;
 
-		getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
-		getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
+		_getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
+		_getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
 
-		addTechniqueFromSameEffect(pTechnique: IAFXTechniqueInstruction, iShift: uint): void;
-		addComponent(pComponent: IAFXComponent, iShift: int): void;
+		_addTechniqueFromSameEffect(pTechnique: IAFXTechniqueInstruction, iShift: uint): void;
+		_addComponent(pComponent: IAFXComponent, iShift: int): void;
 
-		getFullComponentList(): IAFXComponent[];
-		getFullComponentShiftList(): int[];
+		_getFullComponentList(): IAFXComponent[];
+		_getFullComponentShiftList(): int[];
 
-		checkForCorrectImports(): boolean;
+		_checkForCorrectImports(): boolean;
 
-		setGlobalParams(sProvideNameSpace: string,
+		_setGlobalParams(sProvideNameSpace: string,
 			pGloabalImportList: IAFXImportedTechniqueInfo[]): void;
 
-		finalize(pComposer: IAFXComposer): void;
+		_finalize(pComposer: IAFXComposer): void;
 	}
 
 	export interface IAFXVariableBlendInfo {

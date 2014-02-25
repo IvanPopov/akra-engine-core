@@ -77,12 +77,12 @@ module akra.fx {
 
         private addUniformVariable(pVariable: IAFXVariableDeclInstruction,
             sPrevName: string, sPrevRealName: string): void {
-            var sName: string = pVariable.getName();
-            var sRealName: string = pVariable.getRealName();
+            var sName: string = pVariable._getName();
+            var sRealName: string = pVariable._getRealName();
 
             var pHasVar: IAFXVariableDeclInstruction = this._pUniformsContainer.getVarByRealName(sRealName);
 
-            if (isDefAndNotNull(pHasVar) && !pHasVar.getType()._isEqual(pVariable.getType())) {
+            if (isDefAndNotNull(pHasVar) && !pHasVar._getType()._isEqual(pVariable._getType())) {
                 debug.warn("You used uniforms with the same real-names. Now we don`t work very well with that.");
                 return;
             }
