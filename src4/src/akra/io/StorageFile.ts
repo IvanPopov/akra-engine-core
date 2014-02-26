@@ -19,8 +19,8 @@ module akra.io {
 
 		constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
 		constructor(sFilename?: string, iMode?: int, cb?: (e: Error, pMeta: IFileMeta) => void);
-		constructor(sFilename?: string, sMode?: any, cb: (e: Error, pMeta: IFileMeta) => void = null) {
-			super(sFilename, sMode, cb || <any>TFile.defaultCallback);
+		constructor(sFilename?: string, sMode?: any, cb?: (e: Error, pMeta: IFileMeta) => void) {
+			super(sFilename, sMode, cb);
 		}
 
 		clear(cb: Function = TFile.defaultCallback): void {
@@ -35,7 +35,7 @@ module akra.io {
 		}
 
 		read(cb: Function = TFile.defaultCallback): void {
-			if (this.checkIfNotOpen(this.read, cb)) {
+			if (this.checkIfNotOpen(this.read, cb, arguments)) {
 				return;
 			}
 
@@ -63,7 +63,7 @@ module akra.io {
 		write(sData: string, cb?: Function, sContentType?: string): void;
 		write(pData: ArrayBuffer, cb?: Function, sContentType?: string): void;
 		write(pData: any, cb: Function = TFile.defaultCallback, sContentType?: string): void {
-			if (this.checkIfNotOpen(this.write, cb)) {
+			if (this.checkIfNotOpen(this.write, cb, arguments)) {
 				return;
 			}
 

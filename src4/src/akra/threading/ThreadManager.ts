@@ -14,7 +14,7 @@ module akra.threading {
 		k_WorkerFree
 	}
 
-	interface AIThreadStats {
+	interface IThreadStats {
 		status: AEThreadStatuses;
 		creationTime: uint;
 		releaseTime: uint;
@@ -26,7 +26,7 @@ module akra.threading {
 
 		private _sDefaultScript: string;
 		private _pWorkerList: IThread[] = [];
-		private _pStatsList: AIThreadStats[] = [];
+		private _pStatsList: IThreadStats[] = [];
 		private _pWaiters: Function[] = [];
 		private _iSysRoutine: int = -1;
 
@@ -51,7 +51,7 @@ module akra.threading {
 			}
 
 			this._iSysRoutine = setInterval((): void => {
-				var pStats: AIThreadStats;
+				var pStats: IThreadStats;
 				var iNow: uint = time();
 
 				for (var i: int = 0, n: int = this._pStatsList.length; i < n; ++i) {
@@ -109,7 +109,7 @@ module akra.threading {
 		}
 
 		occupyThread(): IThread {
-			var pStats: AIThreadStats;
+			var pStats: IThreadStats;
 			for (var i: int = 0, n: int = this._pWorkerList.length; i < n; ++i) {
 				pStats = this._pStatsList[i];
 				if (pStats.status == AEThreadStatuses.k_WorkerFree) {
@@ -128,7 +128,7 @@ module akra.threading {
 		}
 
 		terminateThread(iThread: int): boolean {
-			var pStats: AIThreadStats = this._pStatsList[iThread];
+			var pStats: IThreadStats = this._pStatsList[iThread];
 			var pWorker: IThread = this._pWorkerList[iThread];
 
 			if (!isDefAndNotNull(pWorker) && pStats.status != AEThreadStatuses.k_WorkerFree) {
@@ -168,7 +168,7 @@ module akra.threading {
 
 		// private countUnreleasedThreds(): uint {
 		// 	var t = 0;
-		// 	var pStats: AIThreadStats;
+		// 	var pStats: IThreadStats;
 		// 	for (var i: int = 0, n: int = this._pWorkerList.length; i < n; ++i) {
 		// 		pStats = this._pStatsList[i];
 		//		 if (pStats.status != AEThreadStatuses.k_WorkerFree) {
@@ -195,7 +195,7 @@ module akra.threading {
 		releaseThread(iThread: int): boolean;
 		releaseThread(pThread: any): boolean {
 			var iThread: int;
-			var pStats: AIThreadStats;
+			var pStats: IThreadStats;
 
 			if (!isInt(pThread)) {
 				iThread = pThread.id;

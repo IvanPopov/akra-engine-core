@@ -112,7 +112,7 @@ module akra.core {
 			this.active.setForerunner(this._activate);
 		}
 
-
+		/** Get time */
 		getTime(): float {
 			return this._pTimer.getAppTime();
 		}

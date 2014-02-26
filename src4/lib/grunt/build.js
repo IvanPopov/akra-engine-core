@@ -10,6 +10,8 @@ var fs = require('fs');
 var xml2js = require('xml2js');
 var wrench = require('wrench');
 var UglifyJS = require("uglify-js");
+var jade = require('jade');
+
 
 //zip for resource compression
 var Zip = require('node-zip');
@@ -17,9 +19,32 @@ var Zip = require('node-zip');
 var VARIABLE_PATTERN = /(AE_[\w\d\-\.\_\:]*)/g;
 var TYPESCRIPT = "typescript-0.9.5";
 
+
+var DEMOS_SOURCE_DIR = "src/demos";
+var DEMOS_BUILD_DIR = "build/demos";
+
 //TODO: add all available TS options
 
 module.exports = function (grunt) {
+	/** Determ compression level by options */
+	function determMinLevel(options) {
+		/**
+		 * 0 - none minimizing, 1 - simple optimization, 2 - advanced optimiztion
+		*/
+		var minimizationLevel = 0;
+		if (grunt.option("min_level") && grunt.option("min_level") > 0) {
+			minimizationLevel = grunt.option("min_level");
+		}
+		else if (grunt.option("minimize")) {
+			minimizationLevel = 2;
+		}
+		else if (options.min_level > 0) {
+			minimizationLevel = options.min_level;
+		}
+
+		return minimizationLevel;
+	}
+
 	/**
 	 * @param moduleName {String} Имя собираемого в данный момент модуля
 	 * @param sourcePaths {String[]} Файлы из которых будет собран модуль.
@@ -37,89 +62,30 @@ module.exports = function (grunt) {
 			}
 		});
 
-		/**
-		 * 0 - none minimizing, 1 - simple optimization, 2 - advanced optimiztion
-		*/
-		var minimizationLevel = 0;
-		if (grunt.option("min_level") && grunt.option("min_level") > 0) {
-			minimizationLevel = grunt.option("min_level");
-		}
-		else if (grunt.option("minimize")) {
-			minimizationLevel = 2;
-		}
-		else if (options.min_level > 0) {
-			minimizationLevel = options.min_level;
-		}
+		var minimizationLevel = determMinLevel(options);
 
-		var tsBin;
-		if (options.tscc || grunt.option("tscc") || minimizationLevel > 0) {
-			tsBin = path.normalize(__dirname + '/tscc/tscc.js');
-		}
-		else {
-			tsBin = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
-		}
+		compileTypescript(sourcePaths, options, dest, function (ok) {
+			if (!ok) {
+				return cb(false);
+			}
 
-		var argv = [tsBin].concat(sourcePaths);
-
-		if (options.target) {
-			argv.push("--target", options.target);
-		}
-
-		if (options.module) {
-			argv.push("--module", options.module);
-		}
-
-		if (options.sourceMap/* && !options.declaration*/) {
-			argv.push("--sourcemap");
-		}
-
-		if (options.declaration) {
-			argv.push("--declaration");
-		}
-
-		if (options.propagateEnumConstants) {
-			argv.push("--propagateEnumConstants");
-		}
-
-		if (dest) {
-			argv.push("--out", dest);
-		}
-
-		var cmd = "node";
-
-		grunt.log.writeln(cmd + " " + argv.join(" "));
-
-		var tsc = spawn(cmd, argv);
-
-		tsc.stdout.on("data", function (data) {
-			grunt.log.write(data.toString());
-		});
-
-		tsc.stderr.on("data", function (data) {
-			grunt.log.error(data.toString());
-		});
-
-		tsc.on("close", function (code) {
-			if (code === 0) {
-				if (/*!options.declaration*/true) {
-					searchResources(moduleName, sourcePaths, dest, options, function () {
-						if (minimizationLevel > 0) {
-							minimize(dest, minimizationLevel, cb);
-						}
-						else {
-							cb(true);
-						}
-					});
+			var externs = generateExterns(dest);	//path to externs
+			var callback = function (ok) {
+				if (!ok) {
+					return cb(false);
 				}
-				else {
-					cb(true);
-				}
+
+				searchResources(moduleName, sourcePaths, dest, options, cb);
+			}
+
+			if (minimizationLevel > 0) {
+				dest = minimize(dest, minimizationLevel, externs, callback);
 			}
 			else {
-				grunt.log.error(new Error("Compilation failed."));
-				cb(false);
+				callback(true);
 			}
 		});
+
 	}
 
 	/**
@@ -468,30 +434,27 @@ module.exports = function (grunt) {
 
 		files.forEach(function (file, i, files) {
 			files[i] = path.join(srcFolder, file);
+			// grunt.log.debug(path.join(srcFolder, file), path.relative(destFolder, path.join(srcFolder, file)));
 		});
 
 
 		if (!format) {
-			return files.join(";");
+			files.forEach(function (file, i, files) {
+				files[i] = path.relative(destFolder, file).replace(/\\/ig, "/");
+			});
+			return {
+				content: files.join(";"),
+				format: format
+			};
 		}
 
+		if (format === "STRING") {
+			var data = "";
+			files.forEach(function (file) {
+				data += "\n" + fs.readFileSync(file, "utf-8");
+			});
 
-		if (format === "OBJECTURL") {
-			if (files.length !== 1) {
-				grunt.log.error("ObjectURl format can be used with only one file.");
-			}
-
-			var file = files[0];
-
-			var mime = "text/plain";
-			if (path.extname(file) === ".js") {
-				mime = "application/javascript";
-			}
-
-			//return "akra.conv.toURL(" + JSON.stringify(data) + ");"
-			return "URL.createObjectURL(new Blob([" +
-			JSON.stringify(fs.readFileSync(file, "utf-8")) +
-			"], { type: " + JSON.stringify(mime) + " }))";
+			return { content: data, format: format };
 		}
 
 		if (!minify) {
@@ -501,10 +464,16 @@ module.exports = function (grunt) {
 				data += "\n" + fs.readFileSync(file, "utf-8");
 			});
 
-			return data;
+			return {
+				content: data,
+				format: format
+			};
 		}
-		
-		return UglifyJS.minify(files).code;
+
+		return {
+			content: UglifyJS.minify(files).code,
+			format: format
+		};
 	}
 
 	/** 
@@ -567,11 +536,13 @@ module.exports = function (grunt) {
 				}
 
 				var value = computeXmlData(Project.Variable[i]._);
-				variables[name] = value;
+
 
 				if (typeof value === 'string') {
 					value = JSON.stringify(value);
 				}
+
+				variables[name] = value;
 
 				grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 16) : value));
 			}
@@ -585,18 +556,14 @@ module.exports = function (grunt) {
 					continue;
 				}
 
-				if (typeof resource.path === 'string') {
-					resource.path = JSON.stringify(resource.path);
-				}
 
-				if (typeof resource.type === 'string') {
-					resource.type = JSON.stringify(resource.type);
-				}
 
 				var resourceName = Project.Resource[i].$.Name;
 
-				variables[resourceName] = variables[resourceName + ".path"] = resource.path;
-				variables[resourceName + ".type"] = resource.type;
+				variables[resourceName] = JSON.stringify(resource);
+				variables[resourceName + ".path"] = JSON.stringify(resource.path);
+				variables[resourceName + ".type"] = JSON.stringify(resource.type);
+
 			}
 		}
 
@@ -610,7 +577,16 @@ module.exports = function (grunt) {
 
 				var attachmentName = Project.Attachment[i].$.Name;
 
-				variables[attachmentName] = attachment;
+				variables[attachmentName] = JSON.stringify(attachment, null, '\t');
+
+				variables[attachmentName + ".format"] = JSON.stringify(attachment.format);
+
+				if (attachment.format !== null && attachment.format !== "STRING") {
+					variables[attachmentName + ".content"] = attachment.content;
+				}
+				else {
+					variables[attachmentName + ".content"] = JSON.stringify(attachment.content);
+				}
 			}
 		}
 
@@ -696,10 +672,48 @@ module.exports = function (grunt) {
 		});
 	}
 
-	function minimize(src, level, cb) {
+	function generateExterns(src) {
+		var dest = src.replace(/\.js$/, ".externs.js");
+		if (src === dest) dest += ".externs";
+
+		var externs = [];
+		var data = fs.readFileSync(src, "utf8");
+
+		data.replace(VARIABLE_PATTERN, function replacer(str, name) {
+			if (name.indexOf(".") > 0) {
+				name = name.substr(0, name.indexOf("."));
+			}
+
+			if (externs.indexOf(name) == -1) {
+				externs.push(name);
+			}
+			return name;
+		});
+
+		var externsString = "\
+/**\n\
+ * @fileoverview JavaScript Built-Ins for Akra Engne resources.\n\
+ *\n\
+ * @externs\n\
+ */\n\n\n\
+";
+
+		for (var i = 0; i < externs.length; ++i) {
+			externsString += "\
+/**\n\
+ * @const\n\
+ */\n";
+			externsString += "var " + externs[i] + ";\n\n";
+		}
+
+		fs.writeFileSync(dest, externsString, "utf8");
+		return dest;
+	}
+
+	function minimize(src, level, externs, cb) {
 		if (!src || !grunt.file.exists(src)) {
 			grunt.log.warn('Source file for minimize "' + src + '" not found.');
-			return;
+			return null;
 		}
 
 		var dest = src.replace(/\.js$/, ".min.js");
@@ -714,6 +728,10 @@ module.exports = function (grunt) {
 					"--js_output_file", dest,
 					"--create_source_map", dest + ".map",
 					"--source_map_format=V3"];
+
+		if (grunt.file.exists(externs)) {
+			argv.push("--externs", externs);
+		}
 
 		grunt.log.writeln(cmd + " " + argv.join(" "));
 
@@ -736,8 +754,183 @@ module.exports = function (grunt) {
 				cb(false);
 			}
 		});
+
+		return dest;
 	}
 
+	function compileTypescript(sourcePaths, options, dest, cb) {
+		var minimizationLevel = determMinLevel(options);
+		var tsBin;
+		if (options.tscc || grunt.option("tscc") || minimizationLevel > 0) {
+			tsBin = path.normalize(__dirname + '/tscc/tscc.js');
+		}
+		else {
+			tsBin = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
+		}
+
+		var argv = [tsBin].concat(sourcePaths);
+
+		if (options.target) {
+			argv.push("--target", options.target);
+		}
+
+		if (options.module) {
+			argv.push("--module", options.module);
+		}
+
+		if (options.sourceMap) {
+			argv.push("--sourcemap");
+		}
+
+		if (options.declaration) {
+			argv.push("--declaration");
+		}
+
+		if (options.propagateEnumConstants) {
+			argv.push("--propagateEnumConstants");
+		}
+
+		if (dest) {
+			argv.push("--out", dest);
+		}
+
+		var cmd = "node";
+
+		grunt.log.writeln(cmd + " " + argv.join(" "));
+
+		var tsc = spawn(cmd, argv);
+
+		tsc.stdout.on("data", function (data) {
+			grunt.log.write(data.toString());
+		});
+
+		tsc.stderr.on("data", function (data) {
+			grunt.log.error(data.toString());
+		});
+
+		tsc.on("close", function (code) {
+			if (code === 0) {
+				cb(true);
+			}
+			else {
+				grunt.log.error(new Error("Compilation failed."));
+				cb(false);
+			}
+		});
+	}
+
+	/** @param Module {XML} <Module/> tags from demo.xml */
+	function loadDependentScriptsFromModules(Module, destFolder) {
+		var scripts = [];
+		var buildConfig = grunt.config.get('build');
+
+		for (var i in Module) {
+			var module = Module[i];
+			var name = module.$.Name;
+
+			if (buildConfig[name]) {
+				scripts.push(path.relative(destFolder, buildConfig[name].dest).replace(/\\/g, '/'));
+			}
+
+			if (module.Module) {
+				scripts = scripts.concat(loadDependentScriptsFromModules(module.Module, destFolder));
+			}
+		}
+
+		return scripts;
+	}
+
+	function buildDemo(demo, srcFolder, cb) {
+		if (!grunt.file.exists(srcFolder)) {
+			grunt.log.warn("Could not find demo.xml");
+			cb(false);
+		}
+
+		var xmlData = grunt.file.read(path.join(srcFolder, "demo.xml"));
+		var parser = new xml2js.Parser();
+
+		parser.parseString(xmlData, function (err, xml) {
+			var name = xml.Demo.$.Name;
+			var description = xml.Demo.Description ? xml.Demo.Description[0] : null;
+			var main = path.join(srcFolder, xml.Demo.Main ? xml.Demo.Main[0] : "main.ts");
+			var template = path.join(srcFolder, xml.Demo.Template ? xml.Demo.Template[0] : "index.jade");
+			var code = null;
+			var scripts = [];
+			var destFolder = path.join(DEMOS_BUILD_DIR, demo.toLowerCase());
+			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
+			var destJs = path.join(destFolder, path.basename(main, path.extname(main)) + '.js');
+
+			if (!grunt.file.exists(main)) {
+				grunt.fail.fatal(new Error("Could not find main file: " + main));
+				return cb(false);
+			}
+
+			if (xml.Demo.Dependencies) {
+				var Dependencies = xml.Demo.Dependencies[0];
+
+				if (Dependencies.Module) {
+					scripts = scripts.concat(loadDependentScriptsFromModules(Dependencies.Module, destFolder));
+				}
+			}
+
+			grunt.log.debug("Name:", name);
+			grunt.log.debug("Description:", description);
+			grunt.log.debug("Main:", main);
+			grunt.log.debug("Template:", template);
+
+
+			if (!grunt.file.exists(template)) {
+				code = grunt.file.read(path.join(__dirname, "demo.jade"));
+			}
+			else {
+				code = grunt.file.read(template);
+			}
+
+			// Compile a function
+			var fn = jade.compile(code, { pretty: true });
+
+			// Render the function
+			var html = fn({
+				demo: {
+					name: name,
+					description: description,
+					scripts: scripts,
+					src: path.relative(destFolder, destJs).replace(/\\/g, "/")
+				}
+			});
+
+			grunt.log.debug(html);
+			grunt.file.write(destHtml, html);
+
+			//return cb(true);
+
+			compileTypescript([main], {}, destJs, function (ok) {
+				if (!ok) return cb(false);
+
+				if (xml.Demo.Resource) {
+					var variables = {};
+					var data = grunt.file.read(destJs);
+
+					for (var i = 0; i < xml.Demo.Resource.length; ++i) {
+						var resource = packResource(srcFolder, xml.Demo.Resource[i], destFolder);
+
+						if (!resource) {
+							continue;
+						}
+
+						data = data.replace(new RegExp(xml.Demo.Resource[i].$.Name, "g"),
+							function replacer(str, name) {
+								return JSON.stringify(resource);
+							});
+					}
+
+					grunt.file.write(destJs, data);
+				}
+
+				cb(true);
+			});
+		});
+	}
 
 	grunt.registerMultiTask("build", function () {
 		var pendingFiles = this.files.length;
@@ -765,4 +958,17 @@ module.exports = function (grunt) {
 		}
 	});
 
+	grunt.registerTask("demo", function () {
+		var done = this.async();
+		var demo = this.nameArgs.split(":")[1];
+
+		if (!demo) {
+			grunt.fail.fatal(new Error("Could not determ demo name."));
+		}
+
+		grunt.log.debug("Current demo: ", demo);
+
+		var src = path.join(DEMOS_SOURCE_DIR, demo);
+		buildDemo(demo, src, done);
+	});
 };

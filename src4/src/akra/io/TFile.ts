@@ -11,9 +11,8 @@
 /// <reference path="../info/info.ts" />
 /// <reference path="../math/math.ts" />
 
-
 module akra.io {
-	enum AEFileActions {
+	enum EFileActions {
 		k_Open = 1,
 		k_Read = 2,
 		k_Write,
@@ -22,8 +21,8 @@ module akra.io {
 		k_Remove
 	}
 
-	interface AIFileCommand {
-		act: AEFileActions;
+	interface IFileCommand {
+		act: EFileActions;
 		name: string;
 		mode: int;
 		pos?: uint;
@@ -33,6 +32,31 @@ module akra.io {
 		progress?: boolean;
 	}
 
+	var cio: any = config.io;
+	var iface = cio.tfile.iface;
+	var local = cio.tfile.local;
+	var remote = cio.tfile.remote;
+
+	var sRemote: string = remote.content;
+	var sLocal: string = local.content;
+
+	if (local.format === "STRING") {
+		//attachment contain inline thread file dataa
+		sLocal = conv.toURL("var $INTERFACE_DEFINED = true;\n" +
+			local.content + "\n" + iface.content, "application/javascript");
+	}
+	else {
+		sLocal = config.data + sLocal;
+	}
+
+	if (remote.format === "STRING") {
+		//attachment contain inline thread file dataa
+		sRemote = conv.toURL("var $INTERFACE_DEFINED = true;\n" +
+			remote.content + "\n" + iface.content, "application/javascript");
+	}
+	else {
+		sRemote = config.data + sRemote;
+	}
 
 	export class TFile implements IFile {
 		guid: uint = guid();
@@ -41,8 +65,8 @@ module akra.io {
 		closed: ISignal<{ (pFile: IFile): void; }>;
 		renamed: ISignal<{ (pFile: IFile, sName: string, sNamePrev: string): void; }>;
 
-		private static localManager = new threading.Manager(config.io.tfile.local);
-		private static remoteManager = new threading.Manager(config.io.tfile.remote);
+		private static localManager = new threading.Manager(sLocal);
+		private static remoteManager = new threading.Manager(sRemote);
 
 		protected _iMode: int;
 		protected _pUri: IURI = null;
@@ -54,7 +78,7 @@ module akra.io {
 
 		constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
 		constructor(sFilename?: string, iMode?: int, cb?: (e: Error, pMeta: IFileMeta) => void);
-		constructor(sFilename?: string, sMode?: any, cb: (e: Error, pMeta: IFileMeta) => void = <any>TFile.defaultCallback) {
+		constructor(sFilename?: string, sMode?: any, cb?: (e: Error, pMeta: IFileMeta) => void) {
 			this.setupSignals();
 
 			if (isDef(sMode)) {
@@ -71,7 +95,7 @@ module akra.io {
 			// 	this._eTransferMode = EFileTransferModes.k_Slow;
 			// }
 
-			if (arguments.length > 2) {
+			if (isDefAndNotNull(cb)) {
 				this.open(sFilename, sMode, cb);
 			}
 		}
@@ -208,8 +232,8 @@ module akra.io {
 				return;
 			}
 
-			var pCommand: AIFileCommand = {
-				act: AEFileActions.k_Clear,
+			var pCommand: IFileCommand = {
+				act: EFileActions.k_Clear,
 				name: this.getPath(),
 				mode: this._iMode
 			};
@@ -231,8 +255,8 @@ module akra.io {
 
 			logger.assert(io.canRead(this._iMode), "The file is not readable.");
 
-			var pCommand: AIFileCommand = {
-				act: AEFileActions.k_Read,
+			var pCommand: IFileCommand = {
+				act: EFileActions.k_Read,
 				name: this.getPath(),
 				mode: this._iMode,
 				pos: this._nCursorPosition,
@@ -267,7 +291,7 @@ module akra.io {
 
 			var pFile: IFile = this;
 			var iMode: int = this._iMode;
-			var pCommand: AIFileCommand;
+			var pCommand: IFileCommand;
 			var fnCallbackSystem: Function = function (err, pMeta) {
 				if (err) {
 					cb.call(pFile, err);
@@ -285,7 +309,7 @@ module akra.io {
 			sContentType = sContentType || (io.isBinary(iMode) ? "application/octet-stream" : "text/plain");
 
 			pCommand = {
-				act: AEFileActions.k_Write,
+				act: EFileActions.k_Write,
 				name: this.getPath(),
 				mode: this._iMode,
 				data: pData,
@@ -366,8 +390,8 @@ module akra.io {
 
 			var pFile: IFile = this;
 
-			var pCommand: AIFileCommand = {
-				act: AEFileActions.k_Remove,
+			var pCommand: IFileCommand = {
+				act: EFileActions.k_Remove,
 				name: this.getPath(),
 				mode: this._iMode
 			};
@@ -407,8 +431,8 @@ module akra.io {
 		}
 
 		isExists(cb: Function): void {
-			var pCommand: AIFileCommand = {
-				act: AEFileActions.k_Exists,
+			var pCommand: IFileCommand = {
+				act: EFileActions.k_Exists,
 				name: this.getPath(),
 				mode: this._iMode
 			};
@@ -460,8 +484,8 @@ module akra.io {
 
 		protected update(cb: Function = TFile.defaultCallback) {
 			var pFile: IFile = this;
-			var pCommand: AIFileCommand = {
-				act: AEFileActions.k_Open,
+			var pCommand: IFileCommand = {
+				act: EFileActions.k_Open,
 				name: this._pUri.toString(),
 				mode: this._iMode
 			};
@@ -474,7 +498,7 @@ module akra.io {
 			this.execCommand(pCommand, fnCallbackSystem);
 		}
 
-		private execCommand(pCommand: AIFileCommand, cb: Function, pTransferables?: any[]): void {
+		private execCommand(pCommand: IFileCommand, cb: Function, pTransferables?: any[]): void {
 			TFile.execCommand(this, this.isLocal(), pCommand, cb, pTransferables);
 		}
 
@@ -485,7 +509,7 @@ module akra.io {
 		}
 
 
-		private static execCommand(pFile: IFile, isLocal: boolean, pCommand: AIFileCommand, cb: Function, pTransferables?: any[]): void {
+		private static execCommand(pFile: IFile, isLocal: boolean, pCommand: IFileCommand, cb: Function, pTransferables?: any[]): void {
 			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal ? TFile.localManager : TFile.remoteManager;
 			pManager.waitForThread((pThread: IThread) => {

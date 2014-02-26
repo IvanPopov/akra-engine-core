@@ -114,6 +114,9 @@ module akra.io {
 		}
 	}
 
+	if (config.DEBUG && !info.api.getFileSystem()) {
+		debug.warn("Local file system not supported.");
+	}
 
 	export function fopen(sUri: string, pMode: any = EIO.IN): IFile {
 		sUri = uri.resolve(sUri);

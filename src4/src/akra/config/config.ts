@@ -5,9 +5,10 @@
 
 declare var AE_DEBUG: boolean;
 declare var AE_VERSION: string;
-declare var AE_THREAD_FILEINTERFACE: string;
-declare var AE_THREAD_LOCALFILE: string;
-declare var AE_THREAD_REMOTEFILE: string;
+declare var AE_THREAD_FILEINTERFACE: { content: any; format: string};
+declare var AE_THREAD_LOCALFILE: { content: any; format: string };
+declare var AE_THREAD_REMOTEFILE: { content: any; format: string };
+declare var AE_THREAD_TESSELATION: { content: any; format: string };
 
 module akra.config {
 
@@ -110,10 +111,15 @@ module akra.config {
 		idleTime: 30, //maximum IDLE time (sec)
 	};
 
+	//akra.config.ajax = {}
+	//akra.config.some = '';
+
+	//config.data + "../src/akra..."
+	
 	export var io = {
 		//thread file config
 		tfile: {
-			interface: AE_THREAD_FILEINTERFACE,
+			iface: AE_THREAD_FILEINTERFACE,
 			local: AE_THREAD_LOCALFILE,
 			remote: AE_THREAD_REMOTEFILE
 		},
@@ -122,6 +128,8 @@ module akra.config {
 			filesystemLimit: 32 * 1024 * 1024 //32 mb
 		}
 	}
+
+	// URL.createObjectURL(new Blob([], { type: "application/javascript" }))
 
 	export var deps = {
 		archiveIndex: ".map",
@@ -165,7 +173,7 @@ module akra.config {
 	export var terrain = {
 		useMegaTexture: true,
 		roam: {
-			tessellationThread: "TessellationThread.t.js"
+			tessellationThread: AE_THREAD_TESSELATION
 		}
 	}
 

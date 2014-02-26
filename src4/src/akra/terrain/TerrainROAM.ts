@@ -3,6 +3,7 @@
 /// <reference path="../scene/objects/Camera.ts" />
 
 /// <reference path="../conv/conv.ts" />
+/// <reference path="../config/config.ts" />
 
 /// <reference path="Terrain.ts" />
 /// <reference path="TerrainSectionROAM.ts" />
@@ -35,6 +36,18 @@ module akra.terrain {
 	import Mat4 = math.Mat4;
 
 	import VE = data.VertexElement;
+
+	var thread = config.terrain.roam.tessellationThread;
+
+	var sThread: string = thread.content;
+
+	if (thread.format === "STRING") {
+		//attachment contain inline thread file dataa
+		sThread = conv.toURL(thread.content, "application/javascript");
+	}
+	else {
+		sThread = config.data + sThread;
+	}
 
 	export class TerrainROAM extends Terrain implements ITerrainROAM {
 		private _pRenderableObject: IRenderableObject = null;
@@ -256,7 +269,7 @@ module akra.terrain {
 			}
 
 			var me: TerrainROAM = this;
-			var pThread: Worker = this._pTessellationThread = new Worker(config.terrain.roam.tessellationThread);
+			var pThread: Worker = this._pTessellationThread = new Worker(sThread);
 
 			pThread.onmessage = function (event: any) {
 				if (event.data === "ok") {

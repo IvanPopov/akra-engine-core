@@ -8,28 +8,33 @@
     <!-- AE_THREAD_* used in config/config.ts -->
     <Attachment Name="AE_THREAD_FILEINTERFACE">
       <File Path="io/FileInterface.t.js" />
-      <Format>ObjectURL</Format>
+      <!--<Format>String</Format>-->
     </Attachment>
 
     <Attachment Name="AE_THREAD_REMOTEFILE">
       <File Path="io/RemoteFile.t.js" />
-      <Format>ObjectURL</Format>
+      <!--<Format>String</Format>-->
     </Attachment>
 
     <Attachment Name="AE_THREAD_LOCALFILE">
       <File Path="io/LocalFile.t.js" />
-      <Format>ObjectURL</Format>
+      <!--<Format>String</Format>-->
+    </Attachment>
+
+    <Attachment Name="AE_THREAD_TESSELATION">
+      <File Path="terrain/TessellationThread.t.js" />
+      <Format>String</Format>
     </Attachment>
 
     <!-- AE_ZIP_READER used in akra.ts -->
     <Attachment Name="AE_ZIP_READER">
       <PropertyGroup Condition="$('Zip')">
-        <Folder Path="resources/js/zip.js">
-          <Exclude Path="zip-fs.js" />
-          <Exclude Path="deflate.js" />
-        </Folder>
+        <File Path="resources/js/zip.js/zip.js" />
+        <File Path="resources/js/zip.js/zip-ext.js" />
+        <File Path="resources/js/zip.js/mime-types.js" />
+        <File Path="resources/js/zip.js/inflate.js" />
         <Format>Text</Format>
-        <Minify>YUI</Minify>
+        <!--<Minify>YUI</Minify>-->
       </PropertyGroup>
     </Attachment>
 
@@ -38,7 +43,7 @@
       <Filename>akra</Filename>
 
       <PropertyGroup  Condition="$('Configuration') == 'Debug'">
-        <Archive>True</Archive>
+        <Archive>False</Archive>
         <UseInlining>False</UseInlining>
         <Data>
           <File Path="resources/fx/floatSpecialFunctions.afx" />

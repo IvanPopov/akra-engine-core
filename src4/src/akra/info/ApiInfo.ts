@@ -9,6 +9,9 @@ module akra.info {
 
 	import Singleton = util.Singleton;
 
+	window["requestFileSystem"] =
+	window["requestFileSystem"] || window["webkitRequestFileSystem"];
+
 	export class ApiInfo extends Singleton<ApiInfo> implements IApiInfo {
 		private _bWebAudio: boolean = false;
 		private _bFile: boolean = false;

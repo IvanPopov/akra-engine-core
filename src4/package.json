@@ -29,7 +29,8 @@
     "wrench": "latest",
     "semver": "latest",
     "shelljs": "latest",
-    "uglify-js": "~2.4.12"
+    "uglify-js": "~2.4.12",
+    "jade": "~1.2.0"
   },
   "dependencies": {}
 }

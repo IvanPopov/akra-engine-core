@@ -214,7 +214,7 @@ module akra.webgl {
 		}
 
 		if (isDefAndNotNull(pWebGLContext)) {
-			if (WebGLDebugUtils) {
+			if (window["WebGLDebugUtils"]) {
 				return makeDebugContext(setupContext(pWebGLContext));
 			}
 			else {
