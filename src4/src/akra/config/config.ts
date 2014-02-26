@@ -19,7 +19,7 @@ module akra.config {
 	export var SKY: boolean = true;
 	export var SKY_GPU: boolean = false;
 	export var AFX_ENABLE_TEXT_EFFECTS: boolean = true;
-	/** @define */
+	/** @define {boolean} */
 	export var __VIEW_INTERNALS__: boolean = false;
 	export var DETAILED_LOG: boolean = false;
 	export var LOGGER_API: boolean = true;

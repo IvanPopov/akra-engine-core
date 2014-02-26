@@ -90,12 +90,12 @@ module akra.scene {
 		}
 
 		createUI(): IScene2d {
-			if (config.UI) {
-				return akra["ui"].createUI(this);
-			}
-			else {
+			//if (config.UI) {
+			//	return akra["ui"].createUI(this);
+			//}
+			//else {
 				return null;
-			}
+			//}
 		}
 
 		getScene3D(): IScene3d;

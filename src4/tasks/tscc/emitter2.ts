@@ -236,6 +236,8 @@ module TypeScript {
 
 		private _emitGlobal: boolean = true;
 
+		private _escapeExportedFunction = false;
+
 		constructor(public emittingFileName: string,
 			public outfile: TextWriter,
 			public emitOptions: EmitOptions,
@@ -1100,16 +1102,22 @@ module TypeScript {
 				this.recordSourceMappingStart(moduleName);
 				this.writeToOutput(fullModuleName);
 				this.recordSourceMappingEnd(moduleName);
-				this.writeLineToOutput(" = {};");
 
-				this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
+				var exportedName = this.getNameForExport(pullDecl.getSymbol());
+				//this.writeLineToOutput(" = " + fullModuleName + " || {};");
+
+				//view like: (container['akra'] = container['akra'] || {}) || {};
+
+				this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
+
+				//this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
 
 				this.recordSourceMappingEnd(moduleDecl);
 				this.emitIndent();
 
 				this._emittedModuleNames.push(fullModuleName);
 
-				this.exportSymbol(pullDecl.getSymbol());
+				//this.exportSymbol(pullDecl.getSymbol());
 			}
 
 			// prologue
@@ -2893,12 +2901,12 @@ module TypeScript {
 
 			this.writeLineToOutput(";");
 
-			if (hasFlag(pullDecl.flags, PullElementFlags.Public) && hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported) &&
-				(hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final) || hasModifier(funcDecl.modifiers, PullElementFlags.Final)) &&
+			if (hasFlag(pullDecl.flags, PullElementFlags.Public) && /*hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported) &&*/
+				/*(hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final) || hasModifier(funcDecl.modifiers, PullElementFlags.Final)) &&*/
 				!Emitter.isAkraSystemFunctionName(functionName)) {
 				var className = this.thisFullClassName;
 				var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (className + ".prototype");
-				var exportLocation = className === location ? location : (className + "['prototype']");
+				var exportLocation = className === location ? location : (className + ".prototype");
 				var fullName = location;
 				var exportName = exportLocation;
 
@@ -3240,8 +3248,27 @@ module TypeScript {
 					//}
 					this.recordSourceMappingStart(expression);
 					this.emit(expression.expression);
-					this.writeToOutput(".");
+
+					var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+					var isNeedEscapeFunction = symbol && symbol.type.isFunction() && this.isNeedEscapeFunction(symbol);
+					if (isNeedEscapeFunction) {
+						this.writeToOutput("[\"");
+					}
+					else {
+						this.writeToOutput(".");
+					}
+
+					var svEscape = this._escapeExportedFunction;
+					this._escapeExportedFunction = true;
+
 					this.emitName(expression.name, false);
+
+					if (isNeedEscapeFunction) {
+						this.writeToOutput("\"]");
+					}
+
+					this._escapeExportedFunction = svEscape;
+
 					this.recordSourceMappingEnd(expression);
 				}
 			}
@@ -4268,7 +4295,7 @@ module TypeScript {
 				var isAkraSystemFunction = Emitter.isAkraSystemFunctionName(symbol.getDisplayName());
 
 				if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
-					jsDocComments.push("@expose");
+					jsDocComments.push("1expose1");
 				}
 				else if (isFinalMethod) {
 					jsDocComments.push("@final");
@@ -4569,6 +4596,36 @@ module TypeScript {
 			return symbol.getDisplayName() + "$rest";
 		}
 
+		private getNameForExport(symbol: PullSymbol, symbolName?: string): string {
+			var result = "";
+
+			var pullDecl = symbol.getDeclarations()[0];
+			var path: PullDecl[] = pullDecl.getParentPath();
+
+			if (path.length === 2) {
+				result = "global['" + symbol.name + "']";
+			}
+			else {
+				for (var i = path.length - 1; i > 0; i--) {
+					var nextSymbol: PullSymbol = path[i - 1].getSymbol();
+
+					// Stop before functions since symbols inside functions are
+					// automatically available through regular lexical scoping
+					if (nextSymbol === null || nextSymbol.kind & TypeScript.PullElementKind.SomeFunction) {
+						break;
+					}
+				}
+
+				var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+					return pullDecl.getSymbol().name;
+				});
+
+				result = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
+			}
+
+			return result;
+		}
+
 		private exportSymbol(symbol: PullSymbol, symbolName?: string): void {			
 			this.writeLineToOutput("");
 			this.emitIndent();
@@ -4576,7 +4633,8 @@ module TypeScript {
 			var path: PullDecl[] = pullDecl.getParentPath();
 
 			if (path.length === 2) {
-				this.writeToOutput("global['" + symbol.name + "'] = " + symbol.name + ";");
+				var internalPath = "global['" + symbol.name + "']";
+				this.writeToOutput(internalPath + " = " + internalPath + " || {};");
 				this.writeLineToOutput("");
 				return;
 			}
@@ -4595,23 +4653,48 @@ module TypeScript {
 				return pullDecl.getSymbol().name;
 			});
 
-			//var externalPath = "global['" + names.join("']['") + "']";
+			var externalName = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
 			var internalPath: string = names.join(".");
 
-			this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
+			//this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
 
-			if (symbolName) {
-				this.writeToOutput(symbolName + ";");
+			this.writeToOutput(externalName + " = ");
+
+			if (PullHelpers.symbolIsModule(symbol)) {
+				this.writeToOutput(externalName + " || {};");
 			}
 			else {
-				this.writeToOutput(internalPath + "." + symbol.name + ";");
+				if (symbolName) {
+					this.writeToOutput(symbolName + ";");
+				}
+				else {
+					this.writeToOutput(internalPath + "." + symbol.name + ";");
+				}
 			}
-
 			this.writeLineToOutput("");
 		}
 
 		private static isAkraSystemFunctionName(name: string): boolean {
 			return name[0] === "_";
+		}
+
+		private isNeedEscapeFunction(symbol: PullSymbol): boolean {
+			if (!symbol.getContainer()) {
+				return false;
+			}
+
+			//if (!symbol.isMethod() && symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
+			//	return true;
+			//}
+
+			if (symbol.isMethod() && symbol.anyDeclHasFlag(PullElementFlags.Public) &&
+				symbol.getContainer().anyDeclHasFlag(PullElementFlags.Exported) &&
+				!symbol.anyDeclHasFlag(PullElementFlags.Final) && !symbol.getContainer().anyDeclHasFlag(PullElementFlags.Final) &&
+				!Emitter.isAkraSystemFunctionName(symbol.getDisplayName())) {
+					return true;
+			}
+
+			return false;
 		}
 
 	}

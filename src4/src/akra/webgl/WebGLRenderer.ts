@@ -610,7 +610,7 @@ module akra.webgl {
 			}
 
 			logger.log(_pPrinted.join("% "));
-			logger.log(this._time.join("ms "))			
+			logger.log(this._time.join("ms "));
 		}
 
 		_renderEntry(pEntry: IRenderEntry): void {

@@ -234,6 +234,7 @@ var TypeScript;
             this.emittedSymbolNames = {};
             this.emittedForInStatement = false;
             this._emitGlobal = true;
+            this._escapeExportedFunction = false;
             this._emittedModuleNames = [];
         }
         Emitter.prototype.pushDecl = function (decl) {
@@ -1072,16 +1073,19 @@ var TypeScript;
                 this.recordSourceMappingStart(moduleName);
                 this.writeToOutput(fullModuleName);
                 this.recordSourceMappingEnd(moduleName);
-                this.writeLineToOutput(" = {};");
 
-                this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
+                var exportedName = this.getNameForExport(pullDecl.getSymbol());
 
+                //this.writeLineToOutput(" = " + fullModuleName + " || {};");
+                //view like: (container['akra'] = container['akra'] || {}) || {};
+                this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
+
+                //this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
                 this.recordSourceMappingEnd(moduleDecl);
                 this.emitIndent();
 
                 this._emittedModuleNames.push(fullModuleName);
-
-                this.exportSymbol(pullDecl.getSymbol());
+                //this.exportSymbol(pullDecl.getSymbol());
             }
 
             // prologue
@@ -2802,10 +2806,10 @@ var TypeScript;
 
             this.writeLineToOutput(";");
 
-            if (TypeScript.hasFlag(pullDecl.flags, 4 /* Public */) && TypeScript.hasModifier(this.thisClassNode.modifiers, 1 /* Exported */) && (TypeScript.hasModifier(this.thisClassNode.modifiers, 268435456 /* Final */) || TypeScript.hasModifier(funcDecl.modifiers, 268435456 /* Final */)) && !Emitter.isAkraSystemFunctionName(functionName)) {
+            if (TypeScript.hasFlag(pullDecl.flags, 4 /* Public */) && !Emitter.isAkraSystemFunctionName(functionName)) {
                 var className = this.thisFullClassName;
                 var location = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (className + ".prototype");
-                var exportLocation = className === location ? location : (className + "['prototype']");
+                var exportLocation = className === location ? location : (className + ".prototype");
                 var fullName = location;
                 var exportName = exportLocation;
 
@@ -3133,8 +3137,26 @@ var TypeScript;
                     //}
                     this.recordSourceMappingStart(expression);
                     this.emit(expression.expression);
-                    this.writeToOutput(".");
+
+                    var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+                    var isNeedEscapeFunction = symbol && symbol.type.isFunction() && this.isNeedEscapeFunction(symbol);
+                    if (isNeedEscapeFunction) {
+                        this.writeToOutput("[\"");
+                    } else {
+                        this.writeToOutput(".");
+                    }
+
+                    var svEscape = this._escapeExportedFunction;
+                    this._escapeExportedFunction = true;
+
                     this.emitName(expression.name, false);
+
+                    if (isNeedEscapeFunction) {
+                        this.writeToOutput("\"]");
+                    }
+
+                    this._escapeExportedFunction = svEscape;
+
                     this.recordSourceMappingEnd(expression);
                 }
             }
@@ -4130,7 +4152,7 @@ var TypeScript;
                 var isAkraSystemFunction = Emitter.isAkraSystemFunctionName(symbol.getDisplayName());
 
                 if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
-                    jsDocComments.push("@expose");
+                    jsDocComments.push("1expose1");
                 } else if (isFinalMethod) {
                     jsDocComments.push("@final");
                 }
@@ -4435,6 +4457,35 @@ var TypeScript;
             return symbol.getDisplayName() + "$rest";
         };
 
+        Emitter.prototype.getNameForExport = function (symbol, symbolName) {
+            var result = "";
+
+            var pullDecl = symbol.getDeclarations()[0];
+            var path = pullDecl.getParentPath();
+
+            if (path.length === 2) {
+                result = "global['" + symbol.name + "']";
+            } else {
+                for (var i = path.length - 1; i > 0; i--) {
+                    var nextSymbol = path[i - 1].getSymbol();
+
+                    // Stop before functions since symbols inside functions are
+                    // automatically available through regular lexical scoping
+                    if (nextSymbol === null || nextSymbol.kind & 1032192 /* SomeFunction */) {
+                        break;
+                    }
+                }
+
+                var names = path.slice(i, path.length - 1).map(function (pullDecl) {
+                    return pullDecl.getSymbol().name;
+                });
+
+                result = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
+            }
+
+            return result;
+        };
+
         Emitter.prototype.exportSymbol = function (symbol, symbolName) {
             this.writeLineToOutput("");
             this.emitIndent();
@@ -4442,7 +4493,8 @@ var TypeScript;
             var path = pullDecl.getParentPath();
 
             if (path.length === 2) {
-                this.writeToOutput("global['" + symbol.name + "'] = " + symbol.name + ";");
+                var internalPath = "global['" + symbol.name + "']";
+                this.writeToOutput(internalPath + " = " + internalPath + " || {};");
                 this.writeLineToOutput("");
                 return;
             }
@@ -4461,22 +4513,41 @@ var TypeScript;
                 return pullDecl.getSymbol().name;
             });
 
-            //var externalPath = "global['" + names.join("']['") + "']";
+            var externalName = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
             var internalPath = names.join(".");
 
-            this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
+            //this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
+            this.writeToOutput(externalName + " = ");
 
-            if (symbolName) {
-                this.writeToOutput(symbolName + ";");
+            if (TypeScript.PullHelpers.symbolIsModule(symbol)) {
+                this.writeToOutput(externalName + " || {};");
             } else {
-                this.writeToOutput(internalPath + "." + symbol.name + ";");
+                if (symbolName) {
+                    this.writeToOutput(symbolName + ";");
+                } else {
+                    this.writeToOutput(internalPath + "." + symbol.name + ";");
+                }
             }
-
             this.writeLineToOutput("");
         };
 
         Emitter.isAkraSystemFunctionName = function (name) {
             return name[0] === "_";
+        };
+
+        Emitter.prototype.isNeedEscapeFunction = function (symbol) {
+            if (!symbol.getContainer()) {
+                return false;
+            }
+
+            //if (!symbol.isMethod() && symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
+            //	return true;
+            //}
+            if (symbol.isMethod() && symbol.anyDeclHasFlag(4 /* Public */) && symbol.getContainer().anyDeclHasFlag(1 /* Exported */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !symbol.getContainer().anyDeclHasFlag(268435456 /* Final */) && !Emitter.isAkraSystemFunctionName(symbol.getDisplayName())) {
+                return true;
+            }
+
+            return false;
         };
         Emitter.EMPTY_STRING_LIST = [];
         return Emitter;
