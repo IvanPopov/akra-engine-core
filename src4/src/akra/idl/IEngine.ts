@@ -76,6 +76,7 @@ module akra {
 		isActive(): boolean;
 		isDepsLoaded(): boolean;
 	
+		ready(cb?: (pEngine: IEngine) => void): boolean;
 	
 		getTimer(): IUtilTimer;
 	

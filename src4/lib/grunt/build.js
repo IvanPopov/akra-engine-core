@@ -98,7 +98,7 @@ module.exports = function (grunt) {
 		var archive = new Zip();
 		var files = [];             // файлы которые были добавлены в архив
 
-		archive.file(".map", JSON.stringify(map));
+		archive.file(".map", JSON.stringify(map, null, '\t'));
 
 		grunt.log.debug("@RESOURCE", ".map");
 
@@ -400,10 +400,25 @@ module.exports = function (grunt) {
 		return null;
 	}
 
+	function getFilesFromAttachment(Attachment, srcFolder) {
+		var files = [];
+		if (Attachment.File) {
+			for (var i = 0; i < Attachment.File.length; ++i) {
+				files.push(path.normalize(Attachment.File[i].$.Path));
+			}
+		}
+
+		if (Attachment.Folder) {
+			files = files.concat(readFolder(Attachment.Folder, srcFolder));
+		}
+
+		return files;
+	}
+
 	function loadAttachmentObject(name, srcFolder, Attachment, destFolder) {
 		var outDir = "";
 		var format = null;
-		var files = [];
+		var files = getFilesFromAttachment(Attachment, srcFolder);
 		var minify = null;
 
 		if (Attachment.OutDir) {
@@ -414,15 +429,6 @@ module.exports = function (grunt) {
 			minify = Attachment.Minify[0].toUpperCase();
 		}
 
-		if (Attachment.File) {
-			for (var i = 0; i < Attachment.File.length; ++i) {
-				files.push(path.normalize(Attachment.File[i].$.Path));
-			}
-		}
-
-		if (Attachment.Folder) {
-			files = files.concat(readFolder(Attachment.Folder, srcFolder));
-		}
 
 		if (Attachment.Format) {
 			format = Attachment.Format[0].toUpperCase();
@@ -457,6 +463,20 @@ module.exports = function (grunt) {
 			return { content: data, format: format };
 		}
 
+		if (format === "ENCLOSURE") {
+			var outDir = Attachment.OutDir? Attachment.OutDir[0] : "";
+
+			files.forEach(function (file) {
+				grunt.file.copy(file, path.join(destFolder, outDir, path.basename(file)));
+				grunt.log.debug("@COPY", file, "->", path.join(destFolder, outDir, path.basename(file)));
+			});
+
+			return {
+				content: "/** Enclosured */",
+				format: format
+			}
+		}
+
 		if (!minify) {
 
 			var data = "";
@@ -475,6 +495,8 @@ module.exports = function (grunt) {
 			format: format
 		};
 	}
+
+
 
 	/** 
 	 * @param folder {String} Path to project folder.
@@ -501,6 +523,34 @@ module.exports = function (grunt) {
 		}
 
 		return null;
+	}
+
+	function findAttachments(Project) {
+		var attachments = [];
+		if (Project.Attachment) {
+			for (var i = 0; i < Project.Attachment.length; ++i) {
+				var Attachment = Project.Attachment[i]
+				var name = Attachment.$ ? Attachment.$.Name || null : null;
+				if (!Attachment.PropertyGroup) {
+					attachments.push({ name: name, body: Attachment });
+				}
+				else {
+					for (var j = 0; j < Attachment.PropertyGroup.length; ++j) {
+						var PropertyGroup = Attachment.PropertyGroup[j];
+						//TODO: проверить Condition данной групы и убедиться, что она подходит
+						if (PropertyGroup.$ && PropertyGroup.$.Condition) {
+							if (!computeXmlData(PropertyGroup.$.Condition)) {
+								continue;
+							}
+						}
+
+						attachments.push({ name: name, body: Attachment.PropertyGroup[j] });
+					}
+				}
+			}
+		}
+
+		return attachments;
 	}
 
 	/** 
@@ -611,10 +661,7 @@ module.exports = function (grunt) {
 		cb(true);
 	}
 
-	/**
-	 * Ищем ресурсы для данного проектта.
-	 */
-	function searchResources(moduleName, sourcePaths, dest, options, cb) {
+	function findResourcesXML(sourcePaths) {
 		var srcFiles = [];
 		var shortestPath = null;
 		var resourceFolder = null;
@@ -647,28 +694,58 @@ module.exports = function (grunt) {
 		var resourceFile = path.join(resourceFolder, "resources.xml");
 
 		if (!fs.existsSync(resourceFile)) {
+			return null;
+		}
+
+		return resourceFile;
+	}
+
+	function findModuleInResourcesXML(resourceFile, moduleName, cb) {
+		var parser = new xml2js.Parser();
+		var resourceFolder = path.dirname(resourceFile);
+
+		var data = fs.readFileSync(resourceFile, "utf8");
+			
+		parser.parseString(data, function (err, xml) {
+			for (var i = 0; i < xml.AkraResources.Project.length; ++i) {
+				var Project = xml.AkraResources.Project[i];
+
+				//founded
+				if (Project.$.Name === moduleName) {
+					return cb(Project);
+				}
+			}
+
+			cb(null);
+		});
+	}
+
+	/**
+	 * Ищем ресурсы для данного проектта.
+	 */
+	function searchResources(moduleName, sourcePaths, dest, options, cb) {
+		var resourceFile = findResourcesXML(sourcePaths);
+		
+
+		if (!resourceFile) {
 			grunt.log.warn("Could not find resources.xml");
 			return cb(true);
 		}
 
+
 		grunt.log.debug("Resources:", resourceFile);
 
 		var parser = new xml2js.Parser();
+		var resourceFolder = path.dirname(resourceFile);
 
-		fs.readFile(resourceFile, function (err, data) {
-			parser.parseString(data, function (err, xml) {
-				for (var i = 0; i < xml.AkraResources.Project.length; ++i) {
-					var Project = xml.AkraResources.Project[i];
-
-					//проект найден
-					if (Project.$.Name === moduleName) {
-						return buildProject(resourceFolder, Project, dest, cb);
-					}
-				}
-
+		findModuleInResourcesXML(resourceFile, moduleName, function (Project) {
+			if (Project) {
+				return buildProject(resourceFolder, Project, dest, cb);
+			}
+			else {
 				grunt.log.warn("Description of " + moduleName + " is not found in the resources.xml.");
 				cb(true);
-			});
+			}
 		});
 	}
 
@@ -830,11 +907,50 @@ module.exports = function (grunt) {
 
 			if (buildConfig[name]) {
 				scripts.push(path.relative(destFolder, buildConfig[name].dest).replace(/\\/g, '/'));
-			}
 
+				var resourceFile = findResourcesXML(buildConfig[name].src);
+				if (resourceFile) {
+					findModuleInResourcesXML(resourceFile, name, function (Project) {
+						if (!Project) return;
+						var attachments = findAttachments(Project);
+
+						for (var j in attachments) {
+							var attachment = attachments[j].body;
+
+							if (!attachment.Format || attachment.Format[0].toUpperCase() !== "ENCLOSURE") {
+								continue;
+							}
+
+							var files = getFilesFromAttachment(attachment, path.dirname(resourceFile));
+							files.forEach(function (file) {
+								var outDir = attachment.OutDir ? attachment.OutDir[0] : "";
+								var scriptPath = path.join(path.dirname(buildConfig[name].dest),
+									outDir, path.basename(file));
+								scripts.push(path.relative(destFolder, scriptPath).replace(/\\/g, '/'));
+							});
+						}
+					});
+				}
+			}
+			
 			if (module.Module) {
 				scripts = scripts.concat(loadDependentScriptsFromModules(module.Module, destFolder));
 			}
+		}
+		
+		return scripts;
+	}
+
+	function loadDependentJScripts(Script, srcFolder, destFolder) {
+		var scripts = [];
+
+		for (var i in Script) {
+			var script = Script[i];
+			var pathname = script.$.Path;
+			var destPath = path.join(destFolder, pathname);
+			var srcPath = path.join(srcFolder, pathname);
+			grunt.file.copy(srcPath, destPath);
+			scripts.push(path.relative(destFolder, destPath).replace(/\\/g, '/'));
 		}
 
 		return scripts;
@@ -871,7 +987,12 @@ module.exports = function (grunt) {
 				if (Dependencies.Module) {
 					scripts = scripts.concat(loadDependentScriptsFromModules(Dependencies.Module, destFolder));
 				}
+
+				if (Dependencies.Script) {
+					scripts = scripts.concat(loadDependentJScripts(Dependencies.Script, srcFolder, destFolder));
+				}
 			}
+
 
 			grunt.log.debug("Name:", name);
 			grunt.log.debug("Description:", description);

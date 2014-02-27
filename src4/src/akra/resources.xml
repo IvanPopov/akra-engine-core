@@ -33,7 +33,8 @@
         <File Path="resources/js/zip.js/zip-ext.js" />
         <File Path="resources/js/zip.js/mime-types.js" />
         <File Path="resources/js/zip.js/inflate.js" />
-        <Format>Text</Format>
+        <Format>Enclosure</Format>
+        <OutDir>zip.js</OutDir>
         <!--<Minify>YUI</Minify>-->
       </PropertyGroup>
     </Attachment>

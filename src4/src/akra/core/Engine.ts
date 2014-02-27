@@ -335,6 +335,20 @@ module akra.core {
 		final protected _activate(): void {
 			this._isActive = true;
 		}
+
+		ready(cb?: (pEngine: IEngine) => void): boolean {
+			if (this.isDepsLoaded()) {
+				if (cb) {
+					cb(this);
+				}
+
+				return true;
+			}
+
+			this.depsLoaded.connect(cb);
+
+			return false;
+		}
 	}
 }
 

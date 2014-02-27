@@ -61,9 +61,9 @@ module akra {
 		_draw(): void;
 
 		/** Notify, when shadow added or removed. */
-		shadowed: ISignal<{ (bValue: boolean): void; }>;
+		shadowed: ISignal<{ (pRenderable: IRenderableObject, bValue: boolean): void; }>;
 		///** Notify, before object start rendendering */
-		beforeRender: ISignal<{ (pViewport, pMethod): void; }>;
+		beforeRender: ISignal<{ (pRenderable: IRenderableObject, pViewport, pMethod): void; }>;
 
 		click: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		mousemove: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;

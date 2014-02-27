@@ -174,7 +174,7 @@ module akra.color {
 						var G: int = parseInt('0x' + s.substr(2, 2));
 						var B: int = parseInt('0x' + s.substr(4, 2));
 
-						this.set(R, G, B);
+						this.set(R / 255., G / 255., B / 255.);
 					}
 					else {
 						var v: IColorValue = <IColorValue>arguments[0];

@@ -18,8 +18,8 @@ module akra.render {
 	export class RenderableObject implements IRenderableObject {
 		guid: uint = guid();
 
-		shadowed: ISignal<{ (bValue: boolean): void; }>;
-		beforeRender: ISignal<{ (pViewport, pMethod): void; }>;
+		shadowed: ISignal<{ (pRenderable: IRenderableObject, bValue: boolean): void; }>;
+		beforeRender: ISignal<{ (pRenderable: IRenderableObject, pViewport, pMethod): void; }>;
 
 		click: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		mousemove: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;

@@ -16,7 +16,9 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="akra\resources.xml" />
+    <Content Include="akra\resources.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="akra\resources\fx\apply_lights_and_shadows.afx" />
     <Content Include="akra\resources\fx\color_maps.afx" />
     <Content Include="akra\resources\fx\deferredShading.afx" />
@@ -167,7 +169,6 @@
     <None Include="akra\net\RPC.ts" />
     <None Include="akra\ajax.ts" />
     <None Include="akra\akra.ts" />
-    <None Include="extrenal\angular.ts" />
     <None Include="akra\geometry\classify\classify.ts" />
     <None Include="akra\color\colors.ts" />
     <None Include="akra\common.ts" />
@@ -398,11 +399,9 @@
     <None Include="akra\path\path.ts" />
     <None Include="akra\pixelUtil\pixelUtil.ts" />
     <None Include="akra\render\render.ts" />
-    <None Include="extrenal\save.ts" />
     <None Include="akra\sort\sort.ts" />
     <None Include="akra\time.ts" />
     <None Include="akra\uri\uri.ts" />
-    <None Include="extrenal\zip.ts" />
     <None Include="akra\idl\3d-party\fixes.d.ts" />
     <None Include="akra\geometry\Box.ts" />
     <None Include="akra\geometry\Frustum.ts" />

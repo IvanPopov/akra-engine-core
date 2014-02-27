@@ -7,15 +7,15 @@ module akra {
 	// Register image codecs
 	pixelUtil.DDSCodec.startup();
 
+	export import Vec2 = math.Vec2;
+	export import Vec3 = math.Vec3;
+	export import Vec4 = math.Vec4;
+	export import Mat3 = math.Mat3;
+	export import Mat4 = math.Mat4;
+	export import Quat4 = math.Quat4;
+	export import Color = color.Color;
+
 	export function createEngine(pOtions?: IEngineOptions): akra.IEngine {
 		return new core.Engine(pOtions);
 	}
 }
-
-
-/**
- * External dependence zip.js
- */
-//declare var AE_ZIP_READER: { content: any; format: string};
-//AE_ZIP_READER.content;
-
