@@ -8,6 +8,34 @@ var DEFINES = [];
 var MANGLE_NAMES = false;
 var DETECT_CONSTANTS = false;
 
+// var files = [];
+// function openFileSync(pathToFile){
+//   var fd = fs.openFileSync(path.normalize(pathToFile), "w+");
+//   files.push(fd);
+//   return fd;
+// }
+
+// function writeToFile(fd, sData){
+//   fs.writeSync(fd, new Buffer(sData));
+// }
+
+var streams = [];
+function createStreamForInterfaceExterns(pathToFile){
+  // stream = fs.createWriteStream(path.normalize(pathToFile), { flags: 'w+', encoding: null, mode: 0666 });
+  // streams.push(stream);
+  // stream.once('open', function(fd){
+  //   console.log(fd);
+  // });
+  var stream = {
+    path: path.normalize(pathToFile),
+    buffer: ""
+  };
+
+  streams.push(stream);
+
+  return stream;
+}
+
 for (var i = 2; i < process.argv.length; i++) {
   var arg = process.argv[i];
   if (arg === '--define' && i + 1 < process.argv.length) {
@@ -47,3 +75,12 @@ TypeScript.Emitter.MANGLE_NAMES = MANGLE_NAMES;
 TypeScript.Emitter.DETECT_CONSTANTS = DETECT_CONSTANTS;
 process.mainModule.filename = tsc;
 batch.batchCompile();
+
+
+for(var i = 0; i < streams.length; i++){
+  fs.writeFileSync(streams[i].path, streams[i].buffer);
+}
+
+// for(var i = 0; i < files.length; i++){
+//   fs.close(files[i]);
+// }

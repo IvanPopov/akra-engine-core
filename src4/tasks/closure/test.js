@@ -81,10 +81,13 @@ akra.getMyProp = function(){
 	console.log(10);
 }
 
-
-
-/** @constructor */
+/** 
+* @constructor
+* @implements {ITest}
+*/
 akra.CTest = function(){
+	this.myProp_0 = 2;
+	this.config = 2;
 	if(akra.DEBUG){
 		this.myProp = 2;
 	}
@@ -93,13 +96,28 @@ akra.CTest = function(){
 	}
 }
 
-/** @expose */
 akra.CTest.prototype.getMyProp = function(){
 	akra.getMyProp();
 	return this.myProp;
 }
 
-akra.CTest.prototype['getMyProp'] = akra.CTest.prototype.getMyProp;
+/** @constructor */
+akra.CTest2 = function(){
+	this.myProp_0 = 2;
+	this.config = 2;
+	if(akra.DEBUG){
+		this.myProp = 2;
+	}
+	else {
+		this.myProp = 3;
+	}
+}
+
+akra.CTest2.prototype.getMyProp = function(){
+	akra.getMyProp();
+	return this.myProp;
+}
+akra.CTest2.prototype['getMyProp'] = akra.CTest2.prototype.getMyProp;
 
 
 
@@ -123,5 +141,29 @@ container['akra']['config']['fTest'] = akra.config.fTest;
 container['akra']['CTest'] = akra.CTest;
 
 
+container['akra']['CTest2'] = akra.CTest2;
 
 akra.config.fTest();
+
+akra.getMyProp();
+
+var c = new akra.CTest2();
+c.getMyProp();
+
+
+/** @type {ITestBase} */
+akra.obj = {
+myProp_0: 2,
+config: 3
+};
+
+container['akra']['obj'] = akra.obj;
+
+akra.obj2 = {
+myProp_01: 2,
+config: 3
+};
+
+container['akra']['obj2'] = akra.obj2;
+
+// akra.obj.getMyProp();

@@ -1,6 +1,14 @@
 ///<reference path='typescript2.d.ts' />
+
 var TypeScript;
 (function (TypeScript) {
+    var InterfaceExternsSplitMode;
+    (function (InterfaceExternsSplitMode) {
+        InterfaceExternsSplitMode[InterfaceExternsSplitMode["k_None"] = 0] = "k_None";
+        InterfaceExternsSplitMode[InterfaceExternsSplitMode["k_All"] = 1] = "k_All";
+        InterfaceExternsSplitMode[InterfaceExternsSplitMode["k_Part"] = 2] = "k_Part";
+    })(InterfaceExternsSplitMode || (InterfaceExternsSplitMode = {}));
+
     (function (EmitContainer) {
         EmitContainer[EmitContainer["Prog"] = 0] = "Prog";
         EmitContainer[EmitContainer["Module"] = 1] = "Module";
@@ -217,6 +225,7 @@ var TypeScript;
             this.obfuscatedSymbolNameMap = {};
             this.obfuscatorCounter = 0;
             this.thisFullInterfaceName = null;
+            this.thisFullInterfaceExternPartName = null;
             this.emittedInterfaces = [];
             this.usedButNotEmittedInterfaces = [];
             /** For emit typedef comments without type parameters */
@@ -235,7 +244,15 @@ var TypeScript;
             this.emittedForInStatement = false;
             this._emitGlobal = true;
             this._escapeExportedFunction = false;
+            this.interfaceExternsStream = null;
+            this.isEnabledInterfaceExternStream = false;
             this._emittedModuleNames = [];
+            if (emitOptions.sharedOutputFile()) {
+                this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
+            } else {
+                console.warn("Bad compilation options! Better if you specify output file.");
+                this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__interface__.js.tmp.externs");
+            }
         }
         Emitter.prototype.pushDecl = function (decl) {
             if (decl) {
@@ -374,13 +391,41 @@ var TypeScript;
             this.recordSourceMappingEnd(astSpan);
         };
 
+        Emitter.prototype.writeToStream = function (s) {
+            //if (this.bufferForStream !== "" && this.bufferForStream !== s) {
+            //	this.bufferForStream += s;
+            //}
+            //else {
+            //	this.bufferForStream = "";
+            //	var ok = this.interfaceExternsStream.write(s);
+            //	if (!ok) {
+            //		this.bufferForStream = s;
+            //		var me = this;
+            //		this.interfaceExternsStream.once('drain', () => {
+            //			me.writeToStream(me.bufferForStream);
+            //		});
+            //	}
+            //}
+            this.interfaceExternsStream.buffer += s;
+        };
+
         Emitter.prototype.writeToOutput = function (s) {
+            if (this.isEnabledInterfaceExternStream) {
+                this.writeToStream(s);
+                return;
+            }
+
             this.outfile.Write(s);
             this.updateLineAndColumn(s);
         };
 
         Emitter.prototype.writeLineToOutput = function (s, force) {
             if (typeof force === "undefined") { force = false; }
+            if (this.isEnabledInterfaceExternStream) {
+                this.writeToStream(s + "\n");
+                return;
+            }
+
             // No need to print a newline if we're already at the start of the line.
             if (!force && s === "" && this.emitState.column === 0) {
                 return;
@@ -2806,7 +2851,7 @@ var TypeScript;
 
             this.writeLineToOutput(";");
 
-            if (TypeScript.hasFlag(pullDecl.flags, 4 /* Public */) && !Emitter.isAkraSystemFunctionName(functionName)) {
+            if (TypeScript.hasFlag(pullDecl.flags, 4 /* Public */) && !Emitter.isAkraSystemName(functionName)) {
                 var className = this.thisFullClassName;
                 var location = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (className + ".prototype");
                 var exportLocation = className === location ? location : (className + ".prototype");
@@ -3642,10 +3687,38 @@ var TypeScript;
                 index = this.usedButNotEmittedInterfaces.indexOf(declaration);
             }
 
-            if (TypeScript.isDTSFile(declaration.fileName())) {
+            if (name === 'String' || name === 'Number' || name === 'Array' || TypeScript.isDTSFile(declaration.fileName())) {
                 return;
             }
 
+            if (name === "ILogger") {
+                debugger;
+            }
+
+            var splitMode = this.getInterfaceSplitToExternsMode(declaration);
+
+            var svFullInterfaceName = this.thisFullInterfaceName;
+            var svExternPartName = this.thisFullInterfaceExternPartName;
+            this.thisFullInterfaceName = this.getFullSymbolName(symbol);
+            this.thisFullInterfaceExternPartName = this.thisFullInterfaceName;
+
+            if (splitMode === 2 /* k_Part */) {
+                this.thisFullInterfaceExternPartName = this.thisFullInterfaceName + "_BASE";
+            }
+
+            if (splitMode === 1 /* k_All */) {
+                this.isEnabledInterfaceExternStream = true;
+            } else if (splitMode === 2 /* k_Part */) {
+                this.isEnabledInterfaceExternStream = true;
+                this.writeLineToOutput("");
+                this.emitJSDocComment(this.getJSDocForInterfaceDeclaration(declaration));
+                this.writeToOutput("var " + this.thisFullInterfaceExternPartName + " = function(){};");
+                this.isEnabledInterfaceExternStream = false;
+            }
+
+            this.writeLineToOutput("");
+
+            //if (splitMode !== InterfaceExternsSplitMode.k_All) {
             var userComments = Emitter.getUserComments(declaration);
 
             if (hasCallOrIndex) {
@@ -3654,13 +3727,10 @@ var TypeScript;
                 this.emitJSDocComment(Emitter.joinJSDocComments(userComments, this.getJSDocForInterfaceDeclaration(declaration)));
             }
 
-            if (this.isNeedObfuscateName(symbol)) {
-                this.writeToOutput("var ");
-            }
+            //if (this.isNeedObfuscateName(symbol)) {
+            this.writeToOutput("var ");
 
-            var svFullInterfaceName = this.thisFullInterfaceName;
-            this.thisFullInterfaceName = this.getFullSymbolName(symbol);
-
+            //}
             this.writeToOutput(this.thisFullInterfaceName);
 
             if (!hasCallOrIndex) {
@@ -3669,11 +3739,17 @@ var TypeScript;
 
             this.writeToOutput(";");
 
+            //}
             if (!hasCallOrIndex) {
                 this.emitInterfaceMembers(declaration);
             }
 
             this.thisFullInterfaceName = svFullInterfaceName;
+            this.thisFullInterfaceExternPartName = svExternPartName;
+
+            if (splitMode === 1 /* k_All */) {
+                this.isEnabledInterfaceExternStream = false;
+            }
         };
 
         Emitter.prototype.emitInterfaceMembers = function (declaration) {
@@ -3684,6 +3760,9 @@ var TypeScript;
             var members = declaration.body.typeMembers;
 
             var isExportedInterface = TypeScript.hasModifier(declaration.modifiers, 1 /* Exported */);
+            var svEnabledStream = this.isEnabledInterfaceExternStream;
+            var externMode = this.getInterfaceSplitToExternsMode(declaration);
+            var canEnabelExtern = externMode !== 0 /* k_None */;
 
             for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
                 var memberDecl = members.nonSeparatorAt(i);
@@ -3701,27 +3780,39 @@ var TypeScript;
 
                 alreadyEmittedMethods.push(name);
 
-                if (isFirstLine) {
-                    this.writeLineToOutput('');
-                    isFirstLine = false;
+                //if (isFirstLine) {
+                //	this.writeLineToOutput('');
+                //	isFirstLine = false;
+                //}
+                if (canEnabelExtern && !Emitter.isAkraSystemName(name)) {
+                    this.isEnabledInterfaceExternStream = true;
                 }
 
                 this.writeLineToOutput('');
 
                 var jsDocComments = this.getJSDocForType(symbol.type);
 
-                if (isExportedInterface && !symbol.type.isFunction()) {
-                    jsDocComments.push("@expose");
+                //if (isExportedInterface && !symbol.type.isFunction()) {
+                //	jsDocComments.push("1expose1");
+                //}
+                this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
+                if (canEnabelExtern && !Emitter.isAkraSystemName(name)) {
+                    this.writeToOutput(this.thisFullInterfaceExternPartName);
+                } else {
+                    this.writeToOutput(this.thisFullInterfaceName);
                 }
 
-                this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
-                this.writeToOutput(this.thisFullInterfaceName + '.prototype');
+                this.writeToOutput(".prototype");
                 if (TypeScript.isQuoted(name)) {
                     this.writeToOutput("[" + name + "];");
                 } else {
                     this.writeToOutput('.' + name + ';');
                 }
                 lastEmittedMember = memberDecl;
+
+                if (canEnabelExtern && !Emitter.isAkraSystemName(name)) {
+                    this.isEnabledInterfaceExternStream = svEnabledStream;
+                }
             }
         };
 
@@ -3985,7 +4076,7 @@ var TypeScript;
         };
 
         Emitter.prototype.isNeedObfuscateName = function (symbol) {
-            return TypeScript.PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.isPrimitive();
+            return TypeScript.PullHelpers.symbolIsModule(symbol.getContainer()) && (!symbol.anyDeclHasFlag(1 /* Exported */) || symbol.isInterface()) && !symbol.isPrimitive();
         };
 
         Emitter.prototype.getObfuscatedName = function (symbol, origName, force) {
@@ -4060,6 +4151,16 @@ var TypeScript;
                 if (this.emittedInterfaces.indexOf(decl) < 0 && this.usedButNotEmittedInterfaces.indexOf(decl) < 0) {
                     this.usedButNotEmittedInterfaces.push(decl);
                 }
+
+                if (this.isEnabledInterfaceExternStream) {
+                    if (this.getInterfaceSplitToExternsMode(decl) === 2 /* k_Part */) {
+                        symbolName += "_BASE";
+                    }
+                }
+            }
+
+            if (this.isEnabledInterfaceExternStream && correctSymbol.type.isEnum()) {
+                return "number";
             }
 
             return moduleName + symbolName;
@@ -4094,7 +4195,12 @@ var TypeScript;
         };
 
         Emitter.prototype.getJSDocForInterfaceDeclaration = function (interfaceDecl) {
-            return ['@interface'].concat(this.getJSDocForExtends(interfaceDecl.heritageClauses), this.getJSDocForTemplatesForAST(interfaceDecl));
+            var result = ['@interface'];
+            var symbol = this.semanticInfoChain.getSymbolForAST(interfaceDecl);
+            if (symbol['_splitToExternsMode'] === 2 /* k_Part */ && !this.isEnabledInterfaceExternStream) {
+                result.push("@extends {" + this.thisFullInterfaceExternPartName + "}");
+            }
+            return result.concat(this.getJSDocForExtends(interfaceDecl.heritageClauses), this.getJSDocForTemplatesForAST(interfaceDecl));
         };
 
         Emitter.prototype.getJSDocForTemplatesForAST = function (ast) {
@@ -4149,10 +4255,14 @@ var TypeScript;
                 var isPrivate = TypeScript.hasModifier(funcDecl.modifiers, 2 /* Private */);
                 var isProtected = TypeScript.hasModifier(funcDecl.modifiers, 134217728 /* Protected */);
                 var isStatic = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */);
-                var isAkraSystemFunction = Emitter.isAkraSystemFunctionName(symbol.getDisplayName());
+                var isAkraSystemFunction = Emitter.isAkraSystemName(symbol.getDisplayName());
 
                 if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
-                    jsDocComments.push("1expose1");
+                    if (isStatic) {
+                        jsDocComments.push("@expose");
+                    } else {
+                        jsDocComments.push("1expose1");
+                    }
                 } else if (isFinalMethod) {
                     jsDocComments.push("@final");
                 }
@@ -4303,7 +4413,7 @@ var TypeScript;
             var result = this.getJSDocForType(symbol.type);
 
             if (symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.type.isFunction() && !isConst) {
-                result.push("@expose");
+                result.push("1expose1");
             }
             this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
@@ -4325,7 +4435,7 @@ var TypeScript;
             } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
                 //jsDocComments.push("@public");
                 if (isClassExports && !isConst) {
-                    jsDocComments.push("@expose");
+                    jsDocComments.push("1expose1");
                 }
             } else if (symbol.anyDeclHasFlag(2 /* Private */)) {
                 jsDocComments.push("@private");
@@ -4531,11 +4641,13 @@ var TypeScript;
             this.writeLineToOutput("");
         };
 
-        Emitter.isAkraSystemFunctionName = function (name) {
+        Emitter.isAkraSystemName = function (name) {
             return name[0] === "_";
         };
 
         Emitter.prototype.isNeedEscapeFunction = function (symbol) {
+            return false;
+
             if (!symbol.getContainer()) {
                 return false;
             }
@@ -4543,11 +4655,58 @@ var TypeScript;
             //if (!symbol.isMethod() && symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
             //	return true;
             //}
-            if (symbol.isMethod() && symbol.anyDeclHasFlag(4 /* Public */) && symbol.getContainer().anyDeclHasFlag(1 /* Exported */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !symbol.getContainer().anyDeclHasFlag(268435456 /* Final */) && !Emitter.isAkraSystemFunctionName(symbol.getDisplayName())) {
+            if (symbol.isMethod() && symbol.anyDeclHasFlag(4 /* Public */) && symbol.getContainer().anyDeclHasFlag(1 /* Exported */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !symbol.getContainer().anyDeclHasFlag(268435456 /* Final */) && !Emitter.isAkraSystemName(symbol.getDisplayName())) {
                 return true;
             }
 
             return false;
+        };
+
+        Emitter.prototype.getInterfaceSplitToExternsMode = function (declaration) {
+            var symbol = this.semanticInfoChain.getSymbolForAST(declaration);
+            var name = symbol.getDisplayName();
+
+            if (symbol['_splitToExternsMode'] !== undefined) {
+                return symbol['_splitToExternsMode'];
+            }
+
+            if (name === 'String' || name === 'Number' || name === 'Array' || TypeScript.isDTSFile(declaration.fileName())) {
+                return 0 /* k_None */;
+            }
+
+            var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
+
+            if (hasCallOrIndex) {
+                return (symbol['_splitToExternsMode'] = 1 /* k_All */);
+            }
+
+            if (!TypeScript.hasModifier(declaration.modifiers, 1 /* Exported */)) {
+                return (symbol['_splitToExternsMode'] = 0 /* k_None */);
+            }
+
+            var members = declaration.body.typeMembers;
+            var hasOneSystemName = false;
+            var hasOneExternName = false;
+            var mode = 2 /* k_Part */;
+
+            for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
+                var memberDecl = members.nonSeparatorAt(i);
+                if (memberDecl.kind() === 158 /* ConstructSignature */) {
+                    continue;
+                }
+
+                if (Emitter.isAkraSystemName(this.semanticInfoChain.getSymbolForAST(memberDecl).getDisplayName())) {
+                    hasOneSystemName = true;
+                } else {
+                    hasOneExternName = true;
+                }
+            }
+
+            if (hasOneExternName && !hasOneSystemName) {
+                mode = 1 /* k_All */;
+            }
+
+            return (symbol['_splitToExternsMode'] = mode);
         };
         Emitter.EMPTY_STRING_LIST = [];
         return Emitter;

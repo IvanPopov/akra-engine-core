@@ -25,7 +25,7 @@ var akra;
     var data = "../../../src2/data/";
 
     function setup(pCanvas) {
-        var pCanvasElement = pCanvas._pCanvas;
+        var pCanvasElement = pCanvas.getElement();
         var pDiv = document.createElement("div");
 
         document.body.appendChild(pDiv);
@@ -58,7 +58,7 @@ var akra;
 
     function createKeymap(pCamera) {
         var pKeymap = akra.control.createKeymap();
-        pKeymap.captureMouse(akra.pCanvas._pCanvas);
+        pKeymap.captureMouse(akra.pCanvas.getElement());
         pKeymap.captureKeyboard(document);
 
         akra.pScene.beforeUpdate.connect(function () {

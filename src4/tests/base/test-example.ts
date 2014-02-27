@@ -25,7 +25,7 @@ module akra {
 	var data = "../../../src2/data/";
 
 	function setup(pCanvas: ICanvas3d): void {
-		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
+		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas).getElement();
 		var pDiv: HTMLDivElement = <HTMLDivElement>document.createElement("div");
 
 		document.body.appendChild(pDiv);
@@ -58,7 +58,7 @@ module akra {
 
 	function createKeymap(pCamera: ICamera): void {
 		var pKeymap: IKeyMap = control.createKeymap();
-		pKeymap.captureMouse((<any>pCanvas)._pCanvas);
+		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
 		pScene.beforeUpdate.connect(() => {
