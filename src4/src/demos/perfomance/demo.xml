@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Perfomance">
+  <Description>~800 draw calls per frame</Description>
+  <!--<Template>index.html</Template>-->
+  <Main>perfomance.ts</Main>
+  <Dependencies>
+    <Module Name="core">
+      <Module Name="addon-progress" />
+    </Module>
+  </Dependencies>
+  <Resource Name="RESOURCES">
+    <Filename>perfomance</Filename>
+    <PropertyGroup >
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Resource Path="../cube.DAE" Name="CUBE_DAE"/>
+      </Data>
+    </PropertyGroup>
+  </Resource>
+</Demo>

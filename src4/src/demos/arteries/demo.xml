@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Arteries">
+  <Description>Caroid artery viewer.</Description>
+  <Main>arteries.ts</Main>
+  <Dependencies>
+    <Module Name="core">
+      <Module Name="addon-progress" />
+      <Module Name="addon-navigation" />
+      <Module Name="addon-filedrop" />
+      <Module Name="addon-base3dObjects" />
+    </Module>
+    <Script Path="dat.gui/dat.gui.js" />
+  </Dependencies>
+  <Resource Name="RESOURCES">
+    <Filename>arteries</Filename>
+    <PropertyGroup >
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Resource Path="data/fx/arteries2.afx"/>
+        <Resource Path="data/AG/all.map"/>
+        <Folder Path="data/AG">
+          <Exclude Path="data/AG/all.map" />
+        </Folder>
+
+        <Resource Path="data/models/arteries_hp.obj" Name="ARTERIES_HP"/>
+        <Resource Path="data/models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" Name="CAROID_ARTERY_FOR_DEFORMATION_STEP0.1-TAN.SPLINE.2N.FITTED"/>
+        <Resource Path="data/models/tof_multislab_tra_2-tan.spline.2n_poyda.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE.2N_POYDA"/>
+        <Resource Path="data/models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N"/>
+        <Resource Path="data/models/tof_multislab_tra_2.obj" Name="TOF_MULTISLAB_TRA_2"/>
+      </Data>
+    </PropertyGroup>
+  </Resource>
+  <Resource Name="COORDS">
+    <PropertyGroup>
+      <Archive>False</Archive>
+      <Data>
+        <File Path="data/coords/coord_real_ag.txt" />
+        <File Path="data/coords/coord4.txt" />
+      </Data>
+    </PropertyGroup>
+  </Resource>
+</Demo>
