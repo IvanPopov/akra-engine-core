@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AkraResources>
+<Resources>
   <Project Name="addon-navigation">
     <Resource Name="AE_NAVIGATION_DEPENDENCIES">
       <Filename>navigation.addon</Filename>
@@ -39,4 +39,4 @@
       </PropertyGroup>
     </Resource>
   </Project>
-</AkraResources>
+</Resources>

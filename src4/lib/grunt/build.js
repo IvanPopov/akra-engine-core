@@ -707,8 +707,8 @@ module.exports = function (grunt) {
 		var data = fs.readFileSync(resourceFile, "utf8");
 			
 		parser.parseString(data, function (err, xml) {
-			for (var i = 0; i < xml.AkraResources.Project.length; ++i) {
-				var Project = xml.AkraResources.Project[i];
+			for (var i = 0; i < xml.Resources.Project.length; ++i) {
+				var Project = xml.Resources.Project[i];
 
 				//founded
 				if (Project.$.Name === moduleName) {

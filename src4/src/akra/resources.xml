@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<AkraResources>
+<Resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../lib/grunt/resources.xsd">
   <Project Name="core">
     <!-- AE_DEBUG/AE_VERSION used in config/config.ts -->
     <Variable Name="AE_DEBUG">$('Configuration') == 'Debug'</Variable>
@@ -108,4 +109,4 @@
       </PropertyGroup>
     </Resource>
   </Project>
-</AkraResources>
+</Resources>
