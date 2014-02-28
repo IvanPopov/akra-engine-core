@@ -1669,6 +1669,7 @@ var TypeScript;
 
             var varDeclName = varDecl.variableDeclarator.propertyName.text();
             var quotedOrNumber = TypeScript.isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== 11 /* IdentifierName */;
+            var isNeedEscape = this.isNeedEscapeName(symbol);
 
             var symbol = this.semanticInfoChain.getSymbolForAST(varDecl);
             var parentSymbol = symbol ? symbol.getContainer() : null;
@@ -1676,6 +1677,8 @@ var TypeScript;
 
             if (quotedOrNumber) {
                 this.writeToOutput("this[");
+            } else if (isNeedEscape) {
+                this.writeToOutput("this[\"");
             } else {
                 this.writeToOutput("this.");
             }
@@ -1684,6 +1687,8 @@ var TypeScript;
 
             if (quotedOrNumber) {
                 this.writeToOutput("]");
+            } else if (isNeedEscape) {
+                this.writeToOutput("\"]");
             }
 
             if (varDecl.variableDeclarator.equalsValueClause) {
@@ -2796,11 +2801,14 @@ var TypeScript;
                         this.emitIndent();
                         this.recordSourceMappingStart(varDecl);
 
-                        this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(this.semanticInfoChain.getDeclForAST(varDecl).getSymbol()));
+                        var symbol = this.semanticInfoChain.getDeclForAST(varDecl).getSymbol();
+                        this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(symbol));
 
                         var varDeclName = varDecl.variableDeclarator.propertyName.text();
                         if (TypeScript.isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== 11 /* IdentifierName */) {
                             this.writeToOutput(this.thisFullClassName + "[" + varDeclName + "]");
+                        } else if (this.isNeedEscapeName(symbol)) {
+                            this.writeToOutput(this.thisFullClassName + "[\"" + varDeclName + "\"]");
                         } else {
                             this.writeToOutput(this.thisFullClassName + "." + varDeclName);
                         }
@@ -4922,11 +4930,10 @@ var TypeScript;
             }
 
             if (symbol.isProperty() && container.anyDeclHasFlag(1 /* Exported */) && symbol.anyDeclHasFlag(4 /* Public */) && !symbol.anyDeclHasFlag(134217728 /* Protected */)) {
-                return true; /*this.setSymbolEscapeOption(symbol, true)*/ 
-                ;
+                return this.setSymbolEscapeOption(symbol, true);
             }
 
-            return false;
+            return this.setSymbolEscapeOption(symbol, false);
         };
 
         Emitter.prototype.getInterfaceSplitToExternsMode = function (declaration) {

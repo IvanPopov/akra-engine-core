@@ -294,10 +294,10 @@ var akra;
         //createSky();
         //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        loadManyModels(1, data + "models/cube.dae");
+        loadManyModels(450, data + "models/cube.dae");
 
-        // loadManyModels(150, data + "models/box/opened_box.dae");
-        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        //loadManyModels(150, data + "models/box/opened_box.dae");
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }

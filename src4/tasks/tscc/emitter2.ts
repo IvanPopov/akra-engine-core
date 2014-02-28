@@ -1722,6 +1722,7 @@ module TypeScript {
 
 			var varDeclName = varDecl.variableDeclarator.propertyName.text();
 			var quotedOrNumber = isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== SyntaxKind.IdentifierName;
+			var isNeedEscape = this.isNeedEscapeName(symbol);
 
 			var symbol = this.semanticInfoChain.getSymbolForAST(varDecl);
 			var parentSymbol = symbol ? symbol.getContainer() : null;
@@ -1729,6 +1730,9 @@ module TypeScript {
 
 			if (quotedOrNumber) {
 				this.writeToOutput("this[");
+			}
+			else if (isNeedEscape) {
+				this.writeToOutput("this[\"");
 			}
 			else {
 				this.writeToOutput("this.");
@@ -1738,6 +1742,9 @@ module TypeScript {
 
 			if (quotedOrNumber) {
 				this.writeToOutput("]");
+			}
+			else if (isNeedEscape) {
+				this.writeToOutput("\"]");
 			}
 
 			if (varDecl.variableDeclarator.equalsValueClause) {
@@ -2892,11 +2899,15 @@ module TypeScript {
 						this.emitIndent();
 						this.recordSourceMappingStart(varDecl);
 
-						this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(this.semanticInfoChain.getDeclForAST(varDecl).getSymbol()));
+						var symbol = this.semanticInfoChain.getDeclForAST(varDecl).getSymbol();
+						this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(symbol));
 
 						var varDeclName = varDecl.variableDeclarator.propertyName.text();
 						if (isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== SyntaxKind.IdentifierName) {
 							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "[" + varDeclName + "]");
+						}
+						else if (this.isNeedEscapeName(symbol)) {
+							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "[\"" + varDeclName + "\"]");
 						}
 						else {
 							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "." + varDeclName);
@@ -5093,10 +5104,10 @@ module TypeScript {
 				container.anyDeclHasFlag(PullElementFlags.Exported) &&
 				symbol.anyDeclHasFlag(PullElementFlags.Public) && !symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
 
-					return true;/*this.setSymbolEscapeOption(symbol, true)*/;
+					return this.setSymbolEscapeOption(symbol, true);
 			}
 
-			return false/*this.setSymbolEscapeOption(symbol, false)*/;
+			return this.setSymbolEscapeOption(symbol, false);
 		}
 
 		private getInterfaceSplitToExternsMode(declaration: InterfaceDeclaration): InterfaceExternsSplitMode {
