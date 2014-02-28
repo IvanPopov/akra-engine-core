@@ -7,6 +7,15 @@
 
 
 module akra.fx.instructions {
+	interface IEvaluateOutput {
+		"fragment": IAFXFunctionDeclInstruction;
+		"vertex": IAFXFunctionDeclInstruction;
+	};
+
+	interface IPassFunction {
+		(engine: any, foreigtn: any, uniforms: any, states: IMap<ERenderStateValues>, shaderMap: IAFXFunctionDeclMap, out: IEvaluateOutput): void; 
+	}
+
 	export class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
 		private _pTempNodeList: parser.IParseNode[] = null;
 		private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
@@ -15,15 +24,14 @@ module akra.fx.instructions {
 
 		private _sFunctionCode: string = "";
 
-		protected _pShadersMap: IAFXFunctionDeclMap = null;
-		protected _pPassStateMap: IMap<ERenderStateValues> = null;
+		private _pShadersMap: IAFXFunctionDeclMap = null;
+		private _pPassStateMap: IMap<ERenderStateValues> = null;
 
 		private _bIsComlexPass: boolean = false;
-		private _fnPassFunction: { (engine: any, foreigtn: any, uniforms: any): void; } = null;
+		private _fnPassFunction: IPassFunction = null;
 
 		private _pVertexShader: IAFXFunctionDeclInstruction = null;
 		private _pPixelShader: IAFXFunctionDeclInstruction = null;
-
 
 		private _pSharedVariableMapV: IAFXVariableDeclMap = null;
 		private _pGlobalVariableMapV: IAFXVariableDeclMap = null;
@@ -43,6 +51,7 @@ module akra.fx.instructions {
 		private _pFullForeignVariableMap: IAFXVariableDeclMap = null;
 		private _pFullTextureVariableMap: IAFXVariableDeclMap = null;
 
+		private _pComplexPassEvaluateOutput: IEvaluateOutput = { "fragment": null, "vertex": null };
 
 		constructor() {
 			super();
@@ -191,8 +200,8 @@ module akra.fx.instructions {
 				var iShader: uint = pShader._getInstructionID();
 				this._pShadersMap[iShader] = pShader;
 
-				var sCode: string = isVertex ? "this._pVertexShader=" : "this._pPixelShader=";
-				sCode += "this._pShadersMap[" + iShader.toString() + "];"
+				var sCode: string = isVertex ? "out.vertex=" : "out.fragment=";
+				sCode += "shaderMap[" + iShader.toString() + "];"
 				this._addCodeFragment(sCode);
 			}
 			else {
@@ -211,7 +220,7 @@ module akra.fx.instructions {
 			}
 
 			if (this._isComplexPass()) {
-				this._addCodeFragment("this._pPassStateMap[" + eType + "]=" + eValue + ";");
+				this._addCodeFragment("states[" + eType + "]=" + eValue + ";");
 			}
 			else {
 				this._pPassStateMap[eType] = eValue;
@@ -220,7 +229,7 @@ module akra.fx.instructions {
 
 		_finalizePass(): void {
 			if (this._isComplexPass()) {
-				this._fnPassFunction = <any>(new Function("engine", "foreigns", "uniforms", this._sFunctionCode));
+				this._fnPassFunction = <any>(new Function("engine", "foreigns", "uniforms", "states", "shaderMap", "out", this._sFunctionCode));
 			}
 
 			this.generateInfoAboutUsedVaraibles();
@@ -234,11 +243,14 @@ module akra.fx.instructions {
 
 		_evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean {
 			if (this._isComplexPass()) {
-				this._pVertexShader = null;
-				this._pPixelShader = null;
+				this._pComplexPassEvaluateOutput.fragment = null;
+				this._pComplexPassEvaluateOutput.vertex = null;
 				this.clearPassStates();
 
-				this._fnPassFunction.call(this, pEngineStates, pForeigns, pUniforms);
+				this._fnPassFunction(pEngineStates, pForeigns, pUniforms, this._pPassStateMap, this._pShadersMap, this._pComplexPassEvaluateOutput);
+
+				this._pVertexShader = this._pComplexPassEvaluateOutput["vertex"];
+				this._pPixelShader = this._pComplexPassEvaluateOutput["fragment"];
 			}
 
 			return true;

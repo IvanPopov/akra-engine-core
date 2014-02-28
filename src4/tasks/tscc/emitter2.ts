@@ -2081,7 +2081,13 @@ module TypeScript {
 								this.emitSymbolContainerNameInEnclosingContext(pullSymbol);
 							}
 							else if (this.isNeedObfuscateName(pullSymbol)) {
-								this.writeToOutput(this.getObfuscatedName(pullSymbol, name.text()));
+								if (pullSymbol.isAlias() && pullSymbol.isType()) {
+									var aliasSymbol = <PullTypeAliasSymbol>pullSymbol;
+									this.writeToOutput(this.getFullSymbolName(aliasSymbol.assignedValue()));
+								}
+								else {
+									this.writeToOutput(this.getObfuscatedName(pullSymbol, name.text()));
+								}
 
 								this.recordSourceMappingEnd(name);
 								this.emitComments(name, false);
@@ -2757,6 +2763,7 @@ module TypeScript {
 				this.thisFullExtendClassName = fullExtendClassName;
 			}
 
+			this.caclClassEscapeNamesMap(pullDecl.getSymbol());
 
 			this.recordSourceMappingStart(classDecl);
 
@@ -2948,10 +2955,7 @@ module TypeScript {
 			this.popDecl(pullDecl);
 
 			this.writeLineToOutput(";");
-
-			if (hasFlag(pullDecl.flags, PullElementFlags.Public) && /*hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported) &&*/
-				/*(hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final) || hasModifier(funcDecl.modifiers, PullElementFlags.Final)) &&*/
-				!Emitter.isAkraSystemName(functionName)) {
+			if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol())) {
 				var className = this.thisFullClassName;
 				var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (className + ".prototype");
 				var exportLocation = className === location ? location : (className + ".prototype");
@@ -3298,7 +3302,7 @@ module TypeScript {
 					this.emit(expression.expression);
 
 					var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
-					var isNeedEscapeFunction = symbol && symbol.type.isFunction() && this.isNeedEscapeFunction(symbol);
+					var isNeedEscapeFunction = this.isNeedEscapeName(symbol);
 					if (isNeedEscapeFunction) {
 						this.writeToOutput("[\"");
 					}
@@ -3824,9 +3828,7 @@ module TypeScript {
 				return;
 			}
 
-			if (name === "ILogger") {
-				debugger;
-			}
+			this.caclInterfaceEscapeNamesMap(symbol);
 
 			var splitMode = this.getInterfaceSplitToExternsMode(declaration);
 
@@ -3897,7 +3899,7 @@ module TypeScript {
 			var isExportedInterface = hasModifier(declaration.modifiers, PullElementFlags.Exported);
 			var svEnabledStream = this.isEnabledInterfaceExternStream;
 			var externMode = this.getInterfaceSplitToExternsMode(declaration);
-			var canEnabelExtern = externMode !== InterfaceExternsSplitMode.k_None; 
+			var canEnabelExtern = externMode !== InterfaceExternsSplitMode.k_None;
 
 			for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
 				var memberDecl = members.nonSeparatorAt(i);
@@ -3919,25 +3921,37 @@ module TypeScript {
 				//	this.writeLineToOutput('');
 				//	isFirstLine = false;
 				//}
-				if (canEnabelExtern && !Emitter.isAkraSystemName(name)) {
-					this.isEnabledInterfaceExternStream = true;
-				}
 
-				this.writeLineToOutput('');
+				if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+					this.isEnabledInterfaceExternStream = true;
+
+					var jsDocComments: string[] = this.getJSDocForType(symbol.type);
+
+					this.writeLineToOutput('');
+					this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
+					this.writeToOutput(this.thisFullInterfaceExternPartName);
+
+					this.writeToOutput(".prototype");
+					if (isQuoted(name)) {
+						this.writeToOutput("[" + name + "];");
+					}
+					else {
+						this.writeToOutput('.' + name + ';');
+					}
+
+					this.isEnabledInterfaceExternStream = svEnabledStream;
+				}
 
 				var jsDocComments: string[] = this.getJSDocForType(symbol.type);
 
-				//if (isExportedInterface && !symbol.type.isFunction()) {
-				//	jsDocComments.push("1expose1");
-				//}
-
+				this.writeLineToOutput('');
 				this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
-				if (canEnabelExtern && !Emitter.isAkraSystemName(name)) {
-					this.writeToOutput(this.thisFullInterfaceExternPartName);
-				}
-				else {
-					this.writeToOutput(this.thisFullInterfaceName);
-				}
+				//if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+				//	this.writeToOutput(this.thisFullInterfaceExternPartName);
+				//}
+				//else {
+				this.writeToOutput(this.thisFullInterfaceName);
+				//}
 
 				this.writeToOutput(".prototype");
 				if (isQuoted(name)) {
@@ -3948,9 +3962,9 @@ module TypeScript {
 				}
 				lastEmittedMember = memberDecl;
 
-				if (canEnabelExtern && !Emitter.isAkraSystemName(name)) {
-					this.isEnabledInterfaceExternStream = svEnabledStream;
-				}
+				//if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+				//	this.isEnabledInterfaceExternStream = svEnabledStream;
+				//}
 			}
 		}
 
@@ -4581,9 +4595,9 @@ module TypeScript {
 			var isClassFinal = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
 
 			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
-				if (isClassExports && !isClassFinal && !isConst) {
-					jsDocComments.push("@expose");
-				}
+				//if (isClassExports && !isClassFinal && !isConst) {
+				//	jsDocComments.push("@expose");
+				//}
 
 				jsDocComments.push("@protected");
 			}
@@ -4819,6 +4833,271 @@ module TypeScript {
 			return false;
 		}
 
+		private getContainerEscapeOptionForName(symbol: PullSymbol, name: string): boolean {
+			if (symbol['_escapeOptionsMap']) {
+				return !!(symbol['_escapeOptionsMap'][name]);
+			}
+
+			if (symbol.type.isInterface()) {
+				this.caclInterfaceEscapeNamesMap(symbol);
+			}
+			else if (symbol.type.isClass()) {
+				this.caclInterfaceEscapeNamesMap(symbol);
+			}
+			else {
+				//debugger;
+				//console.log("some thing going wrong");
+				return false;
+			}
+
+			return this.getContainerEscapeOptionForName(symbol, name);
+		}
+
+		private caclInterfaceEscapeNamesMap(interfaceSymbol: PullSymbol): any {
+			var interfaceType = interfaceSymbol.type;
+			if (interfaceType.isTypeReference()) {
+				interfaceType = (<PullTypeReferenceSymbol>interfaceType).referencedTypeSymbol;
+			}
+
+			if (interfaceType['_escapeOptionsMap']) {
+				return interfaceType['_escapeOptionsMap'];
+			}
+
+			var result = interfaceType['_escapeOptionsMap'] = {};
+			var declaration = <InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(interfaceType.getDeclarations()[0]);
+
+			if (isDTSFile(declaration.fileName())) {
+				return result;
+			}
+
+			var extendsClause = getExtendsHeritageClause(declaration.heritageClauses);
+
+			if (extendsClause !== null) {
+				var extendsList = extendsClause.typeNames;
+				var count = extendsList.nonSeparatorCount();
+
+				for (var i = 0; i < count; i++) {
+					var extendsMember = <InterfaceDeclaration>extendsList.nonSeparatorAt(i);
+					var extendsType = this.semanticInfoChain.getSymbolForAST(extendsMember).type;
+					var escapes = this.caclInterfaceEscapeNamesMap(extendsType);
+
+					for (var j in escapes) {
+						result[j] = escapes[j];
+					}
+				}
+			}
+
+			if (!declaration.body) {
+				return result;
+			}
+
+			var members = declaration.body.typeMembers;
+			var alreadyCheckedMembers: string[] = [];
+			var externMode = this.getInterfaceSplitToExternsMode(declaration);
+			var canEnabelExtern = externMode !== InterfaceExternsSplitMode.k_None;
+
+			for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
+				var memberDecl = members.nonSeparatorAt(i);
+
+				if (memberDecl.kind() === SyntaxKind.ConstructSignature ||
+					memberDecl.kind() === SyntaxKind.CallSignature ||
+					memberDecl.kind() === SyntaxKind.IndexSignature) {
+					continue;
+				}
+
+				var symbol: PullSymbol = this.semanticInfoChain.getSymbolForAST(memberDecl);
+				var name = symbol.getDisplayName();
+
+				if (alreadyCheckedMembers.indexOf(name) >= 0 || result[name] !== undefined) {
+					continue;
+				}
+
+				alreadyCheckedMembers.push(name);
+
+				if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+					this.setSymbolEscapeOption(symbol, false);
+				}
+
+				result[name] = this.isNeedPropertyEscape(symbol);
+			}
+
+			return result;
+		}
+
+		private caclClassEscapeNamesMap(classSymbol: PullSymbol): any {
+			var classType = classSymbol.type;
+			if (classType.isTypeReference()) {
+				classType = (<PullTypeReferenceSymbol>classType).referencedTypeSymbol;
+			}
+
+			if (classType['_escapeOptionsMap']) {
+				return classType['_escapeOptionsMap'];
+			}
+
+			var result = classType['_escapeOptionsMap'] = {};
+			var declaration = <ClassDeclaration>this.semanticInfoChain.getASTForDecl(classType.getDeclarations()[0]);
+
+			if (isDTSFile(declaration.fileName())) {
+				return result;
+			}
+
+			var extendsClause = getExtendsHeritageClause(declaration.heritageClauses);
+			var implementsClause = getImplementsHeritageClause(declaration.heritageClauses);
+
+
+			if (implementsClause) {
+				var implementsList = implementsClause.typeNames;
+				var count = implementsList.nonSeparatorCount();
+
+				for (var i = 0; i < count; i++) {
+					var implementsMember = <InterfaceDeclaration>implementsList.nonSeparatorAt(i);
+					var implementsType = this.semanticInfoChain.getSymbolForAST(implementsMember).type;
+					var escapes = this.caclInterfaceEscapeNamesMap(implementsType);
+
+					for (var j in escapes) {
+						result[j] = escapes[j];
+					}
+				}
+			}
+
+			if (extendsClause !== null) {
+				var extendsList = extendsClause.typeNames;
+				var count = extendsList.nonSeparatorCount();
+
+				for (var i = 0; i < count; i++) {
+					var extendsMember = <ClassDeclaration>extendsList.nonSeparatorAt(i);
+					var extendsType = this.semanticInfoChain.getSymbolForAST(extendsMember).type;
+					var escapes = this.caclClassEscapeNamesMap(extendsType);
+
+					for (var j in escapes) {
+						result[j] = escapes[j];
+					}
+				}
+			}
+
+			var isClassExported = hasModifier(declaration.modifiers, PullElementFlags.Exported);
+			var isClassFinal = hasModifier(declaration.modifiers, PullElementFlags.Final);
+			var constructorDecl = getLastConstructor(declaration);
+
+			if (!declaration.classElements && !(constructorDecl && constructorDecl.parameterList)) {
+				return result;
+			}
+
+			if (constructorDecl && constructorDecl.parameterList) {
+				for (var i = 0, n = constructorDecl.parameterList.parameters.nonSeparatorCount(); i < n; i++) {
+					var parameter = <Parameter>constructorDecl.parameterList.parameters.nonSeparatorAt(i);
+					var parameterDecl = this.semanticInfoChain.getDeclForAST(parameter);
+					if (hasFlag(parameterDecl.flags, PullElementFlags.PropertyParameter)) {
+						var symbol = this.semanticInfoChain.getSymbolForAST(parameter);
+						var name = symbol.getDisplayName();
+
+						if (result[name] === undefined) {
+							result[name] = this.isNeedPropertyEscape(symbol);
+						//	if (isClassExported && hasFlag(parameterDecl.flags, PullElementFlags.Public) && !hasFlag(parameterDecl.flags, PullElementFlags.Protected)) {
+						//		result[name] = true;
+						//	}
+						//	else {
+						//		result[name] = false;
+						//	}
+						}
+					}
+				}
+			}
+
+			for (var i = 0, n = declaration.classElements.childCount(); i < n; i++) {
+				var childDecl = this.thisClassNode.classElements.childAt(i);
+				if (childDecl.kind() === SyntaxKind.ConstructorDeclaration ||
+					childDecl.kind() === SyntaxKind.GetAccessor ||
+					childDecl.kind() === SyntaxKind.SetAccessor) {
+					continue;
+				}
+
+				var symbol = this.semanticInfoChain.getSymbolForAST(childDecl);
+				var name = symbol.getDisplayName();
+
+				if (result[name] === undefined) {
+					result[name] = this.isNeedPropertyEscape(symbol);
+					//if (!isClassExported || !symbol.anyDeclHasFlag(PullElementFlags.Public) || symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
+					//	result[name] = false;
+					//}
+					//else {
+					//	if (symbol.type.isFunction()) {
+					//		if (isClassFinal || symbol.anyDeclHasFlag(PullElementFlags.Final)) {
+					//			result[name] = false;
+					//		}
+					//		else {
+					//			result[name] = true;
+					//		}
+					//	}
+					//	else {
+					//		result[name] = true;
+					//	}
+					//}
+				}
+			}
+
+			return result;
+		}
+
+		private setSymbolEscapeOption(symbol: PullSymbol, isEscape: boolean) {
+			return symbol['_isNeedEscape'] = isEscape;
+		}
+
+		private isNeedEscapeName(symbol: PullSymbol): boolean {
+			if (!symbol) {
+				return false;
+			}
+
+			if (symbol['_isNeedEscape'] !== undefined) {
+				return symbol['_isNeedEscape'];
+			}
+
+			if (symbol.isContainer() || !symbol.getContainer()) {
+				return this.setSymbolEscapeOption(symbol, false);
+			}
+
+			var container = symbol.getContainer();
+			var name = symbol.getDisplayName();
+
+			if (symbol.type.isFunction()) {
+				if (symbol.isMethod()) {
+					return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(symbol.getContainer(), symbol.getDisplayName()));
+				}
+			}
+
+			return this.setSymbolEscapeOption(symbol, false);
+		}
+
+		private isNeedPropertyEscape(symbol: PullSymbol) {
+			if (!symbol) {
+				return false;
+			}
+
+			if (symbol['_isNeedEscape'] !== undefined) {
+				return symbol['_isNeedEscape'];
+			}
+
+			var container = symbol.getContainer();
+			var name = symbol.getDisplayName();
+
+			if (symbol.isMethod() &&
+				container.anyDeclHasFlag(PullElementFlags.Exported) &&
+				symbol.anyDeclHasFlag(PullElementFlags.Public) && !symbol.anyDeclHasFlag(PullElementFlags.Protected) &&
+				!symbol.anyDeclHasFlag(PullElementFlags.Final) && !container.anyDeclHasFlag(PullElementFlags.Final) &&
+				!Emitter.isAkraSystemName(name)) {
+
+				return this.setSymbolEscapeOption(symbol, true);
+			}
+
+			if (symbol.isProperty() &&
+				container.anyDeclHasFlag(PullElementFlags.Exported) &&
+				symbol.anyDeclHasFlag(PullElementFlags.Public) && !symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
+
+					return true;/*this.setSymbolEscapeOption(symbol, true)*/;
+			}
+
+			return false/*this.setSymbolEscapeOption(symbol, false)*/;
+		}
 
 		private getInterfaceSplitToExternsMode(declaration: InterfaceDeclaration): InterfaceExternsSplitMode {
 			var symbol = this.semanticInfoChain.getSymbolForAST(declaration);
@@ -4846,30 +5125,46 @@ module TypeScript {
 				return (symbol['_splitToExternsMode'] = InterfaceExternsSplitMode.k_None);
 			}
 
-			var members = declaration.body.typeMembers;
-			var hasOneSystemName = false;
-			var hasOneExternName = false;
-			var mode = InterfaceExternsSplitMode.k_Part;
+			//var members = declaration.body.typeMembers;
+			//var hasOneSystemName = false;
+			//var hasOneExternName = false;
+			//var mode = InterfaceExternsSplitMode.k_Part;
 
-			for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
-				var memberDecl = members.nonSeparatorAt(i);
-				if (memberDecl.kind() === SyntaxKind.ConstructSignature) {
-					continue;
-				}
+			//for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
+			//	var memberDecl = members.nonSeparatorAt(i);
+			//	if (memberDecl.kind() === SyntaxKind.ConstructSignature) {
+			//		continue;
+			//	}
 
-				if (Emitter.isAkraSystemName(this.semanticInfoChain.getSymbolForAST(memberDecl).getDisplayName())) {
-					hasOneSystemName = true;
-				}
-				else {
-					hasOneExternName = true;
-				}
+			//	if (this.isInterfaceMemberForExtern(this.semanticInfoChain.getSymbolForAST(memberDecl))) {
+			//		hasOneExternName = true;
+			//	}
+			//	else {
+			//		hasOneSystemName = true;
+			//	}
+			//}
+
+			//if (hasOneExternName && !hasOneSystemName) {
+			//	mode = InterfaceExternsSplitMode.k_All;
+			//}
+
+			return (symbol['_splitToExternsMode'] = InterfaceExternsSplitMode.k_Part);
+		}
+
+		private isInterfaceMemberForExtern(symbol: PullSymbol): boolean {
+			return !symbol.type.isFunction() && !Emitter.isAkraSystemName(symbol.getDisplayName());
+		}
+
+		private isNeedExportClassFunctionMember(symbol: PullSymbol): boolean {
+			if (symbol.anyDeclHasFlag(PullElementFlags.Private) || Emitter.isAkraSystemName(symbol.getDisplayName())) {
+				return false;
 			}
 
-			if (hasOneExternName && !hasOneSystemName) {
-				mode = InterfaceExternsSplitMode.k_All;
+			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
+				return this.isNeedEscapeName(symbol);
 			}
 
-			return (symbol['_splitToExternsMode'] = mode);
+			return true;
 		}
 
 	}

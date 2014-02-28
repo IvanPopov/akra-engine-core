@@ -95,7 +95,7 @@ module  akra.render {
 			return ERenderers.UNKNOWN;
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

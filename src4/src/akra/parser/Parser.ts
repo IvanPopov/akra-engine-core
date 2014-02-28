@@ -109,6 +109,26 @@ module akra.parser {
 		rule: IRule;
 	}
 
+	interface ITest0 {
+		x(): number;
+		y: number;
+	}
+
+	export interface ITest1{
+		x(): number;
+		y: number;
+	}
+
+	interface ITest2 extends ITest0{
+		x(): number;
+		z(): number;
+	}
+
+	interface ITest3 extends ITest1 {
+		x(): number;
+		z(): number;
+	}
+
 	export class Parser implements IParser {
 		//Input
 
@@ -446,21 +466,21 @@ module akra.parser {
 			this._pLexer._setIndex(pState.index);
 		}
 
-		protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
+		final addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
 			if (isNull(this._pAdditionalFunctionsMap)) {
 				this._pAdditionalFunctionsMap = <IRuleFunctionMap>{};
 			}
 			this._pAdditionalFunctionsMap[sFuncName] = fnRuleFunction;
 		}
 
-		protected addTypeId(sIdentifier: string): void {
+		final addTypeId(sIdentifier: string): void {
 			if (isNull(this._pTypeIdMap)) {
 				this._pTypeIdMap = <IMap<boolean>>{};
 			}
 			this._pTypeIdMap[sIdentifier] = true;
 		}
 
-		protected defaultInit(): void {
+		defaultInit(): void {
 			this._iIndex = 0;
 			this._pStack = [0];
 			this._pSyntaxTree = new ParseTree();

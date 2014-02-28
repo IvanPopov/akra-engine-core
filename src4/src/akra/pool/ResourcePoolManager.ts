@@ -406,7 +406,7 @@ module akra.pool {
 			return true;
 		}
 
-		getEngine(): IEngine { return this.pEngine; }
+		final getEngine(): IEngine { return this.pEngine; }
 
 		createRenderMethod(sResourceName: string): IRenderMethod {
 			return <IRenderMethod>this.getRenderMethodPool().createResource(sResourceName);

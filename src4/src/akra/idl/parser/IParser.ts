@@ -141,6 +141,7 @@ module akra.parser {
 		returnCode(pNode: IParseNode): string;
 
 		init(sGrammar: string, eMode?: EParseMode, eType?: EParserType): boolean;
+		defaultInit(): void;
 
 		parse(sSource: string, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 

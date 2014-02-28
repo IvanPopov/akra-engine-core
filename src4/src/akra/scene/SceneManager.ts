@@ -20,7 +20,7 @@ module akra.scene {
 			this._pEngine = pEngine;
 		}
 
-		getEngine(): IEngine{
+		final getEngine(): IEngine{
 			return this._pEngine;
 		}
 

@@ -77,7 +77,7 @@ module akra.animation {
 			this.play = this.play || new PlaySignal(this);
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

@@ -137,7 +137,7 @@ module akra.model {
 			return this._eOptions;
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

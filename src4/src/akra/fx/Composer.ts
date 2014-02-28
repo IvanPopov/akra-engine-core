@@ -179,7 +179,7 @@ module akra.fx {
 			return <IAFXComponent>this._pEngine.getResourceManager().getComponentPool().findResource(sComponentName);
 		}
 
-		/**  */ getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

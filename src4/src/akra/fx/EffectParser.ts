@@ -19,7 +19,7 @@ module akra.fx {
 			this.addAdditionalFunction("includeCode", this._includeCode);
 		}
 
-		protected defaultInit(): void {
+		defaultInit(): void {
 			super.defaultInit();
 
 			this.addTypeId("float2");

@@ -86,7 +86,7 @@ module akra.pool {
 			return bf.testBit(this._iResourceFlags, <number>EResourceItemEvents.ALTERED);
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			var pManager: IResourcePoolManager = this.getManager();
 
 			if (pManager) {

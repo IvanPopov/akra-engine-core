@@ -294,9 +294,9 @@ var akra;
         //createSky();
         //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        loadManyModels(400, data + "models/cube.dae");
+        loadManyModels(1, data + "models/cube.dae");
 
-        //loadManyModels(100, data + "models/box/opened_box.dae");
+        // loadManyModels(150, data + "models/box/opened_box.dae");
         //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
