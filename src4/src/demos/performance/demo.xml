@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Demo Name="Perfomance">
+<Demo Name="Performance">
   <Description>~800 draw calls per frame</Description>
   <!--<Template>index.html</Template>-->
   <Main>perfomance.ts</Main>
