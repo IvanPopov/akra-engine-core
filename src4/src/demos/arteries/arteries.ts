@@ -71,7 +71,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		addons.navigation(pViewport, { rotationPoint: new Vec3(0., 1., 0.)});
+		addons.navigation(pViewport, { rotationPoint: new Vec3(0., 1., 0.) });
 
 		std.createSceneEnvironment(pScene, false, true, 2);
 		pEngine.exec();
@@ -84,7 +84,7 @@ module akra {
 		pLight.getParams().specular.set(.05);
 		pLight.getParams().attenuation.set(0.25, 0, 0);
 
-		if (config.DEBUG) {
+		if (config.DEBUG && false) {
 
 			var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
 			var pColorViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 40.));
@@ -127,7 +127,7 @@ module akra {
 
 			pSlices.push(pTex);
 		}
-		
+
 		addons.filedrop.addHandler(document.body, {
 			drop: (file: File, content, format, e: DragEvent): void => {
 				var pModel: ICollada = <ICollada>pRmgr.getColladaPool().createResource("dynamic" + guid());
@@ -217,7 +217,7 @@ module akra {
 		});
 
 
-		var pArteriesModelObj: IModel = pRmgr.loadModel("ARTERIES_HP",
+		var pArteriesModelObj: IModel = pRmgr.loadModel("ARTERIES_HP.OBJ",
 			{
 				shadows: false,
 				axis: {
@@ -404,7 +404,7 @@ module akra {
 			var pNode: ISceneNode = pModel.attachToScene(pScene);
 		}
 
-		io.fopen(uri.currentPath() + "coords/coord_real_ag.txt", "r").read((err, data) => {
+		io.fopen("data/coords/coord_real_ag.txt", "r").read((err, data) => {
 			var pCoords: IVec3[] = parsePoydaFileCurveFromAG(data);
 
 			pCoordsDst = pCoords;
@@ -415,55 +415,51 @@ module akra {
 		//DATA + "models/tof_multislab_tra_2.obj"
 		function loadObjFromMATLAB(sPath: string, fnCallback?: Function): void {
 			var sName: string = path.parse(sPath).getFileName();
-			var pRealArtery: IModel = pRmgr.loadModel(sPath, {
-				shadows: false,
-				axis: {
-					x: { index: 0, inverse: false },
-					y: { index: 2, inverse: false },
-					z: { index: 1, inverse: false }
+			var pRealArtery: IModel = pRmgr.loadModel(sPath);
+			var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
+			pRealArteryObj.setLocalMatrix(Mat4.temp(
+					[1, 0, 0, 0],
+					[0, 0, 1, 0],
+					[0, 1, 0, 0],
+					[0, 0, 0, 1]));
+
+			//1m / 125mm
+			pRealArteryObj.scale(1. / 125);
+			pRealArteryObj.setPosition(-.75, 1., -1);
+
+			var gui = pGUI.addFolder(sName);
+			var wireframe = gui.add({ mode: "edged faces" }, "mode", ["colored", "wireframe", "edged faces"]);
+			var visible = gui.add({ visible: false }, "visible");
+
+			visible.onChange((bValue: boolean) => {
+				(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).setVisible(bValue);
+			});
+
+			(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).setVisible(false);
+
+			wireframe.onChange((sMode: string) => {
+				switch (sMode) {
+					case "colored": (<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).wireframe(false); break;
+					case "wireframe": (<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).wireframe(true, false); break;
+					case "edged faces": (<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).wireframe(true); break;
 				}
 			});
 
-			pRealArtery.loaded.connect(() => {
-				var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
+			var pColor: IColor = color.random(true);
+			(<IColor>(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).getMaterial().diffuse).set(pColor);
+			(<IColor>(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).getMaterial().ambient).set(pColor);
+			(<IColor>(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).getMaterial().specular).set(0.25);
 
-				//1m / 125mm
-				pRealArteryObj.scale(1. / 125);
-				pRealArteryObj.setPosition(-.75, 1., -1);
+			gui.open();
 
-				var gui = pGUI.addFolder(sName);
-				var wireframe = gui.add({ mode: "edged faces" }, "mode", ["colored", "wireframe", "edged faces"]);
-				var visible = gui.add({ visible: false }, "visible");
+			fnCallback && fnCallback();
 
-				visible.onChange((bValue: boolean) => {
-					(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).setVisible(bValue);
-				});
-
-				(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).setVisible(false);
-
-				wireframe.onChange((sMode: string) => {
-					switch (sMode) {
-						case "colored": (<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).wireframe(false); break;
-						case "wireframe": (<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).wireframe(true, false); break;
-						case "edged faces": (<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).wireframe(true); break;
-					}
-				});
-
-				var pColor: IColor = color.random(true);
-				(<IColor>(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).getMaterial().diffuse).set(pColor);
-				(<IColor>(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).getMaterial().ambient).set(pColor);
-				(<IColor>(<ISceneModel>pRealArteryObj.getChild()).getMesh().getSubset(0).getMaterial().specular).set(0.25);
-
-				gui.open();
-
-				fnCallback && fnCallback();
-			});
 		}
 
-		loadObjFromMATLAB("TOF_MULTISLAB_TRA_2-TAN.SPLINE.2N_POYDA");
-		loadObjFromMATLAB("TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N");
-		loadObjFromMATLAB("TOF_MULTISLAB_TRA_2");
-		loadObjFromMATLAB("CAROID_ARTERY_FOR_DEFORMATION_STEP0.1-TAN.SPLINE.2N.FITTED");
+		loadObjFromMATLAB("TOF_MULTISLAB_TRA_2-TAN.SPLINE.2N_POYDA.OBJ");
+		loadObjFromMATLAB("TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N.OBJ");
+		loadObjFromMATLAB("TOF_MULTISLAB_TRA_2.OBJ");
+		loadObjFromMATLAB("CAROID_ARTERY_FOR_DEFORMATION_STEP0.1-TAN.SPLINE.2N.FITTED.OBJ");
 
 		pArteriesModelObj.loaded.connect(() => {
 			var pParent: ISceneNode = pScene.createNode();
@@ -477,7 +473,7 @@ module akra {
 			pParent.setPosition(0.0415, 1.099, -0.026);
 			pParent.update();
 
-			io.fopen(uri.currentPath() + "/coords/coord4.txt", "r").read((err, data) => {
+			io.fopen("data/coords/coord4.txt", "r").read((err, data) => {
 				var pCoords: IVec3[] = parsePoydaFileCurveFromGodunov(data);
 				// var pParam: IAnimationParameter = createSpline(pCoords, pParent, true);
 
@@ -595,6 +591,10 @@ module akra {
 			.addViewport(new render.DSViewport(pProjCam));
 
 		pCanvas.addViewport(new render.TextureViewport(pTexTarget, 0.05, 0.05, .5 * 512 / pViewport.getActualWidth(), .5 * 512 / pViewport.getActualHeight(), 5.));
+
+		pViewport.setClearEveryFrame(true);
+		pViewport.setBackgroundColor(color.BLACK);
+		pProgress.destroy();
 	}
 
 	pEngine.ready(main);

@@ -25,12 +25,14 @@
     "grunt-gjslint": "~0.1.3",
     "time-grunt": "~0.2.8",
     "xml2js": "~0.4.1",
-    "node-zip": "latest",
+    "node-zip": "~1.0.1",
     "wrench": "latest",
     "semver": "latest",
     "shelljs": "latest",
     "uglify-js": "~2.4.12",
-    "jade": "~1.2.0"
+    "jade": "~1.2.0",
+    "node-markdown": "~0.1.1",
+    "marked": "~0.3.1"
   },
   "dependencies": {}
 }

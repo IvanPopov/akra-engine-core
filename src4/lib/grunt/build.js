@@ -30,7 +30,7 @@ module.exports = function (grunt) {
 	function determMinLevel(options) {
 		/**
 		 * 0 - none minimizing, 1 - simple optimization, 2 - advanced optimiztion
-		*/
+		 */
 		var minimizationLevel = 0;
 		if (grunt.option("min_level") && grunt.option("min_level") > 0) {
 			minimizationLevel = grunt.option("min_level");
@@ -956,6 +956,35 @@ module.exports = function (grunt) {
 		return scripts;
 	}
 
+	function loadDependentStyles(Style, srcFolder, destFolder) {
+		var styles = [];
+
+		for (var i in Style) {
+			var script = Style[i];
+			var pathname = script.$.Path;
+			var destPath = path.join(destFolder, pathname);
+			var srcPath = path.join(srcFolder, pathname);
+			grunt.file.copy(srcPath, destPath);
+			styles.push(path.relative(destFolder, destPath).replace(/\\/g, '/'));
+		}
+
+		return styles;
+	}
+
+	function loadDependentFolder(Folder, srcFolder, destFolder) {
+
+		for (var i in Folder) {
+			var folder = Folder[i];
+			var pathname = folder.$.Path;
+			var destPath = path.join(destFolder, pathname);
+			var srcPath = path.join(srcFolder, pathname);
+			wrench.copyDirSyncRecursive(srcPath, destPath, {
+				forceDelete: true
+			}); 
+		}
+	}
+
+	
 	function buildDemo(demo, srcFolder, cb) {
 		if (!grunt.file.exists(srcFolder)) {
 			grunt.log.warn("Could not find demo.xml");
@@ -972,10 +1001,11 @@ module.exports = function (grunt) {
 			var template = path.join(srcFolder, xml.Demo.Template ? xml.Demo.Template[0] : "index.jade");
 			var code = null;
 			var scripts = [];
+			var styles = [];
 			var destFolder = path.join(DEMOS_BUILD_DIR, demo.toLowerCase());
 			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
 			var destJs = path.join(destFolder, path.basename(main, path.extname(main)) + '.js');
-
+			
 			if (!grunt.file.exists(main)) {
 				grunt.fail.fatal(new Error("Could not find main file: " + main));
 				return cb(false);
@@ -991,9 +1021,18 @@ module.exports = function (grunt) {
 				if (Dependencies.Script) {
 					scripts = scripts.concat(loadDependentJScripts(Dependencies.Script, srcFolder, destFolder));
 				}
+
+				if (Dependencies.Style) {
+					styles = styles.concat(loadDependentStyles(Dependencies.Style, srcFolder, destFolder));
+				}
+
+				if (Dependencies.Folder) {
+					loadDependentFolder(Dependencies.Folder, srcFolder, destFolder);
+				}
 			}
 
-
+			grunt.log.debug("Dest. js: ", destJs);
+			grunt.log.debug("Dest. folder: ", destFolder);
 			grunt.log.debug("Name:", name);
 			grunt.log.debug("Description:", description);
 			grunt.log.debug("Main:", main);
@@ -1008,21 +1047,21 @@ module.exports = function (grunt) {
 			}
 
 			// Compile a function
-			var fn = jade.compile(code, { pretty: true });
-
+			var fn = jade.compile(code, { pretty: true, debug: false, compileDebug: false });
+			
 			// Render the function
 			var html = fn({
 				demo: {
 					name: name,
 					description: description,
 					scripts: scripts,
+					styles: styles,
 					src: path.relative(destFolder, destJs).replace(/\\/g, "/")
 				}
 			});
 
 			grunt.log.debug(html);
 			grunt.file.write(destHtml, html);
-
 			//return cb(true);
 
 			compileTypescript([main], {}, destJs, function (ok) {

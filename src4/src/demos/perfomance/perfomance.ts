@@ -28,6 +28,7 @@ module akra {
 
 		pModelRoot.attachToParent(pScene.getRootNode());
 
+		//pModel.setOptions({wireframe: true});
 		pModel.attachToScene(pModelRoot);
 
 		pScene.beforeUpdate.connect(() => {
@@ -77,7 +78,6 @@ module akra {
 		pCamera = std.createCamera(pScene);
 		pCamera.setPosition(Vec3.temp(0., 7., 10.));
 		pCamera.lookAt(Vec3.temp(0, 0.8, -15));
-		debug.log(pCamera.getWorldPosition().toString());
 
 		pViewport = new render.DSViewport(pCamera);
 

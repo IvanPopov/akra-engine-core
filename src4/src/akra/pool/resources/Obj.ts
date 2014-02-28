@@ -45,7 +45,7 @@ module akra.pool.resources {
 	export class Obj extends ResourcePoolItem implements IObj {
 		private _sFilename: string = null;
 		private _iByteLength: uint = 0;
-		private _pOptions: IObjLoadOptions = null;
+		private _pOptions: IObjLoadOptions = <any>{};
 
 		private _pVertices: float[] = [];
 		private _pNormals: float[] = [];
@@ -84,20 +84,14 @@ module akra.pool.resources {
 			this._sFilename = sName;
 		}
 
-		private setOptions(pOptions: IObjLoadOptions): void {
+		setOptions(pOptions: IObjLoadOptions): void {
 			if (isNull(pOptions)) {
 				pOptions = Obj.DEFAULT_OPTIONS;
 			}
 
 			for (var i in Obj.DEFAULT_OPTIONS) {
-				if (isDef(pOptions[i])) {
-					continue;
-				}
-
-				pOptions[i] = Obj.DEFAULT_OPTIONS[i];
+				this._pOptions[i] = pOptions[i] || this._pOptions[i] || Obj.DEFAULT_OPTIONS[i];
 			}
-
-			this._pOptions = pOptions;
 		}
 
 		attachToScene(pScene: IScene3d): IModelEntry;
@@ -159,6 +153,7 @@ module akra.pool.resources {
 
 			pMesh = model.createMesh(pEngine, this.getBasename(), EMeshOptions.HB_READABLE);
 			pSubMesh = pMesh.createSubset(this.getBasename(), EPrimitiveTypes.TRIANGLELIST);
+
 
 			iPos = pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
 			pSubMesh.getData().allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
@@ -315,7 +310,7 @@ module akra.pool.resources {
 				v[0].subtract(v[2], q);
 				p.cross(q, n);
 				n.normalize();
-				// n.negate();
+				n.negate();
 
 				for (k = 0; k < 3; ++k) {
 					var r = this._pVertexIndexes[i + k];
@@ -329,7 +324,7 @@ module akra.pool.resources {
 
 			for (i = 0; i < pNormalsWeights.length; i++) {
 				j = i * 3;
-				console.log(pNormalsWeights[i]);
+				//console.log(pNormalsWeights[i]);
 				n.set(this._pNormals[j], this._pNormals[j + 1], this._pNormals[j + 2]).scale(1 / pNormalsWeights[i]).normalize();
 
 				this._pNormals[j] = n.x;
@@ -354,7 +349,6 @@ module akra.pool.resources {
 			//results of regexp matching
 			var pm: string[];
 
-			var mTransform: IMat4 = this.getOptions().transform;
 			var v: IVec4;
 
 			s = s.replace("\r", "");
@@ -365,9 +359,7 @@ module akra.pool.resources {
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
 				regExpResultToFloatArray(pm, Obj.row, 0);
 
-				v = mTransform.multiplyVec4(Vec4.temp(Obj.row[0], Obj.row[1], Obj.row[2], 1.));
-
-				this._pVertices.push(v.x, v.y, v.z);
+				this._pVertices.push(Obj.row[0], Obj.row[1], Obj.row[2]);
 
 				this._iFVF = bf.setAll(this._iFVF, EObjFVF.XYZ);
 			}
@@ -384,8 +376,7 @@ module akra.pool.resources {
 				pm = s.match(Obj.NORMAL_REGEXP);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
 				regExpResultToFloatArray(pm, Obj.row, 0);
-				v = mTransform.multiplyVec4(Vec4.temp(Obj.row[0], Obj.row[1], Obj.row[2], 1.));
-				this._pNormals.push(v.x, v.y, v.z);
+				this._pNormals.push(Obj.row[0], Obj.row[1], Obj.row[2]);
 				this._iFVF = bf.setAll(this._iFVF, EObjFVF.NORMAL);
 			}
 		}
@@ -490,8 +481,7 @@ module akra.pool.resources {
 		}
 
 		static DEFAULT_OPTIONS: IObjLoadOptions = {
-			shadows: true,
-			transform: new Mat4(1)
+			shadows: true
 		}
 
 		private static row: float[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];

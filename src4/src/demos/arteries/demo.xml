@@ -10,6 +10,8 @@
       <Module Name="addon-base3dObjects" />
     </Module>
     <Script Path="dat.gui/dat.gui.js" />
+    <Style Path="../css/metro-bootstrap.css" />
+    <Folder Path="../fonts" />
   </Dependencies>
   <Resource Name="RESOURCES">
     <Filename>arteries</Filename>
@@ -23,11 +25,11 @@
           <Exclude Path="data/AG/all.map" />
         </Folder>
 
-        <Resource Path="data/models/arteries_hp.obj" Name="ARTERIES_HP"/>
-        <Resource Path="data/models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" Name="CAROID_ARTERY_FOR_DEFORMATION_STEP0.1-TAN.SPLINE.2N.FITTED"/>
-        <Resource Path="data/models/tof_multislab_tra_2-tan.spline.2n_poyda.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE.2N_POYDA"/>
-        <Resource Path="data/models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N"/>
-        <Resource Path="data/models/tof_multislab_tra_2.obj" Name="TOF_MULTISLAB_TRA_2"/>
+        <Resource Path="data/models/arteries_hp.obj" Name="ARTERIES_HP.OBJ"/>
+        <Resource Path="data/models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" Name="CAROID_ARTERY_FOR_DEFORMATION_STEP0.1-TAN.SPLINE.2N.FITTED.OBJ"/>
+        <Resource Path="data/models/tof_multislab_tra_2-tan.spline.2n_poyda.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE.2N_POYDA.OBJ"/>
+        <Resource Path="data/models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N.OBJ"/>
+        <Resource Path="data/models/tof_multislab_tra_2.obj" Name="TOF_MULTISLAB_TRA_2.OBJ"/>
       </Data>
     </PropertyGroup>
   </Resource>

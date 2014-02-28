@@ -16,26 +16,56 @@
 
 module akra.deps {
 
-	var EXTENSIONS = {
-		ARA: EIO.IN | EIO.BIN,
-		JPEG: EIO.IN | EIO.BIN,
-		JPG: EIO.IN | EIO.BIN,
-		PNG: EIO.IN | EIO.BIN,
-		GIF: EIO.IN | EIO.BIN,
-		BMP: EIO.IN | EIO.BIN,
-		DDS: EIO.IN | EIO.BIN,
-		BSON: EIO.IN | EIO.BIN,
+	//var EXTENSIONS = {
+	//	ARA: EIO.IN | EIO.BIN,
+	//	JPEG: EIO.IN | EIO.BIN,
+	//	JPG: EIO.IN | EIO.BIN,
+	//	PNG: EIO.IN | EIO.BIN,
+	//	GIF: EIO.IN | EIO.BIN,
+	//	BMP: EIO.IN | EIO.BIN,
+	//	DDS: EIO.IN | EIO.BIN,
+	//	BSON: EIO.IN | EIO.BIN,
 
-		GR: EIO.IN,
-		FX: EIO.IN,
-		AFX: EIO.IN,
-		DAE: EIO.IN,
-		JSON: EIO.IN | EIO.JSON,
-		TXT: EIO.IN,
-		MAP: EIO.IN | EIO.JSON
-	};
+	//	GR: EIO.IN,
+	//	FX: EIO.IN,
+	//	AFX: EIO.IN,
+	//	DAE: EIO.IN,
+	//	JSON: EIO.IN | EIO.JSON,
+	//	TXT: EIO.IN,
+	//	MAP: EIO.IN | EIO.JSON
+	//};
 
-	export function getLowerLevel(pDeps: IDependens) {
+	interface IDepEngine {
+		type: string;
+		poolSelector: (pRsmgr: IResourcePoolManager) => IResourcePool<any>;
+		handler: IDepHandler;
+	}
+
+	var pRegistredDeps: { [type: string]: IDepEngine; } = <any>{};
+
+
+	/**
+	 * @param sType Resource string type.
+	 * @param isResource Is the resource dependence?
+	 */
+	export function addDependenceHandler(
+		pTypes: string[],
+		fnPoolSelector: (pRsmgr: IResourcePoolManager) => IResourcePool<any>,
+		fnHandler: IDepHandler): void {
+		for (var i = 0; i < pTypes.length; ++i) {
+			var sType: string = pTypes[i].toLowerCase();
+			pRegistredDeps[sType] = { type: sType, poolSelector: fnPoolSelector || null, handler: fnHandler };
+		}
+	}
+
+	function findDepHandler(pDep: IDep): IDepEngine {
+		var sExt: string = getType(pDep);
+		var pDepEngine: IDepEngine = pRegistredDeps[sExt];
+		return pDepEngine || null;
+	}
+
+	/** Get lowest level of deps. */
+	export function getLowestLevel(pDeps: IDependens) {
 		var c: IDependens = pDeps;
 
 		while (isDefAndNotNull(c)) {
@@ -135,11 +165,6 @@ module akra.deps {
 	}
 
 	/**
-	 * Fill <loaded/total> fields for IDependens
-	 * Fill <parent/depth> fields for IDependens
-	 * Fill <index/deps> fields for IDep
-	 *
-	 * Fill <status> fields for IDep
 	 * Make the <path> absolute for IDep
 	 */
 	export function normalize(pDeps: IDependens, sRoot: string = null, iDepth: int = 0): void {
@@ -152,10 +177,10 @@ module akra.deps {
 	}
 
 	export function getType(pDep: IDep): string {
-		return pDep.type || path.parse(pDep.path).getExt() || "";
+		return (pDep.type || path.parse(pDep.path).getExt() || "").toLowerCase();
 	}
 
-	export function computeProperties(pDeps: IDependens, cb: (e: Error, iLength: uint) => void): void {
+	function computeProperties(pDeps: IDependens, cb: (e: Error, iLength: uint) => void): void {
 		var pAll: Promise<uint>[] = [];
 
 		each(pDeps, (pDep: IDep): void => {
@@ -175,7 +200,7 @@ module akra.deps {
 						bytesLoaded: 0,
 						unpacked: 0.
 					};
-					
+
 					pDep.stats = pStats;
 
 					fnResolve(pStats.byteLength);
@@ -188,37 +213,24 @@ module akra.deps {
 		}).catch(<any>cb);
 	}
 
-	export function createResources(pEngine: IEngine, pDeps: IDependens): void {
+	function createResources(pEngine: IEngine, pDeps: IDependens): void {
 		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 		each(pDeps, (pDep: IDep): void => {
 			var sResource: string = pDep.name || pDep.path;
-			var sExt: string = getType(pDep);
+			var pDepEngine: IDepEngine = findDepHandler(pDep);
 
-			switch (sExt.toLowerCase()) {
-				case "fx":
-				case "afx":
-					if (!pRmgr.getEffectDataPool().findResource(sResource)) {
-						pRmgr.getEffectDataPool().createResource(sResource);
-					}
-					break;
-				case "jpg":
-				case "jpeg":
-				case "png":
-				case "bmp":
-				case "gif":
-				case "dds":
-					if (!pRmgr.getImagePool().findResource(sResource)) {
-						pRmgr.getImagePool().createResource(sResource);
-					}
-					break;
-				case "dae":
-					if (!pRmgr.getColladaPool().findResource(sResource)) {
-						pRmgr.getColladaPool().createResource(sResource);
-					}
-					break;
+			if (!isDefAndNotNull(pDepEngine) || isNull(pDepEngine.poolSelector)) {
+				return null;
+			}
+
+			var pPool: IResourcePool<any> = pDepEngine.poolSelector(pRmgr);
+
+			if (!pPool.findResource(sResource)) {
+				pPool.createResource(sResource);
 			}
 		});
 	}
+
 
 	// Resource item 'loaded' event callback.
 	function handleResourceEventOnce(
@@ -254,26 +266,11 @@ module akra.deps {
 		}
 	}
 
-	/** loade */
-	export function loadAFX(
+	export function loadResource(
 		pEngine: IEngine,
 		pDep: IDep,
 		cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void {
-		loadFromPool(pEngine.getResourceManager().getEffectDataPool(), pDep, cb);
-	}
-
-	export function loadImage(
-		pEngine: IEngine,
-		pDep: IDep,
-		cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void {
-		loadFromPool(pEngine.getResourceManager().getImagePool(), pDep, cb);
-	}
-
-	export function loadDAE(
-		pEngine: IEngine,
-		pDep: IDep,
-		cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void {
-		loadFromPool(pEngine.getResourceManager().getColladaPool(), pDep, cb);
+			loadFromPool(findDepHandler(pDep).poolSelector(pEngine.getResourceManager()), pDep, cb);
 	}
 
 	//redirect events from load() function to cb() of custom dep. 
@@ -410,6 +407,7 @@ module akra.deps {
 	var ARA_INDEX = config.deps.archiveIndex || ".map";
 	/** @const */
 	var ETAG_FILE = config.deps.etag.file || ".etag";
+	/** @const */
 	var FORCE_ETAG_CHECKING: boolean = config.deps.etag.forceCheck || false;
 
 	function forceExtractARADependence(pEntry: ZipEntry, sPath: string, cb: (e: Error, sPath: string) => void): void {
@@ -663,48 +661,29 @@ module akra.deps {
 		//walk single deps level
 		each({ files: pDeps.files }, (pDep: IDep): void => {
 			cb(pDep, EDependenceStatuses.INITIALIZATION, null);
-			var sExt: string = getType(pDep);
+			var pDepEngine: IDepEngine = findDepHandler(pDep);
 
-			switch (sExt.toLowerCase()) {
-				case "ara":
-					//akra resource archive
-					loadARA(pEngine, pDep, cb);
-					break;
-				case "gr":
-					loadGrammar(pEngine, pDep, cb);
-					break;
-				case "fx":
-				case "afx":
-					loadAFX(pEngine, pDep, cb);
-					break;
-				case "jpeg":
-				case "jpg":
-				case "png":
-				case "gif":
-				case "bmp":
-				case "dds":
-					loadImage(pEngine, pDep, cb);
-					break;
-				case "dae":
-					loadDAE(pEngine, pDep, cb);
-					break;
-				case "json":
-					loadJSON(pEngine, pDep, cb);
-					break;
-				case "bson":
-					loadBSON(pEngine, pDep, cb);
-					break;
-				case "txt":
-					loadCustom(pEngine, pDep, cb);
-					break;
-				case "map":
-					loadMap(pEngine, pDep, cb);
-					break;
-				default:
-					logger.warn("dependence " + pDep.path + " unknown, and will be skipped.");
+			if (!isDefAndNotNull(pDepEngine)) {
+				logger.warn("dependence " + pDep.path + " unknown, and will be skipped.");
+				return;
 			}
+
+			pDepEngine.handler(pEngine, pDep, cb);
 		});
 	}
+
+	addDependenceHandler(["ara"], null, loadARA);
+	addDependenceHandler(["gr"], null, loadGrammar);
+	addDependenceHandler(["fx", "afx"],
+		(pRmgr: IResourcePoolManager) => pRmgr.getEffectDataPool(), loadResource);
+	addDependenceHandler(["jpeg", "jpg", "png", "gif", "bmp", "dds"],
+		(pRmgr: IResourcePoolManager) => pRmgr.getImagePool(), loadResource);
+	addDependenceHandler(["dae"], (pRmgr: IResourcePoolManager) => pRmgr.getColladaPool(), loadResource);
+	addDependenceHandler(["obj"], (pRmgr: IResourcePoolManager) => pRmgr.getObjPool(), loadResource);
+	addDependenceHandler(["json"], null, loadJSON);
+	addDependenceHandler(["bson"], null, loadBSON);
+	addDependenceHandler(["txt"], null, loadCustom);
+	addDependenceHandler(["map"], null, loadMap);
 
 	/**
 	 * @param pEngine Engine instance.

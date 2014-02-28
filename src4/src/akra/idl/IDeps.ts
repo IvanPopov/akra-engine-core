@@ -53,4 +53,8 @@ module akra {
 		unpacked: float;				/// From 0. to 1.;
 	}
 	
+
+	export interface IDepHandler {
+		(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+	}
 }

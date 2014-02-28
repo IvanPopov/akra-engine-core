@@ -135,6 +135,7 @@ div.ae-loader {
 	-webkit-animation: bounceInLeft 1s;
 	position: relative;
 	left: -50%;
+	top: -150px;
 }
 
 div.ae-progress:last-child {

@@ -17,10 +17,77 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="demos\perfomance\demo.xml" />
+    <Content Include="demos\perfomance\index.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="demos\arteries\arteries.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\codemirror.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\dat.gui.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\FileSaver.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\jquery.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\jqueryui.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\raphael.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\swig.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\zip.d.ts" />
+    <TypeScriptCompile Include="demos\perfomance\perfomance.ts" />
+    <TypeScriptCompile Include="demos\std\std.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="demos\arteries\dat.gui\dat.gui.js" />
+    <Content Include="demos\arteries\data\AG\001.jpg" />
+    <Content Include="demos\arteries\data\AG\002.jpg" />
+    <Content Include="demos\arteries\data\AG\003.jpg" />
+    <Content Include="demos\arteries\data\AG\004.jpg" />
+    <Content Include="demos\arteries\data\AG\005.jpg" />
+    <Content Include="demos\arteries\data\AG\006.jpg" />
+    <Content Include="demos\arteries\data\AG\007.jpg" />
+    <Content Include="demos\arteries\data\AG\008.jpg" />
+    <Content Include="demos\arteries\data\AG\009.jpg" />
+    <Content Include="demos\arteries\data\AG\010.jpg" />
+    <Content Include="demos\arteries\data\AG\011.jpg" />
+    <Content Include="demos\arteries\data\AG\012.jpg" />
+    <Content Include="demos\arteries\data\AG\013.jpg" />
+    <Content Include="demos\arteries\data\AG\014.jpg" />
+    <Content Include="demos\arteries\data\AG\015.jpg" />
+    <Content Include="demos\arteries\data\AG\016.jpg" />
+    <Content Include="demos\arteries\data\AG\017.jpg" />
+    <Content Include="demos\arteries\data\AG\018.jpg" />
+    <Content Include="demos\arteries\data\AG\019.jpg" />
+    <Content Include="demos\arteries\data\AG\020.jpg" />
+    <Content Include="demos\arteries\data\AG\021.jpg" />
+    <Content Include="demos\arteries\data\AG\022.jpg" />
+    <Content Include="demos\arteries\data\AG\023.jpg" />
+    <Content Include="demos\arteries\data\AG\024.jpg" />
+    <Content Include="demos\arteries\data\AG\025.jpg" />
+    <Content Include="demos\arteries\data\AG\026.jpg" />
+    <Content Include="demos\arteries\data\AG\027.jpg" />
+    <Content Include="demos\arteries\data\AG\028.jpg" />
+    <Content Include="demos\arteries\data\AG\029.jpg" />
+    <Content Include="demos\arteries\data\AG\030.jpg" />
+    <Content Include="demos\arteries\data\AG\031.jpg" />
+    <Content Include="demos\arteries\data\AG\032.jpg" />
+    <Content Include="demos\arteries\data\AG\033.jpg" />
+    <Content Include="demos\arteries\data\AG\034.jpg" />
+    <Content Include="demos\arteries\data\AG\035.jpg" />
+    <Content Include="demos\arteries\data\AG\036.jpg" />
+    <Content Include="demos\arteries\data\AG\037.jpg" />
+    <Content Include="demos\arteries\data\AG\038.jpg" />
+    <Content Include="demos\arteries\data\AG\039.jpg" />
+    <Content Include="demos\arteries\data\AG\040.jpg" />
+    <Content Include="demos\arteries\data\AG\041.jpg" />
+    <Content Include="demos\arteries\data\coords\coord4.txt" />
+    <Content Include="demos\arteries\data\coords\coord_real_ag.txt" />
+    <Content Include="demos\arteries\demo.xml" />
+    <Content Include="demos\cube.dae" />
+    <Content Include="demos\arteries\data\AG\all.map" />
+    <Content Include="demos\arteries\data\fx\arteries.afx" />
+    <Content Include="demos\arteries\data\fx\arteries2.afx" />
+    <Content Include="demos\arteries\data\models\arteries_hp.obj" />
+    <Content Include="demos\arteries\data\models\caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline.2n_poyda.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline_smoothed.2n.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2.obj" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

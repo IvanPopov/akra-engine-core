@@ -12,11 +12,13 @@ html(lang="en")
       #progress {
         position: absolute; 
         left: 50%; 
-        top: 10%; 
+        top: 50%; 
         z-index: 9999;
       }
     - for (var i in demo.scripts)
       script(src=demo.scripts[i])
+    - for (var i in demo.styles)
+      link(href=demo.styles[i], rel='stylesheet')
   body
     #progress
     script(src=demo.src)
