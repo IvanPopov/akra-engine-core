@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Resources>
+<Resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/resources.xsd">
   <Project Name="addon-navigation">
     <Resource Name="AE_NAVIGATION_DEPENDENCIES">
       <Filename>navigation.addon</Filename>
@@ -11,7 +12,7 @@
           <Folder Path="navigation">
             <Exclude Path="cubemap.psd" />
           </Folder>
-          <Resource Path="navigation/cube.dae"
+          <ResourceFile Path="navigation/cube.dae"
                     Name="akra.navigation.ORIENTATION_CUBE"
                     Comment="Model of orientation cube."/>
         </Data>
@@ -24,7 +25,7 @@
           <Folder Path="navigation">
             <Exclude Path="cubemap.psd" />
           </Folder>
-          <Resource Path="navigation/cube.dae"
+          <ResourceFile Path="navigation/cube.dae"
                     Name="akra.navigation.ORIENTATION_CUBE" />
         </Data>
       </PropertyGroup>

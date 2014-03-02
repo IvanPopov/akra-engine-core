@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
     xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"> 
-    <xs:simpleType name="variableName">
-        <xs:annotation>
-            <xs:documentation>Uppercase variable name style.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="[A-Z][A-Z0-9_]*"/>
-        </xs:restriction>
-    </xs:simpleType>
-    
     <xs:element name="Resources">
         <xs:annotation>
             <xs:documentation>Defines the resources as collection of Project elements.</xs:documentation>
@@ -20,15 +11,73 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    <xs:element name="Demo">
+        <xs:annotation>
+            <xs:documentation>
+                Describe single demo.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="Template" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Jade template for demo. 
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:anyURI" />
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Main" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Path to demo entry point. If Main tag not specified, will be used 'main.ts' as main script.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:string" />
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Description" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Desctiption of demo.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:string" />
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element ref="Dependencies" minOccurs="0" maxOccurs="1"></xs:element>
+                <xs:element ref="Resource" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:all>
+            <xs:attribute name="Name" use="required" type="xs:Name">
+                <xs:annotation>
+                    <xs:documentation>
+                        Demo name.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="Project">
         <xs:annotation>
             <xs:documentation>Project core tag.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:sequence>
+            <xs:all>
                 <xs:element ref="Variable" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="Attachment" minOccurs="0" maxOccurs="unbounded"/>
-            </xs:sequence>
+                <xs:element ref="Resource" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:all>
             <xs:attribute name="Name" type="xs:Name" use="required">
                 <xs:annotation>
                     <xs:documentation>Specifies a required unique Name for project.</xs:documentation>
@@ -58,16 +107,25 @@
         </xs:annotation>
         <xs:complexType>
             <xs:choice>
-            <xs:sequence>
+            <xs:choice maxOccurs="unbounded">
                 <xs:element ref="File" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="Folder" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="Format" minOccurs="0" maxOccurs="1"/>
-            </xs:sequence>
+                <xs:element ref="Type" minOccurs="0" maxOccurs="1" />
+                <xs:element ref="Format" minOccurs="0" maxOccurs="1" />
+            </xs:choice>
                 <xs:sequence>
                     <xs:element name="PropertyGroup" minOccurs="0" maxOccurs="1">
                         <xs:annotation>
                             <xs:documentation>Allows you to create conditions dependent attachments.</xs:documentation>
                         </xs:annotation>
+                        <xs:complexType>
+                            <xs:all>
+                                <xs:element ref="File" minOccurs="0" maxOccurs="unbounded"/>
+                                <xs:element ref="Folder" minOccurs="0" maxOccurs="unbounded"/>
+                                <xs:element ref="Type" minOccurs="0" maxOccurs="1" />
+                                <xs:element ref="Format" minOccurs="0" maxOccurs="1" />
+                            </xs:all>
+                        </xs:complexType>
                     </xs:element>
                 </xs:sequence>
             </xs:choice>
@@ -111,5 +169,242 @@
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="Format"></xs:element>
+    <xs:element name="Resource">
+        <xs:annotation>
+            <xs:documentation>
+                Describe complex resource of project.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Filename" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Resource file name.</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:Name"/>
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="PropertyGroup" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Archive" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Define if this resource will be compressed into ZIP/ARA archive.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="Boolean"/>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="UseInlining" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Define if this resource will inlined into code insted varible with name Resource.@Name.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="Boolean"/>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="OutDir" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Specify custom output directory.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string"/>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="MapFile" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Create resource with existing map file.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string"/>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Data" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>Resource data.</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:all>
+                                        <xs:element ref="File" minOccurs="0" maxOccurs="unbounded" />
+                                        <xs:element ref="Folder" minOccurs="0" maxOccurs="unbounded" />
+                                        <xs:element ref="ResourceFile" minOccurs="0" maxOccurs="unbounded"/>
+                                    </xs:all>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Condition" use="optional" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Condition can contain js code which should return a boolean value.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="Name" type="variableName" use="required">
+                <xs:annotation>
+                    <xs:documentation>Name of resource variable.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ResourceFile">
+        <xs:annotation>
+            <xs:documentation>
+                Resource file will be added in map file as resource.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ResourceFile" minOccurs="0" maxOccurs="unbounded"></xs:element>
+            </xs:sequence>
+            <xs:attribute name="Path" use="required" type="xs:anyURI"></xs:attribute>
+            <xs:attribute name="Name" use="optional" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of resource.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Comment" use="optional" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Comment.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Type" use="optional" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Type.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Dependencies" >
+        <xs:annotation>
+            <xs:documentation>Demo dependencies.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="Script" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Describe JS script.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="Path" use="required" type="xs:anyURI">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Path to script.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Style" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Describe CSS styles.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="Path" use="required" type="xs:anyURI">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Path to script.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element ref="Folder" minOccurs="0" maxOccurs="unbounded"></xs:element>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Type">
+        
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="javascript"></xs:enumeration>
+                <xs:enumeration value="css"></xs:enumeration>
+            </xs:restriction>
+        </xs:simpleType>
+        
+    </xs:element>
+    <xs:element name="Format">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="Enclosure">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Enclosure means that all the attachment files will be placed together with the results of the assembly.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:enumeration>
+                <xs:enumeration value="String">
+                    <xs:annotation>
+                        <xs:documentation>
+                            File's content will be put in attachment's variable.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:enumeration>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+    <xs:element name="Module">
+        <xs:annotation>
+            <xs:documentation>
+                Descrive module on which depends the project or demo.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="Name" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Module name.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="variableName">
+        <xs:annotation>
+            <xs:documentation>Uppercase variable name style.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z][A-Z0-9_]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Boolean">
+        <xs:annotation>
+            <xs:documentation>Boolean value.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="True" />
+            <xs:enumeration value="False" />
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

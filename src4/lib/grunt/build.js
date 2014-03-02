@@ -156,34 +156,34 @@ module.exports = function (grunt) {
 
 
 	/**
-	 * Загружаем ресурс из тега Resource в map файл.
-	 * @param Resource {XML} Resource tag.
+	 * Загружаем ресурс из тега ResourceFile в map файл.
+	 * @param ResourceFile {XML} ResourceFile tag.
 	 * @param cur {IDependens} Текущий уровень зависимостей.
 	 */
-	function loadResource(Resource, cur) {
+	function loadResource(ResourceFile, cur) {
 		cur.files = cur.files || [];
 
-		var res = { path: Resource.$.Path };
+		var res = { path: ResourceFile.$.Path };
 
-		if (Resource.$.Name) {
-			res.name = Resource.$.Name;
+		if (ResourceFile.$.Name) {
+			res.name = ResourceFile.$.Name;
 		}
 
-		if (Resource.$.Comment) {
-			res.comment = Resource.$.Comment;
+		if (ResourceFile.$.Comment) {
+			res.comment = ResourceFile.$.Comment;
 		}
 
-		if (Resource.$.Type) {
-			res.type = Resource.$.Type;
+		if (ResourceFile.$.Type) {
+			res.type = ResourceFile.$.Type;
 		}
 
 		cur.files.push(res);
 
-		if (Resource.Resource) {
+		if (ResourceFile.ResourceFile) {
 			cur.deps = cur.deps || {};
 
-			for (var i = 0; i < Resource.Resource.length; ++i) {
-				loadResource(Resource.Resource[i], cur.deps);
+			for (var i = 0; i < ResourceFile.ResourceFile.length; ++i) {
+				loadResource(ResourceFile.ResourceFile[i], cur.deps);
 			}
 		}
 	}
@@ -296,7 +296,7 @@ module.exports = function (grunt) {
 				}
 			}
 
-			if (Data.Resource) {
+			if (Data.ResourceFile) {
 				/**
 				 * @param Resource {XML} Current resource.
 				 * @param cur {IDependence} Current dep level.
@@ -304,8 +304,8 @@ module.exports = function (grunt) {
 
 				var lowLevel = getLowerLevel(map);
 
-				for (var i = 0; i < Data.Resource.length; ++i) {
-					loadResource(Data.Resource[i], lowLevel);
+				for (var i = 0; i < Data.ResourceFile.length; ++i) {
+					loadResource(Data.ResourceFile[i], lowLevel);
 				}
 			}
 		}

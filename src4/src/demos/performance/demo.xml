@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Demo Name="Performance">
+<Demo Name="Performance" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/resources.xsd">
+  <Main>performance.ts</Main>
   <Description>~800 draw calls per frame</Description>
-  <!--<Template>index.html</Template>-->
-  <Main>perfomance.ts</Main>
   <Dependencies>
     <Module Name="core">
       <Module Name="addon-progress" />
@@ -14,7 +14,7 @@
       <Archive>False</Archive>
       <UseInlining>False</UseInlining>
       <Data>
-        <Resource Path="../cube.DAE" Name="CUBE_DAE"/>
+        <ResourceFile Path="../cube.DAE" Name="CUBE_DAE"/>
       </Data>
     </PropertyGroup>
   </Resource>
