@@ -20,7 +20,7 @@
   </PropertyGroup>
   <PropertyGroup>
     
-    <Variable Name="AE_DEBUG">$('Configuration') == 'Debug'</Variable>
+    <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
     <Variable Name="AE_VERSION">$('Version').full</Variable>
     <Dependencies>
       <Attachment Name="AE_THREAD_FILEINTERFACE">
@@ -45,7 +45,7 @@
       </Attachment>
     </Dependencies>
   </PropertyGroup>
-  <PropertyGroup Condition="$('Configuration') == 'Debug'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Resource Name="AE_CORE_DEPENDENCIES">
       <Filename>akra</Filename>
       <Archive>False</Archive>
@@ -79,7 +79,7 @@
       </Data>
     </Resource>
   </PropertyGroup>
-  <PropertyGroup Condition="$('Configuration') == 'Release'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Resource Name="AE_CORE_DEPENDENCIES">
       <Archive>True</Archive>
       <UseInlining>True</UseInlining>

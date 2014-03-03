@@ -26,18 +26,17 @@ module.exports = function (grunt) {
 
 	//TODO: util.getVersion() from package.json
 	// ReSharper disable once InconsistentNaming
-	var AE_VERSION = {
+	var VERSION = {
 		full: "0.4.1"
 	};
 
 	// ReSharper disable once UnusedLocals
-	var dist = "akraengine-" + AE_VERSION.full;
+	var dist = "akraengine-" + VERSION.full;
 
 	grunt.initConfig({
 		//global configuration
-		AE_CONFIGURATION: 'Debug',
-		AE_VERSION: AE_VERSION,
-		AE_ZIP: true,					//include extrenal zip reader to core.
+		Configuration: 'Debug',
+		Version: VERSION,
 
 		pkg: grunt.file.readJSON("package.json"),
 		build: {
@@ -141,11 +140,8 @@ module.exports = function (grunt) {
 	});
 
 
-	grunt.config("AE_ZIP", !grunt.option('no-zip'));
-	grunt.log.writeln("Using external zip: " + grunt.config.get("AE_ZIP"));
-
-	grunt.config("AE_CONFIGURATION", grunt.option('configuration') || 'Debug');
-	grunt.log.writeln("Configuration: " + grunt.config.get("AE_CONFIGURATION"));
+	grunt.config("Configuration", grunt.option('configuration') || 'Debug');
+	grunt.log.writeln("Configuration: " + grunt.config.get("Configuration"));
 
 	grunt.registerTask('decl', 'Build with declaration.', function (target) {
 		grunt.config("build." + target + ".options.declaration", true);

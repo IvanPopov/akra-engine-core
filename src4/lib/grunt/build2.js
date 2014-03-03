@@ -30,21 +30,11 @@ module.exports = function (grunt) {
 	 * @param configFile {String} Path to config file.
 	 */
 	function compile(configFile, cb) {
-		var xsd = libxmljs.parseXmlString(grunt.file.read(path.join(__dirname, "schema.xsd")));
-		var xml = libxmljs.parseXmlString(grunt.file.read(configFile));
 
-		if (!xml.validate(xsd)) {
-			grunt.log.warn(configFile + " validation failed.");
-			return cb(false);
-		}
+		var config = loadConfig(configFile);
+		console.log(config.find("PropertyGroup"));
 
-		var project = xml.root();
-
-		eachNode(project, function (propertyGroup) {
-			if (isValid()) {
-
-			}
-		});
+		grunt.fail.error("");
 
 		compileTypescript(xml.root(), function (ok) {
 			if (!ok) {
@@ -69,40 +59,52 @@ module.exports = function (grunt) {
 		});
 	}
 
-	function isValidGroup(propertyGroup) {
+	function loadConfig(file) {
+		var xsd = libxmljs.parseXmlString(grunt.file.read(path.join(__dirname, "schema.xsd")));
+		var xml = libxmljs.parseXmlString(grunt.file.read(file));
 
-	}
-
-	function eachNode(list, cb, max) {
-		var n = list.length;
-		var i;
-		max = typeof max === "number" ? max < n ? max : n : n;
-
-		n = 0;
-		i = 0;
-
-		while (n < list.length) {
-			if (list[n++].name() === "text") {
-				continue;
-			}
-
-			var element = list[n - 1];
-			cb(element, element.name());
-			i++;
-
-			if (max === i) {
-				break;
-			}
+		if (!xml.validate(xsd)) {
+			grunt.log.warn(file + " validation failed.");
+			return cb(false);
 		}
+
+		var config = xml.root();
+
+		config.find("PropertyGroup").forEach(function (group) {
+			if (!checkPropertyGroupCondition(group)) {
+				group.remove();
+			}
+		});
+
+		return config;
 	}
 
-	function eachChild(element, cb) {
-		eachNode(element.childNodes(), cb);
+	function checkPropertyGroupCondition(propertyGroup) {
+		var conditionAttr = propertyGroup.attr("Condition");
+
+		if (!conditionAttr) {
+			return true;
+		}
+
+		var condition = prepareSystemVariables(conditionAttr.value());
+		
+		return computeExpression(condition);
 	}
 
-	//function eachBy(xml, tag, cb, max) {
-	//	eachNode(xml)
-	//}
+	function prepareSystemVariables(str) {
+		return str.replace(/(\$\(([\w\d\_\-]+)\))/g, function (str, expr, variable) {
+			return grunt.config.get(variable);
+		});
+	}
+
+	/** 
+	 * Compute expressions
+	 */
+	function computeExpression(expression) {
+		var f = new Function("True", "False", "return (" + expression + ");");
+		return f(true, false);
+	}
+
 
 	function compileTypescript(config, cb) {
 
@@ -631,17 +633,7 @@ module.exports = function (grunt) {
 		return attachments;
 	}
 
-	/** 
-	 * Compute expressions from XML
-	 */
-	function computeXmlData(expression) {
-		var $ = function (val) {
-			return grunt.config.get("AE_" + val.toUpperCase());
-		};
-
-		var f = new Function("$", "True", "False", "return (" + expression + ");");
-		return f($, true, false);
-	}
+	
 
 	/** 
 	 * Собиарем ресурсы по проекту
