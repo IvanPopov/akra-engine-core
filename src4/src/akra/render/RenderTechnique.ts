@@ -13,7 +13,7 @@ module akra.render {
 	import ANY_PASS = fx.ANY_PASS;
 	import ANY_SHIFT = fx.ANY_SHIFT;
 
-	export class RenderTechnique implements IRenderTechnique {
+	final export class RenderTechnique implements IRenderTechnique {
 		guid: uint = guid();
 
 		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>;

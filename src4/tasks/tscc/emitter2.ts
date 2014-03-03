@@ -210,6 +210,7 @@ module TypeScript {
 		/**
 		* For closure
 		*/
+		private thisShortClassNameForMethods: string = null;
 		private thisFullClassName: string = null;
 		private thisFullExtendClassName: string = null;
 		private obfuscatedSymbolList: PullSymbol[] = [];
@@ -244,10 +245,11 @@ module TypeScript {
 
 		private _emitGlobal: boolean = true;
 
-		private _escapeExportedFunction = false;
-
 		private interfaceExternsStream = null;
 		private isEnabledInterfaceExternStream = false;
+
+		private shortNameMap: { [longName: string]: string } = {};
+		private shorter: number = 0;
 
 		constructor(public emittingFileName: string,
 			public outfile: TextWriter,
@@ -1157,6 +1159,10 @@ module TypeScript {
 				//view like: (container['akra'] = container['akra'] || {}) || {};
 
 				this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
+
+				var shortName = this.getShortName(exportedName);
+
+				this.writeLineToOutput("var " + shortName + " = " + exportedName + ";");
 
 				//this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
 
@@ -2726,10 +2732,12 @@ module TypeScript {
 			var svClassNode = this.thisClassNode;
 			var svFullClassName = this.thisFullClassName;
 			var svFullExtendClassName = this.thisFullExtendClassName;
+			var svShortClassNameForMethods = this.thisShortClassNameForMethods;
 
 			this.thisClassNode = classDecl;
 			this.thisFullClassName = null;
 			this.thisFullExtendClassName = null;
+			this.thisShortClassNameForMethods = null;
 
 			var className = classDecl.identifier.text();
 			var fullClassName = className;
@@ -2783,6 +2791,8 @@ module TypeScript {
 				this.writeToOutput(fullClassName + " = ");
 			}
 
+			this.thisShortClassNameForMethods = this.getShortName(this.thisFullClassName + ".prototype");
+
 			this.recordSourceMappingNameStart(className);
 
 			this.emittedClassProperties = [];
@@ -2827,6 +2837,8 @@ module TypeScript {
 				this.exportSymbol(pullDecl.getSymbol(), emittedClassName);
 			}
 
+			this.writeLineToOutput("var " + this.thisShortClassNameForMethods + " = " + this.thisFullClassName + ".prototype;");
+
 			if (fullClassName.indexOf(".") >= 0 && fullClassName !== emittedClassName) {
 				this.writeLineToOutput("/** @type {" + emittedClassName + "} */ " + fullClassName + " = " + emittedClassName + ";");
 			}
@@ -2846,6 +2858,7 @@ module TypeScript {
 			this.thisClassNode = svClassNode;
 			this.thisFullClassName = svFullClassName;
 			this.thisFullExtendClassName = svFullExtendClassName;
+			this.thisShortClassNameForMethods = svShortClassNameForMethods;
 
 			this.emittedClassProperties = null;
 
@@ -2933,11 +2946,15 @@ module TypeScript {
 
 			var functionName = funcDecl.propertyName.text();
 
-			this.writeToOutput(this.thisFullClassName);
+			//this.writeToOutput(this.thisFullClassName);
 			//this.writeToOutput(classDecl.identifier.text());
 
 			if (!hasModifier(funcDecl.modifiers, PullElementFlags.Static)) {
-				this.writeToOutput(".prototype");
+				this.writeToOutput("/** @this {" + this.thisFullClassName + "} */ " + this.thisShortClassNameForMethods);
+				//this.writeToOutput(".prototype");
+			}
+			else {
+				this.writeToOutput(this.thisFullClassName);
 			}
 
 			if (isQuoted(functionName) || funcDecl.propertyName.kind() !== SyntaxKind.IdentifierName) {
@@ -2968,8 +2985,8 @@ module TypeScript {
 			this.writeLineToOutput(";");
 			if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol())) {
 				var className = this.thisFullClassName;
-				var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (className + ".prototype");
-				var exportLocation = className === location ? location : (className + ".prototype");
+				var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (this.thisShortClassNameForMethods/*className + ".prototype"*/);
+				var exportLocation = className === location ? location : (this.thisShortClassNameForMethods/*className + ".prototype"*/);
 				var fullName = location;
 				var exportName = exportLocation;
 
@@ -3309,11 +3326,16 @@ module TypeScript {
 					//		this.emittedClassProperties.push(symbol);
 					//	}
 					//}
-					this.recordSourceMappingStart(expression);
-					this.emit(expression.expression);
-
 					var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
 					var isNeedEscapeFunction = this.isNeedEscapeName(symbol);
+
+					this.recordSourceMappingStart(expression);
+					//if (isNeedEscapeFunction) {
+					//	this.writeToOutput("(/** " + this.formatJSDocType(symbol.type) + " */(");
+					//}
+					this.emit(expression.expression);
+
+					
 					if (isNeedEscapeFunction) {
 						this.writeToOutput("[\"");
 					}
@@ -3321,16 +3343,16 @@ module TypeScript {
 						this.writeToOutput(".");
 					}
 
-					var svEscape = this._escapeExportedFunction;
-					this._escapeExportedFunction = true;
-
 					this.emitName(expression.name, false);
 
 					if (isNeedEscapeFunction) {
 						this.writeToOutput("\"]");
 					}
 
-					this._escapeExportedFunction = svEscape;
+
+					//if (isNeedEscapeFunction) {
+					//	this.writeToOutput("))");
+					//}
 
 					this.recordSourceMappingEnd(expression);
 				}
@@ -4761,11 +4783,23 @@ module TypeScript {
 					}
 				}
 
-				var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
-					return pullDecl.getSymbol().name;
+				//var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+				//	return pullDecl.getSymbol().name;
+				//});
+
+				var containerShortName = "global";
+				var me = this;
+
+				path.slice(i, path.length - 1).forEach(function(pullDecl){
+					containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']")
 				});
 
-				result = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
+				//var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+				//	return pullDecl.getSymbol().name;
+				//});
+
+				//result = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
+				result = containerShortName + "['" + symbol.name + "']";
 			}
 
 			return result;
@@ -4781,6 +4815,14 @@ module TypeScript {
 				var internalPath = "global['" + symbol.name + "']";
 				this.writeToOutput(internalPath + " = " + internalPath + " || {};");
 				this.writeLineToOutput("");
+
+				if (PullHelpers.symbolIsModule(symbol)) {
+					var shortName = this.getShortName(internalPath);
+					this.writeToOutput("var " + shortName + " = " + internalPath + ";");
+				}
+
+				this.writeLineToOutput("");
+
 				return;
 			}
 
@@ -4794,11 +4836,20 @@ module TypeScript {
 				}
 			}
 
+			var containerShortName = "global";
+			var me = this;
+
 			var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
 				return pullDecl.getSymbol().name;
 			});
 
-			var externalName = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
+			path.slice(i, path.length - 1).forEach(function (pullDecl) {
+				containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']")
+			});
+
+			//var externalName = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
+
+			var externalName = containerShortName + "['" + symbol.name + "']";
 			var internalPath: string = names.join(".");
 
 			//this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
@@ -4807,6 +4858,11 @@ module TypeScript {
 
 			if (PullHelpers.symbolIsModule(symbol)) {
 				this.writeToOutput(externalName + " || {};");
+				this.writeLineToOutput("");
+
+				var shortName = this.getShortName(externalName);
+
+				this.writeToOutput("var " + shortName + " = " + externalName + ";");
 			}
 			else {
 				if (symbolName) {
@@ -4918,6 +4974,10 @@ module TypeScript {
 
 				var symbol: PullSymbol = this.semanticInfoChain.getSymbolForAST(memberDecl);
 				var name = symbol.getDisplayName();
+
+				if (name === "getManager") {
+					result[name] = false;
+				}
 
 				if (alreadyCheckedMembers.indexOf(name) >= 0 || result[name] !== undefined) {
 					continue;
@@ -5075,7 +5135,14 @@ module TypeScript {
 					return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(symbol.getContainer(), symbol.getDisplayName()));
 				}
 			}
+			else if (PullHelpers.symbolIsModule(symbol.getContainer())) {
+				return this.isNeedEscapeGlobalVariable(symbol);
+			}
 
+			return this.setSymbolEscapeOption(symbol, false);
+		}
+
+		private isNeedEscapeGlobalVariable(symbol: PullSymbol): boolean {
 			return this.setSymbolEscapeOption(symbol, false);
 		}
 
@@ -5176,6 +5243,10 @@ module TypeScript {
 			}
 
 			return true;
+		}
+
+		getShortName(longName: string): string {
+			return this.shortNameMap[longName] || (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
 		}
 
 	}

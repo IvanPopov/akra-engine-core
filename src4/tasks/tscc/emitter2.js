@@ -219,6 +219,7 @@ var TypeScript;
             /**
             * For closure
             */
+            this.thisShortClassNameForMethods = null;
             this.thisFullClassName = null;
             this.thisFullExtendClassName = null;
             this.obfuscatedSymbolList = [];
@@ -243,9 +244,10 @@ var TypeScript;
             this.emittedSymbolNames = {};
             this.emittedForInStatement = false;
             this._emitGlobal = true;
-            this._escapeExportedFunction = false;
             this.interfaceExternsStream = null;
             this.isEnabledInterfaceExternStream = false;
+            this.shortNameMap = {};
+            this.shorter = 0;
             this._emittedModuleNames = [];
             if (emitOptions.sharedOutputFile()) {
                 this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
@@ -1124,6 +1126,10 @@ var TypeScript;
                 //this.writeLineToOutput(" = " + fullModuleName + " || {};");
                 //view like: (container['akra'] = container['akra'] || {}) || {};
                 this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
+
+                var shortName = this.getShortName(exportedName);
+
+                this.writeLineToOutput("var " + shortName + " = " + exportedName + ";");
 
                 //this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
                 this.recordSourceMappingEnd(moduleDecl);
@@ -2636,10 +2642,12 @@ var TypeScript;
             var svClassNode = this.thisClassNode;
             var svFullClassName = this.thisFullClassName;
             var svFullExtendClassName = this.thisFullExtendClassName;
+            var svShortClassNameForMethods = this.thisShortClassNameForMethods;
 
             this.thisClassNode = classDecl;
             this.thisFullClassName = null;
             this.thisFullExtendClassName = null;
+            this.thisShortClassNameForMethods = null;
 
             var className = classDecl.identifier.text();
             var fullClassName = className;
@@ -2690,6 +2698,8 @@ var TypeScript;
                 this.writeToOutput(fullClassName + " = ");
             }
 
+            this.thisShortClassNameForMethods = this.getShortName(this.thisFullClassName + ".prototype");
+
             this.recordSourceMappingNameStart(className);
 
             this.emittedClassProperties = [];
@@ -2735,6 +2745,8 @@ var TypeScript;
                 this.exportSymbol(pullDecl.getSymbol(), emittedClassName);
             }
 
+            this.writeLineToOutput("var " + this.thisShortClassNameForMethods + " = " + this.thisFullClassName + ".prototype;");
+
             if (fullClassName.indexOf(".") >= 0 && fullClassName !== emittedClassName) {
                 this.writeLineToOutput("/** @type {" + emittedClassName + "} */ " + fullClassName + " = " + emittedClassName + ";");
             }
@@ -2754,6 +2766,7 @@ var TypeScript;
             this.thisClassNode = svClassNode;
             this.thisFullClassName = svFullClassName;
             this.thisFullExtendClassName = svFullExtendClassName;
+            this.thisShortClassNameForMethods = svShortClassNameForMethods;
 
             this.emittedClassProperties = null;
 
@@ -2833,11 +2846,13 @@ var TypeScript;
 
             var functionName = funcDecl.propertyName.text();
 
-            this.writeToOutput(this.thisFullClassName);
-
+            //this.writeToOutput(this.thisFullClassName);
             //this.writeToOutput(classDecl.identifier.text());
             if (!TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */)) {
-                this.writeToOutput(".prototype");
+                this.writeToOutput("/** @this {" + this.thisFullClassName + "} */ " + this.thisShortClassNameForMethods);
+                //this.writeToOutput(".prototype");
+            } else {
+                this.writeToOutput(this.thisFullClassName);
             }
 
             if (TypeScript.isQuoted(functionName) || funcDecl.propertyName.kind() !== 11 /* IdentifierName */) {
@@ -2867,8 +2882,8 @@ var TypeScript;
             this.writeLineToOutput(";");
             if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol())) {
                 var className = this.thisFullClassName;
-                var location = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (className + ".prototype");
-                var exportLocation = className === location ? location : (className + ".prototype");
+                var location = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (this.thisShortClassNameForMethods);
+                var exportLocation = className === location ? location : (this.thisShortClassNameForMethods);
                 var fullName = location;
                 var exportName = exportLocation;
 
@@ -3194,19 +3209,21 @@ var TypeScript;
                     //		this.emittedClassProperties.push(symbol);
                     //	}
                     //}
-                    this.recordSourceMappingStart(expression);
-                    this.emit(expression.expression);
-
                     var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
                     var isNeedEscapeFunction = this.isNeedEscapeName(symbol);
+
+                    this.recordSourceMappingStart(expression);
+
+                    //if (isNeedEscapeFunction) {
+                    //	this.writeToOutput("(/** " + this.formatJSDocType(symbol.type) + " */(");
+                    //}
+                    this.emit(expression.expression);
+
                     if (isNeedEscapeFunction) {
                         this.writeToOutput("[\"");
                     } else {
                         this.writeToOutput(".");
                     }
-
-                    var svEscape = this._escapeExportedFunction;
-                    this._escapeExportedFunction = true;
 
                     this.emitName(expression.name, false);
 
@@ -3214,8 +3231,9 @@ var TypeScript;
                         this.writeToOutput("\"]");
                     }
 
-                    this._escapeExportedFunction = svEscape;
-
+                    //if (isNeedEscapeFunction) {
+                    //	this.writeToOutput("))");
+                    //}
                     this.recordSourceMappingEnd(expression);
                 }
             }
@@ -4609,11 +4627,21 @@ var TypeScript;
                     }
                 }
 
-                var names = path.slice(i, path.length - 1).map(function (pullDecl) {
-                    return pullDecl.getSymbol().name;
+                //var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+                //	return pullDecl.getSymbol().name;
+                //});
+                var containerShortName = "global";
+                var me = this;
+
+                path.slice(i, path.length - 1).forEach(function (pullDecl) {
+                    containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']");
                 });
 
-                result = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
+                //var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+                //	return pullDecl.getSymbol().name;
+                //});
+                //result = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
+                result = containerShortName + "['" + symbol.name + "']";
             }
 
             return result;
@@ -4629,6 +4657,14 @@ var TypeScript;
                 var internalPath = "global['" + symbol.name + "']";
                 this.writeToOutput(internalPath + " = " + internalPath + " || {};");
                 this.writeLineToOutput("");
+
+                if (TypeScript.PullHelpers.symbolIsModule(symbol)) {
+                    var shortName = this.getShortName(internalPath);
+                    this.writeToOutput("var " + shortName + " = " + internalPath + ";");
+                }
+
+                this.writeLineToOutput("");
+
                 return;
             }
 
@@ -4642,11 +4678,19 @@ var TypeScript;
                 }
             }
 
+            var containerShortName = "global";
+            var me = this;
+
             var names = path.slice(i, path.length - 1).map(function (pullDecl) {
                 return pullDecl.getSymbol().name;
             });
 
-            var externalName = "global['" + names.join("']['") + "']" + "['" + symbol.name + "']";
+            path.slice(i, path.length - 1).forEach(function (pullDecl) {
+                containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']");
+            });
+
+            //var externalName = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
+            var externalName = containerShortName + "['" + symbol.name + "']";
             var internalPath = names.join(".");
 
             //this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
@@ -4654,6 +4698,11 @@ var TypeScript;
 
             if (TypeScript.PullHelpers.symbolIsModule(symbol)) {
                 this.writeToOutput(externalName + " || {};");
+                this.writeLineToOutput("");
+
+                var shortName = this.getShortName(externalName);
+
+                this.writeToOutput("var " + shortName + " = " + externalName + ";");
             } else {
                 if (symbolName) {
                     this.writeToOutput(symbolName + ";");
@@ -4755,6 +4804,10 @@ var TypeScript;
 
                 var symbol = this.semanticInfoChain.getSymbolForAST(memberDecl);
                 var name = symbol.getDisplayName();
+
+                if (name === "getManager") {
+                    result[name] = false;
+                }
 
                 if (alreadyCheckedMembers.indexOf(name) >= 0 || result[name] !== undefined) {
                     continue;
@@ -4908,8 +4961,14 @@ var TypeScript;
                 if (symbol.isMethod()) {
                     return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(symbol.getContainer(), symbol.getDisplayName()));
                 }
+            } else if (TypeScript.PullHelpers.symbolIsModule(symbol.getContainer())) {
+                return this.isNeedEscapeGlobalVariable(symbol);
             }
 
+            return this.setSymbolEscapeOption(symbol, false);
+        };
+
+        Emitter.prototype.isNeedEscapeGlobalVariable = function (symbol) {
             return this.setSymbolEscapeOption(symbol, false);
         };
 
@@ -4994,6 +5053,10 @@ var TypeScript;
             }
 
             return true;
+        };
+
+        Emitter.prototype.getShortName = function (longName) {
+            return this.shortNameMap[longName] || (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
         };
         Emitter.EMPTY_STRING_LIST = [];
         return Emitter;
