@@ -2,6 +2,9 @@
 <Resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="../../../lib/grunt/resources.xsd">
   <Project Name="addon-navigation">
+    <Dependencies>
+      <Module Name="core"></Module>
+    </Dependencies>
     <Resource Name="AE_NAVIGATION_DEPENDENCIES">
       <Filename>navigation.addon</Filename>
       
@@ -32,6 +35,9 @@
     </Resource>
   </Project>
   <Project Name="addon-progress">
+    <Dependencies>
+      <Module Name="core"></Module>
+    </Dependencies>
     <Resource Name="AE_PROGRESS_DEPENDENCIES">
       <PropertyGroup>
         <Data>
@@ -39,5 +45,15 @@
         </Data>
       </PropertyGroup>
     </Resource>
+  </Project>
+  <Project Name="addon-filedrop">
+    <Dependencies>
+      <Module Name="core"></Module>
+    </Dependencies>
+  </Project>
+  <Project Name="addon-base3dObjects">
+    <Dependencies>
+      <Module Name="core"></Module>
+    </Dependencies>
   </Project>
 </Resources>

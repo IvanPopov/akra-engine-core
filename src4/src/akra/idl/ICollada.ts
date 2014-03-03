@@ -37,7 +37,8 @@ module akra {
 		parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
 		loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
 	}
-	
+
+
 	export interface IColladaCache {
 		meshMap: IMeshMap;
 		sharedBuffer: IRenderDataCollection;

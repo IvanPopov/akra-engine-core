@@ -32,7 +32,8 @@
     "uglify-js": "~2.4.12",
     "jade": "~1.2.0",
     "node-markdown": "~0.1.1",
-    "marked": "~0.3.1"
+    "marked": "~0.3.1",
+    "libxmljs": "~0.8.1"
   },
   "dependencies": {}
 }

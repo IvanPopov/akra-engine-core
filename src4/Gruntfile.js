@@ -11,7 +11,7 @@ var path = require("path");
 var util = require('./lib/grunt/utils.js');
 
 module.exports = function (grunt) {
-	require(path.resolve('lib/grunt/build.js'))(grunt);
+	require(path.resolve('lib/grunt/build2.js'))(grunt);
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
 	grunt.loadNpmTasks("grunt-contrib-concat");
@@ -50,14 +50,7 @@ module.exports = function (grunt) {
 				}
 			},
 			core: {
-				src: files.akraCore,
-				dest: "build/akra.js",
-				options: {
-					target: "es3",
-					removeComments: false,
-					sourceMap: true,
-					propagateEnumConstants: true
-				}
+				config: "src/akra/core.xml"
 			},
 			ui: {
 				src: files.akraUI,
