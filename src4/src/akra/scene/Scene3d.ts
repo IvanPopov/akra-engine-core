@@ -105,15 +105,15 @@ module akra.scene {
 		}
 
 		protected setupSignals(): void {
-			this.displayListAdded = this.displayListAdded || new Signal(<any>this);
-			this.displayListRemoved = this.displayListRemoved || new Signal(<any>this);
+			this.displayListAdded = this.displayListAdded || <any> new Signal(this);
+			this.displayListRemoved = this.displayListRemoved || <any> new Signal(this);
 
-			this.beforeUpdate = this.beforeUpdate || new Signal(<any>this);
-			this.postUpdate = this.postUpdate || new Signal(<any>this);
-			this.preUpdate = this.preUpdate || new Signal(<any>this);
+			this.beforeUpdate = this.beforeUpdate || <any> new Signal(this);
+			this.postUpdate = this.postUpdate || <any> new Signal(this);
+			this.preUpdate = this.preUpdate || <any> new Signal(this);
 
-			this.nodeAttachment = this.nodeAttachment || new Signal(<any>this);
-			this.nodeDetachment = this.nodeDetachment || new Signal(<any>this);
+			this.nodeAttachment = this.nodeAttachment || <any> new Signal(this);
+			this.nodeDetachment = this.nodeDetachment || <any> new Signal(this);
 		}
 
 		getManager(): ISceneManager {

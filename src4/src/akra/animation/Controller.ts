@@ -73,8 +73,8 @@ module akra.animation {
 		}
 
 		protected setupSignals(): void {
-			this.animationAdded = this.animationAdded || new Signal(<any>this);
-			this.play = this.play || new PlaySignal(this);
+			this.animationAdded = this.animationAdded || <any> new Signal(this);
+			this.play = this.play || <any> new PlaySignal(this);
 		}
 
 		final getEngine(): IEngine {

@@ -36,7 +36,7 @@ module akra.pool {
 		}
 
 		protected setupSignals(): void {
-			this.createdResource = this.createdResource || new Signal(<any>this);
+			this.createdResource = this.createdResource || <any> new Signal(this);
 		}
 
 		getFourcc(): int {
@@ -104,7 +104,6 @@ module akra.pool {
 		destroy(): void {
 			this._pDataPool.destroy();
 		}
-
 
 		clean(): void {
 			this._pDataPool.forEach(ResourcePool.callbackClean);
@@ -231,7 +230,7 @@ module akra.pool {
 
 
 		private internalGetResource(iHandle: int): T {
-			return this._pDataPool.getPtr(iHandle);
+			return <any>this._pDataPool.getPtr(iHandle);
 		}
 
 		private internalDestroyResource(iHandle: int): void {

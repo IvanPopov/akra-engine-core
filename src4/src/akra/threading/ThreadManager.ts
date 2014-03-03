@@ -42,7 +42,7 @@ module akra.threading {
 		}
 
 		protected setupSignals(): void {
-			this.threadReleased = this.threadReleased || new Signal(<any>this);
+			this.threadReleased = this.threadReleased || <any> new Signal(this);
 		}
 
 		private startSystemRoutine(): void {

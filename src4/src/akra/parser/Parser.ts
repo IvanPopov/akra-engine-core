@@ -312,7 +312,7 @@ module akra.parser {
 
 								iStateIndex = pOperation.index;
 								pStack.push(iStateIndex);
-								pTree.addNode(<IParseNode>pToken);
+								pTree.addToken(pToken);
 
 								eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pToken.name);
 
@@ -1609,7 +1609,7 @@ module akra.parser {
 
 								iStateIndex = pOperation.index;
 								pStack.push(iStateIndex);
-								pTree.addNode(<IParseNode>pToken);
+								pTree.addToken(pToken);
 
 								eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pToken.name);
 

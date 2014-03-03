@@ -90,10 +90,10 @@ module akra.data {
 		}
 
 		protected setupSignals(): void {
-			this.resized = this.resized || new Signal(<any>this);
-			this.relocated = this.relocated || new Signal(<any>this);
-			this.declarationChanged = this.declarationChanged || new Signal(<any>this);
-			this.updated = this.updated || new Signal(<any>this);
+			this.resized = this.resized || <any> new Signal(this);
+			this.relocated = this.relocated || <any> new Signal(this);
+			this.declarationChanged = this.declarationChanged || <any> new Signal(this);
+			this.updated = this.updated || <any> new Signal(this);
 		}
 
 

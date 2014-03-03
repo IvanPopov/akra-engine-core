@@ -50,7 +50,7 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.render = this.render || new Signal(<any>this);
+			this.render = this.render || <any> new Signal(this);
 		}
 
 		getModified(): uint {

@@ -101,7 +101,9 @@ module akra.webgl {
 			depth: false,
 			stencil: false,
 			antialias: false,
-			preserveDrawingBuffer: false
+			preserveDrawingBuffer: false,
+			premultipliedAlpha: false,
+			alpha: false
 		};
 
 		getType(): ERenderers {

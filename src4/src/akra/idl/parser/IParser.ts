@@ -94,6 +94,7 @@ module akra.parser {
 
 		setOptimizeMode(isOptimize: boolean): void;
 
+		addToken(pToken: IToken): void;
 		addNode(pNode: IParseNode): void;
 		reduceByRule(pRule: IRule, eCreate: ENodeCreateMode);
 

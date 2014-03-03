@@ -121,8 +121,8 @@ module akra.net {
 		}
 
 		protected setupSignals(): void {
-			this.joined = this.joined || new Signal(<any>this);
-			this.error = this.error || new Signal(<any>this);
+			this.joined = this.joined || <any> new Signal(this);
+			this.error = this.error || <any> new Signal(this);
 		}
 
 		join(sAddr: string = null): void {

@@ -14,7 +14,7 @@ var wrench = require('wrench');
 var Zip = require('node-zip');
 
 
-var TYPESCRIPT = "typescript-0.9.5";
+var TYPESCRIPT = "typescript-1.0RC";
 
 //TODO: add all available TS options
 

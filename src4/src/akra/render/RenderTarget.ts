@@ -83,16 +83,16 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.preUpdate = this.preUpdate || new Signal(<any>this);
-			this.postUpdate = this.postUpdate || new Signal(<any>this);
+			this.preUpdate = this.preUpdate || <any> new Signal(this);
+			this.postUpdate = this.postUpdate || <any> new Signal(this);
 			
-			this.viewportPreUpdate = this.viewportPreUpdate || new Signal(<any>this);
-			this.viewportPostUpdate = this.viewportPostUpdate || new Signal(<any>this);
-			this.viewportAdded = this.viewportAdded || new Signal(<any>this);
-			this.viewportRemoved = this.viewportRemoved || new Signal(<any>this);
+			this.viewportPreUpdate = this.viewportPreUpdate || <any> new Signal(this);
+			this.viewportPostUpdate = this.viewportPostUpdate || <any> new Signal(this);
+			this.viewportAdded = this.viewportAdded || <any> new Signal(this);
+			this.viewportRemoved = this.viewportRemoved || <any> new Signal(this);
 
-			this.resized = this.resized || new Signal(<any>this);
-			this.cameraRemoved = this.cameraRemoved || new Signal(<any>this);
+			this.resized = this.resized || <any> new Signal(this);
+			this.cameraRemoved = this.cameraRemoved || <any> new Signal(this);
 		}
 
 		getWidth(): uint {

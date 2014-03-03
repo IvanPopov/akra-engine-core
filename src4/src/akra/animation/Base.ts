@@ -42,9 +42,9 @@ module akra.animation {
 		}
 
 		protected setupSignals(): void {
-			this.played = this.played || new Signal(<any>this);
-			this.stoped = this.stoped || new Signal(<any>this);
-			this.renamed = this.renamed || new Signal(<any>this);
+			this.played = this.played || <any> new Signal(this);
+			this.stoped = this.stoped || <any> new Signal(this);
+			this.renamed = this.renamed || <any> new Signal(this);
 		}
 
 		getType(): EAnimationTypes {

@@ -39,9 +39,7 @@ module akra {
 		canvas?: HTMLCanvasElement;
 	}
 	
-	//API SPECIFIFC CONSTANTS
-	
-	
+	//API SPECIFIFC CONSTANTS	
 	
 	export enum ERenderCapabilitiesCategory {
 		C_COMMON = 0,

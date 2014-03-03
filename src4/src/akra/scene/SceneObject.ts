@@ -47,20 +47,19 @@ module akra.scene {
 		}
 
 		protected setupSignals(): void {
-			this.worldBoundsUpdated = this.worldBoundsUpdated || new Signal(<any>this, EEventTypes.UNICAST);
+			this.worldBoundsUpdated = this.worldBoundsUpdated || <any> new Signal(this, EEventTypes.UNICAST);
 
-			this.click = this.click || new Signal(<any>this);
+			this.click = this.click || <any> new Signal(this);
 
-			this.mousemove = this.mousemove || new Signal(<any>this);
-			this.mousedown = this.mousedown || new Signal(<any>this);
-			this.mouseup = this.mouseup || new Signal(<any>this);
-			this.mouseover = this.mouseover || new Signal(<any>this);
-			this.mouseout = this.mouseout || new Signal(<any>this);
+			this.mousemove = this.mousemove || <any> new Signal(this);
+			this.mousedown = this.mousedown || <any> new Signal(this);
+			this.mouseup = this.mouseup || <any> new Signal(this);
+			this.mouseover = this.mouseover || <any> new Signal(this);
+			this.mouseout = this.mouseout || <any> new Signal(this);
 
-
-			this.dragstart = this.dragstart || new Signal(<any>this);
-			this.dragstop = this.dragstop || new Signal(<any>this);
-			this.dragging = this.dragging || new Signal(<any>this);
+			this.dragstart = this.dragstart || <any> new Signal(this);
+			this.dragstop = this.dragstop || <any> new Signal(this);
+			this.dragging = this.dragging || <any> new Signal(this);
 
 			super.setupSignals();
 		}

@@ -2,7 +2,7 @@
 
 module akra.util {
 	export class Singleton<T> {
-		private static _instance: T = null;
+		private static _instance: any = null;
 		constructor() {
 			var _this: any = <any>this;
 			var _constructor = _this.constructor;

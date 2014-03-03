@@ -92,7 +92,7 @@ module akra.terrain {
 		}
 
 		protected setupSignals(): void {
-			this.minLevelLoaded = this.minLevelLoaded || new Signal(<any>this);
+			this.minLevelLoaded = this.minLevelLoaded || <any> new Signal(this);
 		}
 
 		getManualMinLevelLoad(): boolean {

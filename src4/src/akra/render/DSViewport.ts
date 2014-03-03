@@ -68,8 +68,8 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.addedSkybox = this.addedSkybox || new Signal(<any>this);
-			this.addedBackground = this.addedBackground || new Signal(<any>this);
+			this.addedSkybox = this.addedSkybox || <any> new Signal(this);
+			this.addedBackground = this.addedBackground || <any> new Signal(this);
 
 			super.setupSignals();
 		}

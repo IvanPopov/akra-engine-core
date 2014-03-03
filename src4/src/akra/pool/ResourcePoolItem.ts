@@ -56,14 +56,14 @@ module akra.pool {
 		}
 
 		protected setupSignals(): void {
-			this.created = this.created || new Signal(<any>this);
-			this.destroyed = this.destroyed || new Signal(<any>this);
-			this.loaded = this.loaded || new Signal(<any>this);
-			this.unloaded = this.unloaded || new Signal(<any>this);
-			this.restored = this.restored || new Signal(<any>this);
-			this.disabled = this.disabled || new Signal(<any>this);
-			this.altered = this.altered || new Signal(<any>this);
-			this.saved = this.saved || new Signal(<any>this);
+			this.created = this.created || <any> new Signal(this);
+			this.destroyed = this.destroyed || <any> new Signal(this);
+			this.loaded = this.loaded || <any> new Signal(this);
+			this.unloaded = this.unloaded || <any> new Signal(this);
+			this.restored = this.restored || <any> new Signal(this);
+			this.disabled = this.disabled || <any> new Signal(this);
+			this.altered = this.altered || <any> new Signal(this);
+			this.saved = this.saved || <any> new Signal(this);
 		}
 
 		getResourceCode(): IResourceCode {

@@ -158,7 +158,7 @@ module akra.fx.instructions {
 				return pRelationMap[this._getInstructionID()];
 			}
 
-			var pNewInstruction: IAFXInstruction = new this["constructor"]();
+			var pNewInstruction: IAFXInstruction = new (<any>this.constructor)();
 			var pParent: IAFXInstruction = this._getParent() || null;
 
 			if (!isNull(pParent) && isDef(pRelationMap[pParent._getInstructionID()])) {

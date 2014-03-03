@@ -308,24 +308,24 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.viewportDimensionsChanged = this.viewportDimensionsChanged || new Signal(<any>this);
-			this.viewportCameraChanged = this.viewportCameraChanged || new Signal(<any>this);
+			this.viewportDimensionsChanged = this.viewportDimensionsChanged || <any> new Signal(this);
+			this.viewportCameraChanged = this.viewportCameraChanged || <any> new Signal(this);
 
-			this.render = this.render || new RenderSignal(<any>this);
+			this.render = this.render || new RenderSignal(this);
 
-			this.dragstart = this.dragstart || new DragstartSignal(<any>this);
-			this.dragstop = this.dragstop || new DragstopSignal(<any>this);
-			this.dragging = this.dragging || new DraggingSignal(<any>this);
+			this.dragstart = this.dragstart || new DragstartSignal(this);
+			this.dragstop = this.dragstop || new DragstopSignal(this);
+			this.dragging = this.dragging || new DraggingSignal(this);
 
-			this.click = this.click || new ClickSignal(<any>this);
-			this.mousemove = this.mousemove || new MousemoveSignal(<any>this);
+			this.click = this.click || new ClickSignal(this);
+			this.mousemove = this.mousemove || new MousemoveSignal(this);
 
-			this.mousedown = this.mousedown || new MousedownSignal(<any>this);
-			this.mouseup = this.mouseup || new MouseupSignal(<any>this);
+			this.mousedown = this.mousedown || new MousedownSignal(this);
+			this.mouseup = this.mouseup || new MouseupSignal(this);
 
-			this.mouseover = this.mouseover || new MouseoverSignal(<any>this);
-			this.mouseout = this.mouseout || new MouseoutSignal(<any>this);
-			this.mousewheel = this.mousewheel || new MousewheelSignal(<any>this);
+			this.mouseover = this.mouseover || new MouseoverSignal(this);
+			this.mouseout = this.mouseout || new MouseoutSignal(this);
+			this.mousewheel = this.mousewheel || new MousewheelSignal(this);
 		}
 
 		getLeft(): float {
