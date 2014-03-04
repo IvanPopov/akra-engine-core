@@ -281,11 +281,31 @@ module akra {
 
 	}
 
+	function createStatsDIV() {
+		var pStatsDiv = document.createElement("div");
+
+		document.body.appendChild(pStatsDiv);
+		pStatsDiv.setAttribute("style",
+			"position: fixed;" +
+			"max-height: 40px;" +
+			"max-width: 120px;" +
+			"color: green;" +
+			"margin: 5px;");
+
+		return pStatsDiv;
+	}
+
 	function main(pEngine: IEngine) {
 		setup(pCanvas);
 
 		pCamera = createCamera();
 		pViewport = createViewport();
+
+		var pStatsDiv = createStatsDIV();
+
+		pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
+			pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
+		});
 
 		//addons.navigation(pViewport);
 

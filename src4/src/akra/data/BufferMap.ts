@@ -20,7 +20,7 @@
 //#endif
 
 module akra.data {
-	import DeclUsages = data.Usages;
+	import DeclUsages = akra.data.Usages;
 
 	interface IBuffersCompatibleMap {
 		[handle: int]: IVertexData;

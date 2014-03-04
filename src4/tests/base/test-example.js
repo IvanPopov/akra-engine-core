@@ -278,11 +278,26 @@ var akra;
         });
     }
 
+    function createStatsDIV() {
+        var pStatsDiv = document.createElement("div");
+
+        document.body.appendChild(pStatsDiv);
+        pStatsDiv.setAttribute("style", "position: fixed;" + "max-height: 40px;" + "max-width: 120px;" + "color: green;" + "margin: 5px;");
+
+        return pStatsDiv;
+    }
+
     function main(pEngine) {
         setup(akra.pCanvas);
 
         akra.pCamera = createCamera();
         akra.pViewport = createViewport();
+
+        var pStatsDiv = createStatsDIV();
+
+        akra.pCanvas.postUpdate.connect(function (pCanvas) {
+            pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
+        });
 
         //addons.navigation(pViewport);
         createKeymap(akra.pCamera);
@@ -296,8 +311,8 @@ var akra;
         //loadHero();
         loadManyModels(400, data + "models/cube.dae");
 
-        //loadManyModels(150, data + "models/box/opened_box.dae");
-        // loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        //loadManyModels(100, data + "models/box/opened_box.dae");
+        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }
