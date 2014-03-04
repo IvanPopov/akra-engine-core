@@ -11,13 +11,12 @@ var libxmljs = require('libxmljs');
 var wrench = require('wrench');
 var UglifyJS = require("uglify-js");
 var jade = require('jade');
-
 //zip for resource compression
 var Zip = require('node-zip');
 
 
 
-var VARIABLE_PATTERN = /(AE_[\w\d\-\.\_\:]*)/g;
+var EXTERN_PATTERN = /(AE_[\w\d\-\.\_\:]*)/g;
 var TYPESCRIPT = "typescript-0.9.5";
 
 var DEMOS_SOURCE_DIR = "src/demos";
@@ -32,30 +31,18 @@ module.exports = function (grunt) {
 	function compile(configFile, cb) {
 
 		var config = loadConfig(configFile);
-		console.log(config.find("PropertyGroup"));
 
-		grunt.fail.error("");
-
-		compileTypescript(xml.root(), function (ok) {
+		compileTypescript(config, function (ok) {
 			if (!ok) {
 				return cb(false);
 			}
 
-			var externs = generateExterns(dest);	//path to externs
-			var callback = function (ok) {
-				if (!ok) {
-					return cb(false);
-				}
-
-				searchResources(moduleName, sourcePaths, dest, options, cb);
+			if (!ok) {
+				return cb(false);
 			}
 
-			if (minimizationLevel > 0) {
-				dest = minimize(dest, minimizationLevel, externs, callback);
-			}
-			else {
-				callback(true);
-			}
+			searchResources(config, cb);
+
 		});
 	}
 
@@ -76,6 +63,16 @@ module.exports = function (grunt) {
 			}
 		});
 
+		config.attr("Path", path.dirname(file));
+
+		if (!config.attr("Name")) {
+			config.attr("Name", path.basename(file, ".xml"));
+		}
+
+		grunt.config("ProjectName", config.attr("Name").value());
+		grunt.config("ProjectDir", config.attr("Path").value());
+		grunt.config("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").text())));
+
 		return config;
 	}
 
@@ -87,7 +84,7 @@ module.exports = function (grunt) {
 		}
 
 		var condition = prepareSystemVariables(conditionAttr.value());
-		
+
 		return computeExpression(condition);
 	}
 
@@ -105,48 +102,82 @@ module.exports = function (grunt) {
 		return f(true, false);
 	}
 
-
 	function compileTypescript(config, cb) {
-
-		var minimizationLevel = determMinLevel(options);
-		var tsBin;
-		if (options.tscc || grunt.option("tscc") || minimizationLevel > 0) {
-			tsBin = path.normalize(__dirname + '/tscc/tscc.js');
-		}
-		else {
-			tsBin = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
-		}
-
-		var argv = [tsBin].concat(sourcePaths);
-
-		if (options.target) {
-			argv.push("--target", options.target);
-		}
-
-		if (options.module) {
-			argv.push("--module", options.module);
-		}
-
-		if (options.sourceMap) {
-			argv.push("--sourcemap");
-		}
-
-		if (options.declaration) {
-			argv.push("--declaration");
-		}
-
-		if (options.propagateEnumConstants) {
-			argv.push("--propagateEnumConstants");
-		}
-
-		if (dest) {
-			argv.push("--out", dest);
-		}
+		var compilerOptions = config.get("//ClosureCompiler");
 
 		var cmd = "node";
+		var tscjs = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
+		var argv = [];
+		var dest = null;		//path ro destination js file.
+		var configDir = config.attr("Path").value();
+
+		if (compilerOptions || grunt.option("tscc")) {
+			tscjs = path.normalize(__dirname + '/tscc/tscc.js');
+		}
+
+		argv.push(tscjs);
+
+		//load sources
+		config.find("//TypeScriptCompile").forEach(function (typescriptCompile) {
+			argv.push(path.join(configDir, typescriptCompile.attr("Include").value()));
+		});
+
+
+		if (config.get("//TypeScriptTarget")) {
+			argv.push("--target", config.get("//TypeScriptTarget").text());
+		}
+
+		if (config.get("//TypeScriptModuleKind")) {
+			argv.push("--module", config.get("//TypeScriptModuleKind").text());
+		}
+
+		if (config.get("//TypeScriptSourceMap")) {
+			if (config.get("//TypeScriptSourceMap").text() === "True") {
+				argv.push("--sourcemap");
+			}
+		}
+
+		if (config.get("//TypeScriptGeneratesDeclarations")) {
+			if (config.get("//TypeScriptGeneratesDeclarations").text() === "True") {
+				argv.push("--declaration");
+			}
+		}
+
+		if (config.get("//TypeScriptPropagateEnumConstants")) {
+			if (config.get("//TypeScriptPropagateEnumConstants").text() === "True") {
+				argv.push("--propagateEnumConstants");
+			}
+		}
+
+		if (config.get("//TypeScriptRemoveComments")) {
+			if (config.get("//TypeScriptRemoveComments").text() === "True") {
+				argv.push("--removeComments");
+			}
+		}
+
+		if (config.get("//TypeScriptOutDir")) {
+			argv.push("--outDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutDir").text())));
+		}
+
+		if (config.get("//TypeScriptOutFile")) {
+			dest = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+			dest = dest.replace(/\.min\.js$/, ".js");
+		}
+		else {
+			grunt.log.error("TypeScript out file must be specified.");
+			return cb(false);
+		}
+
+		grunt.config();
+
+		argv.push("--out", dest);
+
+		if (config.get("//TypeScriptAdditionalFlags")) {
+			argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").text()).split(/\s+/));
+		}
 
 		grunt.log.writeln(cmd + " " + argv.join(" "));
-
+		return minimize(config, cb);
 		var tsc = spawn(cmd, argv);
 
 		tsc.stdout.on("data", function (data) {
@@ -157,9 +188,12 @@ module.exports = function (grunt) {
 			grunt.log.error(data.toString());
 		});
 
+
 		tsc.on("close", function (code) {
 			if (code === 0) {
-				cb(true);
+				if (compilerOptions) {
+					minimize(config, cb);
+				}
 			}
 			else {
 				grunt.log.error(new Error("Compilation failed."));
@@ -167,6 +201,360 @@ module.exports = function (grunt) {
 			}
 		});
 	}
+
+	function generateExterns(src) {
+
+		var dest = src.replace(/\.min\.js|\.js$/, ".externs.js");
+		if (src === dest) dest += ".externs";
+
+		var externs = [];
+		var data = fs.readFileSync(src, "utf8");
+
+		data.replace(EXTERN_PATTERN, function replacer(str, name) {
+			if (name.indexOf(".") > 0) {
+				name = name.substr(0, name.indexOf("."));
+			}
+
+			if (externs.indexOf(name) == -1) {
+				externs.push(name);
+			}
+
+			return name;
+		});
+
+		var externsString = "\
+/**\n\
+ * @fileoverview JavaScript Built-Ins for Akra Engne resources.\n\
+ *\n\
+ * @externs\n\
+ */\n\n\n\
+";
+
+		for (var i = 0; i < externs.length; ++i) {
+			externsString += "\
+/**\n\
+ * @const\n\
+ */\n";
+			externsString += "var " + externs[i] + ";\n\n";
+		}
+
+		grunt.file.write(dest, externsString);
+
+		return dest;
+	}
+
+	function minimize(config, cb) {
+		var configDir = config.attr("Path").value();
+		var compilerOptions = config.get("//ClosureCompiler");
+		var externsPath = null; //generateExterns(dest);
+		var dest = null;
+
+		var src = path.join(config.attr("Path").value(), prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+
+		if (compilerOptions.get("//OutFile")) {
+			var outFile = prepareSystemVariables(compilerOptions.get("//OutFile").text());
+			dest = path.join(configDir, outFile);
+		}
+		else {
+			dest = src.replace(/\.js$/, ".min.js");
+			if (src === dest) dest += ".min";
+		}
+
+		if (!src || !grunt.file.exists(src)) {
+			grunt.log.warn('Source file for minimizing "' + src + '" not found.');
+			return null;
+		}
+
+		var closureJar = path.join(__dirname, '/closure/compiler.jar');
+		var compilationLevel = compilerOptions.get("//CompilationLevel").text();
+		var cmd = "java";
+		var argv = [
+			"-jar", closureJar,
+			"--compilation_level", compilationLevel,
+			"--js", src,
+			"--js_output_file", dest
+		];
+
+		if (compilerOptions.get("//CreateSourceMap")) {
+			if (compilerOptions.get("//CreateSourceMap").text() === "True") {
+				argv.push("--source_map_format=V3", "--create_source_map", dest + ".map");
+			}
+		}
+
+		if (externsPath && grunt.file.exists(externsPath)) {
+			argv.push("--externs", externsPath);
+		}
+
+		grunt.log.writeln(cmd + " " + argv.join(" "));
+
+		var closure = spawn(cmd, argv);
+
+		closure.stdout.on("data", function (data) {
+			grunt.log.write(data.toString());
+		});
+
+		closure.stderr.on("data", function (data) {
+			grunt.log.error(data.toString());
+		});
+
+		closure.on("close", function (code) {
+			if (code === 0) {
+				cb(true);
+			}
+			else {
+				grunt.fail.warn("Closure minimization failed.");
+				cb(false);
+			}
+		});
+
+		return dest;
+	}
+
+	/** 
+	 * Собиарем ресурсы по проекту
+	 * @param folder {String} Путь к папке с проектом.
+	 * @param Project {XML} Описание проекта в resources.xml.
+	 * @param dest {String} Файл, в который будет собран проект.
+	 */
+	function buildProject(config, cb) {
+		var variables = {};
+
+		console.time("Build project " + config.attr("Name"));
+
+		if (config.find("//PropertyGroup/Variable")) {
+			config.find("//PropertyGroup/Variable").forEach(function (variable) {
+				var name = variable.attr("Name").value();
+				var value = computeExpression(variable.text());
+
+				if (typeof value === 'string') {
+					value = JSON.stringify(value);
+				}
+
+				variables[name] = value;
+
+				grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 16) : value));
+			});
+		}
+
+		if (config.find("//PropertyGroup/Resource")) {
+			config.find("//PropertyGroup/Resource").forEach(function (resource) {
+				var result = packResource(config, resource);
+				var resourceName = resource.attr("Name").value();
+
+				variables[resourceName] = JSON.stringify(result);
+				variables[resourceName + ".path"] = JSON.stringify(result.path);
+				variables[resourceName + ".type"] = JSON.stringify(result.type);
+			});
+		}
+
+		if (config.find("//PropertyGroup/Attachment")) {
+			config.find("//PropertyGroup/Resource").forEach(function (attachment) {
+				var result = loadAttachment(config, attachment);
+				var attachmentName = attachment.attr("Name").value();
+
+				variables[attachmentName] = JSON.stringify(result, null, '\t');
+				variables[attachmentName + ".format"] = JSON.stringify(result.format);
+
+				if (result.format !== null && result.format !== "String") {
+					variables[attachmentName + ".content"] = result.content;
+				}
+				else {
+					variables[attachmentName + ".content"] = JSON.stringify(result.content);
+				}
+			});
+		}
+
+		var data = grunt.file.read(dest);
+
+		data = data.replace(EXTERN_PATTERN, function replacer(str, name) {
+			var value = variables[name];
+
+			if (typeof value !== "undefined") {
+				grunt.log.debug("> " + name + "=" + (value.length > 32 ? value.substr(0, 32) + '...' : value));
+				return value;
+			}
+
+			return name;
+		});
+
+		grunt.file.write(dest, data);
+
+		console.timeEnd("Build project " + config.attr("Name"));
+
+		cb(true);
+	}
+
+	function computeExpression(expression) {
+		var f = new Function("return (" + prepareSystemVariables(expression) + ");");
+		return f();
+	}
+
+
+
+	/**
+	 * @param resourcePath {String} Path to folder with resources.xml.
+	 * @param PropertyGroup {XML} Xml tag with resource sedcription.
+	 * @param destFolder {String} Destination folder.
+	 */
+	function crateResourceObject(config, resource) {
+		var resourceName = resource.attr("Name").value();
+
+		if (resource.get("//Filename")) {
+			resourceName = resource.get("//Filename").text();
+		}
+
+		var isArchive = false;
+		var useInlining = false;
+		var outDir = "";
+		var mapFile = null;
+		var map = null;
+
+		if (resource.get("//UseInlining")) {
+			useInlining = resource.get("//UseInlining").text() === "True";
+
+			//При подстановке внутрь скрипта все должно быть запаковано в один файл.
+			if (useInlining) {
+				isArchive = true;
+			}
+		}
+
+		if (!useInlining) {
+			//при использовании подстановки, контент включается внутрь JS файла
+			//поэтому нету смысла использовать параметр OutDir
+			if (resource.get("//OutDir")) {
+				outDir = prepareSystemVariables(resource.get("//OutDir").text());
+			}
+
+			if (resource.get("//Archive")) {
+				isArchive = resource.get("//Archive").text() === "True";
+			}
+		}
+
+		if (resource.get("//MapFile")) {
+			mapFile = prepareSystemVariables(resource.get("//MapFile").text());
+			//расчитаем полный путь к map файлу
+			mapFile = path.join(resourcePath, mapFile);
+
+			if (!grunt.file.exists(mapFile)) {
+				grunt.fail.warn("<MapFile>" + mapFile + "</MapFile> not found.");
+			}
+		}
+
+		if (mapFile) {
+			map = JSON.parse(fs.readFileSync(mapFile), "utf8");
+
+			var mapFolder = path.dirname(mapFile);
+
+			var p = map;
+			while (p) {
+				if (p.files) {
+					for (var i = 0; i < p.files.length; i++) {
+						p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
+					}
+				}
+
+				p = p.deps;
+			}
+		}
+		else {
+			map = { files: [] };
+		}
+
+		if (resource.get("//Data")) {
+			var data = resource.get("//Data");
+			var additionalFiles = [];
+
+			if (data.get("//Folder")) {
+				additionalFiles = readFolder(data.get("//Folder").text(), resourcePath);
+			}
+
+			if (data.get("//File")) {
+				var files = data.find("//File");
+				for (var i = 0; i < files.length; ++i) {
+					additionalFiles.push(path.normalize(files[i].attr("Path").value()));
+				}
+			}
+
+			if (data.get("//ResourceFile")) {
+				var resourceFiles = data.find("//ResourceFile");
+				var lowLevel = getLowerLevel(map);
+
+				for (var i = 0; i < resourceFiles.length; ++i) {
+					loadResource(resourceFiles[i], lowLevel);
+				}
+			}
+		}
+
+		if (isArchive) {
+			var archive = packResourcesArchive(resourcePath, map, additionalFiles);
+
+			if (useInlining) {
+				return {
+					path: "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' }),
+					type: "ara"
+				};
+			}
+			else {
+				var outputFile = path.join(destFolder, outDir, resourceName + ".ara");
+				var archiveData = archive.generate({ base64: false, compression: 'DEFLATE' });
+
+				wrench.mkdirSyncRecursive(path.dirname(outputFile));
+				fs.writeFileSync(outputFile, archiveData, 'binary');
+
+				return {
+					path: path.relative(destFolder, outputFile).replace(/\\/ig, "/"),
+					type: "ara"
+				}
+			}
+		}
+
+		// Записываем все файлы из map & additionalFiles в srcFiles
+		// после чего записываем srcFiles в outputDir
+
+		var srcFiles = additionalFiles.slice(0);
+		var outputDir = path.join(destFolder, outDir);
+
+		wrench.mkdirSyncRecursive(outputDir);
+
+		var p = map;
+		while (p) {
+			if (p.files) {
+				for (var i = 0; i < p.files.length; i++) {
+					if (srcFiles.indexOf(p.files[i].path) == -1) {
+						srcFiles.push(p.files[i].path);
+					}
+				}
+			}
+
+			p = p.deps;
+		}
+
+		for (var i = 0; i < srcFiles.length; ++i) {
+			var dstFile = path.join(outputDir, srcFiles[i]);
+			var srcFile = path.resolve(path.join(resourcePath, srcFiles[i]));
+
+			wrench.mkdirSyncRecursive(path.dirname(dstFile));              //создаем путь к файлу, если такого не существует
+			fs.writeFileSync(dstFile, fs.readFileSync(srcFile));           //записываем файл в destFolder
+		}
+
+
+		var mapFile = path.join(outputDir, resourceName + ".map");
+
+		if (Data.Resource || map.files.length) {
+			fs.writeFileSync(mapFile, JSON.stringify(map, null, "\t"), "utf8");
+		}
+
+		return {
+			path: path.relative(destFolder, mapFile).replace(/\\/ig, "/"),
+			type: "map"
+		}
+	}
+
+	
+	//==================================================================================================================
+	//==================================================================================================================
+	//==================================================================================================================
+	//==================================================================================================================
 
 	/**
 	 * create zip archive with files described in {argv}
@@ -298,187 +686,7 @@ module.exports = function (grunt) {
 		return result;
 	}
 
-	/**
-	 * @param resourceName {String} Resource name.
-	 * @param resourcePath {String} Path to folder with resources.xml.
-	 * @param PropertyGroup {XML} Xml tag with resource sedcription.
-	 * @param destFolder {String} Destination folder.
-	 */
-	function crateResourceObject(resourceName, resourcePath, PropertyGroup, destFolder) {
-		var isArchive = false;
-		var useInlining = false;
-		var outDir = "";
-		var mapFile = null;
-		var map = null;
-
-		if (PropertyGroup.UseInlining) {
-			useInlining = PropertyGroup.UseInlining[0].toLowerCase() === "true";
-
-			//При подстановке внутрь скрипта все должно быть запаковано в один файл.
-			if (useInlining) {
-				isArchive = true;
-			}
-		}
-
-		if (!useInlining) {
-			//при использовании подстановки, контент включается внутрь JS файла
-			//поэтому нету смысла использовать параметр OutDir
-			if (PropertyGroup.OutDir) {
-				outDir = PropertyGroup.OutDir[0];
-			}
-
-			if (PropertyGroup.Archive) {
-				isArchive = PropertyGroup.Archive[0].toLowerCase() === "true";
-			}
-		}
-
-		if (PropertyGroup.MapFile) {
-			mapFile = PropertyGroup.MapFile[0];
-			//расчитаем полный путь к map файлу
-			mapFile = path.join(resourcePath, mapFile);
-
-			if (!fs.existsSync(mapFile)) {
-				grunt.fail.warn("<MapFile>" + mapFile + "</MapFile> not found.");
-			}
-		}
-
-		if (mapFile) {
-			map = JSON.parse(fs.readFileSync(mapFile), "utf8");
-
-			var mapFolder = path.dirname(mapFile);
-
-			var p = map;
-			while (p) {
-				if (p.files) {
-					for (var i = 0; i < p.files.length; i++) {
-						p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
-					}
-				}
-
-				p = p.deps;
-			}
-		}
-		else {
-			map = { files: [] };
-		}
-
-		if (PropertyGroup.Data) {
-			var Data = PropertyGroup.Data[0];
-			var additionalFiles = [];
-
-			if (Data.Folder) {
-				additionalFiles = readFolder(Data.Folder, resourcePath);
-			}
-
-			if (Data.File) {
-				for (var i = 0; i < Data.File.length; ++i) {
-					additionalFiles.push(path.normalize(Data.File[i].$.Path));
-				}
-			}
-
-			if (Data.ResourceFile) {
-				/**
-				 * @param Resource {XML} Current resource.
-				 * @param cur {IDependence} Current dep level.
-				 */
-
-				var lowLevel = getLowerLevel(map);
-
-				for (var i = 0; i < Data.ResourceFile.length; ++i) {
-					loadResource(Data.ResourceFile[i], lowLevel);
-				}
-			}
-		}
-
-		if (isArchive) {
-			var archive = packResourcesArchive(resourcePath, map, additionalFiles);
-
-			if (useInlining) {
-				return {
-					path: "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' }),
-					type: "ara"
-				};
-			}
-			else {
-				var outputFile = path.join(destFolder, outDir, resourceName + ".ara");
-				var archiveData = archive.generate({ base64: false, compression: 'DEFLATE' });
-
-				wrench.mkdirSyncRecursive(path.dirname(outputFile));
-				fs.writeFileSync(outputFile, archiveData, 'binary');
-
-				return {
-					path: path.relative(destFolder, outputFile).replace(/\\/ig, "/"),
-					type: "ara"
-				}
-			}
-		}
-
-		// Записываем все файлы из map & additionalFiles в srcFiles
-		// после чего записываем srcFiles в outputDir
-
-		var srcFiles = additionalFiles.slice(0);
-		var outputDir = path.join(destFolder, outDir);
-
-		wrench.mkdirSyncRecursive(outputDir);
-
-		var p = map;
-		while (p) {
-			if (p.files) {
-				for (var i = 0; i < p.files.length; i++) {
-					if (srcFiles.indexOf(p.files[i].path) == -1) {
-						srcFiles.push(p.files[i].path);
-					}
-				}
-			}
-
-			p = p.deps;
-		}
-
-		for (var i = 0; i < srcFiles.length; ++i) {
-			var dstFile = path.join(outputDir, srcFiles[i]);
-			var srcFile = path.resolve(path.join(resourcePath, srcFiles[i]));
-
-			wrench.mkdirSyncRecursive(path.dirname(dstFile));              //создаем путь к файлу, если такого не существует
-			fs.writeFileSync(dstFile, fs.readFileSync(srcFile));           //записываем файл в destFolder
-		}
-
-
-		var mapFile = path.join(outputDir, resourceName + ".map");
-
-		if (Data.Resource || map.files.length) {
-			fs.writeFileSync(mapFile, JSON.stringify(map, null, "\t"), "utf8");
-		}
-
-		return {
-			path: path.relative(destFolder, mapFile).replace(/\\/ig, "/"),
-			type: "map"
-		}
-	}
-
-	/**
-	 * @return {String} Путь к ресурсу.
-	 */
-	function packResource(folder, Resource, dest) {
-		var name = Resource.$.Name;
-
-		if (Resource.Filename) {
-			name = Resource.Filename[0];
-		}
-
-		for (var i = 0; i < Resource.PropertyGroup.length; ++i) {
-			var PropertyGroup = Resource.PropertyGroup[i];
-			//TODO: проверить Condition данной групы и убедиться, что она подходит
-			if (PropertyGroup.$ && PropertyGroup.$.Condition) {
-				if (!computeXmlData(PropertyGroup.$.Condition)) {
-					continue;
-				}
-			}
-
-			return crateResourceObject(name, folder, Resource.PropertyGroup[i], dest);
-		}
-
-		return null;
-	}
+	
 
 	function getFilesFromAttachment(Attachment, srcFolder) {
 		var files = [];
@@ -544,7 +752,7 @@ module.exports = function (grunt) {
 		}
 
 		if (format === "ENCLOSURE") {
-			var outDir = Attachment.OutDir? Attachment.OutDir[0] : "";
+			var outDir = Attachment.OutDir ? Attachment.OutDir[0] : "";
 
 			files.forEach(function (file) {
 				grunt.file.copy(file, path.join(destFolder, outDir, path.basename(file)));
@@ -633,103 +841,6 @@ module.exports = function (grunt) {
 		return attachments;
 	}
 
-	
-
-	/** 
-	 * Собиарем ресурсы по проекту
-	 * @param folder {String} Путь к папке с проектом.
-	 * @param Project {XML} Описание проекта в resources.xml.
-	 * @param dest {String} Файл, в который будет собран проект.
-	 */
-	function buildProject(folder, Project, dest, cb) {
-		var variables = {};
-
-		console.time("Build project " + Project.$.Name);
-
-		if (Project.Variable) {
-			for (var i = 0; i < Project.Variable.length; ++i) {
-				var Variable = Project.Variable[i];
-				var name = Variable.$.Name;
-
-				if (Variable.$.Condition) {
-					if (!computeXmlData(Variable.$.Condition)) continue;
-				}
-
-				var value = computeXmlData(Project.Variable[i]._);
-
-
-				if (typeof value === 'string') {
-					value = JSON.stringify(value);
-				}
-
-				variables[name] = value;
-
-				grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 16) : value));
-			}
-		}
-
-		if (Project.Resource) {
-			for (var i = 0; i < Project.Resource.length; ++i) {
-				var resource = packResource(folder, Project.Resource[i], path.dirname(dest));
-
-				if (!resource) {
-					continue;
-				}
-
-
-
-				var resourceName = Project.Resource[i].$.Name;
-
-				variables[resourceName] = JSON.stringify(resource);
-				variables[resourceName + ".path"] = JSON.stringify(resource.path);
-				variables[resourceName + ".type"] = JSON.stringify(resource.type);
-
-			}
-		}
-
-		if (Project.Attachment) {
-			for (var i = 0; i < Project.Attachment.length; ++i) {
-				var attachment = loadAttachment(folder, Project.Attachment[i], path.dirname(dest));
-
-				if (!attachment) {
-					continue;
-				}
-
-				var attachmentName = Project.Attachment[i].$.Name;
-
-				variables[attachmentName] = JSON.stringify(attachment, null, '\t');
-
-				variables[attachmentName + ".format"] = JSON.stringify(attachment.format);
-
-				if (attachment.format !== null && attachment.format !== "STRING") {
-					variables[attachmentName + ".content"] = attachment.content;
-				}
-				else {
-					variables[attachmentName + ".content"] = JSON.stringify(attachment.content);
-				}
-			}
-		}
-
-		var data = fs.readFileSync(dest, "utf8");
-
-
-		data = data.replace(VARIABLE_PATTERN, function replacer(str, name) {
-			var value = variables[name];
-
-			if (typeof value !== "undefined") {
-				grunt.log.debug("> " + name + "=" + (value.length > 32 ? value.substr(0, 32) + '...' : value));
-				return value;
-			}
-
-			return name;
-		});
-
-		fs.writeFileSync(dest, data, "utf8");
-
-		console.timeEnd("Build project " + Project.$.Name);
-
-		cb(true);
-	}
 
 	function findResourcesXML(sourcePaths) {
 		var srcFiles = [];
@@ -770,142 +881,14 @@ module.exports = function (grunt) {
 		return resourceFile;
 	}
 
-	function findModuleInResourcesXML(resourceFile, moduleName, cb) {
-		var parser = new xml2js.Parser();
-		var resourceFolder = path.dirname(resourceFile);
-
-		var data = fs.readFileSync(resourceFile, "utf8");
-			
-		parser.parseString(data, function (err, xml) {
-			for (var i = 0; i < xml.Resources.Project.length; ++i) {
-				var Project = xml.Resources.Project[i];
-
-				//founded
-				if (Project.$.Name === moduleName) {
-					return cb(Project);
-				}
-			}
-
-			cb(null);
-		});
-	}
-
-	/**
-	 * Ищем ресурсы для данного проектта.
-	 */
-	function searchResources(moduleName, sourcePaths, dest, options, cb) {
-		var resourceFile = findResourcesXML(sourcePaths);
-		
-
-		if (!resourceFile) {
-			grunt.log.warn("Could not find resources.xml");
-			return cb(true);
-		}
-
-
-		grunt.log.debug("Resources:", resourceFile);
-
-		var parser = new xml2js.Parser();
-		var resourceFolder = path.dirname(resourceFile);
-
-		findModuleInResourcesXML(resourceFile, moduleName, function (Project) {
-			if (Project) {
-				return buildProject(resourceFolder, Project, dest, cb);
-			}
-			else {
-				grunt.log.warn("Description of " + moduleName + " is not found in the resources.xml.");
-				cb(true);
-			}
-		});
-	}
-
-	function generateExterns(src) {
-		var dest = src.replace(/\.js$/, ".externs.js");
-		if (src === dest) dest += ".externs";
-
-		var externs = [];
-		var data = fs.readFileSync(src, "utf8");
-
-		data.replace(VARIABLE_PATTERN, function replacer(str, name) {
-			if (name.indexOf(".") > 0) {
-				name = name.substr(0, name.indexOf("."));
-			}
-
-			if (externs.indexOf(name) == -1) {
-				externs.push(name);
-			}
-			return name;
-		});
-
-		var externsString = "\
-/**\n\
- * @fileoverview JavaScript Built-Ins for Akra Engne resources.\n\
- *\n\
- * @externs\n\
- */\n\n\n\
-";
-
-		for (var i = 0; i < externs.length; ++i) {
-			externsString += "\
-/**\n\
- * @const\n\
- */\n";
-			externsString += "var " + externs[i] + ";\n\n";
-		}
-
-		fs.writeFileSync(dest, externsString, "utf8");
-		return dest;
-	}
-
-	function minimize(src, level, externs, cb) {
-		if (!src || !grunt.file.exists(src)) {
-			grunt.log.warn('Source file for minimize "' + src + '" not found.');
-			return null;
-		}
-
-		var dest = src.replace(/\.js$/, ".min.js");
-		if (src === dest) dest += ".min";
-
-		var closureJar = path.normalize(__dirname + '/closure/compiler.jar');
-		var levelStr = level === 2 ? "ADVANCED_OPTIMIZATIONS" : "SIMPLE_OPTIMIZATIONS";
-		var cmd = "java";
-		var argv = ["-jar", closureJar,
-					"--compilation_level", levelStr,
-					"--js", src,
-					"--js_output_file", dest,
-					"--create_source_map", dest + ".map",
-					"--source_map_format=V3"];
-
-		if (grunt.file.exists(externs)) {
-			argv.push("--externs", externs);
-		}
-
-		grunt.log.writeln(cmd + " " + argv.join(" "));
-
-		var closure = spawn(cmd, argv);
-
-		closure.stdout.on("data", function (data) {
-			grunt.log.write(data.toString());
-		});
-
-		closure.stderr.on("data", function (data) {
-			grunt.log.error(data.toString());
-		});
-
-		closure.on("close", function (code) {
-			if (code === 0) {
-				cb(true);
-			}
-			else {
-				grunt.fail.warn("Closure minimization failed.");
-				cb(false);
-			}
-		});
-
-		return dest;
-	}
+	
 
 	
+
+
+
+
+
 
 	/** @param Module {XML} <Module/> tags from demo.xml */
 	function loadDependentScriptsFromModules(Module, destFolder) {
@@ -943,12 +926,12 @@ module.exports = function (grunt) {
 					});
 				}
 			}
-			
+
 			if (module.Module) {
 				scripts = scripts.concat(loadDependentScriptsFromModules(module.Module, destFolder));
 			}
 		}
-		
+
 		return scripts;
 	}
 
@@ -991,11 +974,11 @@ module.exports = function (grunt) {
 			var srcPath = path.join(srcFolder, pathname);
 			wrench.copyDirSyncRecursive(srcPath, destPath, {
 				forceDelete: true
-			}); 
+			});
 		}
 	}
 
-	
+
 	function buildDemo(demo, srcFolder, cb) {
 		if (!grunt.file.exists(srcFolder)) {
 			grunt.log.warn("Could not find demo.xml");
@@ -1016,7 +999,7 @@ module.exports = function (grunt) {
 			var destFolder = path.join(DEMOS_BUILD_DIR, demo.toLowerCase());
 			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
 			var destJs = path.join(destFolder, path.basename(main, path.extname(main)) + '.js');
-			
+
 			if (!grunt.file.exists(main)) {
 				grunt.fail.fatal(new Error("Could not find main file: " + main));
 				return cb(false);
@@ -1059,7 +1042,7 @@ module.exports = function (grunt) {
 
 			// Compile a function
 			var fn = jade.compile(code, { pretty: true, debug: false, compileDebug: false });
-			
+
 			// Render the function
 			var html = fn({
 				demo: {

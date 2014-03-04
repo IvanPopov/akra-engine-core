@@ -1,19 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="../../lib/grunt/resources.xsd">
+  xsi:noNamespaceSchemaLocation="../../lib/grunt/schema.xsd">
   <ItemGroup>
     <TypeScriptCompile Include="akra.ts"/>
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TypeScriptOut>../../build/$(Configuration)/akra.js.min</TypeScriptOut>
+    <TypeScriptOutFile>../../build/$(Configuration)/akra.js</TypeScriptOutFile>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <ClosureCompiler>
       <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
+      <CreateSourceMap>False</CreateSourceMap>
+      <OutFile>../../build/$(Configuration)/akra.min.js</OutFile>
     </ClosureCompiler>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptOut>../../build/$(Configuration)/akra.js</TypeScriptOut>
+    <TypeScriptOutFile>../../build/$(Configuration)/akra.js</TypeScriptOutFile>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>

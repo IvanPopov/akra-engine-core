@@ -24,19 +24,15 @@ module.exports = function (grunt) {
 
 	require('time-grunt')(grunt);
 
-	//TODO: util.getVersion() from package.json
-	// ReSharper disable once InconsistentNaming
-	var VERSION = {
-		full: "0.4.1"
-	};
-
-	// ReSharper disable once UnusedLocals
-	var dist = "akraengine-" + VERSION.full;
-
 	grunt.initConfig({
 		//global configuration
 		Configuration: 'Debug',
-		Version: VERSION,
+		Version: util.getVersion(),
+		ProjectName: null,
+		ProjectDir: null,
+		OutFile: null,
+
+
 
 		pkg: grunt.file.readJSON("package.json"),
 		build: {
@@ -49,7 +45,7 @@ module.exports = function (grunt) {
 				}
 			},
 			core: {
-				config: "src/akra/core.xml"
+				config: "src/akra/akra.xml"
 			},
 			ui: {
 				src: files.akraUI,
