@@ -2,6 +2,10 @@
 
 var TypeScript;
 (function (TypeScript) {
+    var isNeedEscape = "_isNeedEscape";
+    var splitToExternMode = "_splitToExternsMode";
+    var escapeNamesMap = "_escapeOptionsMap";
+
     var InterfaceExternsSplitMode;
     (function (InterfaceExternsSplitMode) {
         InterfaceExternsSplitMode[InterfaceExternsSplitMode["k_None"] = 0] = "k_None";
@@ -1200,7 +1204,7 @@ var TypeScript;
                 //view like: (container['akra'] = container['akra'] || {}) || {};
                 this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
 
-                var shortName = this.getShortName(exportedName);
+                var shortName = this.getShortName(exportedName, pullDecl.getSymbol());
 
                 this.writeLineToOutput("var " + shortName + " = " + exportedName + ";");
 
@@ -1360,7 +1364,15 @@ var TypeScript;
 
         Emitter.prototype.emitElementAccessExpression = function (expression) {
             this.recordSourceMappingStart(expression);
-            this.emit(expression.expression);
+
+            var symbol = this.semanticInfoChain.getSymbolForAST(expression.expression);
+
+            if (symbol && TypeScript.PullHelpers.symbolIsModule(symbol.type) && this.hasShortName(symbol.type.fullName())) {
+                this.writeToOutput(this.getShortName(symbol.type.fullName()));
+            } else {
+                this.emit(expression.expression);
+            }
+
             this.writeToOutput("[");
             this.emit(expression.argumentExpression);
             this.writeToOutput("]");
@@ -3287,6 +3299,10 @@ var TypeScript;
                     //	}
                     //}
                     var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+
+                    if (expression.name.text && expression.name.text() === "quotedProp2") {
+                        debugger;
+                    }
                     var isNeedEscapeFunction = this.isNeedEscapeName(symbol);
 
                     this.recordSourceMappingStart(expression);
@@ -4316,7 +4332,7 @@ var TypeScript;
         Emitter.prototype.getJSDocForInterfaceDeclaration = function (interfaceDecl) {
             var result = ['@interface'];
             var symbol = this.semanticInfoChain.getSymbolForAST(interfaceDecl);
-            if (symbol['_splitToExternsMode'] === 2 /* k_Part */ && !this.isEnabledInterfaceExternStream) {
+            if (symbol[splitToExternMode] === 2 /* k_Part */ && !this.isEnabledInterfaceExternStream) {
                 result.push("@extends {" + this.thisFullInterfaceExternPartName + "}");
             }
             return result.concat(this.getJSDocForExtends(interfaceDecl.heritageClauses), this.getJSDocForTemplatesForAST(interfaceDecl));
@@ -4711,7 +4727,7 @@ var TypeScript;
                 var me = this;
 
                 path.slice(i, path.length - 1).forEach(function (pullDecl) {
-                    containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']");
+                    containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
                 });
 
                 //var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
@@ -4736,7 +4752,7 @@ var TypeScript;
                 this.writeLineToOutput("");
 
                 if (TypeScript.PullHelpers.symbolIsModule(symbol)) {
-                    var shortName = this.getShortName(internalPath);
+                    var shortName = this.getShortName(internalPath, symbol);
                     this.writeToOutput("var " + shortName + " = " + internalPath + ";");
                 }
 
@@ -4763,7 +4779,7 @@ var TypeScript;
             });
 
             path.slice(i, path.length - 1).forEach(function (pullDecl) {
-                containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']");
+                containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
             });
 
             //var externalName = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
@@ -4777,7 +4793,7 @@ var TypeScript;
                 this.writeToOutput(externalName + " || {};");
                 this.writeLineToOutput("");
 
-                var shortName = this.getShortName(externalName);
+                var shortName = this.getShortName(externalName, symbol);
 
                 this.writeToOutput("var " + shortName + " = " + externalName + ";");
             } else {
@@ -4795,8 +4811,8 @@ var TypeScript;
         };
 
         Emitter.prototype.getContainerEscapeOptionForName = function (symbol, name) {
-            if (symbol['_escapeOptionsMap']) {
-                return !!(symbol['_escapeOptionsMap'][name]);
+            if (symbol[escapeNamesMap]) {
+                return !!(symbol[escapeNamesMap][name]);
             }
 
             if (symbol.type.isInterface()) {
@@ -4804,8 +4820,7 @@ var TypeScript;
             } else if (symbol.type.isClass()) {
                 this.calcInterfaceEscapeNamesMap(symbol);
             } else {
-                //debugger;
-                //console.log("some thing going wrong");
+                //console.log("something going wrong " + name);
                 return false;
             }
 
@@ -4818,11 +4833,11 @@ var TypeScript;
                 interfaceType = interfaceType.referencedTypeSymbol;
             }
 
-            if (interfaceType['_escapeOptionsMap']) {
-                return interfaceType['_escapeOptionsMap'];
+            if (interfaceType[escapeNamesMap]) {
+                return interfaceType[escapeNamesMap];
             }
 
-            var result = interfaceType['_escapeOptionsMap'] = {};
+            var result = interfaceType[escapeNamesMap] = {};
             var declaration = this.semanticInfoChain.getASTForDecl(interfaceType.getDeclarations()[0]);
 
             if (TypeScript.isDTSFile(declaration.fileName())) {
@@ -4875,6 +4890,10 @@ var TypeScript;
                     this.setSymbolEscapeOption(symbol, false);
                 }
 
+                if (TypeScript.isQuoted(name)) {
+                    name = name.substring(1, name.length - 2);
+                }
+
                 result[name] = this.isNeedPropertyEscape(symbol);
             }
 
@@ -4887,11 +4906,11 @@ var TypeScript;
                 classType = classType.referencedTypeSymbol;
             }
 
-            if (classType['_escapeOptionsMap']) {
-                return classType['_escapeOptionsMap'];
+            if (classType[escapeNamesMap]) {
+                return classType[escapeNamesMap];
             }
 
-            var result = classType['_escapeOptionsMap'] = {};
+            var result = classType[escapeNamesMap] = {};
             var declaration = this.semanticInfoChain.getASTForDecl(classType.getDeclarations()[0]);
 
             if (TypeScript.isDTSFile(declaration.fileName())) {
@@ -4949,12 +4968,6 @@ var TypeScript;
 
                         if (result[name] === undefined) {
                             result[name] = this.isNeedPropertyEscape(symbol);
-                            //	if (isClassExported && hasFlag(parameterDecl.flags, PullElementFlags.Public) && !hasFlag(parameterDecl.flags, PullElementFlags.Protected)) {
-                            //		result[name] = true;
-                            //	}
-                            //	else {
-                            //		result[name] = false;
-                            //	}
                         }
                     }
                 }
@@ -4971,22 +4984,6 @@ var TypeScript;
 
                 if (result[name] === undefined) {
                     result[name] = this.isNeedPropertyEscape(symbol);
-                    //if (!isClassExported || !symbol.anyDeclHasFlag(PullElementFlags.Public) || symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
-                    //	result[name] = false;
-                    //}
-                    //else {
-                    //	if (symbol.type.isFunction()) {
-                    //		if (isClassFinal || symbol.anyDeclHasFlag(PullElementFlags.Final)) {
-                    //			result[name] = false;
-                    //		}
-                    //		else {
-                    //			result[name] = true;
-                    //		}
-                    //	}
-                    //	else {
-                    //		result[name] = true;
-                    //	}
-                    //}
                 }
             }
 
@@ -4994,7 +4991,7 @@ var TypeScript;
         };
 
         Emitter.prototype.setSymbolEscapeOption = function (symbol, isEscape) {
-            return symbol['_isNeedEscape'] = isEscape;
+            return symbol[isNeedEscape] = isEscape;
         };
 
         Emitter.prototype.isNeedEscapeName = function (symbol) {
@@ -5002,8 +4999,8 @@ var TypeScript;
                 return false;
             }
 
-            if (symbol['_isNeedEscape'] !== undefined) {
-                return symbol['_isNeedEscape'];
+            if (symbol[isNeedEscape] !== undefined) {
+                return symbol[isNeedEscape];
             }
 
             if (symbol.isContainer() || !symbol.getContainer()) {
@@ -5013,12 +5010,18 @@ var TypeScript;
             var container = symbol.getContainer();
             var name = symbol.getDisplayName();
 
-            if (symbol.type.isFunction()) {
-                if (symbol.isMethod()) {
-                    return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(symbol.getContainer(), symbol.getDisplayName()));
-                }
-            } else if (TypeScript.PullHelpers.symbolIsModule(symbol.getContainer())) {
+            if (TypeScript.PullHelpers.symbolIsModule(container)) {
                 return this.isNeedEscapeGlobalVariable(symbol);
+            } else {
+                if (TypeScript.isQuoted(name)) {
+                    return this.setSymbolEscapeOption(symbol, true);
+                }
+
+                //if (symbol.type.isFunction()) {
+                //	if (symbol.isMethod()) {
+                return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(container, name));
+                //	}
+                //}
             }
 
             return this.setSymbolEscapeOption(symbol, false);
@@ -5033,12 +5036,16 @@ var TypeScript;
                 return false;
             }
 
-            if (symbol['_isNeedEscape'] !== undefined) {
-                return symbol['_isNeedEscape'];
+            if (symbol[isNeedEscape] !== undefined) {
+                return symbol[isNeedEscape];
             }
 
             var container = symbol.getContainer();
             var name = symbol.getDisplayName();
+
+            if (TypeScript.isQuoted(name)) {
+                return this.setSymbolEscapeOption(symbol, true);
+            }
 
             if (symbol.isMethod() && container.anyDeclHasFlag(1 /* Exported */) && symbol.anyDeclHasFlag(4 /* Public */) && !symbol.anyDeclHasFlag(134217728 /* Protected */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !container.anyDeclHasFlag(268435456 /* Final */) && !symbol.anyDeclHasFlag(16 /* Static */) && !Emitter.isAkraSystemName(name)) {
                 if (symbol.getContainer().isInterface()) {
@@ -5091,8 +5098,8 @@ var TypeScript;
             var symbol = this.semanticInfoChain.getSymbolForAST(declaration);
             var name = symbol.getDisplayName();
 
-            if (symbol['_splitToExternsMode'] !== undefined) {
-                return symbol['_splitToExternsMode'];
+            if (symbol[splitToExternMode] !== undefined) {
+                return symbol[splitToExternMode];
             }
 
             if (name === 'String' || name === 'Number' || name === 'Array' || TypeScript.isDTSFile(declaration.fileName())) {
@@ -5102,37 +5109,18 @@ var TypeScript;
             var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
             if (hasCallOrIndex) {
-                return (symbol['_splitToExternsMode'] = 1 /* k_All */);
+                return (symbol[splitToExternMode] = 1 /* k_All */);
             }
 
             if (!TypeScript.hasModifier(declaration.modifiers, 1 /* Exported */)) {
-                return (symbol['_splitToExternsMode'] = 0 /* k_None */);
+                return (symbol[splitToExternMode] = 0 /* k_None */);
             }
 
-            //var members = declaration.body.typeMembers;
-            //var hasOneSystemName = false;
-            //var hasOneExternName = false;
-            //var mode = InterfaceExternsSplitMode.k_Part;
-            //for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
-            //	var memberDecl = members.nonSeparatorAt(i);
-            //	if (memberDecl.kind() === SyntaxKind.ConstructSignature) {
-            //		continue;
-            //	}
-            //	if (this.isInterfaceMemberForExtern(this.semanticInfoChain.getSymbolForAST(memberDecl))) {
-            //		hasOneExternName = true;
-            //	}
-            //	else {
-            //		hasOneSystemName = true;
-            //	}
-            //}
-            //if (hasOneExternName && !hasOneSystemName) {
-            //	mode = InterfaceExternsSplitMode.k_All;
-            //}
-            return (symbol['_splitToExternsMode'] = 2 /* k_Part */);
+            return (symbol[splitToExternMode] = 2 /* k_Part */);
         };
 
         Emitter.prototype.isInterfaceMemberForExtern = function (symbol) {
-            return !symbol.type.isFunction() && !Emitter.isAkraSystemName(symbol.getDisplayName());
+            return !symbol.type.isFunction() && !Emitter.isAkraSystemName(symbol.getDisplayName()) && !TypeScript.isQuoted(symbol.getDisplayName());
         };
 
         Emitter.prototype.isNeedExportClassFunctionMember = function (symbol) {
@@ -5147,8 +5135,22 @@ var TypeScript;
             return true;
         };
 
-        Emitter.prototype.getShortName = function (longName) {
-            return this.shortNameMap[longName] || (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
+        Emitter.prototype.getShortName = function (longName, symbol) {
+            if (this.shortNameMap[longName]) {
+                return this.shortNameMap[longName];
+            }
+
+            var result = (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
+
+            if (symbol) {
+                this.shortNameMap[symbol.fullName()] = result;
+            }
+
+            return result;
+        };
+
+        Emitter.prototype.hasShortName = function (longName) {
+            return this.shortNameMap[longName] !== undefined;
         };
         Emitter.EMPTY_STRING_LIST = [];
         return Emitter;

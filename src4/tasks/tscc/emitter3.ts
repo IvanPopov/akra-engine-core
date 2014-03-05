@@ -3,6 +3,10 @@
 declare function createStreamForInterfaceExterns(path: string): any;
 
 module TypeScript {
+	var isNeedEscape = "_isNeedEscape";
+	var splitToExternMode = "_splitToExternsMode";
+	var escapeNamesMap = "_escapeOptionsMap";
+
 	enum InterfaceExternsSplitMode {
 		k_None,
 		k_All,
@@ -242,11 +246,11 @@ module TypeScript {
 		private totalEmitedConstansts = 0;
 		private lastEmitConstantValue = null;
 
-	// If we choose to detach comments from an element (for example, the Copyright comments),
+		// If we choose to detach comments from an element (for example, the Copyright comments),
 		// then keep track of that element so that we don't emit all on the comments on it when
 		// we visit it.
-		private detachedCommentsElement: AST = null;		
-/** for emitting jsDoc cooments for class properties */
+		private detachedCommentsElement: AST = null;
+		/** for emitting jsDoc cooments for class properties */
 		private emittedClassProperties: PullSymbol[] = null;
 
 		private isEmitConstructorStatements: boolean = false;
@@ -1240,7 +1244,7 @@ module TypeScript {
 
 				this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
 
-				var shortName = this.getShortName(exportedName);
+				var shortName = this.getShortName(exportedName, pullDecl.getSymbol());
 
 				this.writeLineToOutput("var " + shortName + " = " + exportedName + ";");
 
@@ -1412,7 +1416,16 @@ module TypeScript {
 
 		public emitElementAccessExpression(expression: ElementAccessExpression) {
 			this.recordSourceMappingStart(expression);
-			this.emit(expression.expression);
+
+			var symbol = this.semanticInfoChain.getSymbolForAST(expression.expression);
+
+			if (symbol && PullHelpers.symbolIsModule(symbol.type) && this.hasShortName(symbol.type.fullName())) {
+				this.writeToOutput(this.getShortName(symbol.type.fullName()));
+			}
+			else {
+				this.emit(expression.expression);
+			}
+
 			this.writeToOutput("[");
 			this.emit(expression.argumentExpression);
 			this.writeToOutput("]");
@@ -3414,6 +3427,10 @@ module TypeScript {
 					//	}
 					//}
 					var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+
+					if (expression.name.text && expression.name.text() === "quotedProp2") {
+						debugger
+					}
 					var isNeedEscapeFunction = this.isNeedEscapeName(symbol);
 
 					this.recordSourceMappingStart(expression);
@@ -3422,7 +3439,7 @@ module TypeScript {
 					//	this.writeToOutput("(/** " + this.formatJSDocType(symbol.type) + " */(");
 					//}
 					this.emit(expression.expression);
-					
+
 					if (isNeedEscapeFunction) {
 						this.writeToOutput("[\"");
 					}
@@ -4473,7 +4490,7 @@ module TypeScript {
 		private getJSDocForInterfaceDeclaration(interfaceDecl: InterfaceDeclaration): string[] {
 			var result = ['@interface'];
 			var symbol = this.semanticInfoChain.getSymbolForAST(interfaceDecl);
-			if (symbol['_splitToExternsMode'] === InterfaceExternsSplitMode.k_Part && !this.isEnabledInterfaceExternStream) {
+			if (symbol[splitToExternMode] === InterfaceExternsSplitMode.k_Part && !this.isEnabledInterfaceExternStream) {
 				result.push("@extends {" + this.thisFullInterfaceExternPartName + "}");
 			}
 			return result.concat<any>(this.getJSDocForExtends(interfaceDecl.heritageClauses),
@@ -4878,8 +4895,8 @@ module TypeScript {
 				var containerShortName = "global";
 				var me = this;
 
-				path.slice(i, path.length - 1).forEach(function(pullDecl){
-					containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']")
+				path.slice(i, path.length - 1).forEach(function (pullDecl) {
+					containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
 				});
 
 				//var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
@@ -4905,7 +4922,7 @@ module TypeScript {
 				this.writeLineToOutput("");
 
 				if (PullHelpers.symbolIsModule(symbol)) {
-					var shortName = this.getShortName(internalPath);
+					var shortName = this.getShortName(internalPath, symbol);
 					this.writeToOutput("var " + shortName + " = " + internalPath + ";");
 				}
 
@@ -4932,7 +4949,7 @@ module TypeScript {
 			});
 
 			path.slice(i, path.length - 1).forEach(function (pullDecl) {
-				containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']")
+				containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol())
 			});
 
 			//var externalName = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
@@ -4948,7 +4965,7 @@ module TypeScript {
 				this.writeToOutput(externalName + " || {};");
 				this.writeLineToOutput("");
 
-				var shortName = this.getShortName(externalName);
+				var shortName = this.getShortName(externalName, symbol);
 
 				this.writeToOutput("var " + shortName + " = " + externalName + ";");
 			}
@@ -4968,8 +4985,8 @@ module TypeScript {
 		}
 
 		private getContainerEscapeOptionForName(symbol: PullSymbol, name: string): boolean {
-			if (symbol['_escapeOptionsMap']) {
-				return !!(symbol['_escapeOptionsMap'][name]);
+			if (symbol[escapeNamesMap]) {
+				return !!(symbol[escapeNamesMap][name]);
 			}
 
 			if (symbol.type.isInterface()) {
@@ -4979,8 +4996,7 @@ module TypeScript {
 				this.calcInterfaceEscapeNamesMap(symbol);
 			}
 			else {
-				//debugger;
-				//console.log("some thing going wrong");
+				//console.log("something going wrong " + name);
 				return false;
 			}
 
@@ -4993,11 +5009,11 @@ module TypeScript {
 				interfaceType = (<PullTypeReferenceSymbol>interfaceType).referencedTypeSymbol;
 			}
 
-			if (interfaceType['_escapeOptionsMap']) {
-				return interfaceType['_escapeOptionsMap'];
+			if (interfaceType[escapeNamesMap]) {
+				return interfaceType[escapeNamesMap];
 			}
 
-			var result = interfaceType['_escapeOptionsMap'] = {};
+			var result = interfaceType[escapeNamesMap] = {};
 			var declaration = <InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(interfaceType.getDeclarations()[0]);
 
 			if (isDTSFile(declaration.fileName())) {
@@ -5052,6 +5068,10 @@ module TypeScript {
 					this.setSymbolEscapeOption(symbol, false);
 				}
 
+				if (isQuoted(name)) {
+					name = name.substring(1, name.length - 2);
+				}
+
 				result[name] = this.isNeedPropertyEscape(symbol);
 			}
 
@@ -5064,11 +5084,11 @@ module TypeScript {
 				classType = (<PullTypeReferenceSymbol>classType).referencedTypeSymbol;
 			}
 
-			if (classType['_escapeOptionsMap']) {
-				return classType['_escapeOptionsMap'];
+			if (classType[escapeNamesMap]) {
+				return classType[escapeNamesMap];
 			}
 
-			var result = classType['_escapeOptionsMap'] = {};
+			var result = classType[escapeNamesMap] = {};
 			var declaration = <ClassDeclaration>this.semanticInfoChain.getASTForDecl(classType.getDeclarations()[0]);
 
 			if (isDTSFile(declaration.fileName())) {
@@ -5127,12 +5147,6 @@ module TypeScript {
 
 						if (result[name] === undefined) {
 							result[name] = this.isNeedPropertyEscape(symbol);
-						//	if (isClassExported && hasFlag(parameterDecl.flags, PullElementFlags.Public) && !hasFlag(parameterDecl.flags, PullElementFlags.Protected)) {
-						//		result[name] = true;
-						//	}
-						//	else {
-						//		result[name] = false;
-						//	}
 						}
 					}
 				}
@@ -5151,22 +5165,6 @@ module TypeScript {
 
 				if (result[name] === undefined) {
 					result[name] = this.isNeedPropertyEscape(symbol);
-					//if (!isClassExported || !symbol.anyDeclHasFlag(PullElementFlags.Public) || symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
-					//	result[name] = false;
-					//}
-					//else {
-					//	if (symbol.type.isFunction()) {
-					//		if (isClassFinal || symbol.anyDeclHasFlag(PullElementFlags.Final)) {
-					//			result[name] = false;
-					//		}
-					//		else {
-					//			result[name] = true;
-					//		}
-					//	}
-					//	else {
-					//		result[name] = true;
-					//	}
-					//}
 				}
 			}
 
@@ -5174,7 +5172,7 @@ module TypeScript {
 		}
 
 		private setSymbolEscapeOption(symbol: PullSymbol, isEscape: boolean) {
-			return symbol['_isNeedEscape'] = isEscape;
+			return symbol[isNeedEscape] = isEscape;
 		}
 
 		private isNeedEscapeName(symbol: PullSymbol): boolean {
@@ -5182,8 +5180,8 @@ module TypeScript {
 				return false;
 			}
 
-			if (symbol['_isNeedEscape'] !== undefined) {
-				return symbol['_isNeedEscape'];
+			if (symbol[isNeedEscape] !== undefined) {
+				return symbol[isNeedEscape];
 			}
 
 			if (symbol.isContainer() || !symbol.getContainer()) {
@@ -5193,13 +5191,18 @@ module TypeScript {
 			var container = symbol.getContainer();
 			var name = symbol.getDisplayName();
 
-			if (symbol.type.isFunction()) {
-				if (symbol.isMethod()) {
-					return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(symbol.getContainer(), symbol.getDisplayName()));
-				}
-			}
-			else if (PullHelpers.symbolIsModule(symbol.getContainer())) {
+			if (PullHelpers.symbolIsModule(container)) {
 				return this.isNeedEscapeGlobalVariable(symbol);
+			}
+			else {
+				if (isQuoted(name)) {
+					return this.setSymbolEscapeOption(symbol, true);
+				}
+				//if (symbol.type.isFunction()) {
+				//	if (symbol.isMethod()) {
+				return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(container, name));
+				//	}
+				//}
 			}
 
 			return this.setSymbolEscapeOption(symbol, false);
@@ -5214,12 +5217,16 @@ module TypeScript {
 				return false;
 			}
 
-			if (symbol['_isNeedEscape'] !== undefined) {
-				return symbol['_isNeedEscape'];
+			if (symbol[isNeedEscape] !== undefined) {
+				return symbol[isNeedEscape];
 			}
 
 			var container = symbol.getContainer();
 			var name = symbol.getDisplayName();
+
+			if (isQuoted(name)) {
+				return this.setSymbolEscapeOption(symbol, true);
+			}
 
 			if (symbol.isMethod() &&
 				container.anyDeclHasFlag(PullElementFlags.Exported) &&
@@ -5239,7 +5246,7 @@ module TypeScript {
 				container.anyDeclHasFlag(PullElementFlags.Exported) &&
 				symbol.anyDeclHasFlag(PullElementFlags.Public) && !symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
 
-					return this.setSymbolEscapeOption(symbol, true);
+				return this.setSymbolEscapeOption(symbol, true);
 			}
 
 			return this.setSymbolEscapeOption(symbol, false);
@@ -5281,8 +5288,8 @@ module TypeScript {
 			var symbol = this.semanticInfoChain.getSymbolForAST(declaration);
 			var name = symbol.getDisplayName();
 
-			if (symbol['_splitToExternsMode'] !== undefined) {
-				return symbol['_splitToExternsMode'];
+			if (symbol[splitToExternMode] !== undefined) {
+				return symbol[splitToExternMode];
 			}
 
 			if (name === 'String' ||
@@ -5296,41 +5303,18 @@ module TypeScript {
 			var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
 			if (hasCallOrIndex) {
-				return (symbol['_splitToExternsMode'] = InterfaceExternsSplitMode.k_All);
+				return (symbol[splitToExternMode] = InterfaceExternsSplitMode.k_All);
 			}
 
 			if (!hasModifier(declaration.modifiers, PullElementFlags.Exported)) {
-				return (symbol['_splitToExternsMode'] = InterfaceExternsSplitMode.k_None);
+				return (symbol[splitToExternMode] = InterfaceExternsSplitMode.k_None);
 			}
 
-			//var members = declaration.body.typeMembers;
-			//var hasOneSystemName = false;
-			//var hasOneExternName = false;
-			//var mode = InterfaceExternsSplitMode.k_Part;
-
-			//for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
-			//	var memberDecl = members.nonSeparatorAt(i);
-			//	if (memberDecl.kind() === SyntaxKind.ConstructSignature) {
-			//		continue;
-			//	}
-
-			//	if (this.isInterfaceMemberForExtern(this.semanticInfoChain.getSymbolForAST(memberDecl))) {
-			//		hasOneExternName = true;
-			//	}
-			//	else {
-			//		hasOneSystemName = true;
-			//	}
-			//}
-
-			//if (hasOneExternName && !hasOneSystemName) {
-			//	mode = InterfaceExternsSplitMode.k_All;
-			//}
-
-			return (symbol['_splitToExternsMode'] = InterfaceExternsSplitMode.k_Part);
+			return (symbol[splitToExternMode] = InterfaceExternsSplitMode.k_Part);
 		}
 
 		private isInterfaceMemberForExtern(symbol: PullSymbol): boolean {
-			return !symbol.type.isFunction() && !Emitter.isAkraSystemName(symbol.getDisplayName());
+			return !symbol.type.isFunction() && !Emitter.isAkraSystemName(symbol.getDisplayName()) && !isQuoted(symbol.getDisplayName());
 		}
 
 		private isNeedExportClassFunctionMember(symbol: PullSymbol): boolean {
@@ -5345,8 +5329,22 @@ module TypeScript {
 			return true;
 		}
 
-		getShortName(longName: string): string {
-			return this.shortNameMap[longName] || (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
+		getShortName(longName: string, symbol?: PullSymbol): string {
+			if (this.shortNameMap[longName]) {
+				return this.shortNameMap[longName];
+			}
+
+			var result = (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
+
+			if (symbol) {
+				this.shortNameMap[symbol.fullName()] = result;
+			}
+
+			return result;
+		}
+
+		hasShortName(longName: string): boolean {
+			return this.shortNameMap[longName] !== undefined;
 		}
 
 	}
