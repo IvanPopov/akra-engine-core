@@ -50,8 +50,8 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.titleUpdated = this.titleUpdated || new Signal(<any>this);
-			this.selected = this.selected || new Signal(<any>this);
+			this.titleUpdated = this.titleUpdated || new Signal(this);
+			this.selected = this.selected || new Signal(this);
 
 			super.setupSignals();
 		}

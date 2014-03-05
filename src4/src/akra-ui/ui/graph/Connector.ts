@@ -5,15 +5,15 @@
 /// <reference path="../Component.ts" />
 
 module akra.ui.graph {
-	class ConnectedSignal extends Signal<{ (pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void; }, IUIGraphConnector> {
-		emit(pTarget?: IUIGraphConnector): void {
+	class ConnectedSignal extends Signal<IUIGraphConnector> {
+		emit(pTarget: IUIGraphConnector): void {
 			this.getSender().getElement().addClass("connected");
 			super.emit(pTarget);
 		}
 	}
 
-	class MousedownSignal extends Signal<{ (pConnector: IUIGraphConnector, e: IUIEvent): void; }, IUIGraphConnector> {
-		emit(e?: IUIEvent): void {
+	class MousedownSignal extends Signal<IUIGraphConnector> {
+		emit(e: IUIEvent): void {
 			var pConnector: IUIGraphConnector = this.getSender();
 
 			e.preventDefault();
@@ -27,8 +27,8 @@ module akra.ui.graph {
 		}
 	}
 
-	class MouseupSignal extends Signal<{ (pConnector: IUIGraphConnector, e: IUIEvent): void; }, IUIGraphConnector> {
-		emit(e?: IUIEvent): void {
+	class MouseupSignal extends Signal<IUIGraphConnector> {
+		emit(e: IUIEvent): void {
 			var pConnector: IUIGraphConnector = this.getSender();
 
 			if (pConnector.getDirection() === EUIGraphDirections.IN && !pConnector.isConnected() && pConnector.getNode().isSuitable()) {
@@ -85,9 +85,9 @@ module akra.ui.graph {
 			this.mouseup = this.mouseup || new MouseupSignal(this);
 			this.mousedown = this.mousedown || new MousedownSignal(this);
 
-			this.activated = this.activated || new Signal(<any>this);
+			this.activated = this.activated || new Signal(this);
 			this.connected = this.connected || new ConnectedSignal(this);
-			this.routeBreaked = this.routeBreaked || new Signal(<any>this);
+			this.routeBreaked = this.routeBreaked || new Signal(this);
 			super.setupSignals();
 		}
 

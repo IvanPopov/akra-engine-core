@@ -8,16 +8,16 @@
 /// <reference path="Blend.ts" />
 
 module akra.animation {
-	class PlaySignal extends Signal<{ (pController: IAnimationController, pAnimationNext: IAnimationBase, fRealTime: float): void; }, IAnimationController> {
+	class PlaySignal extends Signal<IAnimationController> {
 
 		constructor(pController: IAnimationController) {
 			super(pController, EEventTypes.BROADCAST);
 		}
 
-		emit(pAnimation?: string): void;
-		emit(pAnimation?: int): void;
-		emit(pAnimation?: IAnimationBase): void;
-		emit(pAnimation?: any): void {
+		emit(pAnimation: string): void;
+		emit(pAnimation: int): void;
+		emit(pAnimation: IAnimationBase): void;
+		emit(pAnimation: any): void {
 			var pController: IAnimationController = this.getSender();
 			var pAnimationNext: IAnimationBase = pController.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = pController.getActive();
@@ -73,7 +73,7 @@ module akra.animation {
 		}
 
 		protected setupSignals(): void {
-			this.animationAdded = this.animationAdded || <any> new Signal(this);
+			this.animationAdded = this.animationAdded || new Signal(this);
 			this.play = this.play || <any> new PlaySignal(this);
 		}
 

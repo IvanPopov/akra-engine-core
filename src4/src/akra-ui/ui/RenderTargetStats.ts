@@ -88,6 +88,6 @@ module akra.ui {
 		}
 	}
 
-	register("RenderTargetStats", RenderTargetStats);
+	register("RenderTargetStats", <any>RenderTargetStats);
 }
 

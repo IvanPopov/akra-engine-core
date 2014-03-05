@@ -320,7 +320,7 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.created = this.created || new Signal(<any>this)
+			this.created = this.created || new Signal(this)
 			super.setupSignals();
 		}
 

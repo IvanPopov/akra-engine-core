@@ -2,8 +2,8 @@
 /// <reference path="Component.ts" />
 
 module akra.ui {
-	class ClickSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class ClickSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			var pLabel: Label = <Label>this.getSender();
 
 			pLabel.$text.css("display", "none");
@@ -14,8 +14,8 @@ module akra.ui {
 		}
 	}
 
-	class FocusoutSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class FocusoutSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			var pLabel: Label = <Label>this.getSender();
 
 			var sText: string = pLabel.$input.val();
@@ -33,8 +33,8 @@ module akra.ui {
 		}
 	}
 
-	class KeydownSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class KeydownSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			var pLabel: Label = <Label>this.getSender();
 
 			if (pLabel.$input.is(":focus")) {
@@ -82,8 +82,8 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.click = this.click || new ClickSignal(<any>this);
-			this.changed = this.changed || new Signal(<any>this);
+			this.click = this.click || new ClickSignal(this);
+			this.changed = this.changed || new Signal(this);
 			this.focusout = this.focusout || new FocusoutSignal(this);
 			this.keydown = this.keydown || new KeydownSignal(this);
 

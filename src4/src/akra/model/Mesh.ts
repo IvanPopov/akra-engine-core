@@ -26,16 +26,13 @@ module akra.model {
 	import DeclUsages = data.Usages;
 	import Color = color.Color;
 
-	class ShadowedSignal
-		extends Signal<{
-			(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;
-		}, IMesh> {
+	class ShadowedSignal extends Signal<IMesh> {
 
 		constructor(pViewport: IMesh) {
 			super(pViewport, EEventTypes.UNICAST);
 		}
 
-		emit(pSubMesh?: IMeshSubset, bShadow?: boolean): void {
+		emit(pSubMesh: IMeshSubset, bShadow: boolean): void {
 
 			var pMesh: Mesh = <Mesh>this.getSender();
 

@@ -36,6 +36,6 @@ module akra.ui.graph {
 		}
 	}
 
-	register("graph.Controls", Controls);
+	register("graph.Controls", <any>Controls);
 }
 

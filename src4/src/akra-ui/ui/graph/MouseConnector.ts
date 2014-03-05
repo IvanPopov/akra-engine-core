@@ -15,7 +15,7 @@ module akra.ui.graph {
 		}
 
 		protected setupSignals(): void {
-			this.mousedown = this.mousedown || new MuteSignal(<any>this);
+			this.mousedown = this.mousedown || new MuteSignal(this);
 			super.setupSignals();
 		}
 

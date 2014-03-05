@@ -64,7 +64,7 @@ module akra.data {
 		}
 
 		protected setupSignals(): void {
-			this.modified = this.modified || <any> new Signal(this);
+			this.modified = this.modified || new Signal(this);
 		}
 
 

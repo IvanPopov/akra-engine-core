@@ -17,8 +17,8 @@ module akra.animation {
 		}
 
 		protected setupSignals(): void {
-			this.weightUpdated = this.weightUpdated || <any> new Signal(this);
-			this.durationUpdated = this.durationUpdated || <any> new Signal(this);
+			this.weightUpdated = this.weightUpdated || new Signal(this);
+			this.durationUpdated = this.durationUpdated || new Signal(this);
 
 			super.setupSignals();
 		}

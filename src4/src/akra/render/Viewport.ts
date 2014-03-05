@@ -20,13 +20,9 @@ module akra.render {
 
 
 	//NOTE: This signal is not called directly from the viewport, call derives from render technique.
-	class RenderSignal
-		extends Signal<{
-			(pViewport: IViewport, pTechnique: IRenderTechnique,
-				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}, IViewport> {
+	class RenderSignal extends Signal<IViewport> {
 
-		emit(pTechnique?: IRenderTechnique, iPass?: uint, pRenderable?: IRenderableObject, pSceneObject?: ISceneObject): void {
+		emit(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			//is mouse under the viewport
 			var pViewport: Viewport = <Viewport>this.getSender();
 			pViewport._onRender(pTechnique, iPass, pRenderable, pSceneObject);
@@ -37,9 +33,9 @@ module akra.render {
 
 	//3D events 
 
-	class DragstartSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
+	class DragstartSignal extends Signal<IViewport> {
 
-		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
+		emit(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
@@ -58,9 +54,9 @@ module akra.render {
 		}
 	}
 
-	class DragstopSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
+	class DragstopSignal extends Signal<IViewport> {
 
-		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
+		emit(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
@@ -77,9 +73,9 @@ module akra.render {
 		}
 	}
 
-	class DraggingSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
+	class DraggingSignal extends Signal<IViewport> {
 
-		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
+		emit(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -97,9 +93,9 @@ module akra.render {
 		}
 	}
 
-	class ClickSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
+	class ClickSignal extends Signal<IViewport> {
 
-		emit(x?: int, y?: int): void {
+		emit(x: int, y: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -117,9 +113,9 @@ module akra.render {
 		}
 	}
 
-	class MousemoveSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
+	class MousemoveSignal extends Signal<IViewport> {
 
-		emit(x?: int, y?: int): void {
+		emit(x: int, y: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -137,9 +133,9 @@ module akra.render {
 		}
 	}
 
-	class MousedownSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
+	class MousedownSignal extends Signal<IViewport> {
 
-		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
+		emit(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -156,9 +152,9 @@ module akra.render {
 		}
 	}
 
-	class MouseupSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
+	class MouseupSignal extends Signal<IViewport> {
 
-		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
+		emit(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
@@ -176,9 +172,9 @@ module akra.render {
 	}
 
 
-	class MouseoverSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
+	class MouseoverSignal extends Signal<IViewport> {
 
-		emit(x?: int, y?: int): void {
+		emit(x: int, y: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -187,9 +183,9 @@ module akra.render {
 		}
 	}
 
-	class MouseoutSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
+	class MouseoutSignal extends Signal<IViewport> {
 
-		emit(x?: int, y?: int): void {
+		emit(x: int, y: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -200,9 +196,9 @@ module akra.render {
 		}
 	}
 
-	class MousewheelSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }, IViewport> {
+	class MousewheelSignal extends Signal<IViewport> {
 
-		emit(x?: int, y?: int, fDelta?: float): void {
+		emit(x: int, y: int, fDelta: float): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -308,8 +304,8 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.viewportDimensionsChanged = this.viewportDimensionsChanged || <any> new Signal(this);
-			this.viewportCameraChanged = this.viewportCameraChanged || <any> new Signal(this);
+			this.viewportDimensionsChanged = this.viewportDimensionsChanged || new Signal(this);
+			this.viewportCameraChanged = this.viewportCameraChanged || new Signal(this);
 
 			this.render = this.render || new RenderSignal(this);
 

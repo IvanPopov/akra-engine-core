@@ -4,8 +4,8 @@
 
 module akra.ui {
 
-	class ClickSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class ClickSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			var pChb: Checkbox = <Checkbox>this.getSender();
 			pChb.setChecked(!pChb.isChecked());
 			e.stopPropagation();
@@ -64,7 +64,7 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.changed = this.changed || new Signal(<any>this);
+			this.changed = this.changed || new Signal(this);
 			super.setupSignals();
 		}
 

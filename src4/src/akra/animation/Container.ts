@@ -39,8 +39,8 @@ module akra.animation {
 		}
 
 		protected setupSignals(): void {
-			this.durationUpdated = this.durationUpdated || <any> new Signal(this);
-			this.enterFrame = this.enterFrame || <any> new Signal(this);
+			this.durationUpdated = this.durationUpdated || new Signal(this);
+			this.enterFrame = this.enterFrame || new Signal(this);
 
 			super.setupSignals();
 		}

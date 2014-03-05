@@ -33,9 +33,9 @@ module akra.control {
 		}
 
 		protected setupSignals(): void {
-			this.connected = this.connected || <any> new Signal(this);
-			this.disconnected = this.disconnected || <any> new Signal(this);
-			this.updated = this.updated || <any> new Signal(this);
+			this.connected = this.connected || new Signal(this);
+			this.disconnected = this.disconnected || new Signal(this);
+			this.updated = this.updated || new Signal(this);
 		}
 
 		init(): boolean {

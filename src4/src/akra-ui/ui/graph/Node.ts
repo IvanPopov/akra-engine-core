@@ -9,8 +9,8 @@
 
 
 module akra.ui.graph {
-	class MouseenterSignal extends Signal<{ (pNode: IUIGraphNode, e: IUIEvent): void; }, IUIGraphNode> {
-		emit(e?: IUIEvent): void {
+	class MouseenterSignal extends Signal<IUIGraphNode> {
+		emit(e: IUIEvent): void {
 			var pNode: IUIGraphNode = this.getSender();
 
 			super.emit(e);
@@ -19,8 +19,8 @@ module akra.ui.graph {
 		}
 	}
 
-	class MouseleaveSignal extends Signal<{ (pNode: IUIGraphNode, e: IUIEvent): void; }, IUIGraphNode> {
-		emit(e?: IUIEvent): void {
+	class MouseleaveSignal extends Signal<IUIGraphNode> {
+		emit(e: IUIEvent): void {
 			var pNode: IUIGraphNode = this.getSender();
 
 			super.emit(e);
@@ -29,24 +29,24 @@ module akra.ui.graph {
 		}
 	}
 
-	class MoveSignal extends Signal<{ (pNode: IUIGraphNode, e: IUIEvent): void; }, IUIGraphNode> {
-		emit(e?: IUIEvent): void {
+	class MoveSignal extends Signal<IUIGraphNode> {
+		emit(e: IUIEvent): void {
 			var pNode: IUIGraphNode = this.getSender();
 
 			pNode.routing();
 		}
 	}
 
-	class DbclickSignal extends Signal<{ (pNode: IUIGraphNode, e: IUIEvent): void; }, IUIGraphNode> {
-		emit(e?: IUIEvent): void {
+	class DbclickSignal extends Signal<IUIGraphNode> {
+		emit(e: IUIEvent): void {
 			var pNode: IUIGraphNode = this.getSender();
 
 			pNode.activate(!pNode.isActive());
 		}
 	}
 
-	class ClickSignal extends Signal<{ (pNode: IUIGraphNode, e: IUIEvent): void; }, IUIGraphNode> {
-		emit(e?: IUIEvent): void {
+	class ClickSignal extends Signal<IUIGraphNode> {
+		emit(e: IUIEvent): void {
 			var pNode: IUIGraphNode = this.getSender();
 
 			e.stopPropagation();
@@ -117,8 +117,8 @@ module akra.ui.graph {
 			this.move = this.move || new MoveSignal(this);
 			this.dblclick = this.dblclick || new DbclickSignal(this);
 
-			this.beforeDestroy = this.beforeDestroy || new Signal(<any>this);
-			this.selected = this.selected || new Signal(<any>this);
+			this.beforeDestroy = this.beforeDestroy || new Signal(this);
+			this.selected = this.selected || new Signal(this);
 			super.setupSignals();
 		}
 
@@ -287,8 +287,8 @@ module akra.ui.graph {
 		}
 
 
-		beforeDestroy: ISignal<{ (pNode: IUIGraphNode); void; }>;
-		selected: ISignal<{ (pNode: IUIGraphNode, bModified: boolean); void; }>;
+		beforeDestroy: ISignal<{ (pNode: IUIGraphNode): void; }>;
+		selected: ISignal<{ (pNode: IUIGraphNode, bModified: boolean): void; }>;
 
 
 		static MouseenterSignal = MouseenterSignal;
@@ -298,7 +298,7 @@ module akra.ui.graph {
 		static DbclickSignal = DbclickSignal;
 	}
 
-	register("graph.Node", Node);
+	register("graph.Node", <any>Node);
 }
 
 

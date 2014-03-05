@@ -31,8 +31,8 @@ module akra.scene {
 		}
 
 		protected setupSignals(): void {
-			this.frozen = this.frozen || <any> new Signal(this);
-			this.hidden = this.hidden || <any> new Signal(this);
+			this.frozen = this.frozen || new Signal(this);
+			this.hidden = this.hidden || new Signal(this);
 
 			super.setupSignals();
 		}

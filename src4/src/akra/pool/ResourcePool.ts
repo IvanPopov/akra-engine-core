@@ -36,7 +36,7 @@ module akra.pool {
 		}
 
 		protected setupSignals(): void {
-			this.createdResource = this.createdResource || <any> new Signal(this);
+			this.createdResource = this.createdResource || new Signal(this);
 		}
 
 		getFourcc(): int {

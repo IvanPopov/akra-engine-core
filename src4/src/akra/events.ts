@@ -3,15 +3,18 @@
 
 
 module akra {
+	export interface ICallbackWithSender<S> {
+		(sender: S, ...pArgs: any[]): void;
+	}
 
-	export class Signal<T extends Function, S> implements ISignal<T> {
-		private _pBroadcastListeners: IListener<T>[] = null;
+	export class Signal<S> implements ISignal<{ (sender: S, ...pArgs: any[]): void }> {
+		private _pBroadcastListeners: IListener<ICallbackWithSender<S>>[] = null;
 		private _nBroadcastListenersCount: uint = 0;
-		private _pUnicastListener: IListener<T> = null;
+		private _pUnicastListener: IListener<ICallbackWithSender<S>> = null;
 		private _pSender: S = null;
 		private _eType: EEventTypes = EEventTypes.BROADCAST;
 		private _fnForerunnerTrigger: Function = null;
-		private _pSyncSignal: Signal<T, S> = null;
+		private _pSyncSignal: Signal<S> = null;
 
 		private _sForerunnerTriggerName: string = null;
 
@@ -35,7 +38,7 @@ module akra {
 			//}
 		}
 
-		getListeners(eEventType: EEventTypes): IListener<T>[] {
+		getListeners(eEventType: EEventTypes): IListener<ICallbackWithSender<S>>[] {
 			if (eEventType == EEventTypes.BROADCAST) {
 				return this._pBroadcastListeners;
 			}
@@ -67,12 +70,12 @@ module akra {
 		}
 
 		connect(pSignal: ISignal<any>): boolean;
-		connect(fnCallback: T, eType?: EEventTypes): boolean;
+		connect(fnCallback: ICallbackWithSender<S>, eType?: EEventTypes): boolean;
 		connect(fnCallback: string, eType?: EEventTypes): boolean;
-		connect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
+		connect(pReciever: any, fnCallback: ICallbackWithSender<S>, eType?: EEventTypes): boolean;
 		connect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
 		connect(): boolean {
-			var pListener: IListener<T> = this.fromParamsToListener(arguments);
+			var pListener: IListener<ICallbackWithSender<S>> = this.fromParamsToListener(arguments);
 
 			if (pListener === null) {
 				return false;
@@ -99,12 +102,12 @@ module akra {
 		}
 
 		disconnect(pSignal: ISignal<any>): boolean;
-		disconnect(fnCallback: T, eType?: EEventTypes): boolean;
+		disconnect(fnCallback: ICallbackWithSender<S>, eType?: EEventTypes): boolean;
 		disconnect(fnCallback: string, eType?: EEventTypes): boolean;
-		disconnect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
+		disconnect(pReciever: any, fnCallback: ICallbackWithSender<S>, eType?: EEventTypes): boolean;
 		disconnect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
 		disconnect(): boolean {
-			var pTmpListener: IListener<T> = this.fromParamsToListener(arguments);
+			var pTmpListener: IListener<ICallbackWithSender<S>> = this.fromParamsToListener(arguments);
 			var bResult: boolean = false;
 
 			if (pTmpListener === null) {
@@ -134,7 +137,7 @@ module akra {
 
 		emit(...pArgs: any[]);
 		emit() {
-			var pListener: IListener<T> = null;
+			var pListener: IListener<ICallbackWithSender<S>> = null;
 			var nListeners: uint = this._eType === EEventTypes.BROADCAST ? this._nBroadcastListenersCount : 1;
 
 			switch (arguments.length) {
@@ -915,19 +918,19 @@ module akra {
 			return this._nBroadcastListenersCount > 0 || this._pUnicastListener !== null;
 		}
 
-		_syncSignal(pSignal: ISignal<T>): void {
-			this._pSyncSignal = <Signal<T, S>>pSignal;
+		_syncSignal(pSignal: ISignal<ICallbackWithSender<S>>): void {
+			this._pSyncSignal = <Signal<S>>pSignal;
 		}
 
 		protected _setSender(pSender: S): void {
 			this._pSender = pSender;
 		}
 
-		private fromParamsToListener(pArguments: IArguments): IListener<T> {
+		private fromParamsToListener(pArguments: IArguments): IListener<ICallbackWithSender<S>> {
 			var pReciever: any = null;
 			var fnCallback: any = null;
 			var sCallbackName: string = null;
-			var pSignal: ISignal<T> = null;
+			var pSignal: ISignal<ICallbackWithSender<S>> = null;
 			var eType: any = this._eType;
 
 			switch (pArguments.length) {
@@ -975,7 +978,7 @@ module akra {
 				return null;
 			}
 
-			var pListener: IListener<T> = this.getEmptyListener();
+			var pListener: IListener<ICallbackWithSender<S>> = this.getEmptyListener();
 			pListener.reciever = pReciever;
 			pListener.callback = fnCallback;
 			pListener.type = eType;
@@ -996,7 +999,7 @@ module akra {
 
 			return null;
 		}
-		private indexOfBroadcastListener(pReciever: any, fnCallback: T): int {
+		private indexOfBroadcastListener(pReciever: any, fnCallback: ICallbackWithSender<S>): int {
 			for (var i: uint = 0; i < this._nBroadcastListenersCount; i++) {
 				if (this._pBroadcastListeners[i].reciever === pReciever && this._pBroadcastListeners[i].callback === fnCallback) {
 					return i;
@@ -1006,14 +1009,14 @@ module akra {
 			return -1;
 		}
 
-		private getEmptyListener(): IListener<T> {
+		private getEmptyListener(): IListener<ICallbackWithSender<S>> {
 			if (Signal._nEmptyListenersCount > 0) {
-				var pListener: IListener<T> = Signal._pEmptyListenersList[--Signal._nEmptyListenersCount];
+				var pListener: IListener<ICallbackWithSender<S>> = Signal._pEmptyListenersList[--Signal._nEmptyListenersCount];
 				Signal._pEmptyListenersList[Signal._nEmptyListenersCount] = null;
 				return pListener;
 			}
 			else {
-				return <IListener<T>>{
+				return <IListener<ICallbackWithSender<S>>>{
 					reciever: null,
 					callback: null,
 					type: 0,
@@ -1023,7 +1026,7 @@ module akra {
 			}
 		}
 
-		private clearListener(pListener: IListener<T>): void {
+		private clearListener(pListener: IListener<ICallbackWithSender<S>>): void {
 			if (pListener === null) {
 				return;
 			}
@@ -1056,9 +1059,9 @@ module akra {
 	}
 
 
-	export class MuteSignal<T extends Function, S> extends Signal<T, S> {
-		emit(): void {
+	//export class MuteSignal<T extends Function, S> extends Signal<T, S> {
+	//	emit(): void {
 
-		}
-	}
+	//	}
+	//}
 }

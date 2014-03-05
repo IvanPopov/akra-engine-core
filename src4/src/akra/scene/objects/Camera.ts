@@ -109,8 +109,8 @@ module akra.scene.objects {
 		}
 
 		protected setupSignals(): void {
-			this.preRenderScene = this.preRenderScene || <any> new Signal(this);
-			this.postRenderScene = this.postRenderScene || <any> new Signal(this);
+			this.preRenderScene = this.preRenderScene || new Signal(this);
+			this.postRenderScene = this.postRenderScene || new Signal(this);
 
 			super.setupSignals();
 		}

@@ -13,8 +13,8 @@
 module akra.ui.animation {
 	import filedrop = addons.filedrop;
 
-	class DropSignal extends Signal<{ (pGraph: IUIAnimationGraph, e: IUIEvent, pComponent: IUIComponent, pInfo?: any): void; }, IUIAnimationGraph> {
-		emit(e?: IUIEvent, pComponent?: IUIComponent, pInfo?: any): void {
+	class DropSignal extends Signal<IUIAnimationGraph> {
+		emit(e: IUIEvent, pComponent: IUIComponent, pInfo?: any): void {
 			super.emit(e, pComponent, info);
 
 			var pGraph: IUIAnimationGraph = this.getSender();
@@ -44,7 +44,7 @@ module akra.ui.animation {
 
 		protected setupSignals(): void {
 			this.drop = this.drop || new DropSignal(this);
-			this.nodeSelected = this.nodeSelected || new Signal(<any>this);
+			this.nodeSelected = this.nodeSelected || new Signal(this);
 			super.setupSignals();
 		}
 

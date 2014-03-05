@@ -56,17 +56,17 @@ module akra.webgl {
 		}
 
 		protected setupSignals(): void {
-			this.click = this.click || <any> new Signal(this);
-			this.mousemove = this.mousemove || <any> new Signal(this);
-			this.mousedown = this.mousedown || <any> new Signal(this);
-			this.mouseup = this.mouseup || <any> new Signal(this);
-			this.mouseover = this.mouseover || <any> new Signal(this);
-			this.mouseout = this.mouseout || <any> new Signal(this);
-			this.mousewheel = this.mousewheel || <any> new Signal(this);
+			this.click = this.click || new Signal(this);
+			this.mousemove = this.mousemove || new Signal(this);
+			this.mousedown = this.mousedown || new Signal(this);
+			this.mouseup = this.mouseup || new Signal(this);
+			this.mouseover = this.mouseover || new Signal(this);
+			this.mouseout = this.mouseout || new Signal(this);
+			this.mousewheel = this.mousewheel || new Signal(this);
 
-			this.dragstart = this.dragstart || <any> new Signal(this);
-			this.dragstop = this.dragstop || <any> new Signal(this);
-			this.dragging = this.dragging || <any> new Signal(this);
+			this.dragstart = this.dragstart || new Signal(this);
+			this.dragstop = this.dragstop || new Signal(this);
+			this.dragging = this.dragging || new Signal(this);
 
 			this.click.setForerunner(this._onClick);
 			this.mousemove.setForerunner(this._onMousemove);

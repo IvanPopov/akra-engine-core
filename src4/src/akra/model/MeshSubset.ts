@@ -55,7 +55,7 @@ module akra.model {
 		}
 
 		protected setupSignals(): void {
-			this.skinAdded = this.skinAdded || <any> new Signal(this);
+			this.skinAdded = this.skinAdded || new Signal(this);
 
 			super.setupSignals();
 		}
