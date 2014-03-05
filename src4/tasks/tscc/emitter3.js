@@ -2763,7 +2763,7 @@ var TypeScript;
                 this.thisFullExtendClassName = fullExtendClassName;
             }
 
-            this.caclClassEscapeNamesMap(pullDecl.getSymbol());
+            this.calcClassEscapeNamesMap(pullDecl.getSymbol());
 
             this.recordSourceMappingStart(classDecl);
 
@@ -3800,7 +3800,7 @@ var TypeScript;
                 return;
             }
 
-            this.caclInterfaceEscapeNamesMap(symbol);
+            this.calcInterfaceEscapeNamesMap(symbol);
 
             var splitMode = this.getInterfaceSplitToExternsMode(declaration);
 
@@ -4378,7 +4378,7 @@ var TypeScript;
 
                 if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
                     if (isStatic) {
-                        jsDocComments.push("@expose");
+                        //jsDocComments.push("@expose");
                     } else {
                         jsDocComments.push("1expose1");
                     }
@@ -4794,32 +4794,15 @@ var TypeScript;
             return name[0] === "_";
         };
 
-        Emitter.prototype.isNeedEscapeFunction = function (symbol) {
-            return false;
-
-            if (!symbol.getContainer()) {
-                return false;
-            }
-
-            //if (!symbol.isMethod() && symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
-            //	return true;
-            //}
-            if (symbol.isMethod() && symbol.anyDeclHasFlag(4 /* Public */) && symbol.getContainer().anyDeclHasFlag(1 /* Exported */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !symbol.getContainer().anyDeclHasFlag(268435456 /* Final */) && !Emitter.isAkraSystemName(symbol.getDisplayName())) {
-                return true;
-            }
-
-            return false;
-        };
-
         Emitter.prototype.getContainerEscapeOptionForName = function (symbol, name) {
             if (symbol['_escapeOptionsMap']) {
                 return !!(symbol['_escapeOptionsMap'][name]);
             }
 
             if (symbol.type.isInterface()) {
-                this.caclInterfaceEscapeNamesMap(symbol);
+                this.calcInterfaceEscapeNamesMap(symbol);
             } else if (symbol.type.isClass()) {
-                this.caclInterfaceEscapeNamesMap(symbol);
+                this.calcInterfaceEscapeNamesMap(symbol);
             } else {
                 //debugger;
                 //console.log("some thing going wrong");
@@ -4829,7 +4812,7 @@ var TypeScript;
             return this.getContainerEscapeOptionForName(symbol, name);
         };
 
-        Emitter.prototype.caclInterfaceEscapeNamesMap = function (interfaceSymbol) {
+        Emitter.prototype.calcInterfaceEscapeNamesMap = function (interfaceSymbol) {
             var interfaceType = interfaceSymbol.type;
             if (interfaceType.isTypeReference()) {
                 interfaceType = interfaceType.referencedTypeSymbol;
@@ -4855,7 +4838,7 @@ var TypeScript;
                 for (var i = 0; i < count; i++) {
                     var extendsMember = extendsList.nonSeparatorAt(i);
                     var extendsType = this.semanticInfoChain.getSymbolForAST(extendsMember).type;
-                    var escapes = this.caclInterfaceEscapeNamesMap(extendsType);
+                    var escapes = this.calcInterfaceEscapeNamesMap(extendsType);
 
                     for (var j in escapes) {
                         result[j] = escapes[j];
@@ -4882,10 +4865,6 @@ var TypeScript;
                 var symbol = this.semanticInfoChain.getSymbolForAST(memberDecl);
                 var name = symbol.getDisplayName();
 
-                if (name === "getManager") {
-                    result[name] = false;
-                }
-
                 if (alreadyCheckedMembers.indexOf(name) >= 0 || result[name] !== undefined) {
                     continue;
                 }
@@ -4902,7 +4881,7 @@ var TypeScript;
             return result;
         };
 
-        Emitter.prototype.caclClassEscapeNamesMap = function (classSymbol) {
+        Emitter.prototype.calcClassEscapeNamesMap = function (classSymbol) {
             var classType = classSymbol.type;
             if (classType.isTypeReference()) {
                 classType = classType.referencedTypeSymbol;
@@ -4929,7 +4908,7 @@ var TypeScript;
                 for (var i = 0; i < count; i++) {
                     var implementsMember = implementsList.nonSeparatorAt(i);
                     var implementsType = this.semanticInfoChain.getSymbolForAST(implementsMember).type;
-                    var escapes = this.caclInterfaceEscapeNamesMap(implementsType);
+                    var escapes = this.calcInterfaceEscapeNamesMap(implementsType);
 
                     for (var j in escapes) {
                         result[j] = escapes[j];
@@ -4944,7 +4923,7 @@ var TypeScript;
                 for (var i = 0; i < count; i++) {
                     var extendsMember = extendsList.nonSeparatorAt(i);
                     var extendsType = this.semanticInfoChain.getSymbolForAST(extendsMember).type;
-                    var escapes = this.caclClassEscapeNamesMap(extendsType);
+                    var escapes = this.calcClassEscapeNamesMap(extendsType);
 
                     for (var j in escapes) {
                         result[j] = escapes[j];
@@ -5061,7 +5040,11 @@ var TypeScript;
             var container = symbol.getContainer();
             var name = symbol.getDisplayName();
 
-            if (symbol.isMethod() && container.anyDeclHasFlag(1 /* Exported */) && symbol.anyDeclHasFlag(4 /* Public */) && !symbol.anyDeclHasFlag(134217728 /* Protected */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !container.anyDeclHasFlag(268435456 /* Final */) && !Emitter.isAkraSystemName(name)) {
+            if (symbol.isMethod() && container.anyDeclHasFlag(1 /* Exported */) && symbol.anyDeclHasFlag(4 /* Public */) && !symbol.anyDeclHasFlag(134217728 /* Protected */) && !symbol.anyDeclHasFlag(268435456 /* Final */) && !container.anyDeclHasFlag(268435456 /* Final */) && !symbol.anyDeclHasFlag(16 /* Static */) && !Emitter.isAkraSystemName(name)) {
+                if (symbol.getContainer().isInterface()) {
+                    return this.setSymbolEscapeOption(symbol, this.isMethodOfInterfaceAlwaysFinal(symbol));
+                }
+
                 return this.setSymbolEscapeOption(symbol, true);
             }
 
@@ -5070,6 +5053,38 @@ var TypeScript;
             }
 
             return this.setSymbolEscapeOption(symbol, false);
+        };
+
+        Emitter.prototype.isMethodOfInterfaceAlwaysFinal = function (symbol, forceContainer) {
+            var interfaceType = forceContainer ? forceContainer : symbol.getContainer().type;
+            var methodName = symbol.getDisplayName();
+
+            var typesThatImplementInterface = interfaceType.getTypesThatExplicitlyImplementThisType();
+            var typesThatExtendInterface = interfaceType.getTypesThatExtendThisType();
+
+            if (typesThatImplementInterface.length === 0 && typesThatExtendInterface.length === 0) {
+                return false;
+            }
+
+            for (var i = 0; i < typesThatImplementInterface.length; i++) {
+                var type = typesThatImplementInterface[i];
+
+                if (!type.anyDeclHasFlag(268435456 /* Final */)) {
+                    var member = type.findMember(methodName, true);
+
+                    if (member && !member.anyDeclHasFlag(268435456 /* Final */)) {
+                        return true;
+                    }
+                }
+            }
+
+            for (var i = 0; i < typesThatExtendInterface.length; i++) {
+                if (this.isMethodOfInterfaceAlwaysFinal(symbol, typesThatExtendInterface[i])) {
+                    return true;
+                }
+            }
+
+            return false;
         };
 
         Emitter.prototype.getInterfaceSplitToExternsMode = function (declaration) {

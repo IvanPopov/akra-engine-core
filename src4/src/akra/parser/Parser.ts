@@ -109,26 +109,6 @@ module akra.parser {
 		rule: IRule;
 	}
 
-	interface ITest0 {
-		x(): number;
-		y: number;
-	}
-
-	export interface ITest1{
-		x(): number;
-		y: number;
-	}
-
-	interface ITest2 extends ITest0{
-		x(): number;
-		z(): number;
-	}
-
-	interface ITest3 extends ITest1 {
-		x(): number;
-		z(): number;
-	}
-
 	export class Parser implements IParser {
 		//Input
 
