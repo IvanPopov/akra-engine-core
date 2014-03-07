@@ -64,12 +64,7 @@ module akra.config {
 
 	//required deps for Akra Engine
 	export var coreDeps: IDependens = {
-		files: [
-			{
-				path: AE_CORE_DEPENDENCIES.path,
-				type: AE_CORE_DEPENDENCIES.type
-			}
-		]
+		files: [AE_CORE_DEPENDENCIES]
 	};
 
 	/** Unknown constants. */

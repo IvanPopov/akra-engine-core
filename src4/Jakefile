@@ -1,0 +1,742 @@
+var fs = require("fs");
+var path = require("path");
+var libxmljs = require('libxmljs');
+var Zip = require('node-native-zip');
+var spawn = require('child_process').spawn;
+
+// Variables
+var coreDirectory = "src/akra/";
+var addonsDirectory = "src/akra-addons/";
+var uiDirectory = "src/ui/";
+var demosDirectory = "src/demos/";
+
+var builtDirectory = "built/";
+
+var tscDirectory = "lib/grunt/typescript-0.9.5/";
+var tsccDirectory = "lib/grunt/tscc/";
+
+//built parameters
+var Configuration = "Release";
+var Version = null;
+
+builtDirectory = path.join(builtDirectory, Configuration);
+
+var akraProject = path.join(coreDirectory, "akra.xml");
+
+/**
+	 * @param configFile {String} Path to config file.
+	 */
+function compile(configFile, cb) {
+
+	var config = loadConfig(configFile);
+
+	compileTypescript(config, function (ok) {
+		if (!ok) {
+			return cb(false);
+		}
+
+		buildProject(config, cb);
+	});
+}
+
+function loadConfig(file) {
+	var xsd = libxmljs.parseXmlString(grunt.file.read(path.join(__dirname, "schema.xsd")));
+	var xml = libxmljs.parseXmlString(grunt.file.read(file));
+
+	if (!xml.validate(xsd)) {
+		grunt.log.warn(file + " validation failed.");
+		return cb(false);
+	}
+
+	var config = xml.root();
+
+	config.find("PropertyGroup").forEach(function (group) {
+		if (!checkPropertyGroupCondition(group)) {
+			group.remove();
+		}
+	});
+
+	config.attr("Path", path.dirname(file));
+
+	if (!config.attr("Name")) {
+		config.attr("Name", path.basename(file, ".xml"));
+	}
+
+	config.attr("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").text())));
+
+	return config;
+}
+
+function checkPropertyGroupCondition(propertyGroup) {
+	var conditionAttr = propertyGroup.attr("Condition");
+
+	if (!conditionAttr) {
+		return true;
+	}
+
+	var condition = prepareSystemVariables(conditionAttr.value());
+
+	return computeExpression(condition);
+}
+
+function prepareSystemVariables(str) {
+	return str.replace(/(\$\(([\w\d\_\.\-]+)\))/g, function (str, expr, variable) {
+		var v = variable.split(".");
+		var e = global(v[0]) || null;
+
+		if (e) {
+			for (var i = 1; i < v.length; ++i) {
+				e = e[v[i]];
+			}
+		}
+
+		return e;
+	});
+}
+
+/** 
+ * Compute expressions
+ */
+function computeExpression(expression) {
+	var f = new Function("True", "False", "return (" + expression + ");");
+	return f(true, false);
+}
+
+function compileTypescript(config, cb) {
+
+	var compilerOptions = config.get("//ClosureCompiler");
+
+	var cmd = "node";
+	var tscjs = path.joint(tscDirectory, "tsc.js");
+	var argv = [];
+	var dest = null;		//path ro destination js file.
+	var configDir = config.attr("Path").value();
+
+	if (compilerOptions || grunt.option("tscc")) {
+		tscjs = path.joint(tsccDirectory, "tscc.js");
+	}
+
+	argv.push(tscjs);
+
+	//load sources
+	config.find("//TypeScriptCompile").forEach(function (typescriptCompile) {
+		argv.push(path.join(configDir, typescriptCompile.attr("Include").value()));
+	});
+
+
+	if (config.get("//TypeScriptTarget")) {
+		argv.push("--target", config.get("//TypeScriptTarget").text());
+	}
+
+	if (config.get("//TypeScriptModuleKind")) {
+		argv.push("--module", config.get("//TypeScriptModuleKind").text());
+	}
+
+	if (config.get("//TypeScriptSourceMap")) {
+		if (config.get("//TypeScriptSourceMap").text() === "True") {
+			argv.push("--sourcemap");
+		}
+	}
+
+	if (config.get("//TypeScriptGeneratesDeclarations")) {
+		if (config.get("//TypeScriptGeneratesDeclarations").text() === "True") {
+			argv.push("--declaration");
+		}
+	}
+
+	if (config.get("//TypeScriptPropagateEnumConstants")) {
+		if (config.get("//TypeScriptPropagateEnumConstants").text() === "True") {
+			argv.push("--propagateEnumConstants");
+		}
+	}
+
+	if (config.get("//TypeScriptRemoveComments")) {
+		if (config.get("//TypeScriptRemoveComments").text() === "True") {
+			argv.push("--removeComments");
+		}
+	}
+
+	if (config.get("//TypeScriptOutDir")) {
+		argv.push("--outDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutDir").text())));
+	}
+
+	if (config.get("//TypeScriptOutFile")) {
+		dest = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+		dest = dest.replace(/\.min\.js$/, ".js");
+	}
+	else {
+		jake.logger.error("TypeScript out file must be specified.");
+		return cb(false);
+	}
+
+	grunt.config();
+
+	argv.push("--out", dest);
+
+	if (config.get("//TypeScriptAdditionalFlags")) {
+		argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").text()).split(/\s+/));
+	}
+
+	grunt.log.writeln(cmd + " " + argv.join(" "));
+
+	config.attr("OutFile", dest);
+	return !compilerOptions ? cb(true) : minimize(config, cb);
+
+	var tsc = spawn(cmd, argv);
+
+	tsc.stdout.on("data", function (data) {
+		jake.logger.log(data.toString());
+	});
+
+	tsc.stderr.on("data", function (data) {
+		jake.logger.error(data.toString());
+	});
+
+
+	tsc.on("close", function (code) {
+		if (code === 0) {
+			config.attr("OutFile", dest);
+
+			if (compilerOptions) {
+				minimize(config, cb);
+			} else {
+				cb(true);
+			}
+		}
+		else {
+			jake.logger.error(new Error("Compilation failed."));
+			cb(false);
+		}
+	});
+
+
+}
+
+function generateExterns(src) {
+
+	var dest = src.replace(/\.min\.js|\.js$/, ".externs.js");
+	if (src === dest) dest += ".externs";
+
+	var externs = [];
+	var data = fs.readFileSync(src, "utf8");
+
+	var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g);
+
+	for (var i = 0; i < list.length; ++i) {
+		var name = list[i];
+
+		if (name.indexOf(".") > 0) {
+			name = name.substr(0, name.indexOf("."));
+		}
+
+		if (externs.indexOf(name) == -1) {
+			externs.push(name);
+		}
+	}
+
+	var externsString = "\
+/**\n\
+ * @fileoverview JavaScript Built-Ins for Akra Engne resources.\n\
+ *\n\
+ * @externs\n\
+ */\n\n\n\
+";
+
+	for (var i = 0; i < externs.length; ++i) {
+		externsString += "\
+/**\n\
+ * @const\n\
+ */\n";
+		externsString += "var " + externs[i] + ";\n\n";
+	}
+
+	grunt.file.write(dest, externsString);
+
+	return dest;
+}
+
+function minimize(config, cb) {
+	var configDir = config.attr("Path").value();
+	var compilerOptions = config.get("//ClosureCompiler");
+	var externsPath = null;
+	var dest = null;
+
+	var src = path.join(config.attr("Path").value(), prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+
+	externsPath = generateExterns(src);
+	/* grunt.log.debug */console.log("@EXTERNS", externsPath);
+
+	if (compilerOptions.get("//OutFile")) {
+		var outFile = prepareSystemVariables(compilerOptions.get("//OutFile").text());
+		dest = path.join(configDir, outFile);
+	}
+	else {
+		dest = src.replace(/\.js$/, ".min.js");
+		if (src === dest) dest += ".min";
+	}
+
+	if (!src || !grunt.file.exists(src)) {
+		grunt.log.warn('Source file for minimizing "' + src + '" not found.');
+		return null;
+	}
+
+	var closureJar = path.join(__dirname, '/closure/compiler.jar');
+	var compilationLevel = compilerOptions.get("//CompilationLevel").text();
+	var cmd = "java";
+	var argv = [
+		"-jar", closureJar,
+		"--compilation_level", compilationLevel,
+		"--js", src,
+		"--js_output_file", dest
+	];
+
+	if (compilerOptions.get("//CreateSourceMap")) {
+		if (compilerOptions.get("//CreateSourceMap").text() === "True") {
+			argv.push("--source_map_format=V3", "--create_source_map", dest + ".map");
+		}
+	}
+
+	if (externsPath && grunt.file.exists(externsPath)) {
+		argv.push("--externs", externsPath);
+	}
+
+	grunt.log.writeln(cmd + " " + argv.join(" "));
+
+	//FIXME: remove after debugging
+	config.attr("OutFile", dest);
+	return cb(true);
+	///////
+
+	var closure = spawn(cmd, argv);
+
+	closure.stdout.on("data", function (data) {
+		jake.logger.log(data.toString());
+	});
+
+	closure.stderr.on("data", function (data) {
+		jake.logger.error(data.toString());
+	});
+
+	closure.on("close", function (code) {
+		if (code === 0) {
+			config.attr("OutFile", dest);
+			cb(true);
+		}
+		else {
+			/* grunt.fail.warn */ throw new Error("Closure minimization failed.");
+			cb(false);
+		}
+	});
+
+	return dest;
+}
+
+/** 
+ * Собиарем ресурсы по проекту
+ * @param folder {String} Путь к папке с проектом.
+ * @param Project {XML} Описание проекта в resources.xml.
+ * @param dest {String} Файл, в который будет собран проект.
+ */
+function buildProject(config, cb) {
+	var variables = {};
+	var outFile = config.attr("OutFile").value();
+
+	console.time("Build project " + config.attr("Name"));
+
+	if (config.find("//PropertyGroup/Variable")) {
+		config.find("//PropertyGroup/Variable").forEach(function (variable) {
+			var name = variable.attr("Name").value();
+			var value = computeExpression(variable.text());
+
+			if (typeof value === 'string') {
+				value = JSON.stringify(value);
+			}
+
+			variables[name] = value;
+
+			/* grunt.log.debug */console.log("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
+		});
+	}
+
+	if (config.find("//PropertyGroup/Resource")) {
+		config.find("//PropertyGroup/Resource").forEach(function (resource) {
+			var result = createResource(config, resource);
+			var resourceName = resource.attr("Name").value();
+
+			variables[resourceName] = JSON.stringify(result);
+		});
+	}
+
+	//if (config.find("//PropertyGroup/Attachment")) {
+	//	config.find("//PropertyGroup/Resource").forEach(function (attachment) {
+	//		var result = loadAttachment(config, attachment);
+	//		var attachmentName = attachment.attr("Name").value();
+
+	//		variables[attachmentName] = JSON.stringify(result, null, '\t');
+	//		variables[attachmentName + ".format"] = JSON.stringify(result.format);
+
+	//		if (result.format !== null && result.format !== "String") {
+	//			variables[attachmentName + ".content"] = result.content;
+	//		}
+	//		else {
+	//			variables[attachmentName + ".content"] = JSON.stringify(result.content);
+	//		}
+	//	});
+	//}
+
+
+	var data = null;
+
+	data = grunt.file.read(outFile);
+
+	var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g);
+
+	for (var i = 0; i < list.length; ++i) {
+		var name = list[i];
+		var value = variables[name];
+		if (value !== undefined) {
+			data.replace(name, value);
+			/* grunt.log.debug */console.log("> " + name + "=" + (value.length > 32 ? value.substr(0, 32) + '...' : value));
+		}
+	}
+
+	grunt.file.write(outFile, data);
+	console.timeEnd("Build project " + config.attr("Name"));
+
+	cb(true);
+}
+
+function computeExpression(expression) {
+	var f = new Function("return (" + prepareSystemVariables(expression) + ");");
+
+	try {
+		return f();
+	} catch (e) {
+		/* grunt.log.debug */console.log(f.toString());
+		/* grunt.fail.warn */ throw new Error(e);
+	}
+
+	return false;
+}
+
+
+
+/**
+ * @param PropertyGroup {XML} Xml tag with resource sedcription.
+ * @param destFolder {String} Destination folder.
+ */
+function createResource(config, resource) {
+	var resourceName = resource.attr("Name").value();
+	var configPath = config.attr("Path").value();
+	var buildDir = path.join(config.attr("Path").value(), config.attr("OutDir").value());
+
+	if (resource.get("Filename")) {
+		resourceName = resource.get("Filename").text();
+	}
+
+	var isArchive = false;
+	var useInlining = false;
+	var outDir = "";
+	var mapFile = null;
+	var map = null;
+
+	if (resource.get("UseInlining")) {
+		useInlining = resource.get("UseInlining").text() === "True";
+
+		//При подстановке внутрь скрипта все должно быть запаковано в один файл.
+		if (useInlining) {
+			isArchive = true;
+		}
+	}
+
+	if (!useInlining) {
+		//при использовании подстановки, контент включается внутрь JS файла
+		//поэтому нету смысла использовать параметр OutDir
+		if (resource.get("OutDir")) {
+			outDir = prepareSystemVariables(resource.get("OutDir").text());
+		}
+
+		if (resource.get("Archive")) {
+			isArchive = resource.get("Archive").text() === "True";
+		}
+	}
+
+	if (resource.get("MapFile")) {
+		mapFile = prepareSystemVariables(resource.get("MapFile").text());
+		//расчитаем полный путь к map файлу
+		mapFile = path.join(configPath, mapFile);
+
+		if (!grunt.file.exists(mapFile)) {
+			/* grunt.fail.warn */ throw new Error("<MapFile>" + mapFile + "</MapFile> not found.");
+		}
+	}
+
+	var i;
+	if (mapFile) {
+		map = JSON.parse(grunt.file.read(mapFile));
+
+		var mapFolder = path.dirname(mapFile);
+
+		var p = map;
+		while (p) {
+			if (p.files) {
+				for (i = 0; i < p.files.length; i++) {
+					p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
+				}
+			}
+
+			p = p.deps;
+		}
+	}
+	else {
+		map = { files: [] };
+	}
+
+	if (resource.get("Data")) {
+		var data = resource.get("Data");
+		var additionalFiles = [];
+
+		if (data.get("Folder")) {
+			additionalFiles = readFolders(data.find("Folder"), config);
+		}
+
+		if (data.get("File")) {
+			var files = data.find("File");
+			for (i = 0; i < files.length; ++i) {
+				additionalFiles.push(path.normalize(files[i].attr("Path").value()));
+			}
+		}
+
+		if (data.get("ResourceFile")) {
+			var resourceFiles = data.find("ResourceFile");
+			var lowLevel = getLowerLevel(map);
+
+			for (i = 0; i < resourceFiles.length; ++i) {
+				loadResource(resourceFiles[i], lowLevel);
+			}
+		}
+	}
+	if (isArchive) {
+		var archive = packResourcesArchive(config, map, additionalFiles);
+
+		if (useInlining) {
+
+			var content = archive.toBuffer().toString('base64');
+
+			return {
+				path: "data:application/octet-stream;base64," + content,
+				type: "ara"
+			};
+		}
+		else {
+			var outputFile = path.join(buildDir, outDir, resourceName + ".ara");
+			var content = archive.toBuffer();
+
+			fs.writeFileSync(outputFile, content);
+
+			return {
+				path: path.relative(buildDir, outputFile).replace(/\\/ig, "/"),
+				type: "ara"
+			};
+		}
+	}
+
+	// Записываем все файлы из map & additionalFiles в srcFiles
+	// после чего записываем srcFiles в outputDir
+
+	var srcFiles = additionalFiles.slice(0);
+	var outputDir = path.join(buildDir, outDir);
+
+	var p = map;
+	while (p) {
+		if (p.files) {
+			for (i = 0; i < p.files.length; i++) {
+				if (srcFiles.indexOf(p.files[i].path) == -1) {
+					srcFiles.push(p.files[i].path);
+				}
+			}
+		}
+
+		p = p.deps;
+	}
+
+	for (i = 0; i < srcFiles.length; ++i) {
+		var dstFile = path.join(outputDir, srcFiles[i]);
+		var srcFile = path.resolve(path.join(configPath, srcFiles[i]));
+
+		grunt.file.copy(srcFile, dstFile);           //записываем файл в destFolder
+	}
+
+	mapFile = path.join(outputDir, resourceName + ".map");
+
+	if (data.get("ResourceFile") || map.files.length) {
+		grunt.file.write(mapFile, JSON.stringify(map, null, "\t"));
+	}
+
+	return {
+		path: path.relative(buildDir, mapFile).replace(/\\/ig, "/"),
+		type: "map"
+	};
+}
+
+
+function readFolders(folders, config) {
+	var srcDir = config.attr("Path").value();
+	var result = [];
+
+	for (var i = 0; i < folders.length; ++i) {
+		var currentFolder = path.join(srcDir, folders[i].attr("Path").value());
+		var files = grunt.file.expand({ filter: 'isFile' }, [currentFolder]);
+		var excludes = folders[i].find("Exclude");
+
+		if (excludes) {
+			for (var f = 0; f < files.length; ++f) {
+				for (var n = 0; n < excludes.length; ++n) {
+					if (path.resolve(path.join(currentFolder, excludes[n].$.Path)) ==
+						path.resolve(path.join(currentFolder, files[f]))) {
+						//Removing Exclude from files.
+						/* grunt.log.debug */console.log("@EXCLUDE", excludes[n].$.Path);
+						files.splice(f, 1);
+						f--;
+					}
+				}
+			}
+		}
+
+		files.forEach(function (file) {
+			result.push(path.relative(srcDir, path.join(currentFolder, file)));
+		});
+	}
+
+	return result;
+}
+
+
+function packResourcesArchive(config, map, additionalData) {
+	var archive = new Zip();
+	var configDir = config.attr("Path").value();
+	var files = [];
+
+
+	archive.add(".map", new Buffer(JSON.stringify(map, null, '\t'), "utf8"));
+
+	/* grunt.log.debug */console.log("@RESOURCE", ".map");
+
+	while (map) {
+		if (map.files) {
+			for (var i = 0; i < map.files.length; i++) {
+				var file = map.files[i].path;
+				var res = file.replace(/\\/ig, "/");
+
+				archive.add(res, fs.readFileSync(path.join(configDir, file)));
+				files.push(res);
+
+				/* grunt.log.debug */console.log("@RESOURCE", res);
+			}
+		}
+
+		map = map.deps;
+	}
+
+	if (additionalData) {
+		additionalData.forEach(function (value) {
+			value = path.join(configDir, value);
+			var name = path.relative(configDir, value).replace(/\\/ig, "/");
+
+			if (grunt.file.exists(value)) {
+				if (grunt.file.isDir(value)) {
+					// files in string[] array, include directories..
+					// var files = grunt.file.expand({ filter: "isFile" }, [value]);
+					/* grunt.fail.warn */ throw new Error("TODO: folder support not implemented....");
+				}
+				else if (files.indexOf(name) === -1) {
+
+					archive.add(name, fs.readFileSync(value));
+					files.push(name);
+
+					/* grunt.log.debug */console.log("@RESOURCE", name);
+				}
+			}
+			else {
+				/* grunt.fail.warn */ throw new Error("Could not find file " + value + " (cwd: " + process.cwd() + ")");
+			}
+		});
+	}
+
+	return archive;
+}
+
+function getLowerLevel(deps) {
+	var c = deps;
+
+	while (c) {
+		if (!c.deps) {
+			return c;
+		}
+
+		c = c.deps;
+	}
+
+	return c;
+}
+
+/**
+	 * Загружаем ресурс из тега ResourceFile в map файл.
+	 * @param ResourceFile {XML} ResourceFile tag.
+	 * @param cur {IDependens} Текущий уровень зависимостей.
+	 */
+function loadResource(resourceFile, cur) {
+	cur.files = cur.files || [];
+
+	var res = { path: resourceFile.attr("Path").value() };
+
+	if (resourceFile.attr("Name")) {
+		res.name = resourceFile.attr("name").value();
+	}
+
+	if (resourceFile.attr("Comment")) {
+		res.comment = resourceFile.attr("Comment").value();
+	}
+
+	if (resourceFile.attr("Type")) {
+		res.type = resourceFile.attr("Type").value();
+	}
+
+	cur.files.push(res);
+
+	if (resourceFile.get("ResourceFile")) {
+		cur.deps = cur.deps || {};
+		var resourceFiles = resourceFile.find("ResourceFile")
+		for (var i = 0; i < resourceFiles.length; ++i) {
+			loadResource(resourceFiles[i], cur.deps);
+		}
+	}
+}
+
+// Local target to build the engine core
+desc("Builds the engine");
+task("core", { async: true }, function () {
+	console.log('-- async1 start ----------------');
+	setTimeout(function () {
+		console.log('-- async1 done ----------------');
+		complete();
+	}, 1000);
+});
+
+desc("Use debug mode");
+task("setDebugMode", function () {
+	Configuration = "Debug";
+});
+
+// Local target to build the compiler and services
+desc("Builds the full engine and addons in debug mode");
+task("core-debug", ["setDebugMode", "core"]);
+
+// Set the default task to "core"
+task("default", ["core"]);
+
+// Cleans the built directory
+desc("Cleans the engine output, addons and demos");
+task("clean", function () {
+	jake.rmRf(builtDirectory);
+});

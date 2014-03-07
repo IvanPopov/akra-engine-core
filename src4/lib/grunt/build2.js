@@ -8,23 +8,23 @@ var spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
 var libxmljs = require('libxmljs');
-var wrench = require('wrench');
-var UglifyJS = require("uglify-js");
-var jade = require('jade');
+var domain = require('domain');
+//var UglifyJS = require("uglify-js");
+//var jade = require('jade');
 //zip for resource compression
-var Zip = require('node-zip');
+var Zip = require('node-native-zip');
 
 
-
-var EXTERN_PATTERN = /(AE_[\w\d\-\.\_\:]*)/g;
 var TYPESCRIPT = "typescript-0.9.5";
 
 var DEMOS_SOURCE_DIR = "src/demos";
 var DEMOS_BUILD_DIR = "build/demos";
 
-//TODO: add all available TS options
 
 module.exports = function (grunt) {
+
+	//console.log((new Error).stack)
+
 	/**
 	 * @param configFile {String} Path to config file.
 	 */
@@ -37,12 +37,7 @@ module.exports = function (grunt) {
 				return cb(false);
 			}
 
-			if (!ok) {
-				return cb(false);
-			}
-
-			searchResources(config, cb);
-
+			buildProject(config, cb);
 		});
 	}
 
@@ -69,9 +64,10 @@ module.exports = function (grunt) {
 			config.attr("Name", path.basename(file, ".xml"));
 		}
 
-		grunt.config("ProjectName", config.attr("Name").value());
-		grunt.config("ProjectDir", config.attr("Path").value());
-		grunt.config("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").text())));
+		//grunt.config("ProjectName", config.attr("Name").value());
+		//grunt.config("ProjectDir", config.attr("Path").value());
+		//grunt.config("OutDir", );
+		config.attr("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").text())));
 
 		return config;
 	}
@@ -89,8 +85,17 @@ module.exports = function (grunt) {
 	}
 
 	function prepareSystemVariables(str) {
-		return str.replace(/(\$\(([\w\d\_\-]+)\))/g, function (str, expr, variable) {
-			return grunt.config.get(variable);
+		return str.replace(/(\$\(([\w\d\_\.\-]+)\))/g, function (str, expr, variable) {
+			var v = variable.split(".");
+			var e = grunt.config.get(v[0]) || null;
+
+			if (e) {
+				for (var i = 1; i < v.length; ++i) {
+					e = e[v[i]];
+				}
+			}
+
+			return e;
 		});
 	}
 
@@ -177,7 +182,10 @@ module.exports = function (grunt) {
 		}
 
 		grunt.log.writeln(cmd + " " + argv.join(" "));
-		return minimize(config, cb);
+
+		config.attr("OutFile", dest);
+		return !compilerOptions ? cb(true) : minimize(config, cb);
+
 		var tsc = spawn(cmd, argv);
 
 		tsc.stdout.on("data", function (data) {
@@ -191,8 +199,12 @@ module.exports = function (grunt) {
 
 		tsc.on("close", function (code) {
 			if (code === 0) {
+				config.attr("OutFile", dest);
+
 				if (compilerOptions) {
 					minimize(config, cb);
+				} else {
+					cb(true);
 				}
 			}
 			else {
@@ -210,7 +222,11 @@ module.exports = function (grunt) {
 		var externs = [];
 		var data = fs.readFileSync(src, "utf8");
 
-		data.replace(EXTERN_PATTERN, function replacer(str, name) {
+		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g);
+
+		for (var i = 0; i < list.length; ++i) {
+			var name = list[i];
+
 			if (name.indexOf(".") > 0) {
 				name = name.substr(0, name.indexOf("."));
 			}
@@ -218,9 +234,7 @@ module.exports = function (grunt) {
 			if (externs.indexOf(name) == -1) {
 				externs.push(name);
 			}
-
-			return name;
-		});
+		}
 
 		var externsString = "\
 /**\n\
@@ -246,10 +260,13 @@ module.exports = function (grunt) {
 	function minimize(config, cb) {
 		var configDir = config.attr("Path").value();
 		var compilerOptions = config.get("//ClosureCompiler");
-		var externsPath = null; //generateExterns(dest);
+		var externsPath = null;
 		var dest = null;
 
 		var src = path.join(config.attr("Path").value(), prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+
+		externsPath = generateExterns(src);
+		grunt.log.debug("@EXTERNS", externsPath);
 
 		if (compilerOptions.get("//OutFile")) {
 			var outFile = prepareSystemVariables(compilerOptions.get("//OutFile").text());
@@ -287,6 +304,11 @@ module.exports = function (grunt) {
 
 		grunt.log.writeln(cmd + " " + argv.join(" "));
 
+		//FIXME: remove after debugging
+		config.attr("OutFile", dest);
+		return cb(true);
+		///////
+
 		var closure = spawn(cmd, argv);
 
 		closure.stdout.on("data", function (data) {
@@ -299,6 +321,7 @@ module.exports = function (grunt) {
 
 		closure.on("close", function (code) {
 			if (code === 0) {
+				config.attr("OutFile", dest);
 				cb(true);
 			}
 			else {
@@ -318,6 +341,7 @@ module.exports = function (grunt) {
 	 */
 	function buildProject(config, cb) {
 		var variables = {};
+		var outFile = config.attr("OutFile").value();
 
 		console.time("Build project " + config.attr("Name"));
 
@@ -332,53 +356,53 @@ module.exports = function (grunt) {
 
 				variables[name] = value;
 
-				grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 16) : value));
+				grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
 			});
 		}
 
 		if (config.find("//PropertyGroup/Resource")) {
 			config.find("//PropertyGroup/Resource").forEach(function (resource) {
-				var result = packResource(config, resource);
+				var result = createResource(config, resource);
 				var resourceName = resource.attr("Name").value();
 
 				variables[resourceName] = JSON.stringify(result);
-				variables[resourceName + ".path"] = JSON.stringify(result.path);
-				variables[resourceName + ".type"] = JSON.stringify(result.type);
 			});
 		}
 
-		if (config.find("//PropertyGroup/Attachment")) {
-			config.find("//PropertyGroup/Resource").forEach(function (attachment) {
-				var result = loadAttachment(config, attachment);
-				var attachmentName = attachment.attr("Name").value();
+		//if (config.find("//PropertyGroup/Attachment")) {
+		//	config.find("//PropertyGroup/Resource").forEach(function (attachment) {
+		//		var result = loadAttachment(config, attachment);
+		//		var attachmentName = attachment.attr("Name").value();
 
-				variables[attachmentName] = JSON.stringify(result, null, '\t');
-				variables[attachmentName + ".format"] = JSON.stringify(result.format);
+		//		variables[attachmentName] = JSON.stringify(result, null, '\t');
+		//		variables[attachmentName + ".format"] = JSON.stringify(result.format);
 
-				if (result.format !== null && result.format !== "String") {
-					variables[attachmentName + ".content"] = result.content;
-				}
-				else {
-					variables[attachmentName + ".content"] = JSON.stringify(result.content);
-				}
-			});
-		}
+		//		if (result.format !== null && result.format !== "String") {
+		//			variables[attachmentName + ".content"] = result.content;
+		//		}
+		//		else {
+		//			variables[attachmentName + ".content"] = JSON.stringify(result.content);
+		//		}
+		//	});
+		//}
 
-		var data = grunt.file.read(dest);
 
-		data = data.replace(EXTERN_PATTERN, function replacer(str, name) {
+		var data = null;
+		
+		data = grunt.file.read(outFile);
+	
+		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g);
+
+		for (var i = 0; i < list.length; ++i) {
+			var name = list[i];
 			var value = variables[name];
-
-			if (typeof value !== "undefined") {
+			if (value !== undefined) {
+				data.replace(name, value);
 				grunt.log.debug("> " + name + "=" + (value.length > 32 ? value.substr(0, 32) + '...' : value));
-				return value;
 			}
+		}
 
-			return name;
-		});
-
-		grunt.file.write(dest, data);
-
+		grunt.file.write(outFile, data);
 		console.timeEnd("Build project " + config.attr("Name"));
 
 		cb(true);
@@ -386,21 +410,30 @@ module.exports = function (grunt) {
 
 	function computeExpression(expression) {
 		var f = new Function("return (" + prepareSystemVariables(expression) + ");");
-		return f();
+
+		try {
+			return f();
+		} catch (e) {
+			grunt.log.debug(f.toString());
+			grunt.fail.warn(e);
+		}
+
+		return false;
 	}
 
 
 
 	/**
-	 * @param resourcePath {String} Path to folder with resources.xml.
 	 * @param PropertyGroup {XML} Xml tag with resource sedcription.
 	 * @param destFolder {String} Destination folder.
 	 */
-	function crateResourceObject(config, resource) {
+	function createResource(config, resource) {
 		var resourceName = resource.attr("Name").value();
+		var configPath = config.attr("Path").value();
+		var buildDir = path.join(config.attr("Path").value(), config.attr("OutDir").value());
 
-		if (resource.get("//Filename")) {
-			resourceName = resource.get("//Filename").text();
+		if (resource.get("Filename")) {
+			resourceName = resource.get("Filename").text();
 		}
 
 		var isArchive = false;
@@ -409,8 +442,8 @@ module.exports = function (grunt) {
 		var mapFile = null;
 		var map = null;
 
-		if (resource.get("//UseInlining")) {
-			useInlining = resource.get("//UseInlining").text() === "True";
+		if (resource.get("UseInlining")) {
+			useInlining = resource.get("UseInlining").text() === "True";
 
 			//При подстановке внутрь скрипта все должно быть запаковано в один файл.
 			if (useInlining) {
@@ -421,34 +454,35 @@ module.exports = function (grunt) {
 		if (!useInlining) {
 			//при использовании подстановки, контент включается внутрь JS файла
 			//поэтому нету смысла использовать параметр OutDir
-			if (resource.get("//OutDir")) {
-				outDir = prepareSystemVariables(resource.get("//OutDir").text());
+			if (resource.get("OutDir")) {
+				outDir = prepareSystemVariables(resource.get("OutDir").text());
 			}
 
-			if (resource.get("//Archive")) {
-				isArchive = resource.get("//Archive").text() === "True";
+			if (resource.get("Archive")) {
+				isArchive = resource.get("Archive").text() === "True";
 			}
 		}
 
-		if (resource.get("//MapFile")) {
-			mapFile = prepareSystemVariables(resource.get("//MapFile").text());
+		if (resource.get("MapFile")) {
+			mapFile = prepareSystemVariables(resource.get("MapFile").text());
 			//расчитаем полный путь к map файлу
-			mapFile = path.join(resourcePath, mapFile);
+			mapFile = path.join(configPath, mapFile);
 
 			if (!grunt.file.exists(mapFile)) {
 				grunt.fail.warn("<MapFile>" + mapFile + "</MapFile> not found.");
 			}
 		}
 
+		var i;
 		if (mapFile) {
-			map = JSON.parse(fs.readFileSync(mapFile), "utf8");
+			map = JSON.parse(grunt.file.read(mapFile));
 
 			var mapFolder = path.dirname(mapFile);
 
 			var p = map;
 			while (p) {
 				if (p.files) {
-					for (var i = 0; i < p.files.length; i++) {
+					for (i = 0; i < p.files.length; i++) {
 						p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
 					}
 				}
@@ -460,51 +494,52 @@ module.exports = function (grunt) {
 			map = { files: [] };
 		}
 
-		if (resource.get("//Data")) {
-			var data = resource.get("//Data");
+		if (resource.get("Data")) {
+			var data = resource.get("Data");
 			var additionalFiles = [];
 
-			if (data.get("//Folder")) {
-				additionalFiles = readFolder(data.get("//Folder").text(), resourcePath);
+			if (data.get("Folder")) {
+				additionalFiles = readFolders(data.find("Folder"), config);
 			}
 
-			if (data.get("//File")) {
-				var files = data.find("//File");
-				for (var i = 0; i < files.length; ++i) {
+			if (data.get("File")) {
+				var files = data.find("File");
+				for (i = 0; i < files.length; ++i) {
 					additionalFiles.push(path.normalize(files[i].attr("Path").value()));
 				}
 			}
 
-			if (data.get("//ResourceFile")) {
-				var resourceFiles = data.find("//ResourceFile");
+			if (data.get("ResourceFile")) {
+				var resourceFiles = data.find("ResourceFile");
 				var lowLevel = getLowerLevel(map);
 
-				for (var i = 0; i < resourceFiles.length; ++i) {
+				for (i = 0; i < resourceFiles.length; ++i) {
 					loadResource(resourceFiles[i], lowLevel);
 				}
 			}
 		}
-
 		if (isArchive) {
-			var archive = packResourcesArchive(resourcePath, map, additionalFiles);
-
+			var archive = packResourcesArchive(config, map, additionalFiles);
+	
 			if (useInlining) {
+				
+				var content = archive.toBuffer().toString('base64');
+				
 				return {
-					path: "data:application/octet-stream;base64," + archive.generate({ base64: true, compression: 'DEFLATE' }),
+					path: "data:application/octet-stream;base64," + content,
 					type: "ara"
 				};
 			}
 			else {
-				var outputFile = path.join(destFolder, outDir, resourceName + ".ara");
-				var archiveData = archive.generate({ base64: false, compression: 'DEFLATE' });
-
-				wrench.mkdirSyncRecursive(path.dirname(outputFile));
-				fs.writeFileSync(outputFile, archiveData, 'binary');
-
+				var outputFile = path.join(buildDir, outDir, resourceName + ".ara");
+				var content = archive.toBuffer();
+		
+				fs.writeFileSync(outputFile, content);
+	
 				return {
-					path: path.relative(destFolder, outputFile).replace(/\\/ig, "/"),
+					path: path.relative(buildDir, outputFile).replace(/\\/ig, "/"),
 					type: "ara"
-				}
+				};
 			}
 		}
 
@@ -512,14 +547,12 @@ module.exports = function (grunt) {
 		// после чего записываем srcFiles в outputDir
 
 		var srcFiles = additionalFiles.slice(0);
-		var outputDir = path.join(destFolder, outDir);
-
-		wrench.mkdirSyncRecursive(outputDir);
+		var outputDir = path.join(buildDir, outDir);
 
 		var p = map;
 		while (p) {
 			if (p.files) {
-				for (var i = 0; i < p.files.length; i++) {
+				for (i = 0; i < p.files.length; i++) {
 					if (srcFiles.indexOf(p.files[i].path) == -1) {
 						srcFiles.push(p.files[i].path);
 					}
@@ -529,44 +562,70 @@ module.exports = function (grunt) {
 			p = p.deps;
 		}
 
-		for (var i = 0; i < srcFiles.length; ++i) {
+		for (i = 0; i < srcFiles.length; ++i) {
 			var dstFile = path.join(outputDir, srcFiles[i]);
-			var srcFile = path.resolve(path.join(resourcePath, srcFiles[i]));
+			var srcFile = path.resolve(path.join(configPath, srcFiles[i]));
 
-			wrench.mkdirSyncRecursive(path.dirname(dstFile));              //создаем путь к файлу, если такого не существует
-			fs.writeFileSync(dstFile, fs.readFileSync(srcFile));           //записываем файл в destFolder
+			grunt.file.copy(srcFile, dstFile);           //записываем файл в destFolder
 		}
 
+		mapFile = path.join(outputDir, resourceName + ".map");
 
-		var mapFile = path.join(outputDir, resourceName + ".map");
-
-		if (Data.Resource || map.files.length) {
-			fs.writeFileSync(mapFile, JSON.stringify(map, null, "\t"), "utf8");
+		if (data.get("ResourceFile") || map.files.length) {
+			grunt.file.write(mapFile, JSON.stringify(map, null, "\t"));
 		}
 
 		return {
-			path: path.relative(destFolder, mapFile).replace(/\\/ig, "/"),
+			path: path.relative(buildDir, mapFile).replace(/\\/ig, "/"),
 			type: "map"
-		}
+		};
 	}
 
-	
-	//==================================================================================================================
-	//==================================================================================================================
-	//==================================================================================================================
-	//==================================================================================================================
+
+	function readFolders(folders, config) {
+		var srcDir = config.attr("Path").value();
+		var result = [];
+
+		for (var i = 0; i < folders.length; ++i) {
+			var currentFolder = path.join(srcDir, folders[i].attr("Path").value());
+			var files = grunt.file.expand({ filter: 'isFile' }, [currentFolder]);
+			var excludes = folders[i].find("Exclude");
+
+			if (excludes) {
+				for (var f = 0; f < files.length; ++f) {
+					for (var n = 0; n < excludes.length; ++n) {
+						if (path.resolve(path.join(currentFolder, excludes[n].$.Path)) ==
+							path.resolve(path.join(currentFolder, files[f]))) {
+							//Removing Exclude from files.
+							grunt.log.debug("@EXCLUDE", excludes[n].$.Path);
+							files.splice(f, 1);
+							f--;
+						}
+					}
+				}
+			}
+
+			files.forEach(function (file) {
+				result.push(path.relative(srcDir, path.join(currentFolder, file)));
+			});
+		}
+
+		return result;
+	}
 
 	/**
-	 * create zip archive with files described in {argv}
-	 * @param folder {String} Path to folde with resource.xml
-	 * @param mapFile {String} Path to .map file.
-	 * @param additionalData {String[]} Дополнительные файлы и папки которые надо включить в архив с ресурсом.
-	 */
-	function packResourcesArchive(folder, map, additionalData) {
+		 * create zip archive with files described in {argv}
+		 * @param config {XML}
+		 * @param mapFile {String} Path to .map file.
+		 * @param additionalData {String[]} Дополнительные файлы и папки которые надо включить в архив с ресурсом.
+		 */
+	function packResourcesArchive(config, map, additionalData) {
 		var archive = new Zip();
-		var files = [];             // файлы которые были добавлены в архив
+		var configDir = config.attr("Path").value();
+		var files = [];
+		
 
-		archive.file(".map", JSON.stringify(map, null, '\t'));
+		archive.add(".map", new Buffer(JSON.stringify(map, null, '\t'), "utf8"));
 
 		grunt.log.debug("@RESOURCE", ".map");
 
@@ -575,27 +634,33 @@ module.exports = function (grunt) {
 				for (var i = 0; i < map.files.length; i++) {
 					var file = map.files[i].path;
 					var res = file.replace(/\\/ig, "/");
-					archive.file(res, fs.readFileSync(path.join(folder, file)).toString('base64'), { base64: true });
+
+					archive.add(res, fs.readFileSync(path.join(configDir, file)));
+					files.push(res);
+
 					grunt.log.debug("@RESOURCE", res);
 				}
 			}
 
 			map = map.deps;
 		}
-
+		
 		if (additionalData) {
-			additionalData.forEach(function (value, i) {
-				value = path.join(folder, value);
-				var name = path.relative(folder, value).replace(/\\/ig, "/");
+			additionalData.forEach(function (value) {
+				value = path.join(configDir, value);
+				var name = path.relative(configDir, value).replace(/\\/ig, "/");
 
-				if (fs.existsSync(value)) {
-					if (fs.statSync(value).isDirectory()) {
-						//files in string[] array, include directories..
-						var files = wrench.readdirSyncRecursive(value);
+				if (grunt.file.exists(value)) {
+					if (grunt.file.isDir(value)) {
+						// files in string[] array, include directories..
+						// var files = grunt.file.expand({ filter: "isFile" }, [value]);
 						grunt.fail.warn("TODO: folder support not implemented....");
 					}
-					else if (Object.keys(archive.files).indexOf(name) === -1) {
-						archive.file(name, fs.readFileSync(value).toString('base64'), { base64: true });
+					else if (files.indexOf(name) === -1) {
+
+						archive.add(name, fs.readFileSync(value));
+						files.push(name);
+
 						grunt.log.debug("@RESOURCE", name);
 					}
 				}
@@ -604,7 +669,7 @@ module.exports = function (grunt) {
 				}
 			});
 		}
-
+	
 		return archive;
 	}
 
@@ -622,71 +687,52 @@ module.exports = function (grunt) {
 		return c;
 	}
 
-
 	/**
-	 * Загружаем ресурс из тега ResourceFile в map файл.
-	 * @param ResourceFile {XML} ResourceFile tag.
-	 * @param cur {IDependens} Текущий уровень зависимостей.
-	 */
-	function loadResource(ResourceFile, cur) {
+		 * Загружаем ресурс из тега ResourceFile в map файл.
+		 * @param ResourceFile {XML} ResourceFile tag.
+		 * @param cur {IDependens} Текущий уровень зависимостей.
+		 */
+	function loadResource(resourceFile, cur) {
 		cur.files = cur.files || [];
 
-		var res = { path: ResourceFile.$.Path };
+		var res = { path: resourceFile.attr("Path").value() };
 
-		if (ResourceFile.$.Name) {
-			res.name = ResourceFile.$.Name;
+		if (resourceFile.attr("Name")) {
+			res.name = resourceFile.attr("name").value();
 		}
 
-		if (ResourceFile.$.Comment) {
-			res.comment = ResourceFile.$.Comment;
+		if (resourceFile.attr("Comment")) {
+			res.comment = resourceFile.attr("Comment").value();
 		}
 
-		if (ResourceFile.$.Type) {
-			res.type = ResourceFile.$.Type;
+		if (resourceFile.attr("Type")) {
+			res.type = resourceFile.attr("Type").value();
 		}
 
 		cur.files.push(res);
 
-		if (ResourceFile.ResourceFile) {
+		if (resourceFile.get("ResourceFile")) {
 			cur.deps = cur.deps || {};
-
-			for (var i = 0; i < ResourceFile.ResourceFile.length; ++i) {
-				loadResource(ResourceFile.ResourceFile[i], cur.deps);
+			var resourceFiles = resourceFile.find("ResourceFile")
+			for (var i = 0; i < resourceFiles.length; ++i) {
+				loadResource(resourceFiles[i], cur.deps);
 			}
 		}
 	}
 
-	/** Read Folder tag */
-	function readFolder(Folder, srcFolder) {
-		var result = [];
+	//==================================================================================================================
+	//==================================================================================================================
+	//==================================================================================================================
+	//==================================================================================================================
 
-		for (var i = 0; i < Folder.length; ++i) {
-			var currentFolder = path.join(srcFolder, Folder[i].$.Path);
-			var files = wrench.readdirSyncRecursive(currentFolder);
-			var excludes = Folder[i].Exclude;
 
-			if (excludes) {
-				for (var f = 0; f < files.length; ++f) {
-					for (var n = 0; n < excludes.length; ++n) {
-						if (path.resolve(path.join(currentFolder, excludes[n].$.Path)) == path.resolve(path.join(currentFolder, files[f]))) {
-							//Removing Exclude from files.
-							grunt.log.debug("@EXCLUDE", excludes[n].$.Path);
-							files.splice(f, 1);
-							f--;
-						}
-					}
-				}
-			}
 
-			files.forEach(function (file, i) {
-				result.push(path.relative(srcFolder, path.join(currentFolder, file)));
-			});
-		}
 
-		return result;
-	}
 
-	
+
+
+
+
 
 	function getFilesFromAttachment(Attachment, srcFolder) {
 		var files = [];
@@ -840,55 +886,6 @@ module.exports = function (grunt) {
 
 		return attachments;
 	}
-
-
-	function findResourcesXML(sourcePaths) {
-		var srcFiles = [];
-		var shortestPath = null;
-		var resourceFolder = null;
-
-		//normalize all pathes
-		for (var i = 0; i < sourcePaths.length; ++i) {
-			var srcFile = sourcePaths[i];
-
-			srcFiles.push(path.resolve(path.dirname(srcFile)));
-		}
-
-		//sort > shortest path will be first
-		srcFiles.sort(function (a, b) { return a.length < b.length ? -1 : 1 });
-
-		resourceFolder = srcFiles[0];
-
-		if (srcFiles.length > 1) {
-			var dirs1 = srcFiles[0].split(path.sep);
-			var dirs2 = srcFiles[1].split(path.sep);
-
-			for (var i = 0; i < dirs1.length; ++i) {
-				if (dirs1[i] != dirs2[i]) {
-					resourceFolder = dirs1.slice(0, i - 1).join(path.sep);
-				}
-			}
-		}
-
-		grunt.log.debug("Automaticly detected resource folder:", resourceFolder);
-
-		var resourceFile = path.join(resourceFolder, "resources.xml");
-
-		if (!fs.existsSync(resourceFile)) {
-			return null;
-		}
-
-		return resourceFile;
-	}
-
-	
-
-	
-
-
-
-
-
 
 	/** @param Module {XML} <Module/> tags from demo.xml */
 	function loadDependentScriptsFromModules(Module, destFolder) {
@@ -1089,6 +1086,7 @@ module.exports = function (grunt) {
 	grunt.registerMultiTask("build", function () {
 		var config = this.data.config,
 			done = this.async();
+
 		compile(config, done);
 	});
 
@@ -1105,4 +1103,4 @@ module.exports = function (grunt) {
 		var src = path.join(DEMOS_SOURCE_DIR, demo);
 		buildDemo(demo, src, done);
 	});
-};
+}
