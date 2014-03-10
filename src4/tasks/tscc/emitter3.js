@@ -1204,7 +1204,8 @@ var TypeScript;
                 //view like: (container['akra'] = container['akra'] || {}) || {};
                 this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
 
-                var shortName = this.getShortName(exportedName, pullDecl.getSymbol());
+                //var shortName = this.getShortName(exportedName, pullDecl.getSymbol());
+                var shortName = this.getShortName(pullDecl.getSymbol().fullName());
 
                 this.writeLineToOutput("var " + shortName + " = " + exportedName + ";");
 
@@ -1759,7 +1760,7 @@ var TypeScript;
 
             var varDeclName = varDecl.variableDeclarator.propertyName.text();
             var quotedOrNumber = TypeScript.isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== 11 /* IdentifierName */;
-            var isNeedEscape = this.isNeedEscapeName(symbol);
+            var isNeedEscapeMember = this.isNeedEscapeName(symbol);
 
             var symbol = this.semanticInfoChain.getSymbolForAST(varDecl);
             var parentSymbol = symbol ? symbol.getContainer() : null;
@@ -1767,7 +1768,7 @@ var TypeScript;
 
             if (quotedOrNumber) {
                 this.writeToOutput("this[");
-            } else if (isNeedEscape) {
+            } else if (isNeedEscapeMember) {
                 this.writeToOutput("this[\"");
             } else {
                 this.writeToOutput("this.");
@@ -1777,7 +1778,7 @@ var TypeScript;
 
             if (quotedOrNumber) {
                 this.writeToOutput("]");
-            } else if (isNeedEscape) {
+            } else if (isNeedEscapeMember) {
                 this.writeToOutput("\"]");
             }
 
@@ -1814,9 +1815,6 @@ var TypeScript;
                 var jsDocComments = null;
                 var isAdditionalDeclaration = false;
 
-                //if (symbol.getDisplayName() === "END_SYMBOL") {
-                //	debugger;
-                //}
                 this.recordSourceMappingStart(this.currentVariableDeclaration);
 
                 // Google's Closure Compiler requires one variable statement per function.
@@ -2051,6 +2049,10 @@ var TypeScript;
             this.emitComments(name, true);
             this.recordSourceMappingStart(name);
             if (name.text().length > 0) {
+                if (name.text() === "__VIEW_INTERNALS__") {
+                    debugger;
+                }
+
                 var symbolForEmit = this.getSymbolForEmit(name);
                 var pullSymbol = symbolForEmit.symbol;
                 if (!pullSymbol) {
@@ -3298,21 +3300,23 @@ var TypeScript;
                     //		this.emittedClassProperties.push(symbol);
                     //	}
                     //}
-                    var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
-
-                    if (expression.name.text && expression.name.text() === "quotedProp2") {
+                    if (expression.name.text && (expression.name.text() === "logger" || expression.name.text() === "__VIEW_INTERNALS__")) {
                         debugger;
                     }
-                    var isNeedEscapeFunction = this.isNeedEscapeName(symbol);
+
+                    var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+                    var isNeedEscapeSymbol = this.isNeedEscapeName(symbol);
+                    var isVarInModule = isNeedEscapeSymbol ? this.isNeedEscapeVariableInModule(symbol) : false;
 
                     this.recordSourceMappingStart(expression);
 
                     //if (isNeedEscapeFunction) {
                     //	this.writeToOutput("(/** " + this.formatJSDocType(symbol.type) + " */(");
                     //}
+                    //if(isVarInModule)
                     this.emit(expression.expression);
 
-                    if (isNeedEscapeFunction) {
+                    if (isNeedEscapeSymbol) {
                         this.writeToOutput("[\"");
                     } else {
                         this.writeToOutput(".");
@@ -3320,7 +3324,7 @@ var TypeScript;
 
                     this.emitName(expression.name, false);
 
-                    if (isNeedEscapeFunction) {
+                    if (isNeedEscapeSymbol) {
                         this.writeToOutput("\"]");
                     }
 
@@ -4724,11 +4728,12 @@ var TypeScript;
                 //	return pullDecl.getSymbol().name;
                 //});
                 var containerShortName = "global";
-                var me = this;
 
-                path.slice(i, path.length - 1).forEach(function (pullDecl) {
-                    containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
-                });
+                //var me = this;
+                //path.slice(i, path.length - 1).forEach(function (pullDecl) {
+                //	containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
+                //});
+                containerShortName = this.getShortName(symbol.getContainer().fullName());
 
                 //var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
                 //	return pullDecl.getSymbol().name;
@@ -4752,7 +4757,8 @@ var TypeScript;
                 this.writeLineToOutput("");
 
                 if (TypeScript.PullHelpers.symbolIsModule(symbol)) {
-                    var shortName = this.getShortName(internalPath, symbol);
+                    //var shortName = this.getShortName(internalPath, symbol);
+                    var shortName = this.getShortName(symbol.fullName());
                     this.writeToOutput("var " + shortName + " = " + internalPath + ";");
                 }
 
@@ -4778,9 +4784,10 @@ var TypeScript;
                 return pullDecl.getSymbol().name;
             });
 
-            path.slice(i, path.length - 1).forEach(function (pullDecl) {
-                containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
-            });
+            //path.slice(i, path.length - 1).forEach(function (pullDecl) {
+            //	containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol())
+            //});
+            containerShortName = this.getShortName(symbol.getContainer().fullName());
 
             //var externalName = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
             var externalName = containerShortName + "['" + symbol.name + "']";
@@ -4793,7 +4800,8 @@ var TypeScript;
                 this.writeToOutput(externalName + " || {};");
                 this.writeLineToOutput("");
 
-                var shortName = this.getShortName(externalName, symbol);
+                //var shortName = this.getShortName(externalName, symbol);
+                var shortName = this.getShortName(symbol.fullName());
 
                 this.writeToOutput("var " + shortName + " = " + externalName + ";");
             } else {
@@ -4818,7 +4826,7 @@ var TypeScript;
             if (symbol.type.isInterface()) {
                 this.calcInterfaceEscapeNamesMap(symbol);
             } else if (symbol.type.isClass()) {
-                this.calcInterfaceEscapeNamesMap(symbol);
+                this.calcClassEscapeNamesMap(symbol);
             } else {
                 //console.log("something going wrong " + name);
                 return false;
@@ -4975,7 +4983,7 @@ var TypeScript;
 
             for (var i = 0, n = declaration.classElements.childCount(); i < n; i++) {
                 var childDecl = this.thisClassNode.classElements.childAt(i);
-                if (childDecl.kind() === 152 /* ConstructorDeclaration */ || childDecl.kind() === 154 /* GetAccessor */ || childDecl.kind() === 155 /* SetAccessor */) {
+                if (!childDecl || childDecl.kind() === 152 /* ConstructorDeclaration */ || childDecl.kind() === 154 /* GetAccessor */ || childDecl.kind() === 155 /* SetAccessor */) {
                     continue;
                 }
 
@@ -5011,7 +5019,7 @@ var TypeScript;
             var name = symbol.getDisplayName();
 
             if (TypeScript.PullHelpers.symbolIsModule(container)) {
-                return this.isNeedEscapeGlobalVariable(symbol);
+                return this.setSymbolEscapeOption(symbol, this.isNeedEscapeVariableInModule(symbol));
             } else {
                 if (TypeScript.isQuoted(name)) {
                     return this.setSymbolEscapeOption(symbol, true);
@@ -5027,8 +5035,23 @@ var TypeScript;
             return this.setSymbolEscapeOption(symbol, false);
         };
 
-        Emitter.prototype.isNeedEscapeGlobalVariable = function (symbol) {
-            return this.setSymbolEscapeOption(symbol, false);
+        Emitter.prototype.isNeedEscapeVariableInModule = function (symbol) {
+            if (!symbol || symbol.isContainer() || !symbol.getContainer()) {
+                return false;
+            }
+
+            var container = symbol.getContainer();
+            var name = symbol.getDisplayName();
+
+            if (!TypeScript.PullHelpers.symbolIsModule(container) || symbol.isContainer() || symbol.isInterface() || symbol.isType()) {
+                return false;
+            }
+
+            if (symbol.anyDeclHasFlag(1 /* Exported */)) {
+                return true;
+            }
+
+            return false;
         };
 
         Emitter.prototype.isNeedPropertyEscape = function (symbol) {
@@ -5135,17 +5158,16 @@ var TypeScript;
             return true;
         };
 
-        Emitter.prototype.getShortName = function (longName, symbol) {
+        Emitter.prototype.getShortName = function (longName /*, symbol?: PullSymbol*/ ) {
             if (this.shortNameMap[longName]) {
                 return this.shortNameMap[longName];
             }
 
             var result = (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
 
-            if (symbol) {
-                this.shortNameMap[symbol.fullName()] = result;
-            }
-
+            //if (symbol) {
+            //	this.shortNameMap[symbol.fullName()] = result;
+            //}
             return result;
         };
 
