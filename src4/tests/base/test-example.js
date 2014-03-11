@@ -128,6 +128,10 @@ var akra;
         akra.pCanvas.addViewport(pViewport);
         akra.pCanvas.resize(window.innerWidth, window.innerHeight);
 
+        window.onresize = function(event) {
+            akra.pCanvas.resize(window.innerWidth, window.innerHeight);
+        }
+
         //(<render.DSViewport>pViewport).setFXAA(false);
         return pViewport;
     }

@@ -127,6 +127,10 @@ module akra {
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
+		window.onresize = function (event) {
+			pCanvas.resize(window.innerWidth, window.innerHeight);
+		}
+
 		//(<render.DSViewport>pViewport).setFXAA(false);
 		return pViewport;
 	}

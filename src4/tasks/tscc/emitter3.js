@@ -267,6 +267,7 @@ var TypeScript;
             this.shortNameMap = {};
             this.shorter = 0;
             this._emittedModuleNames = [];
+            this._bEmitEscapedName = false;
             if (emitOptions.sharedOutputFile()) {
                 this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
             } else {
@@ -1914,7 +1915,7 @@ var TypeScript;
             this.currentVariableDeclaration = undefined;
             this.popDecl(pullDecl);
 
-            if (!isAdditionalDeclaration && TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */) && symbol.type.isFunction()) {
+            if (!isAdditionalDeclaration && TypeScript.hasFlag(pullDecl.flags, 1 /* Exported */)) {
                 this.exportSymbol(symbol);
             }
         };
@@ -2026,8 +2027,13 @@ var TypeScript;
             var potentialDeclPath = declPathInfo.potentialPath;
             var startingIndex = declPathInfo.startingIndex;
 
-            // Emit dotted names for the path
-            this.emitDottedNameFromDeclPath(potentialDeclPath, startingIndex, potentialDeclPath.length - 1);
+            if (this.isNeedEscapeName(pullSymbol) && this.isNeedEscapeVariableInModule(pullSymbol)) {
+                this.writeToOutput(this.getShortName(pullSymbol.getContainer().fullName()));
+                this._bEmitEscapedName = true;
+            } else {
+                // Emit dotted names for the path
+                this.emitDottedNameFromDeclPath(potentialDeclPath, startingIndex, potentialDeclPath.length - 1);
+            }
         };
 
         // Get the symbol information to be used for emitting the ast
@@ -2049,10 +2055,6 @@ var TypeScript;
             this.emitComments(name, true);
             this.recordSourceMappingStart(name);
             if (name.text().length > 0) {
-                if (name.text() === "__VIEW_INTERNALS__") {
-                    debugger;
-                }
-
                 var symbolForEmit = this.getSymbolForEmit(name);
                 var pullSymbol = symbolForEmit.symbol;
                 if (!pullSymbol) {
@@ -2121,7 +2123,13 @@ var TypeScript;
                     }
                 }
 
-                this.writeToOutput(name.text());
+                if (this._bEmitEscapedName) {
+                    this.writeToOutput("[\"" + name.text() + "\"]");
+
+                    this._bEmitEscapedName = false;
+                } else {
+                    this.writeToOutput(name.text());
+                }
             }
 
             this.recordSourceMappingEnd(name);
@@ -2955,6 +2963,14 @@ var TypeScript;
             var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
             this.pushDecl(pullDecl);
 
+            if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol()) && !TypeScript.isQuoted(functionName) && funcDecl.propertyName.kind() === 11 /* IdentifierName */) {
+                var className = this.thisFullClassName;
+                var exportLocation = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (this.thisShortClassNameForMethods);
+                var exportName = exportLocation + "[\"" + functionName + "\"]";
+
+                this.writeToOutput("/** @this {" + this.thisFullClassName + "} */ " + exportName + " = ");
+            }
+
             this.recordSourceMappingStart(funcDecl);
             this.writeToOutput("function ");
 
@@ -2971,24 +2987,23 @@ var TypeScript;
             this.popDecl(pullDecl);
 
             this.writeLineToOutput(";");
-            if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol())) {
-                var className = this.thisFullClassName;
-                var location = TypeScript.hasModifier(funcDecl.modifiers, 16 /* Static */) ? className : (this.thisShortClassNameForMethods);
-                var exportLocation = className === location ? location : (this.thisShortClassNameForMethods);
-                var fullName = location;
-                var exportName = exportLocation;
-
-                if (TypeScript.isQuoted(functionName) || funcDecl.propertyName.kind() !== 11 /* IdentifierName */) {
-                    exportName += "[" + functionName + "]";
-                    fullName += "[" + functionName + "]";
-                } else {
-                    exportName += "['" + functionName + "']";
-                    fullName += "." + functionName;
-                }
-
-                this.writeLineToOutput("");
-                this.writeToOutput(exportName + " = " + fullName + ";");
-            }
+            //if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol())) {
+            //	var className = this.thisFullClassName;
+            //	var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (this.thisShortClassNameForMethods/*className + ".prototype"*/);
+            //	var exportLocation = className === location ? location : (this.thisShortClassNameForMethods/*className + ".prototype"*/);
+            //	var fullName = location;
+            //	var exportName = exportLocation;
+            //	if (isQuoted(functionName) || funcDecl.propertyName.kind() !== SyntaxKind.IdentifierName) {
+            //		exportName += "[" + functionName + "]";
+            //		fullName += "[" + functionName + "]";
+            //	}
+            //	else {
+            //		exportName += "['" + functionName + "']";
+            //		fullName += "." + functionName;
+            //	}
+            //	this.writeLineToOutput("");
+            //	this.writeToOutput(exportName + " = " + fullName + ";");
+            //}
         };
 
         Emitter.prototype.requiresExtendsBlock = function (moduleElements) {
@@ -3241,25 +3256,43 @@ var TypeScript;
         // Emit the member access expression using the declPath
         Emitter.prototype.emitDottedNameMemberAccessExpressionWorker = function (expression, potentialPath, startingIndex, lastIndex) {
             this.recordSourceMappingStart(expression);
-            if (expression.expression.kind() === 227 /* MemberAccessExpression */) {
-                // Emit the dotted name access expression
-                this.emitDottedNameMemberAccessExpressionRecurse(expression.expression, potentialPath, startingIndex, lastIndex - 1);
+
+            var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+
+            var isNeedEscapeSymbol = this.isNeedEscapeName(symbol);
+            var isEscapedVarInModule = isNeedEscapeSymbol ? this.isNeedEscapeVariableInModule(symbol) : false;
+
+            if (isEscapedVarInModule) {
+                var shortModuleName = this.getShortName(symbol.getContainer().fullName());
+
+                this.writeToOutput(shortModuleName);
+                var name = expression.name.text();
+                if (TypeScript.isQuoted(name)) {
+                    this.writeToOutput("[" + name + "]");
+                } else {
+                    this.writeToOutput("[\"" + name + "\"]");
+                }
             } else {
-                this.emitComments(expression.expression, true);
-                this.recordSourceMappingStart(expression.expression);
+                if (expression.expression.kind() === 227 /* MemberAccessExpression */) {
+                    // Emit the dotted name access expression
+                    this.emitDottedNameMemberAccessExpressionRecurse(expression.expression, potentialPath, startingIndex, lastIndex - 1);
+                } else {
+                    this.emitComments(expression.expression, true);
+                    this.recordSourceMappingStart(expression.expression);
 
-                // Emit the qualifying name fo the expression.expression
-                this.emitDottedNameFromDeclPath(potentialPath, startingIndex, lastIndex - 2); // We would be emitting two identifiers as part of member access
+                    // Emit the qualifying name fo the expression.expression
+                    this.emitDottedNameFromDeclPath(potentialPath, startingIndex, lastIndex - 2); // We would be emitting two identifiers as part of member access
 
-                // Emit expression.expression
-                this.writeToOutput(expression.expression.text());
+                    // Emit expression.expression
+                    this.writeToOutput(expression.expression.text());
 
-                this.recordSourceMappingEnd(expression.expression);
-                this.emitComments(expression.expression, false);
+                    this.recordSourceMappingEnd(expression.expression);
+                    this.emitComments(expression.expression, false);
+                }
+
+                this.writeToOutput(".");
+                this.emitName(expression.name, false);
             }
-
-            this.writeToOutput(".");
-            this.emitName(expression.name, false);
 
             this.recordSourceMappingEnd(expression);
         };
@@ -3300,13 +3333,8 @@ var TypeScript;
                     //		this.emittedClassProperties.push(symbol);
                     //	}
                     //}
-                    if (expression.name.text && (expression.name.text() === "logger" || expression.name.text() === "__VIEW_INTERNALS__")) {
-                        debugger;
-                    }
-
                     var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
                     var isNeedEscapeSymbol = this.isNeedEscapeName(symbol);
-                    var isVarInModule = isNeedEscapeSymbol ? this.isNeedEscapeVariableInModule(symbol) : false;
 
                     this.recordSourceMappingStart(expression);
 
@@ -5011,7 +5039,7 @@ var TypeScript;
                 return symbol[isNeedEscape];
             }
 
-            if (symbol.isContainer() || !symbol.getContainer()) {
+            if (symbol.isContainer() || !symbol.getContainer() || TypeScript.PullHelpers.symbolIsModule(symbol) || TypeScript.PullHelpers.symbolIsModule(symbol.type)) {
                 return this.setSymbolEscapeOption(symbol, false);
             }
 
@@ -5043,7 +5071,13 @@ var TypeScript;
             var container = symbol.getContainer();
             var name = symbol.getDisplayName();
 
-            if (!TypeScript.PullHelpers.symbolIsModule(container) || symbol.isContainer() || symbol.isInterface() || symbol.isType()) {
+            if (!TypeScript.PullHelpers.symbolIsModule(container) || TypeScript.PullHelpers.symbolIsModule(symbol) || TypeScript.PullHelpers.symbolIsModule(symbol.type) || symbol.isContainer() || symbol.isInterface() || symbol.isType() || symbol.type.isFunction()) {
+                return false;
+            }
+
+            var declaration = this.semanticInfoChain.getASTForDecl(symbol.getDeclarations()[0]);
+
+            if (TypeScript.isDTSFile(declaration.fileName())) {
                 return false;
             }
 
