@@ -4,10 +4,8 @@
 /// <reference path="symbols.ts" />
 
 module akra.parser {
-	/** @const */
-	var LEXER_UNKNOWN_TOKEN = 2101;
-	/** @const */
-	var LEXER_BAD_TOKEN = 2102;
+	const LEXER_UNKNOWN_TOKEN = 2101;
+	const LEXER_BAD_TOKEN = 2102;
 
 	logger.registerCodeFamily(2000, 2199, "ParserSyntaxErrors");
 
@@ -35,22 +33,22 @@ module akra.parser {
 			this._pPunctuatorsFirstSymbols = <IMap<boolean>>{};
 		}
 
-		static getPunctuatorName(sValue: string): string {
+		static _getPunctuatorName(sValue: string): string {
 			return "T_PUNCTUATOR_" + sValue.charCodeAt(0);
 		}
 
-		addPunctuator(sValue: string, sName: string = Lexer.getPunctuatorName(sValue)): string {
+		_addPunctuator(sValue: string, sName: string = Lexer._getPunctuatorName(sValue)): string {
 			this._pPunctuatorsMap[sValue] = sName;
 			this._pPunctuatorsFirstSymbols[sValue[0]] = true;
 			return sName;
 		}
 
-		addKeyword(sValue: string, sName: string): string {
+		_addKeyword(sValue: string, sName: string): string {
 			this._pKeywordsMap[sValue] = sName;
 			return sName;
 		}
 
-		getTerminalValueByName(sName: string): string {
+		_getTerminalValueByName(sName: string): string {
 			var sValue: string = "";
 
 			for (sValue in this._pPunctuatorsMap) {
@@ -68,14 +66,14 @@ module akra.parser {
 			return sName;
 		}
 
-		init(sSource: string): void {
+		_init(sSource: string): void {
 			this._sSource = sSource;
 			this._iLineNumber = 0;
 			this._iColumnNumber = 0;
 			this._iIndex = 0;
 		}
 
-		getNextToken(): IToken {
+		_getNextToken(): IToken {
 			var ch: string = this.currentChar();
 			if (!ch) {
 				return <IToken>{
@@ -94,7 +92,7 @@ module akra.parser {
 					break;
 				case ETokenType.k_CommentLiteral:
 					this.scanComment();
-					pToken = this.getNextToken();
+					pToken = this._getNextToken();
 					break;
 				case ETokenType.k_StringLiteral:
 					pToken = this.scanString();
@@ -107,7 +105,7 @@ module akra.parser {
 					break;
 				case ETokenType.k_WhitespaceLiteral:
 					this.scanWhiteSpace();
-					pToken = this.getNextToken();
+					pToken = this._getNextToken();
 					break;
 				default:
 					this._error(LEXER_UNKNOWN_TOKEN,

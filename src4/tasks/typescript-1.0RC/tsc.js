@@ -24264,7 +24264,7 @@ var TypeScript;
 
             ParserImpl.prototype.isVariableStatement = function () {
                 var index = this.modifierCount();
-                return this.peekToken(index).tokenKind === 40 /* VarKeyword */;
+                return this.peekToken(index).tokenKind === 40 /* VarKeyword */ || this.peekToken(index).tokenKind === 45 /* ConstKeyword */;
             };
 
             ParserImpl.prototype.parseVariableStatement = function () {
@@ -24276,7 +24276,7 @@ var TypeScript;
             };
 
             ParserImpl.prototype.parseVariableDeclaration = function (allowIn) {
-                var varKeyword = this.eatKeyword(40 /* VarKeyword */);
+                var varKeyword = this.tryEatToken(40 /* VarKeyword */) || this.tryEatToken(45 /* ConstKeyword */);
 
                 var listParsingState = allowIn ? 4096 /* VariableDeclaration_VariableDeclarators_AllowIn */ : 8192 /* VariableDeclaration_VariableDeclarators_DisallowIn */;
 
@@ -35001,6 +35001,7 @@ var TypeScript;
 
         PullElementFlags[PullElementFlags["Protected"] = 1 << 27] = "Protected";
         PullElementFlags[PullElementFlags["Final"] = 1 << 28] = "Final";
+        PullElementFlags[PullElementFlags["Const"] = 1 << 29] = "Const";
     })(TypeScript.PullElementFlags || (TypeScript.PullElementFlags = {}));
     var PullElementFlags = TypeScript.PullElementFlags;
 
@@ -51822,6 +51823,10 @@ var TypeScript;
             declFlags |= 8 /* Ambient */;
         }
 
+        if (TypeScript.hasModifier(classDecl.modifiers, 268435456 /* Final */)) {
+            declFlags |= 268435456 /* Final */;
+        }
+
         var parent = context.getParent();
 
         var decl = new TypeScript.NormalPullDecl(classDecl.identifier.valueText(), classDecl.identifier.text(), 8 /* Class */, declFlags, parent);
@@ -51884,6 +51889,10 @@ var TypeScript;
 
         if (TypeScript.hasModifier(argDecl.modifiers, 134217728 /* Protected */)) {
             declFlags |= 134217728 /* Protected */;
+        }
+
+        if (TypeScript.hasModifier(argDecl.modifiers, 536870912 /* Const */)) {
+            declFlags |= 536870912 /* Const */;
         }
 
         if (argDecl.questionToken !== null || argDecl.equalsValueClause !== null || argDecl.dotDotDotToken !== null) {
@@ -51978,6 +51987,10 @@ var TypeScript;
             declFlags |= 134217728 /* Protected */;
         }
 
+        if (TypeScript.hasModifier(memberDecl.modifiers, 536870912 /* Const */)) {
+            declFlags |= 536870912 /* Const */;
+        }
+
         if (TypeScript.hasModifier(memberDecl.modifiers, 268435456 /* Final */)) {
             declFlags |= 268435456 /* Final */;
         }
@@ -52001,6 +52014,10 @@ var TypeScript;
 
         if (TypeScript.hasModifier(modifiers, 8 /* Ambient */) || isParsingAmbientModule(varDecl, context) || context.isDeclareFile) {
             declFlags |= 8 /* Ambient */;
+        }
+
+        if (TypeScript.hasModifier(modifiers, 536870912 /* Const */)) {
+            declFlags |= 536870912 /* Const */;
         }
 
         var parent = context.getParent();
@@ -52254,6 +52271,10 @@ var TypeScript;
 
             if (parentFlags & 1 /* Exported */) {
                 declFlags |= 1 /* Exported */;
+            }
+
+            if (parentFlags & 268435456 /* Final */) {
+                declFlags |= 268435456 /* Final */;
             }
         }
 
@@ -57553,6 +57574,14 @@ var TypeScript;
             this.movePast(node.semicolonToken);
 
             var modifiers = this.visitModifiers(node.modifiers);
+
+            if (node.variableDeclaration.varKeyword.kind() === 45 /* ConstKeyword */) {
+                if (modifiers === TypeScript.sentinelEmptyArray) {
+                    modifiers = [];
+                }
+
+                modifiers.push(536870912 /* Const */);
+            }
 
             var result = new TypeScript.VariableStatement(modifiers, declaration);
             this.setCommentsAndSpan(result, start, node);
@@ -62999,6 +63028,7 @@ var TypeScript;
         return BatchCompiler;
     })();
     TypeScript.BatchCompiler = BatchCompiler;
+
 })(TypeScript || (TypeScript = {}));
 
 var batch = new TypeScript.BatchCompiler(TypeScript.IO);

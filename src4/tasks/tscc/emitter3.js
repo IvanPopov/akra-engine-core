@@ -1849,13 +1849,13 @@ var TypeScript;
                 if (!isAdditionalDeclaration) {
                     if (symbol.isProperty()) {
                         if (this.emittedClassProperties.indexOf(symbol) < 0) {
-                            jsDocComments = this.getJSDocForClassMemberVariable(symbol, isConst);
+                            jsDocComments = this.getJSDocForClassMemberVariable(symbol);
                             this.emittedClassProperties.push(symbol);
                         } else {
                             jsDocComments = [];
                         }
                     } else {
-                        jsDocComments = this.getJSDocForVariableDeclaration(symbol, isConst);
+                        jsDocComments = this.getJSDocForVariableDeclaration(symbol);
                     }
                 }
 
@@ -4573,23 +4573,22 @@ var TypeScript;
             return ['@enum {number}'];
         };
 
-        Emitter.prototype.getJSDocForVariableDeclaration = function (symbol, isConst) {
-            if (typeof isConst === "undefined") { isConst = false; }
+        Emitter.prototype.getJSDocForVariableDeclaration = function (symbol) {
             var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
             this.isTypeParametersEmitBlocked = true;
             var result = this.getJSDocForType(symbol.type);
 
-            if (symbol.anyDeclHasFlag(1 /* Exported */) && !symbol.type.isFunction() && !isConst) {
-                result.push("1expose1");
+            if (symbol.anyDeclHasFlag(536870912 /* Const */)) {
+                result.push("@const");
             }
+
             this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
             return result;
         };
 
-        Emitter.prototype.getJSDocForClassMemberVariable = function (symbol, isConst) {
-            if (typeof isConst === "undefined") { isConst = false; }
-            var jsDocComments = this.getJSDocForVariableDeclaration(symbol, isConst);
+        Emitter.prototype.getJSDocForClassMemberVariable = function (symbol) {
+            var jsDocComments = this.getJSDocForVariableDeclaration(symbol);
             var isClassExports = TypeScript.hasModifier(this.thisClassNode.modifiers, 1 /* Exported */);
             var isClassFinal = TypeScript.hasModifier(this.thisClassNode.modifiers, 268435456 /* Final */);
 
@@ -4598,11 +4597,6 @@ var TypeScript;
                 //	jsDocComments.push("@expose");
                 //}
                 jsDocComments.push("@protected");
-            } else if (symbol.anyDeclHasFlag(4 /* Public */)) {
-                //jsDocComments.push("@public");
-                if (isClassExports && !isConst) {
-                    jsDocComments.push("1expose1");
-                }
             } else if (symbol.anyDeclHasFlag(2 /* Private */)) {
                 jsDocComments.push("@private");
             }
@@ -5018,6 +5012,10 @@ var TypeScript;
                 var symbol = this.semanticInfoChain.getSymbolForAST(childDecl);
                 var name = symbol.getDisplayName();
 
+                if (childDecl.kind() === 150 /* MemberFunctionDeclaration */ && (isClassFinal || symbol.anyDeclHasFlag(268435456 /* Final */))) {
+                    result[name] = this.setSymbolEscapeOption(symbol, false);
+                }
+
                 if (result[name] === undefined) {
                     result[name] = this.isNeedPropertyEscape(symbol);
                 }
@@ -5071,7 +5069,7 @@ var TypeScript;
             var container = symbol.getContainer();
             var name = symbol.getDisplayName();
 
-            if (!TypeScript.PullHelpers.symbolIsModule(container) || TypeScript.PullHelpers.symbolIsModule(symbol) || TypeScript.PullHelpers.symbolIsModule(symbol.type) || symbol.isContainer() || symbol.isInterface() || symbol.isType() || symbol.type.isFunction()) {
+            if (!TypeScript.PullHelpers.symbolIsModule(container) || TypeScript.PullHelpers.symbolIsModule(symbol) || TypeScript.PullHelpers.symbolIsModule(symbol.type) || symbol.isContainer() || symbol.isInterface() || symbol.isType() || symbol.type.isFunction() || symbol.anyDeclHasFlag(536870912 /* Const */) || !symbol.anyDeclHasFlag(1 /* Exported */)) {
                 return false;
             }
 
@@ -5081,11 +5079,7 @@ var TypeScript;
                 return false;
             }
 
-            if (symbol.anyDeclHasFlag(1 /* Exported */)) {
-                return true;
-            }
-
-            return false;
+            return true;
         };
 
         Emitter.prototype.isNeedPropertyEscape = function (symbol) {

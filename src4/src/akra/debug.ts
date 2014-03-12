@@ -2,5 +2,5 @@
 
 
 module akra {
-    export var debug = logger;
+    export const debug = logger;
 }

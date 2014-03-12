@@ -170,7 +170,7 @@ module akra.fx {
 	}
 
 
-	export class Maker implements IAFXMaker {
+	final export class Maker implements IAFXMaker {
 		guid: uint = guid();
 
 		private _pComposer: IAFXComposer = null;

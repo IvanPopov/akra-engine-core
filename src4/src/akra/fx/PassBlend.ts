@@ -41,7 +41,7 @@ module akra.fx {
 		[index: uint]: AIHashEntry;
 	}
 
-	export class PassBlend implements IAFXPassBlend {
+	final export class PassBlend implements IAFXPassBlend {
 		//UNIQUE();
 		public guid: uint = guid();
 

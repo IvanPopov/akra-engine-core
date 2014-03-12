@@ -76,7 +76,7 @@ module akra.fx {
 	/** @const */
 	var TEMPLATE_TYPE = "template";
 
-	export class Effect implements IAFXEffect {
+	final export class Effect implements IAFXEffect {
 		private _pComposer: IAFXComposer = null;
 
 		private _pParseTree: parser.IParseTree = null;
@@ -1197,15 +1197,15 @@ module akra.fx {
 		}
 
 		private getVariable(sName: string): IAFXVariableDeclInstruction {
-			return Effect.getSystemVariable(sName) || this._pEffectScope.getVariable(sName);
+			return Effect.getSystemVariable(sName) || this._pEffectScope._getVariable(sName);
 		}
 
 		private hasVariable(sName: string): boolean {
-			return this._pEffectScope.hasVariable(sName);
+			return this._pEffectScope._hasVariable(sName);
 		}
 
 		private getType(sTypeName: string): IAFXTypeInstruction {
-			return Effect.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
+			return Effect.getSystemType(sTypeName) || this._pEffectScope._getType(sTypeName);
 		}
 
 		private isSystemFunction(pFunction: IAFXFunctionDeclInstruction): boolean {
@@ -1263,35 +1263,35 @@ module akra.fx {
 		}
 
 		private isStrictMode(): boolean {
-			return this._pEffectScope.isStrictMode();
+			return this._pEffectScope._isStrictMode();
 		}
 
 		private setStrictModeOn(): void {
-			return this._pEffectScope.setStrictModeOn();
+			return this._pEffectScope._setStrictModeOn();
 		}
 
 		private newScope(eScopeType: EScopeType = EScopeType.k_Default): void {
-			this._pEffectScope.newScope(eScopeType);
+			this._pEffectScope._newScope(eScopeType);
 		}
 
 		private resumeScope(): void {
-			this._pEffectScope.resumeScope();
+			this._pEffectScope._resumeScope();
 		}
 
 		private getScope(): uint {
-			return this._pEffectScope.getScope();
+			return this._pEffectScope._getScope();
 		}
 
 		private setScope(iScope: uint): void {
-			this._pEffectScope.setScope(iScope);
+			this._pEffectScope._setScope(iScope);
 		}
 
 		private endScope(): void {
-			this._pEffectScope.endScope();
+			this._pEffectScope._endScope();
 		}
 
 		private getScopeType(): EScopeType {
-			return this._pEffectScope.getScopeType();
+			return this._pEffectScope._getScopeType();
 		}
 
 		private setCurrentAnalyzedFunction(pFunction: IAFXFunctionDeclInstruction): void {
@@ -1335,7 +1335,7 @@ module akra.fx {
 		private findFunction(sFunctionName: string,
 			pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
 			return Effect.findSystemFunction(sFunctionName, pArguments) ||
-				this._pEffectScope.getFunction(sFunctionName, pArguments);
+				this._pEffectScope._getFunction(sFunctionName, pArguments);
 		}
 
 		private findConstructor(pType: IAFXTypeInstruction,
@@ -1349,7 +1349,7 @@ module akra.fx {
 
 		private findShaderFunction(sFunctionName: string,
 			pArguments: IAFXExprInstruction[]): IAFXFunctionDeclInstruction {
-			return this._pEffectScope.getShaderFunction(sFunctionName, pArguments);
+			return this._pEffectScope._getShaderFunction(sFunctionName, pArguments);
 		}
 
 		private findFunctionByDef(pDef: instructions.FunctionDefInstruction): IAFXFunctionDeclInstruction {
@@ -1364,7 +1364,7 @@ module akra.fx {
 				this._error(EEffectErrors.REDEFINE_SYSTEM_VARIABLE, { varName: pVariable._getName() });
 			}
 
-			var isVarAdded: boolean = this._pEffectScope.addVariable(pVariable);
+			var isVarAdded: boolean = this._pEffectScope._addVariable(pVariable);
 
 			if (!isVarAdded) {
 				var eScopeType: EScopeType = this.getScopeType();
@@ -1395,7 +1395,7 @@ module akra.fx {
 				this._error(EEffectErrors.REDEFINE_SYSTEM_TYPE, { typeName: pType._getName() });
 			}
 
-			var isTypeAdded: boolean = this._pEffectScope.addType(pType);
+			var isTypeAdded: boolean = this._pEffectScope._addType(pType);
 
 			if (!isTypeAdded) {
 				this._error(EEffectErrors.REDEFINE_TYPE, { typeName: pType._getName() });
@@ -1407,7 +1407,7 @@ module akra.fx {
 				this._error(EEffectErrors.REDEFINE_SYSTEM_FUNCTION, { funcName: pFunction._getName() });
 			}
 
-			var isFunctionAdded: boolean = this._pEffectScope.addFunction(pFunction);
+			var isFunctionAdded: boolean = this._pEffectScope._addFunction(pFunction);
 
 			if (!isFunctionAdded) {
 				this._error(EEffectErrors.REDEFINE_FUNCTION, { funcName: pFunction._getName() });
@@ -1427,7 +1427,7 @@ module akra.fx {
 		}
 
 		private addExternalSharedVariable(pVariable: IAFXVariableDeclInstruction, eShaderType: EFunctionType): void {
-			var isVarAdded: boolean = this._pEffectScope.addVariable(pVariable);
+			var isVarAdded: boolean = this._pEffectScope._addVariable(pVariable);
 
 			if (!isVarAdded) {
 				this._error(EEffectErrors.CANNOT_ADD_SHARED_VARIABLE, { varName: pVariable._getName() });

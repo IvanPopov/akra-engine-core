@@ -1918,7 +1918,7 @@ module TypeScript {
 				if (!isAdditionalDeclaration) {
 					if (symbol.isProperty()) {
 						if (this.emittedClassProperties.indexOf(symbol) < 0) {
-							jsDocComments = this.getJSDocForClassMemberVariable(symbol, isConst);
+							jsDocComments = this.getJSDocForClassMemberVariable(symbol);
 							this.emittedClassProperties.push(symbol);
 						}
 						else {
@@ -1926,7 +1926,7 @@ module TypeScript {
 						}
 					}
 					else {
-						jsDocComments = this.getJSDocForVariableDeclaration(symbol, isConst);
+						jsDocComments = this.getJSDocForVariableDeclaration(symbol);
 					}
 				}
 
@@ -4754,21 +4754,22 @@ module TypeScript {
 			return ['@enum {number}'];
 		}
 
-		private getJSDocForVariableDeclaration(symbol: PullSymbol, isConst: boolean = false): string[] {
+		private getJSDocForVariableDeclaration(symbol: PullSymbol): string[] {
 			var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
 			this.isTypeParametersEmitBlocked = true;
 			var result = this.getJSDocForType(symbol.type);
 
-			if (symbol.anyDeclHasFlag(PullElementFlags.Exported) && !symbol.type.isFunction() && !isConst) {
-				result.push("1expose1");
+			if (symbol.anyDeclHasFlag(PullElementFlags.Const)) {
+				result.push("@const");
 			}
+
 			this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
 			return result;
 		}
 
-		private getJSDocForClassMemberVariable(symbol: PullSymbol, isConst: boolean = false): string[] {
-			var jsDocComments: string[] = this.getJSDocForVariableDeclaration(symbol, isConst);
+		private getJSDocForClassMemberVariable(symbol: PullSymbol): string[] {
+			var jsDocComments: string[] = this.getJSDocForVariableDeclaration(symbol);
 			var isClassExports = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported);
 			var isClassFinal = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
 
@@ -4778,13 +4779,6 @@ module TypeScript {
 				//}
 
 				jsDocComments.push("@protected");
-			}
-			else if (symbol.anyDeclHasFlag(PullElementFlags.Public)) {
-				//jsDocComments.push("@public");
-
-				if (isClassExports && !isConst) {
-					jsDocComments.push("1expose1");
-				}
 			}
 			else if (symbol.anyDeclHasFlag(PullElementFlags.Private)) {
 				jsDocComments.push("@private");
@@ -5209,6 +5203,10 @@ module TypeScript {
 				var symbol = this.semanticInfoChain.getSymbolForAST(childDecl);
 				var name = symbol.getDisplayName();
 
+				if (childDecl.kind() === SyntaxKind.MemberFunctionDeclaration && (isClassFinal || symbol.anyDeclHasFlag(PullElementFlags.Final))) {
+					result[name] = this.setSymbolEscapeOption(symbol, false);
+				}
+
 				if (result[name] === undefined) {
 					result[name] = this.isNeedPropertyEscape(symbol);
 				}
@@ -5271,8 +5269,9 @@ module TypeScript {
 				symbol.isContainer() ||
 				symbol.isInterface() ||
 				symbol.isType() ||
-				symbol.type.isFunction()) {
-
+				symbol.type.isFunction() ||
+				symbol.anyDeclHasFlag(PullElementFlags.Const) ||
+				!symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
 				return false;
 			}
 
@@ -5282,11 +5281,7 @@ module TypeScript {
 				return false;
 			}
 
-			if (symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
-				return true;
-			}
-
-			return false;
+			return true;
 		}
 
 		private isNeedPropertyEscape(symbol: PullSymbol) {

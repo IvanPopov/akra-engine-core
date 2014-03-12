@@ -10,18 +10,12 @@
 /// <reference path="symbols.ts" />
 
 module akra.parser {
-	/** @const */
-	var PARSER_GRAMMAR_ADD_OPERATION = 2001;
-	/** @const */
-	var PARSER_GRAMMAR_ADD_STATE_LINK = 2002;
-	/** @const */
-	var PARSER_GRAMMAR_UNEXPECTED_SYMBOL = 2003;
-	/** @const */
-	var PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME = 2004;
-	/** @const */
-	var PARSER_GRAMMAR_BAD_KEYWORD = 2005;
-	/** @const */
-	var PARSER_SYNTAX_ERROR = 2051;
+	const PARSER_GRAMMAR_ADD_OPERATION = 2001;
+	const PARSER_GRAMMAR_ADD_STATE_LINK = 2002;
+	const PARSER_GRAMMAR_UNEXPECTED_SYMBOL = 2003;
+	const PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME = 2004;
+	const PARSER_GRAMMAR_BAD_KEYWORD = 2005;
+	const PARSER_SYNTAX_ERROR = 2051;
 
 	logger.registerCode(PARSER_GRAMMAR_ADD_OPERATION, "Grammar not LALR(1)! Cannot to generate syntax table. Add operation error.\n" +
 		"Conflict in state with index: {stateIndex}. With grammar symbol: \"{grammarSymbol}\"\n" +
@@ -258,7 +252,7 @@ module akra.parser {
 			try {
 				this.defaultInit();
 				this._sSource = sSource;
-				this._pLexer.init(sSource);
+				this._pLexer._init(sSource);
 
 				//this._isSync = isSync;
 
@@ -941,10 +935,10 @@ module akra.parser {
 
 
 						if ((ch === "_") || (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z")) {
-							sName = this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
+							sName = this._pLexer._addKeyword(pTempRule[2], pTempRule[0]);
 						}
 						else {
-							sName = this._pLexer.addPunctuator(pTempRule[2], pTempRule[0]);
+							sName = this._pLexer._addPunctuator(pTempRule[2], pTempRule[0]);
 						}
 
 						this._pGrammarSymbols[sName] = pTempRule[2];
@@ -1027,7 +1021,7 @@ module akra.parser {
 							//this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
 						}
 
-						sName = this._pLexer.addPunctuator(pTempRule[j][1]);
+						sName = this._pLexer._addPunctuator(pTempRule[j][1]);
 						pRule.right.push(sName);
 						this._pSymbolMap[sName] = true;
 					}
@@ -1545,7 +1539,7 @@ module akra.parser {
 		}
 
 		private readToken(): IToken {
-			return this._pLexer.getNextToken();
+			return this._pLexer._getNextToken();
 		}
 
 		private operationAdditionalAction(iStateIndex: uint, sGrammarSymbol: string): EOperationType {
@@ -1710,7 +1704,7 @@ module akra.parser {
 				return sSymbol;
 			}
 			else {
-				return this._pLexer.getTerminalValueByName(sSymbol);
+				return this._pLexer._getTerminalValueByName(sSymbol);
 			}
 		}
 	}

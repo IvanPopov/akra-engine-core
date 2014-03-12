@@ -14,7 +14,7 @@ module akra.fx {
 		[index: uint]: EAFXShaderVariableType;
 	}
 
-	export class PassInputBlend implements IAFXPassInputBlend {
+	final export class PassInputBlend implements IAFXPassInputBlend {
 		guid: uint = guid();
 
 		protected _pCreator: IAFXComponentPassInputBlend = null;

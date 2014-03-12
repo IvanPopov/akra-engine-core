@@ -2,7 +2,7 @@
 /// <reference path="../guid.ts" />
 
 module akra.render {
-	export class RenderPass implements IRenderPass {
+	final export class RenderPass implements IRenderPass {
 		guid: uint = guid();
 
 		private _pTechnique: IRenderTechnique = null;

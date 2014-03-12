@@ -110,14 +110,14 @@ module akra.parser {
 	}
 
 	export interface ILexer {
-		addPunctuator(sValue: string, sName?: string): string;
-		addKeyword(sValue: string, sName: string): string;
+		_addPunctuator(sValue: string, sName?: string): string;
+		_addKeyword(sValue: string, sName: string): string;
 
-		getTerminalValueByName(sName: string): string;
+		_getTerminalValueByName(sName: string): string;
 
-		init(sSource: string): void;
+		_init(sSource: string): void;
 
-		getNextToken(): IToken;
+		_getNextToken(): IToken;
 		_getIndex(): uint;
 		_setSource(sSource: string): void;
 		_setIndex(iIndex: uint): void;

@@ -5186,9 +5186,7 @@ declare module TypeScript {
         private emitMemberVariableDeclaration(varDecl);
         public emitVariableDeclarator(varDecl: VariableDeclarator): void;
         private symbolIsUsedInItsEnclosingContainer(symbol, dynamic?);
-        private getPotentialDeclPathInfoForEmit(pullSymbol);
-        private emitDottedNameFromDeclPath(declPath, startingIndex, lastIndex);
-        private emitSymbolContainerNameInEnclosingContext(pullSymbol);
+        private shouldQualifySymbolNameWithParentName(symbol);
         private getSymbolForEmit(ast);
         public emitName(name: Identifier, addThis: boolean): void;
         public recordSourceMappingNameStart(name: string): void;
@@ -5229,9 +5227,8 @@ declare module TypeScript {
         public emitDeleteExpression(expression: DeleteExpression): void;
         public emitVoidExpression(expression: VoidExpression): void;
         private canEmitDottedNameMemberAccessExpression(expression);
-        private emitDottedNameMemberAccessExpressionWorker(expression, potentialPath, startingIndex, lastIndex);
-        private emitDottedNameMemberAccessExpressionRecurse(expression, potentialPath, startingIndex, lastIndex);
         private emitDottedNameMemberAccessExpression(expression);
+        private emitDottedNameMemberAccessExpressionRecurse(expression);
         public emitMemberAccessExpression(expression: MemberAccessExpression): void;
         public emitQualifiedName(name: QualifiedName): void;
         public emitBinaryExpression(expression: BinaryExpression): void;
@@ -5589,6 +5586,7 @@ declare module TypeScript {
         SomeInitializedModule = 102400,
         Protected = 134217728,
         Final = 268435456,
+        Const = 536870912,
     }
     function hasModifier(modifiers: PullElementFlags[], flag: PullElementFlags): boolean;
     enum PullElementKind {

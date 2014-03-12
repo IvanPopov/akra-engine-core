@@ -10,24 +10,24 @@ module akra.config {
 	}
 
 	//global
-	export var DEBUG: boolean = true;
-	export var WEBGL: boolean = true;
-	export var UI: boolean = false;
+	export const DEBUG: boolean = true;
+	export const WEBGL: boolean = true;
+	export const UI: boolean = false;
 
 	//temporary 
-	export var DEBUG_PARSER: boolean = false;
-	export var SKY: boolean = true;
-	export var SKY_GPU: boolean = false;
-	export var AFX_ENABLE_TEXT_EFFECTS: boolean = true;
+	export const DEBUG_PARSER: boolean = false;
+	export const SKY: boolean = true;
+	export const SKY_GPU: boolean = false;
+	export const AFX_ENABLE_TEXT_EFFECTS: boolean = true;
 	/** @define {boolean} */
-	export var __VIEW_INTERNALS__: boolean = false;
-	export var DETAILED_LOG: boolean = false;
-	export var LOGGER_API: boolean = true;
-	export var CRYPTO_API: boolean = false;
-	export var FILEDROP_API: boolean = false;
-	export var WEBGL_DEBUG: boolean = false;
-	export var PROFILE_MAKER: boolean = false;
-	export var PROFILE_TESSEALLATION: boolean = false;
+	export const __VIEW_INTERNALS__: boolean = false;
+	export const DETAILED_LOG: boolean = false;
+	export const LOGGER_API: boolean = true;
+	export const CRYPTO_API: boolean = false;
+	export const FILEDROP_API: boolean = false;
+	export const WEBGL_DEBUG: boolean = false;
+	export const PROFILE_MAKER: boolean = false;
+	export const PROFILE_TESSEALLATION: boolean = false;
 	//////////////////////
 
 	export var SHADOW_DISCARD_DISTANCE: float = 70.;
