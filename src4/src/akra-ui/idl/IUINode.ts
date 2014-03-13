@@ -1,4 +1,4 @@
-/// <reference path="../../../build/akra.d.ts" />
+/// <reference path="../../../built/akra.d.ts" />
 
 /// <reference path="IUILayout.ts" />
 /// <reference path="IUI.ts" />

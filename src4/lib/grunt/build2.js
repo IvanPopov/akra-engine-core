@@ -7,11 +7,8 @@
 var spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var libxmljs = require('libxmljs');
+var xmldom = require('xmldom');
 var domain = require('domain');
-//var UglifyJS = require("uglify-js");
-//var jade = require('jade');
-//zip for resource compression
 var Zip = require('node-native-zip');
 
 
@@ -23,7 +20,64 @@ var DEMOS_BUILD_DIR = "build/demos";
 
 module.exports = function (grunt) {
 
-	//console.log((new Error).stack)
+	function mv(from, to) {
+		copy(from, to);
+		if (path.normalize(from) !== path.normalize(to)) {
+			rm(from);
+		}
+	}
+
+	function rm(file) {
+		return grunt.file.delete(file);
+	}
+
+	function copy(from, to) {
+		return grunt.file.copy(from, to);
+	}
+
+	function exists(file) {
+		return grunt.file.exists(file);
+	}
+
+	function read(file, encoding) {
+		encoding = encoding || "utf8";
+		return grunt.file.read(file, { encoding: encoding });
+	}
+
+	function write(file, data, encoding) {
+		encoding = encoding || "utf8";
+		return grunt.file.write(file, data, { encoding: encoding });
+	}
+
+	var log = grunt.log.writeln.bind(grunt.log);
+	var error = grunt.log.error.bind(grunt.log);
+	var debug = grunt.log.debug.bind(grunt.log);
+	var warn = grunt.log.warn.bind(grunt.log);
+
+	var fail = grunt.fail.warn.bind(grunt.fail);
+	var fatal = grunt.fail.fatal.bind(grunt.fail);
+
+	var isDir = grunt.file.isDir.bind(grunt.file);
+
+	function config(opt, val) {
+		if (arguments.length == 2) {
+			return grunt.config(opt, val);
+		}
+
+		return grunt.config.get(opt);
+	}
+
+	function startAnimation(delay) {
+		delay = delay || 250;
+		return setInterval(function () {
+			grunt.log.write(".");
+		}, delay);
+	}
+
+	function stopAnimation(anim) {
+		grunt.log.ok();
+		clearInterval(anim);
+	}
 
 	/**
 	 * @param configFile {String} Path to config file.
@@ -42,44 +96,110 @@ module.exports = function (grunt) {
 	}
 
 	function loadConfig(file) {
-		var xsd = libxmljs.parseXmlString(grunt.file.read(path.join(__dirname, "schema.xsd")));
-		var xml = libxmljs.parseXmlString(grunt.file.read(file));
+		//var xsd = libxmljs.parseXmlString(read(path.join(__dirname, "schema.xsd")));
+		//var xml = libxmljs.parseXmlString(read(file));
+		var xml = new xmldom.DOMParser().parseFromString(read(file));
 
-		if (!xml.validate(xsd)) {
-			grunt.log.warn(file + " validation failed.");
-			return cb(false);
+		//if (!xml.validate(xsd)) {
+		//	warn(file + " validation failed.");
+		//	return cb(false);
+		//}
+
+		var config = xml.documentElement;
+
+		config.constructor.prototype.find = function (uri) {
+			// console.log(uri);
+			//console.trace();
+
+			var node = this;
+			var seq;
+
+			if (uri.substr(0, 2) === "//") {
+				uri = uri.substr(2);
+				seq = uri.split("/");
+
+				var query = seq.shift();
+				var list = config.getElementsByTagName(query);
+				var result = [];
+
+				//console.log(config.tagName + ".getElementsByTagName(" + query + ")");
+
+				//for (var i = 0; i < list.length; ++i) {
+				//	console.log("\t founded: ", list[i].tagName);
+				//}
+
+				for (var i = 0; i < list.length; ++i) {
+					if (seq.length == 0) {
+						result = result.concat([list[i]]);
+					}
+					else {
+						result = result.concat(list[i].find(seq.join("/")));
+					}
+				}
+
+				//result.forEach(function (node) { console.log("\t result:", node.tagName); });
+
+				return result;
+			}
+	
+			seq = uri.split("/"); 
+
+			var children = [];
+			
+			while (seq.length) {
+				if (node === null) break;
+
+				var nodeName = seq.shift();
+				var child = node.firstChild;
+				
+				node = null;
+
+				while (child != null) {
+					
+					if (child.tagName && child.tagName == nodeName) {
+						if (seq.length) {
+							node = child;
+							break;
+						}
+						else {
+							children.push(child);
+						}
+					}
+
+					child = child.nextSibling;
+				}
+			}
+
+			return children;
 		}
 
-		var config = xml.root();
+		config.constructor.prototype.get = function (uri) {
+			return this.find(uri)[0];
+		}
 
 		config.find("PropertyGroup").forEach(function (group) {
 			if (!checkPropertyGroupCondition(group)) {
-				group.remove();
+				group.parentNode.removeChild(group);
 			}
 		});
 
-		config.attr("Path", path.dirname(file));
+		config.setAttribute("Path", path.dirname(file));
 
-		if (!config.attr("Name")) {
-			config.attr("Name", path.basename(file, ".xml"));
+		if (!config.hasAttribute("Name")) {
+			config.setAttribute("Name", path.basename(file, ".xml"));
 		}
 
-		//grunt.config("ProjectName", config.attr("Name").value());
-		//grunt.config("ProjectDir", config.attr("Path").value());
-		//grunt.config("OutDir", );
-		config.attr("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").text())));
+		config.setAttribute("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").textContent)));
 
 		return config;
 	}
 
 	function checkPropertyGroupCondition(propertyGroup) {
-		var conditionAttr = propertyGroup.attr("Condition");
-
-		if (!conditionAttr) {
+		if (!propertyGroup.hasAttribute("Condition")) {
 			return true;
 		}
 
-		var condition = prepareSystemVariables(conditionAttr.value());
+		var condition = prepareSystemVariables(propertyGroup.getAttribute("Condition"));
 
 		return computeExpression(condition);
 	}
@@ -87,7 +207,7 @@ module.exports = function (grunt) {
 	function prepareSystemVariables(str) {
 		return str.replace(/(\$\(([\w\d\_\.\-]+)\))/g, function (str, expr, variable) {
 			var v = variable.split(".");
-			var e = grunt.config.get(v[0]) || null;
+			var e = config(v[0]) || null;
 
 			if (e) {
 				for (var i = 1; i < v.length; ++i) {
@@ -114,7 +234,7 @@ module.exports = function (grunt) {
 		var tscjs = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
 		var argv = [];
 		var dest = null;		//path ro destination js file.
-		var configDir = config.attr("Path").value();
+		var configDir = config.getAttribute("Path");
 
 		if (compilerOptions || grunt.option("tscc")) {
 			tscjs = path.normalize(__dirname + '/tscc/tscc.js');
@@ -124,82 +244,76 @@ module.exports = function (grunt) {
 
 		//load sources
 		config.find("//TypeScriptCompile").forEach(function (typescriptCompile) {
-			argv.push(path.join(configDir, typescriptCompile.attr("Include").value()));
+			argv.push(path.join(configDir, typescriptCompile.getAttribute("Include")));
 		});
 
 
 		if (config.get("//TypeScriptTarget")) {
-			argv.push("--target", config.get("//TypeScriptTarget").text());
+			argv.push("--target", config.get("//TypeScriptTarget").textContent);
 		}
 
 		if (config.get("//TypeScriptModuleKind")) {
-			argv.push("--module", config.get("//TypeScriptModuleKind").text());
+			argv.push("--module", config.get("//TypeScriptModuleKind").textContent);
 		}
 
 		if (config.get("//TypeScriptSourceMap")) {
-			if (config.get("//TypeScriptSourceMap").text() === "True") {
+			if (config.get("//TypeScriptSourceMap").textContent === "True") {
 				argv.push("--sourcemap");
 			}
 		}
 
 		if (config.get("//TypeScriptGeneratesDeclarations")) {
-			if (config.get("//TypeScriptGeneratesDeclarations").text() === "True") {
+			if (config.get("//TypeScriptGeneratesDeclarations").textContent === "True") {
 				argv.push("--declaration");
 			}
 		}
 
 		if (config.get("//TypeScriptPropagateEnumConstants")) {
-			if (config.get("//TypeScriptPropagateEnumConstants").text() === "True") {
+			if (config.get("//TypeScriptPropagateEnumConstants").textContent === "True") {
 				argv.push("--propagateEnumConstants");
 			}
 		}
 
 		if (config.get("//TypeScriptRemoveComments")) {
-			if (config.get("//TypeScriptRemoveComments").text() === "True") {
+			if (config.get("//TypeScriptRemoveComments").textContent === "True") {
 				argv.push("--removeComments");
 			}
 		}
 
 		if (config.get("//TypeScriptOutDir")) {
-			argv.push("--outDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutDir").text())));
+			argv.push("--outDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutDir").textContent)));
 		}
 
 		if (config.get("//TypeScriptOutFile")) {
-			dest = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+			dest = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutFile").textContent));
 			dest = dest.replace(/\.min\.js$/, ".js");
 		}
 		else {
-			grunt.log.error("TypeScript out file must be specified.");
+			error("TypeScript out file must be specified.");
 			return cb(false);
 		}
-
-		grunt.config();
 
 		argv.push("--out", dest);
 
 		if (config.get("//TypeScriptAdditionalFlags")) {
-			argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").text()).split(/\s+/));
+			argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").textContent).split(/\s+/));
 		}
 
-		grunt.log.writeln(cmd + " " + argv.join(" "));
+		log(cmd + " " + argv.join(" "));
 
-		config.attr("OutFile", dest);
-		return !compilerOptions ? cb(true) : minimize(config, cb);
+		//return !compilerOptions ? cb(true) : minimize(config, cb);
 
-		var tsc = spawn(cmd, argv);
-
-		tsc.stdout.on("data", function (data) {
-			grunt.log.write(data.toString());
-		});
-
-		tsc.stderr.on("data", function (data) {
-			grunt.log.error(data.toString());
-		});
-
-
-		tsc.on("close", function (code) {
+		function spawnCallback(code) {
+			stopAnimation(anim);
 			if (code === 0) {
-				config.attr("OutFile", dest);
+				config.setAttribute("OutFile", dest);
+
+				if (config.get("//TypeScriptDeclarationDir")) {
+					var decl = dest.replace(/\.js$/, ".d.ts");
+					if (exists(decl)) {
+						mv(decl, path.join(configDir, prepareSystemVariables(config.get("//TypeScriptDeclarationDir").textContent), path.basename(decl)));
+					}
+				}
 
 				if (compilerOptions) {
 					minimize(config, cb);
@@ -208,10 +322,26 @@ module.exports = function (grunt) {
 				}
 			}
 			else {
-				grunt.log.error(new Error("Compilation failed."));
+				error(new Error("Compilation failed."));
 				cb(false);
 			}
+		}
+
+		// return spawnCallback(0);
+
+		var tsc = spawn(cmd, argv);
+		var anim = startAnimation();
+
+		tsc.stdout.on("data", function (data) {
+			log(data.toString());
 		});
+
+		tsc.stderr.on("data", function (data) {
+			error(data.toString());
+		});
+
+
+		tsc.on("close", spawnCallback);
 	}
 
 	function generateExterns(src) {
@@ -220,9 +350,13 @@ module.exports = function (grunt) {
 		if (src === dest) dest += ".externs";
 
 		var externs = [];
-		var data = fs.readFileSync(src, "utf8");
+		var data = read(src, "utf8");
 
 		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g);
+
+		if (!list) {
+			return null;
+		}
 
 		for (var i = 0; i < list.length; ++i) {
 			var name = list[i];
@@ -252,38 +386,38 @@ module.exports = function (grunt) {
 			externsString += "var " + externs[i] + ";\n\n";
 		}
 
-		grunt.file.write(dest, externsString);
+		write(dest, externsString);
 
 		return dest;
 	}
 
 	function minimize(config, cb) {
-		var configDir = config.attr("Path").value();
+		var configDir = config.getAttribute("Path");
 		var compilerOptions = config.get("//ClosureCompiler");
 		var externsPath = null;
 		var dest = null;
 
-		var src = path.join(config.attr("Path").value(), prepareSystemVariables(config.get("//TypeScriptOutFile").text()));
+		var src = path.join(config.getAttribute("Path"), prepareSystemVariables(config.get("//TypeScriptOutFile").textContent));
 
 		externsPath = generateExterns(src);
-		grunt.log.debug("@EXTERNS", externsPath);
+		debug("@EXTERNS", externsPath);
 
 		if (compilerOptions.get("//OutFile")) {
-			var outFile = prepareSystemVariables(compilerOptions.get("//OutFile").text());
+			var outFile = prepareSystemVariables(compilerOptions.get("//OutFile").textContent);
 			dest = path.join(configDir, outFile);
 		}
 		else {
 			dest = src.replace(/\.js$/, ".min.js");
 			if (src === dest) dest += ".min";
 		}
-
-		if (!src || !grunt.file.exists(src)) {
-			grunt.log.warn('Source file for minimizing "' + src + '" not found.');
+	
+		if (!src || !exists(src)) {
+			warn('Source file for minimizing "' + src + '" not found.');
 			return null;
 		}
 
 		var closureJar = path.join(__dirname, '/closure/compiler.jar');
-		var compilationLevel = compilerOptions.get("//CompilationLevel").text();
+		var compilationLevel = compilerOptions.get("//CompilationLevel").textContent;
 		var cmd = "java";
 		var argv = [
 			"-jar", closureJar,
@@ -293,42 +427,48 @@ module.exports = function (grunt) {
 		];
 
 		if (compilerOptions.get("//CreateSourceMap")) {
-			if (compilerOptions.get("//CreateSourceMap").text() === "True") {
+			if (compilerOptions.get("//CreateSourceMap").textContent === "True") {
 				argv.push("--source_map_format=V3", "--create_source_map", dest + ".map");
 			}
 		}
 
-		if (externsPath && grunt.file.exists(externsPath)) {
+		if (externsPath && exists(externsPath)) {
 			argv.push("--externs", externsPath);
 		}
 
-		grunt.log.writeln(cmd + " " + argv.join(" "));
+		log(cmd + " " + argv.join(" "));
 
-		//FIXME: remove after debugging
-		config.attr("OutFile", dest);
-		return cb(true);
-		///////
+		var anim = startAnimation();
+
+		function spawnCallback(code) {
+			stopAnimation(anim);
+			if (argv.indexOf("--externs") != -1) {
+				rm(externsPath);
+			}
+			if (code === 0) {
+				config.setAttribute("OutFile", dest);
+				cb(true);
+			}
+			else {
+				fail("Closure minimization failed.");
+				cb(false);
+			}
+		}
+
+		// return spawnCallback(0);
+		
 
 		var closure = spawn(cmd, argv);
 
 		closure.stdout.on("data", function (data) {
-			grunt.log.write(data.toString());
+			write(data.toString());
 		});
 
 		closure.stderr.on("data", function (data) {
-			grunt.log.error(data.toString());
+			error(data.toString());
 		});
 
-		closure.on("close", function (code) {
-			if (code === 0) {
-				config.attr("OutFile", dest);
-				cb(true);
-			}
-			else {
-				grunt.fail.warn("Closure minimization failed.");
-				cb(false);
-			}
-		});
+		closure.on("close", spawnCallback);
 
 		return dest;
 	}
@@ -341,71 +481,76 @@ module.exports = function (grunt) {
 	 */
 	function buildProject(config, cb) {
 		var variables = {};
-		var outFile = config.attr("OutFile").value();
+		var outFile = config.getAttribute("OutFile");
 
-		console.time("Build project " + config.attr("Name"));
+		console.time("Build project " + config.getAttribute("Name"));
 
-		if (config.find("//PropertyGroup/Variable")) {
-			config.find("//PropertyGroup/Variable").forEach(function (variable) {
-				var name = variable.attr("Name").value();
-				var value = computeExpression(variable.text());
-
-				if (typeof value === 'string') {
-					value = JSON.stringify(value);
-				}
-
-				variables[name] = value;
-
-				grunt.log.debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
-			});
-		}
-
-		if (config.find("//PropertyGroup/Resource")) {
-			config.find("//PropertyGroup/Resource").forEach(function (resource) {
-				var result = createResource(config, resource);
-				var resourceName = resource.attr("Name").value();
-
-				variables[resourceName] = JSON.stringify(result);
-			});
-		}
-
-		//if (config.find("//PropertyGroup/Attachment")) {
-		//	config.find("//PropertyGroup/Resource").forEach(function (attachment) {
-		//		var result = loadAttachment(config, attachment);
-		//		var attachmentName = attachment.attr("Name").value();
-
-		//		variables[attachmentName] = JSON.stringify(result, null, '\t');
-		//		variables[attachmentName + ".format"] = JSON.stringify(result.format);
-
-		//		if (result.format !== null && result.format !== "String") {
-		//			variables[attachmentName + ".content"] = result.content;
-		//		}
-		//		else {
-		//			variables[attachmentName + ".content"] = JSON.stringify(result.content);
-		//		}
-		//	});
-		//}
-
-
-		var data = null;
 		
-		data = grunt.file.read(outFile);
-	
-		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g);
+		config.find("//PropertyGroup/Variable").forEach(function (variable) {
+			var name = variable.getAttribute("Name");
+			var value = computeExpression(variable.textContent);
 
-		for (var i = 0; i < list.length; ++i) {
-			var name = list[i];
-			var value = variables[name];
-			if (value !== undefined) {
-				data.replace(name, value);
-				grunt.log.debug("> " + name + "=" + (value.length > 32 ? value.substr(0, 32) + '...' : value));
+			if (typeof value === 'string') {
+				value = JSON.stringify(value);
 			}
+
+			variables[name] = value;
+
+			debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
+		});
+
+
+
+		config.find("//PropertyGroup/Resource").forEach(function (resource) {
+			var result = createResource(config, resource);
+			var resourceName = resource.getAttribute("Name");
+
+			variables[resourceName] = JSON.stringify(result);
+		});
+
+		
+		config.find("//PropertyGroup/Dependencies/Attachment").forEach(function (attachment) {
+			var result = loadAttachment(config, attachment);
+			if (attachment.hasAttribute("Name")) {
+				var attachmentName = attachment.getAttribute("Name");
+
+				variables[attachmentName] = JSON.stringify(result, null, '\t');
+				variables[attachmentName + ".format"] = JSON.stringify(result.format);
+
+				if (result.format !== null && result.format !== "String") {
+					variables[attachmentName + ".content"] = result.content;
+				}
+				else {
+					variables[attachmentName + ".content"] = JSON.stringify(result.content);
+				}
+			}
+		});
+
+
+		if (Object.keys(variables).length === 0) {
+			return cb(true);
 		}
 
-		grunt.file.write(outFile, data);
-		console.timeEnd("Build project " + config.attr("Name"));
+		var data = read(outFile);
+		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g) || [];
+
+		var i = 0;
+		do {
+			var name = list[i++];
+			var value = variables[name];
+
+			if (value !== undefined) {
+				data = data.replace(name, value);
+				debug("> " + name + "=" + (value.length > 32 ? value.substr(0, 32) + '...' : value));
+			}
+
+		} while (i < list.length);
+
+		// write(outFile, data);
+		console.timeEnd("Build project " + config.getAttribute("Name"));
 
 		cb(true);
+
 	}
 
 	function computeExpression(expression) {
@@ -414,8 +559,8 @@ module.exports = function (grunt) {
 		try {
 			return f();
 		} catch (e) {
-			grunt.log.debug(f.toString());
-			grunt.fail.warn(e);
+			debug(f.toString());
+			fail(e);
 		}
 
 		return false;
@@ -428,12 +573,12 @@ module.exports = function (grunt) {
 	 * @param destFolder {String} Destination folder.
 	 */
 	function createResource(config, resource) {
-		var resourceName = resource.attr("Name").value();
-		var configPath = config.attr("Path").value();
-		var buildDir = path.join(config.attr("Path").value(), config.attr("OutDir").value());
+		var resourceName = resource.getAttribute("Name");
+		var configPath = config.getAttribute("Path");
+		var buildDir = path.join(config.getAttribute("Path"), config.getAttribute("OutDir"));
 
 		if (resource.get("Filename")) {
-			resourceName = resource.get("Filename").text();
+			resourceName = resource.get("Filename").textContent;
 		}
 
 		var isArchive = false;
@@ -443,7 +588,7 @@ module.exports = function (grunt) {
 		var map = null;
 
 		if (resource.get("UseInlining")) {
-			useInlining = resource.get("UseInlining").text() === "True";
+			useInlining = resource.get("UseInlining").textContent === "True";
 
 			//При подстановке внутрь скрипта все должно быть запаковано в один файл.
 			if (useInlining) {
@@ -455,27 +600,27 @@ module.exports = function (grunt) {
 			//при использовании подстановки, контент включается внутрь JS файла
 			//поэтому нету смысла использовать параметр OutDir
 			if (resource.get("OutDir")) {
-				outDir = prepareSystemVariables(resource.get("OutDir").text());
+				outDir = prepareSystemVariables(resource.get("OutDir").textContent);
 			}
 
 			if (resource.get("Archive")) {
-				isArchive = resource.get("Archive").text() === "True";
+				isArchive = resource.get("Archive").textContent === "True";
 			}
 		}
 
 		if (resource.get("MapFile")) {
-			mapFile = prepareSystemVariables(resource.get("MapFile").text());
+			mapFile = prepareSystemVariables(resource.get("MapFile").textContent);
 			//расчитаем полный путь к map файлу
 			mapFile = path.join(configPath, mapFile);
 
-			if (!grunt.file.exists(mapFile)) {
-				grunt.fail.warn("<MapFile>" + mapFile + "</MapFile> not found.");
+			if (!exists(mapFile)) {
+				fail("<MapFile>" + mapFile + "</MapFile> not found.");
 			}
 		}
 
 		var i;
 		if (mapFile) {
-			map = JSON.parse(grunt.file.read(mapFile));
+			map = JSON.parse(read(mapFile));
 
 			var mapFolder = path.dirname(mapFile);
 
@@ -505,7 +650,7 @@ module.exports = function (grunt) {
 			if (data.get("File")) {
 				var files = data.find("File");
 				for (i = 0; i < files.length; ++i) {
-					additionalFiles.push(path.normalize(files[i].attr("Path").value()));
+					additionalFiles.push(path.normalize(files[i].getAttribute("Path")));
 				}
 			}
 
@@ -520,11 +665,11 @@ module.exports = function (grunt) {
 		}
 		if (isArchive) {
 			var archive = packResourcesArchive(config, map, additionalFiles);
-	
+
 			if (useInlining) {
-				
+
 				var content = archive.toBuffer().toString('base64');
-				
+
 				return {
 					path: "data:application/octet-stream;base64," + content,
 					type: "ara"
@@ -533,9 +678,9 @@ module.exports = function (grunt) {
 			else {
 				var outputFile = path.join(buildDir, outDir, resourceName + ".ara");
 				var content = archive.toBuffer();
-		
+
 				fs.writeFileSync(outputFile, content);
-	
+
 				return {
 					path: path.relative(buildDir, outputFile).replace(/\\/ig, "/"),
 					type: "ara"
@@ -566,13 +711,13 @@ module.exports = function (grunt) {
 			var dstFile = path.join(outputDir, srcFiles[i]);
 			var srcFile = path.resolve(path.join(configPath, srcFiles[i]));
 
-			grunt.file.copy(srcFile, dstFile);           //записываем файл в destFolder
+			copy(srcFile, dstFile);           //записываем файл в destFolder
 		}
 
 		mapFile = path.join(outputDir, resourceName + ".map");
 
 		if (data.get("ResourceFile") || map.files.length) {
-			grunt.file.write(mapFile, JSON.stringify(map, null, "\t"));
+			write(mapFile, JSON.stringify(map, null, "\t"));
 		}
 
 		return {
@@ -583,11 +728,11 @@ module.exports = function (grunt) {
 
 
 	function readFolders(folders, config) {
-		var srcDir = config.attr("Path").value();
+		var srcDir = config.getAttribute("Path");
 		var result = [];
 
 		for (var i = 0; i < folders.length; ++i) {
-			var currentFolder = path.join(srcDir, folders[i].attr("Path").value());
+			var currentFolder = path.join(srcDir, folders[i].getAttribute("Path"));
 			var files = grunt.file.expand({ filter: 'isFile' }, [currentFolder]);
 			var excludes = folders[i].find("Exclude");
 
@@ -597,7 +742,7 @@ module.exports = function (grunt) {
 						if (path.resolve(path.join(currentFolder, excludes[n].$.Path)) ==
 							path.resolve(path.join(currentFolder, files[f]))) {
 							//Removing Exclude from files.
-							grunt.log.debug("@EXCLUDE", excludes[n].$.Path);
+							debug("@EXCLUDE", excludes[n].$.Path);
 							files.splice(f, 1);
 							f--;
 						}
@@ -614,20 +759,20 @@ module.exports = function (grunt) {
 	}
 
 	/**
-		 * create zip archive with files described in {argv}
-		 * @param config {XML}
-		 * @param mapFile {String} Path to .map file.
-		 * @param additionalData {String[]} Дополнительные файлы и папки которые надо включить в архив с ресурсом.
-		 */
+	 * create zip archive with files described in {argv}
+	 * @param config {XML}
+	 * @param mapFile {String} Path to .map file.
+	 * @param additionalData {String[]} Дополнительные файлы и папки которые надо включить в архив с ресурсом.
+	 */
 	function packResourcesArchive(config, map, additionalData) {
 		var archive = new Zip();
-		var configDir = config.attr("Path").value();
+		var configDir = config.getAttribute("Path");
 		var files = [];
-		
+
 
 		archive.add(".map", new Buffer(JSON.stringify(map, null, '\t'), "utf8"));
 
-		grunt.log.debug("@RESOURCE", ".map");
+		debug("@RESOURCE", ".map");
 
 		while (map) {
 			if (map.files) {
@@ -638,38 +783,38 @@ module.exports = function (grunt) {
 					archive.add(res, fs.readFileSync(path.join(configDir, file)));
 					files.push(res);
 
-					grunt.log.debug("@RESOURCE", res);
+					debug("@RESOURCE", res);
 				}
 			}
 
 			map = map.deps;
 		}
-		
+
 		if (additionalData) {
 			additionalData.forEach(function (value) {
 				value = path.join(configDir, value);
 				var name = path.relative(configDir, value).replace(/\\/ig, "/");
 
-				if (grunt.file.exists(value)) {
-					if (grunt.file.isDir(value)) {
+				if (exists(value)) {
+					if (isDir(value)) {
 						// files in string[] array, include directories..
 						// var files = grunt.file.expand({ filter: "isFile" }, [value]);
-						grunt.fail.warn("TODO: folder support not implemented....");
+						fail("TODO: folder support not implemented....");
 					}
 					else if (files.indexOf(name) === -1) {
 
 						archive.add(name, fs.readFileSync(value));
 						files.push(name);
 
-						grunt.log.debug("@RESOURCE", name);
+						debug("@RESOURCE", name);
 					}
 				}
 				else {
-					grunt.fail.warn("Could not find file " + value + " (cwd: " + process.cwd() + ")");
+					fail("Could not find file " + value + " (cwd: " + process.cwd() + ")");
 				}
 			});
 		}
-	
+
 		return archive;
 	}
 
@@ -695,18 +840,18 @@ module.exports = function (grunt) {
 	function loadResource(resourceFile, cur) {
 		cur.files = cur.files || [];
 
-		var res = { path: resourceFile.attr("Path").value() };
+		var res = { path: resourceFile.getAttribute("Path") };
 
-		if (resourceFile.attr("Name")) {
-			res.name = resourceFile.attr("name").value();
+		if (resourceFile.hasAttribute("Name")) {
+			res.name = resourceFile.getAttribute("name");
 		}
 
-		if (resourceFile.attr("Comment")) {
-			res.comment = resourceFile.attr("Comment").value();
+		if (resourceFile.hasAttribute("Comment")) {
+			res.comment = resourceFile.getAttribute("Comment");
 		}
 
-		if (resourceFile.attr("Type")) {
-			res.type = resourceFile.attr("Type").value();
+		if (resourceFile.hasAttribute("Type")) {
+			res.type = resourceFile.getAttribute("Type");
 		}
 
 		cur.files.push(res);
@@ -720,93 +865,90 @@ module.exports = function (grunt) {
 		}
 	}
 
-	//==================================================================================================================
-	//==================================================================================================================
-	//==================================================================================================================
-	//==================================================================================================================
-
-
-
-
-
-
-
-
-
-
-	function getFilesFromAttachment(Attachment, srcFolder) {
+	function getFilesFromAttachment(attachment, config) {
+		var srcDir = config.getAttribute("Path");
 		var files = [];
-		if (Attachment.File) {
-			for (var i = 0; i < Attachment.File.length; ++i) {
-				files.push(path.normalize(Attachment.File[i].$.Path));
+		if (attachment.get("File")) {
+			var list = attachment.find("File");
+			for (var i = 0; i < list.length; ++i) {
+				files.push(path.normalize(list[i].getAttribute("Path")));
 			}
 		}
 
-		if (Attachment.Folder) {
-			files = files.concat(readFolder(Attachment.Folder, srcFolder));
+		if (attachment.get("Folder")) {
+			files = files.concat(readFolders(attachment.find("folder"), config));
 		}
 
 		return files;
 	}
 
-	function loadAttachmentObject(name, srcFolder, Attachment, destFolder) {
+	//name, srcFolder, Attachment, destFolder
+	function loadAttachment(config, attachment) {
+		var name = null;
 		var outDir = "";
 		var format = null;
-		var files = getFilesFromAttachment(Attachment, srcFolder);
+		var files = getFilesFromAttachment(attachment, config);
 		var minify = null;
+		var srcDir = config.getAttribute("Path");
+		var buildDir = path.join(config.getAttribute("Path"), config.getAttribute("OutDir"));
 
-		if (Attachment.OutDir) {
-			outDir = Attachment.OutDir[0].toLowerCase() === "true";
+		if (attachment.hasAttribute("Name")) {
+			name = attachment.getAttribute("Name");
 		}
 
-		if (Attachment.Minify) {
-			minify = Attachment.Minify[0].toUpperCase();
+		if (attachment.get("OutDir")) {
+			outDir = attachment.get("OutDir").textContent;
 		}
 
+		if (attachment.get("Minify")) {
+			minify = attachment.get("Minify").textContent;
+		}
 
-		if (Attachment.Format) {
-			format = Attachment.Format[0].toUpperCase();
+		if (attachment.get("Format")) {
+			format = attachment.get("Format").textContent;
 		}
 
 		files.forEach(function (file) {
-			grunt.log.debug("@ATTACHMENT", name + "=" + file, (format ? "(" + format + ")" : ""));
+			debug("@ATTACHMENT", name + "=" + file, (format ? "(" + format + ")" : ""));
 		});
 
 		files.forEach(function (file, i, files) {
-			files[i] = path.join(srcFolder, file);
-			// grunt.log.debug(path.join(srcFolder, file), path.relative(destFolder, path.join(srcFolder, file)));
+			files[i] = path.join(srcDir, file);
+			// debug(path.join(srcDir, file), path.relative(buildDir, path.join(srcDir, file)));
 		});
 
 
 		if (!format) {
 			files.forEach(function (file, i, files) {
-				files[i] = path.relative(destFolder, file).replace(/\\/ig, "/");
+				files[i] = path.relative(buildDir, file).replace(/\\/ig, "/");
 			});
+
 			return {
 				content: files.join(";"),
 				format: format
 			};
 		}
 
-		if (format === "STRING") {
+		if (format === "String") {
 			var data = "";
 			files.forEach(function (file) {
-				data += "\n" + fs.readFileSync(file, "utf-8");
+				data += "\n" + read(file)
 			});
 
 			return { content: data, format: format };
 		}
 
-		if (format === "ENCLOSURE") {
-			var outDir = Attachment.OutDir ? Attachment.OutDir[0] : "";
-
+		if (format === "Enclosure") {
+			var data = [];
 			files.forEach(function (file) {
-				grunt.file.copy(file, path.join(destFolder, outDir, path.basename(file)));
-				grunt.log.debug("@COPY", file, "->", path.join(destFolder, outDir, path.basename(file)));
+				var dest = path.join(buildDir, outDir, path.basename(file));
+				copy(file, dest);
+				data.push(path.relative(buildDir, dest).replace(/\\/g, '/'));
+				debug("@COPY", file, "->", path.join(buildDir, outDir, path.basename(file)));
 			});
 
 			return {
-				content: "/** Enclosured */",
+				content: data.join(";"),
 				format: format
 			}
 		}
@@ -815,7 +957,7 @@ module.exports = function (grunt) {
 
 			var data = "";
 			files.forEach(function (file) {
-				data += "\n" + fs.readFileSync(file, "utf-8");
+				data += "\n" + read(file, "utf-8");
 			});
 
 			return {
@@ -831,33 +973,7 @@ module.exports = function (grunt) {
 	}
 
 
-
-	/** 
-	 * @param folder {String} Path to project folder.
-	 * @param Attachment {XML} Attachment object.
-	 * @param dest {String} Path to dest folder.
-	 */
-	function loadAttachment(folder, Attachment, dest) {
-		var name = Attachment.$.Name;
-
-		if (!Attachment.PropertyGroup) {
-			return loadAttachmentObject(name, folder, Attachment, dest);
-		}
-
-		for (var i = 0; i < Attachment.PropertyGroup.length; ++i) {
-			var PropertyGroup = Attachment.PropertyGroup[i];
-			//TODO: проверить Condition данной групы и убедиться, что она подходит
-			if (PropertyGroup.$ && PropertyGroup.$.Condition) {
-				if (!computeXmlData(PropertyGroup.$.Condition)) {
-					continue;
-				}
-			}
-
-			return loadAttachmentObject(name, folder, Attachment.PropertyGroup[i], dest);
-		}
-
-		return null;
-	}
+	//=====================================================================
 
 	function findAttachments(Project) {
 		var attachments = [];
@@ -890,7 +1006,7 @@ module.exports = function (grunt) {
 	/** @param Module {XML} <Module/> tags from demo.xml */
 	function loadDependentScriptsFromModules(Module, destFolder) {
 		var scripts = [];
-		var buildConfig = grunt.config.get('build');
+		var buildConfig = config('build');
 
 		for (var i in Module) {
 			var module = Module[i];
@@ -940,7 +1056,7 @@ module.exports = function (grunt) {
 			var pathname = script.$.Path;
 			var destPath = path.join(destFolder, pathname);
 			var srcPath = path.join(srcFolder, pathname);
-			grunt.file.copy(srcPath, destPath);
+			copy(srcPath, destPath);
 			scripts.push(path.relative(destFolder, destPath).replace(/\\/g, '/'));
 		}
 
@@ -955,7 +1071,7 @@ module.exports = function (grunt) {
 			var pathname = script.$.Path;
 			var destPath = path.join(destFolder, pathname);
 			var srcPath = path.join(srcFolder, pathname);
-			grunt.file.copy(srcPath, destPath);
+			copy(srcPath, destPath);
 			styles.push(path.relative(destFolder, destPath).replace(/\\/g, '/'));
 		}
 
@@ -977,12 +1093,12 @@ module.exports = function (grunt) {
 
 
 	function buildDemo(demo, srcFolder, cb) {
-		if (!grunt.file.exists(srcFolder)) {
-			grunt.log.warn("Could not find demo.xml");
+		if (!exists(srcFolder)) {
+			warn("Could not find demo.xml");
 			cb(false);
 		}
 
-		var xmlData = grunt.file.read(path.join(srcFolder, "demo.xml"));
+		var xmlData = read(path.join(srcFolder, "demo.xml"));
 		var parser = new xml2js.Parser();
 
 		parser.parseString(xmlData, function (err, xml) {
@@ -997,8 +1113,8 @@ module.exports = function (grunt) {
 			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
 			var destJs = path.join(destFolder, path.basename(main, path.extname(main)) + '.js');
 
-			if (!grunt.file.exists(main)) {
-				grunt.fail.fatal(new Error("Could not find main file: " + main));
+			if (!exists(main)) {
+				fatal(new Error("Could not find main file: " + main));
 				return cb(false);
 			}
 
@@ -1022,19 +1138,19 @@ module.exports = function (grunt) {
 				}
 			}
 
-			grunt.log.debug("Dest. js: ", destJs);
-			grunt.log.debug("Dest. folder: ", destFolder);
-			grunt.log.debug("Name:", name);
-			grunt.log.debug("Description:", description);
-			grunt.log.debug("Main:", main);
-			grunt.log.debug("Template:", template);
+			debug("Dest. js: ", destJs);
+			debug("Dest. folder: ", destFolder);
+			debug("Name:", name);
+			debug("Description:", description);
+			debug("Main:", main);
+			debug("Template:", template);
 
 
-			if (!grunt.file.exists(template)) {
-				code = grunt.file.read(path.join(__dirname, "demo.jade"));
+			if (!exists(template)) {
+				code = read(path.join(__dirname, "demo.jade"));
 			}
 			else {
-				code = grunt.file.read(template);
+				code = read(template);
 			}
 
 			// Compile a function
@@ -1051,8 +1167,8 @@ module.exports = function (grunt) {
 				}
 			});
 
-			grunt.log.debug(html);
-			grunt.file.write(destHtml, html);
+			debug(html);
+			write(destHtml, html);
 			//return cb(true);
 
 			compileTypescript([main], {}, destJs, function (ok) {
@@ -1060,7 +1176,7 @@ module.exports = function (grunt) {
 
 				if (xml.Demo.Resource) {
 					var variables = {};
-					var data = grunt.file.read(destJs);
+					var data = read(destJs);
 
 					for (var i = 0; i < xml.Demo.Resource.length; ++i) {
 						var resource = packResource(srcFolder, xml.Demo.Resource[i], destFolder);
@@ -1075,7 +1191,7 @@ module.exports = function (grunt) {
 							});
 					}
 
-					grunt.file.write(destJs, data);
+					write(destJs, data);
 				}
 
 				cb(true);
@@ -1090,15 +1206,15 @@ module.exports = function (grunt) {
 		compile(config, done);
 	});
 
+
 	grunt.registerTask("demo", function () {
 		var done = this.async();
-		var demo = this.nameArgs.split(":")[1];
 
 		if (!demo) {
-			grunt.fail.fatal(new Error("Could not determ demo name."));
+			fatal(new Error("Could not determ demo name."));
 		}
 
-		grunt.log.debug("Current demo: ", demo);
+		debug("Current demo: ", demo);
 
 		var src = path.join(DEMOS_SOURCE_DIR, demo);
 		buildDemo(demo, src, done);

@@ -4,39 +4,15 @@
   <ItemGroup>
     <TypeScriptCompile Include="akra.ts"/>
   </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TypeScriptOutFile>../../build/$(Configuration)/akra.js</TypeScriptOutFile>
-    <TypeScriptTarget>ES3</TypeScriptTarget>
-    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
-    <ClosureCompiler>
-      <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
-      <CreateSourceMap>False</CreateSourceMap>
-      <OutFile>../../build/$(Configuration)/akra.min.js</OutFile>
-    </ClosureCompiler>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptOutFile>../../build/$(Configuration)/akra.js</TypeScriptOutFile>
-    <TypeScriptTarget>ES3</TypeScriptTarget>
-    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
-    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
-  </PropertyGroup>
   <PropertyGroup>
-    
+    <TypeScriptOutFile>../../$(BuiltDir)/$(Configuration)/akra.js</TypeScriptOutFile>
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
+    <TypeScriptDeclarationDir>../../$(BuiltDir)</TypeScriptDeclarationDir>
     <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
     <Variable Name="AE_VERSION">'$(Version.full)'</Variable>
     <Dependencies>
-      <Attachment Name="AE_THREAD_FILEINTERFACE">
-        <File Path="io/FileInterface.t.js"/>
-      </Attachment>
-      <Attachment Name="AE_THREAD_REMOTEFILE">
-        <File Path="io/RemoteFile.t.js"/>
-      </Attachment>
-      <Attachment Name="AE_THREAD_LOCALFILE">
-        <File Path="io/LocalFile.t.js"/>
-      </Attachment>
-      <Attachment Name="AE_THREAD_TESSELATION">
-        <File Path="terrain/TessellationThread.t.js"/>
-      </Attachment>
       <Attachment>
         <File Path="resources/js/zip.js/zip.js"/>
         <File Path="resources/js/zip.js/zip-ext.js"/>
@@ -44,6 +20,54 @@
         <File Path="resources/js/zip.js/inflate.js"/>
         <Format>Enclosure</Format>
         <OutDir>zip.js</OutDir>
+      </Attachment>
+    </Dependencies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ClosureCompiler>
+      <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
+      <CreateSourceMap>False</CreateSourceMap>
+    </ClosureCompiler>
+    <Dependencies>
+      <Attachment Name="AE_THREAD_FILEINTERFACE">
+        <File Path="io/FileInterface.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+      <Attachment Name="AE_THREAD_REMOTEFILE">
+        <File Path="io/RemoteFile.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+      <Attachment Name="AE_THREAD_LOCALFILE">
+        <File Path="io/LocalFile.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+      <Attachment Name="AE_THREAD_TESSELATION">
+        <File Path="terrain/TessellationThread.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+    </Dependencies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Dependencies>
+      <Attachment Name="AE_THREAD_FILEINTERFACE">
+        <File Path="io/FileInterface.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_REMOTEFILE">
+        <File Path="io/RemoteFile.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_LOCALFILE">
+        <File Path="io/LocalFile.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_TESSELATION">
+        <File Path="terrain/TessellationThread.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
       </Attachment>
     </Dependencies>
   </PropertyGroup>
@@ -84,7 +108,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Resource Name="AE_CORE_DEPENDENCIES">
       <Archive>True</Archive>
-      <UseInlining>False</UseInlining>
+      <UseInlining>True</UseInlining>
       <Data>
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
         <ResourceFile Path="resources/HLSL.gr">

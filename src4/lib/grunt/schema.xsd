@@ -68,6 +68,7 @@
               <xs:element ref="TypeScriptOutDir" maxOccurs="1"/>
               <xs:element ref="TypeScriptAdditionalFlags" maxOccurs="1"/>
               <xs:element ref="TypeScriptOutFile" maxOccurs="1"/>
+              <xs:element ref="TypeScriptDeclarationDir" maxOccurs="1" />
               <xs:element ref="TypeScriptPropagateEnumConstants" maxOccurs="1"/>
               <xs:element ref="TypeScriptModuleKind" maxOccurs="1"/>
               <xs:element ref="TypeScriptGeneratesDeclarations" maxOccurs="1" />
@@ -388,6 +389,14 @@
   <xs:element name="TypeScriptOutFile">
     <xs:simpleType>
       <xs:restriction base="xs:anyURI" />
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="TypeScriptDeclarationDir">
+    <xs:annotation>
+      <xs:documentation>Declaration folder</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:anyURI"/>
     </xs:simpleType>
   </xs:element>
   <xs:element name="TypeScriptAdditionalFlags">

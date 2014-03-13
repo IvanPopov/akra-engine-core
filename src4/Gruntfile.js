@@ -13,48 +13,28 @@ var util = require('./lib/grunt/utils.js');
 module.exports = function (grunt) {
 	require('./lib/grunt/build2.js')(grunt);
 
-	//grunt.loadNpmTasks("grunt-contrib-clean");
-	//grunt.loadNpmTasks("grunt-contrib-concat");
-	//grunt.loadNpmTasks("grunt-contrib-uglify");
-	//grunt.loadNpmTasks("grunt-contrib-copy");
-	//grunt.loadNpmTasks("grunt-contrib-connect");
-	//grunt.loadNpmTasks("grunt-regarde");
-	//grunt.loadNpmTasks('grunt-tslint');
-	//grunt.loadNpmTasks('grunt-gjslint');
+	grunt.loadNpmTasks("grunt-contrib-clean");
+	grunt.loadNpmTasks("grunt-contrib-concat");
+	grunt.loadNpmTasks("grunt-contrib-uglify");
+	grunt.loadNpmTasks("grunt-contrib-copy");
+	grunt.loadNpmTasks("grunt-contrib-connect");
+	grunt.loadNpmTasks("grunt-regarde");
+	grunt.loadNpmTasks('grunt-tslint');
+	grunt.loadNpmTasks('grunt-gjslint');
 
-	//require('time-grunt')(grunt);
+	require('time-grunt')(grunt);
 
 	grunt.initConfig({
 		//global configuration
 		Configuration: 'Debug',
 		Version: util.getVersion(),
-
-
-
+		BuiltDir: "built",
 		pkg: grunt.file.readJSON("package.json"),
+
 		build: {
-			parser: {
-				src: files.akraParser,
-				dest: "build/parser.js",
-				options: {
-					tscc: false,
-					target: "es3"
-				}
-			},
-			core: {
-				config: "src/akra/akra.xml"
-			},
-			ui: {
-				src: files.akraUI,
-				dest: "build/akra-ui.js",
-				options: {
-					target: "es3",
-					removeComments: false,
-					//sourceMap: true,
-					propagateEnumConstants: true
-				}
-			},
-			//addons: {
+			"parser": { config: "src/akra/parser.xml" },
+			"core": { config: "src/akra/akra.xml" },
+			"ui": { config: "src/akra-ui/ui.xml" },
 			"addon-navigation": {
 				src: files.akraAddons.navigation,
 				dest: "build/addons/navigation.addon.js",
