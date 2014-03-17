@@ -27,7 +27,7 @@
 				<div id="searchParent">
 					<form class="search" action="#" method="GET" ng-submit="toggleShowSearchResults();">
 						<a class="submit" title="detail view" style="opacity:{{searchText.length>=3?'1.0':'0.5'}}" ng-click="toggleShowSearchResults();"></a>
-						<input type="text" name="search" id="search" placeholder="Search" class="text" ng-model="searchText" ng-change="search()" />
+						<input type="text" name="search" id="search" placeholder="Search" class="text" ng-model="searchText" ng-keyup="handleSearchInput($event);" ng-change="search()" />
 						<a class="cancel" title="clear searchbar" ng-if="searchText.length>0" ng-click="clearSearch();"></a>
 					</form>
 					<div id="searchblock" class="searchblock" ng-if="searchText.length >= 3 && !isShowSearchResults">
