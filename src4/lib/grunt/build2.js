@@ -876,9 +876,9 @@ module.exports = function (grunt) {
 		}
 
 		if (attachment.get("Folder")) {
-			files = files.concat(readFolders(attachment.find("folder"), config));
+			files = files.concat(readFolders(attachment.find("Folder"), config));
 		}
-
+		console.log(attachment.get("Folder"));
 		return files;
 	}
 

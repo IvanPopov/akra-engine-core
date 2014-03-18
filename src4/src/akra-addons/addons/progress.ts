@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../build/akra.d.ts" />
+﻿/// <reference path="../../../built/Lib/akra.d.ts" />
 
 declare var AE_PROGRESS_DEPENDENCIES: { path: string; type: string; };
 

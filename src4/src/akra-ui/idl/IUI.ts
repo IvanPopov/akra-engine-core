@@ -1,4 +1,4 @@
-/// <reference path="../../../built/akra.d.ts" />
+/// <reference path="../../../built/Lib/akra.d.ts" />
 
 /// <reference path="IUIHTMLNode.ts" />
 /// <reference path="IUIDNDNode.ts" />

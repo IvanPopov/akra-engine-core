@@ -8,11 +8,16 @@
   </ItemGroup>
   <PropertyGroup>
     <TypeScriptOutFile>../../$(BuiltDir)/$(Configuration)/akra-ui.js</TypeScriptOutFile>
-    <TypeScriptDeclarationDir>../../$(BuiltDir)</TypeScriptDeclarationDir>
+    <TypeScriptDeclarationDir>../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
     <TypeScriptDeclarationDir>True</TypeScriptDeclarationDir>
+    <Dependencies>
+      <Module Name="core" />
+      <Module Name="addon-navigation" />
+      <Module Name="addon-filedrop" />
+    </Dependencies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <ClosureCompiler>

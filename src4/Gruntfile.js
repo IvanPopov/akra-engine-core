@@ -35,47 +35,10 @@ module.exports = function (grunt) {
 			"parser": { config: "src/akra/parser.xml" },
 			"core": { config: "src/akra/akra.xml" },
 			"ui": { config: "src/akra-ui/ui.xml" },
-			"addon-navigation": {
-				src: files.akraAddons.navigation,
-				dest: "build/addons/navigation.addon.js",
-				options: {
-					target: "es3",
-					removeComments: true,
-					propagateEnumConstants: true,
-					sourceMap: true
-				}
-			},
-			"addon-filedrop": {
-				src: files.akraAddons.filedrop,
-				dest: "build/addons/filedrop.addon.js",
-				options: {
-					target: "es3",
-					removeComments: true,
-					propagateEnumConstants: true,
-					sourceMap: true
-				}
-			},
-			"addon-base3dObjects": {
-				src: files.akraAddons.base3dObjects,
-				dest: "build/addons/base3dObjects.addon.js",
-				options: {
-					target: "es3",
-					removeComments: true,
-					propagateEnumConstants: true,
-					sourceMap: true
-				}
-			},
-			"addon-progress": {
-				src: files.akraAddons.progress,
-				dest: "build/addons/progress.addon.js",
-				options: {
-					target: "es3",
-					removeComments: true,
-					propagateEnumConstants: true,
-					sourceMap: true
-				}
-			}
-			//}
+			"addon-navigation": { config: "src/akra-addons/addons/navigation.xml" },
+			"addon-filedrop": { config: "src/akra-addons/addons/filedrop.xml" },
+			"addon-base3dObjects": { config: "src/akra-addons/addons/base3dObjects.xml" },
+			"addon-progress": { config: "src/akra-addons/addons/progress.xml" }
 		},
 		clean: {
 			build: {

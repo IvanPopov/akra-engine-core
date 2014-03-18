@@ -10,7 +10,7 @@
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-    <TypeScriptDeclarationDir>../../$(BuiltDir)</TypeScriptDeclarationDir>
+    <TypeScriptDeclarationDir>../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <ClosureCompiler>
