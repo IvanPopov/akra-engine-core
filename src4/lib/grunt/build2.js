@@ -11,7 +11,6 @@ var xmldom = require('xmldom');
 var domain = require('domain');
 var Zip = require('node-native-zip');
 
-
 var TYPESCRIPT = "typescript-0.9.5";
 
 var DEMOS_SOURCE_DIR = "src/demos";
@@ -59,7 +58,8 @@ module.exports = function (grunt) {
 
 	var isDir = grunt.file.isDir.bind(grunt.file);
 
-	function config(opt, val) {
+
+	function cfg(opt, val) {
 		if (arguments.length == 2) {
 			return grunt.config(opt, val);
 		}
@@ -86,6 +86,7 @@ module.exports = function (grunt) {
 
 		var config = loadConfig(configFile);
 
+
 		compileTypescript(config, function (ok) {
 			if (!ok) {
 				return cb(false);
@@ -106,12 +107,12 @@ module.exports = function (grunt) {
 		//}
 
 		var config = xml.documentElement;
-
-		config.constructor.prototype.find = function (uri) {
+		
+		config.constructor.prototype.find = config.constructor.prototype.find || function (uri) {
 			// console.log(uri);
 			//console.trace();
-
 			var node = this;
+			var root = node.ownerDocument.documentElement;
 			var seq;
 
 			if (uri.substr(0, 2) === "//") {
@@ -119,14 +120,8 @@ module.exports = function (grunt) {
 				seq = uri.split("/");
 
 				var query = seq.shift();
-				var list = config.getElementsByTagName(query);
+				var list = root.getElementsByTagName(query);
 				var result = [];
-
-				//console.log(config.tagName + ".getElementsByTagName(" + query + ")");
-
-				//for (var i = 0; i < list.length; ++i) {
-				//	console.log("\t founded: ", list[i].tagName);
-				//}
 
 				for (var i = 0; i < list.length; ++i) {
 					if (seq.length == 0) {
@@ -137,25 +132,23 @@ module.exports = function (grunt) {
 					}
 				}
 
-				//result.forEach(function (node) { console.log("\t result:", node.tagName); });
-
 				return result;
 			}
-	
-			seq = uri.split("/"); 
+
+			seq = uri.split("/");
 
 			var children = [];
-			
+
 			while (seq.length) {
 				if (node === null) break;
 
 				var nodeName = seq.shift();
 				var child = node.firstChild;
-				
+
 				node = null;
 
 				while (child != null) {
-					
+
 					if (child.tagName && child.tagName == nodeName) {
 						if (seq.length) {
 							node = child;
@@ -173,7 +166,7 @@ module.exports = function (grunt) {
 			return children;
 		}
 
-		config.constructor.prototype.get = function (uri) {
+		config.constructor.prototype.get = config.constructor.prototype.get || function (uri) {
 			return this.find(uri)[0];
 		}
 
@@ -189,7 +182,7 @@ module.exports = function (grunt) {
 			config.setAttribute("Name", path.basename(file, ".xml"));
 		}
 
-		config.setAttribute("OutDir", prepareSystemVariables(path.dirname(config.get("//TypeScriptOutFile").textContent)));
+		config.setAttribute("OutDir", path.dirname(prepareSystemVariables(config.get("//TypeScriptOutFile").textContent)));
 
 		return config;
 	}
@@ -207,7 +200,7 @@ module.exports = function (grunt) {
 	function prepareSystemVariables(str) {
 		return str.replace(/(\$\(([\w\d\_\.\-]+)\))/g, function (str, expr, variable) {
 			var v = variable.split(".");
-			var e = config(v[0]) || null;
+			var e = cfg(v[0]) || null;
 
 			if (e) {
 				for (var i = 1; i < v.length; ++i) {
@@ -227,7 +220,12 @@ module.exports = function (grunt) {
 		return f(true, false);
 	}
 
-	function compileTypescript(config, cb) {
+	function compileTypescript(config, cb, onlyExportSettings) {
+		onlyExportSettings = onlyExportSettings || false;
+		cb = cb || function () { }
+
+		checkDependenceModules(config, function () { });
+
 		var compilerOptions = config.get("//ClosureCompiler");
 
 		var cmd = "node";
@@ -299,7 +297,9 @@ module.exports = function (grunt) {
 			argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").textContent).split(/\s+/));
 		}
 
-		log(cmd + " " + argv.join(" "));
+		if (!onlyExportSettings) {
+			log(cmd + " " + argv.join(" "));
+		}
 
 		//return !compilerOptions ? cb(true) : minimize(config, cb);
 
@@ -310,13 +310,16 @@ module.exports = function (grunt) {
 
 				if (config.get("//TypeScriptDeclarationDir")) {
 					var decl = dest.replace(/\.js$/, ".d.ts");
+					var declFile = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptDeclarationDir").textContent), path.basename(decl));
+					config.setAttribute("DeclarationFile", declFile);
+
 					if (exists(decl)) {
-						mv(decl, path.join(configDir, prepareSystemVariables(config.get("//TypeScriptDeclarationDir").textContent), path.basename(decl)));
+						mv(decl, declFile);
 					}
 				}
 
 				if (compilerOptions) {
-					minimize(config, cb);
+					minimize(config, cb, onlyExportSettings);
 				} else {
 					cb(true);
 				}
@@ -327,7 +330,9 @@ module.exports = function (grunt) {
 			}
 		}
 
-		// return spawnCallback(0);
+		if (onlyExportSettings) {
+			return spawnCallback(0);
+		}
 
 		var tsc = spawn(cmd, argv);
 		var anim = startAnimation();
@@ -391,7 +396,9 @@ module.exports = function (grunt) {
 		return dest;
 	}
 
-	function minimize(config, cb) {
+	function minimize(config, cb, onlyExportSettings) {
+		onlyExportSettings = onlyExportSettings || false;
+
 		var configDir = config.getAttribute("Path");
 		var compilerOptions = config.get("//ClosureCompiler");
 		var externsPath = null;
@@ -410,7 +417,7 @@ module.exports = function (grunt) {
 			dest = src.replace(/\.js$/, ".min.js");
 			if (src === dest) dest += ".min";
 		}
-	
+
 		if (!src || !exists(src)) {
 			warn('Source file for minimizing "' + src + '" not found.');
 			return null;
@@ -436,7 +443,9 @@ module.exports = function (grunt) {
 			argv.push("--externs", externsPath);
 		}
 
-		log(cmd + " " + argv.join(" "));
+		if (!onlyExportSettings) {
+			log(cmd + " " + argv.join(" "));
+		}
 
 		var anim = startAnimation();
 
@@ -455,8 +464,10 @@ module.exports = function (grunt) {
 			}
 		}
 
-		// return spawnCallback(0);
-		
+		if (onlyExportSettings) {
+			return spawnCallback(0);
+		}
+
 
 		var closure = spawn(cmd, argv);
 
@@ -469,8 +480,36 @@ module.exports = function (grunt) {
 		});
 
 		closure.on("close", spawnCallback);
+	}
 
-		return dest;
+	function checkModule(config, module) {
+		var name = module.getAttribute("Name");
+		var buildConfig = cfg('build');
+		var pathToConfig = buildConfig[name].config;
+
+		var moduleConfig = loadConfig(pathToConfig);
+		 compileTypescript(moduleConfig, null, true);
+
+		var outFile = moduleConfig.getAttribute("OutFile");
+		var declFile = moduleConfig.getAttribute("DeclarationFile");
+
+		if (!exists(outFile)) {
+			error("Could not find dependence script '" + outFile + "'");
+			error("Use 'grunt build:" + name + "' for dependency module " + name);
+		}
+		
+		if (declFile && !exists(declFile)) {
+			error("Could not find dependence declaration '" + declFile + "'.");
+			fail("Use 'grunt build:" + name + "' to create a dependence module " + name + ".");
+		}
+	}
+
+	function checkDependenceModules(config, cb) {
+		config.find("//PropertyGroup/Dependencies/Module").forEach(function (module) {
+			checkModule(config, module);
+		});
+
+		cb(true);
 	}
 
 	/** 
@@ -485,7 +524,7 @@ module.exports = function (grunt) {
 
 		console.time("Build project " + config.getAttribute("Name"));
 
-		
+
 		config.find("//PropertyGroup/Variable").forEach(function (variable) {
 			var name = variable.getAttribute("Name");
 			var value = computeExpression(variable.textContent);
@@ -508,7 +547,7 @@ module.exports = function (grunt) {
 			variables[resourceName] = JSON.stringify(result);
 		});
 
-		
+
 		config.find("//PropertyGroup/Dependencies/Attachment").forEach(function (attachment) {
 			var result = loadAttachment(config, attachment);
 			if (attachment.hasAttribute("Name")) {
@@ -733,7 +772,8 @@ module.exports = function (grunt) {
 
 		for (var i = 0; i < folders.length; ++i) {
 			var currentFolder = path.join(srcDir, folders[i].getAttribute("Path"));
-			var files = grunt.file.expand({ filter: 'isFile' }, [currentFolder]);
+
+			var files = grunt.file.expand({ filter: 'isFile' }, [path.join(currentFolder, '*')]);
 			var excludes = folders[i].find("Exclude");
 
 			if (excludes) {
@@ -751,7 +791,7 @@ module.exports = function (grunt) {
 			}
 
 			files.forEach(function (file) {
-				result.push(path.relative(srcDir, path.join(currentFolder, file)));
+				result.push(path.relative(srcDir, file));
 			});
 		}
 
@@ -878,7 +918,8 @@ module.exports = function (grunt) {
 		if (attachment.get("Folder")) {
 			files = files.concat(readFolders(attachment.find("Folder"), config));
 		}
-		console.log(attachment.get("Folder"));
+
+
 		return files;
 	}
 
@@ -1006,7 +1047,7 @@ module.exports = function (grunt) {
 	/** @param Module {XML} <Module/> tags from demo.xml */
 	function loadDependentScriptsFromModules(Module, destFolder) {
 		var scripts = [];
-		var buildConfig = config('build');
+		var buildConfig = cfg('build');
 
 		for (var i in Module) {
 			var module = Module[i];
