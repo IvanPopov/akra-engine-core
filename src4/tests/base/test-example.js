@@ -65,24 +65,25 @@ var akra;
             if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
                 var v2fMouseShift = pKeymap.getMouseShift();
 
-                var fdX = v2fMouseShift.x / akra.pViewport.getActualWidth() * 10.0;
-                var fdY = v2fMouseShift.y / akra.pViewport.getActualHeight() * 10.0;
+                var fdX = v2fMouseShift.x / akra.pViewport.getActualWidth() * 5.0;
+                var fdY = v2fMouseShift.y / akra.pViewport.getActualHeight() * 5.0;
 
-                pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+                pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+                pKeymap.update();
+            }
 
-                var fSpeed = 0.1 * 10;
-                if (pKeymap.isKeyPress(87 /* W */)) {
-                    pCamera.addRelPosition(0, 0, -fSpeed);
-                }
-                if (pKeymap.isKeyPress(83 /* S */)) {
-                    pCamera.addRelPosition(0, 0, fSpeed);
-                }
-                if (pKeymap.isKeyPress(65 /* A */)) {
-                    pCamera.addRelPosition(-fSpeed, 0, 0);
-                }
-                if (pKeymap.isKeyPress(68 /* D */)) {
-                    pCamera.addRelPosition(fSpeed, 0, 0);
-                }
+            var fSpeed = 0.1 * 10;
+            if (pKeymap.isKeyPress(87 /* W */)) {
+                pCamera.addRelPosition(0, 0, -fSpeed);
+            }
+            if (pKeymap.isKeyPress(83 /* S */)) {
+                pCamera.addRelPosition(0, 0, fSpeed);
+            }
+            if (pKeymap.isKeyPress(65 /* A */)) {
+                pCamera.addRelPosition(-fSpeed, 0, 0);
+            }
+            if (pKeymap.isKeyPress(68 /* D */)) {
+                pCamera.addRelPosition(fSpeed, 0, 0);
             }
         });
     }
@@ -128,9 +129,9 @@ var akra;
         akra.pCanvas.addViewport(pViewport);
         akra.pCanvas.resize(window.innerWidth, window.innerHeight);
 
-        window.onresize = function(event) {
+        window.onresize = function (event) {
             akra.pCanvas.resize(window.innerWidth, window.innerHeight);
-        }
+        };
 
         //(<render.DSViewport>pViewport).setFXAA(false);
         return pViewport;
@@ -310,13 +311,13 @@ var akra;
         createLighting();
         createSkyBox();
 
-        //createSky();
-        //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
+        createSky();
+        pTerrain = createTerrain(akra.pScene, true, akra.EEntityTypes.TERRAIN);
         //loadHero();
-        loadManyModels(400, data + "models/cube.dae");
+        //loadManyModels(400, data + "models/cube.dae");
 
         //loadManyModels(100, data + "models/box/opened_box.dae");
-        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }

@@ -65,24 +65,25 @@ module akra {
 			if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
 				var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-				var fdX = v2fMouseShift.x / pViewport.getActualWidth() * 10.0;
-				var fdY = v2fMouseShift.y / pViewport.getActualHeight() * 10.0;
+				var fdX = v2fMouseShift.x / pViewport.getActualWidth() * 5.0;
+				var fdY = v2fMouseShift.y / pViewport.getActualHeight() * 5.0;
 
-				pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+				pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+				pKeymap.update();
+			}
 
-				var fSpeed: float = 0.1 * 10;
-				if (pKeymap.isKeyPress(EKeyCodes.W)) {
-					pCamera.addRelPosition(0, 0, -fSpeed);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.S)) {
-					pCamera.addRelPosition(0, 0, fSpeed);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.A)) {
-					pCamera.addRelPosition(-fSpeed, 0, 0);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.D)) {
-					pCamera.addRelPosition(fSpeed, 0, 0);
-				}
+			var fSpeed: float = 0.1 * 10;
+			if (pKeymap.isKeyPress(EKeyCodes.W)) {
+				pCamera.addRelPosition(0, 0, -fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.S)) {
+				pCamera.addRelPosition(0, 0, fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.A)) {
+				pCamera.addRelPosition(-fSpeed, 0, 0);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.D)) {
+				pCamera.addRelPosition(fSpeed, 0, 0);
 			}
 		});
 	}

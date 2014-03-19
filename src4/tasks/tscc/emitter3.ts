@@ -263,6 +263,7 @@ module TypeScript {
 
 		private interfaceExternsStream = null;
 		private isEnabledInterfaceExternStream = false;
+		private externFile = null;
 
 		private shortNameMap: { [longName: string]: string } = {};
 		private shorter: number = 0;
@@ -274,10 +275,12 @@ module TypeScript {
 
 			if (emitOptions.sharedOutputFile()) {
 				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
+				this.externFile = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".externs");
 			}
 			else {
-				console.warn("Bad compilation options! Better if you specify output file.");
+				console.warn("TSCC warn >> Bad compilation options! Better if you specify output file.");
 				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__interface__.js.tmp.externs");
+				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__externs__.js.externs");
 			}
 		}
 
