@@ -1,4 +1,4 @@
-/// <reference path="../../../../build/addons/filedrop.addon.d.ts" />
+/// <reference path="../../../../built/Lib/filedrop.addon.d.ts" />
 
 /// <reference path="../../idl/IUIAnimationGraph.ts" />
 /// <reference path="../../idl/IUIAnimationNode.ts" />

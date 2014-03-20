@@ -24268,7 +24268,7 @@ var TypeScript;
 
             ParserImpl.prototype.isVariableStatement = function () {
                 var index = this.modifierCount();
-                return this.peekToken(index).tokenKind === 40 /* VarKeyword */;
+                return this.peekToken(index).tokenKind === 40 /* VarKeyword */ || this.peekToken(index).tokenKind === 45 /* ConstKeyword */;
             };
 
             ParserImpl.prototype.parseVariableStatement = function () {
@@ -24280,7 +24280,7 @@ var TypeScript;
             };
 
             ParserImpl.prototype.parseVariableDeclaration = function (allowIn) {
-                var varKeyword = this.eatKeyword(40 /* VarKeyword */);
+                var varKeyword = this.tryEatToken(40 /* VarKeyword */) || this.eatKeyword(45 /* ConstKeyword */);
 
                 var listParsingState = allowIn ? 4096 /* VariableDeclaration_VariableDeclarators_AllowIn */ : 8192 /* VariableDeclaration_VariableDeclarators_DisallowIn */;
 
@@ -34631,6 +34631,15 @@ var TypeScript;
                     declFileName = this.compiler.mapOutputFileName(document, this.emitOptions, TypeScript.TypeScriptCompiler.mapToDTSFileName);
                 }
 
+                var declarationDir = this.compiler.compilationSettings().declarationDir();
+
+                if (declarationDir) {
+                    var e = emittingFilePath;
+                    declarationDir = require('path').resolve(this.compiler.compilationSettings().declarationDir()).replace(/\\/g, '/');
+                    emittingFilePath = declarationDir;
+                    
+                }
+
                 declFileName = TypeScript.getRelativePathToFixedPath(emittingFilePath, declFileName, false);
                 this.declFile.WriteLine('/// <reference path="' + declFileName + '" />');
             }
@@ -34770,13 +34779,14 @@ var TypeScript;
             this.useCaseSensitiveFileResolution = false;
             this.gatherDiagnostics = false;
             this.codepage = null;
+            this.declarationDir = null;
         }
         return CompilationSettings;
     })();
     TypeScript.CompilationSettings = CompilationSettings;
 
     var ImmutableCompilationSettings = (function () {
-        function ImmutableCompilationSettings(propagateEnumConstants, removeComments, watch, noResolve, allowAutomaticSemicolonInsertion, noImplicitAny, noLib, codeGenTarget, moduleGenTarget, outFileOption, outDirOption, mapSourceFiles, mapRoot, sourceRoot, generateDeclarationFiles, useCaseSensitiveFileResolution, gatherDiagnostics, codepage) {
+        function ImmutableCompilationSettings(propagateEnumConstants, removeComments, watch, noResolve, allowAutomaticSemicolonInsertion, noImplicitAny, noLib, codeGenTarget, moduleGenTarget, outFileOption, outDirOption, mapSourceFiles, mapRoot, sourceRoot, generateDeclarationFiles, useCaseSensitiveFileResolution, gatherDiagnostics, codepage, declarationDir) {
             this._propagateEnumConstants = propagateEnumConstants;
             this._removeComments = removeComments;
             this._watch = watch;
@@ -34795,6 +34805,7 @@ var TypeScript;
             this._useCaseSensitiveFileResolution = useCaseSensitiveFileResolution;
             this._gatherDiagnostics = gatherDiagnostics;
             this._codepage = codepage;
+            this._declarationDir = declarationDir;
         }
         ImmutableCompilationSettings.prototype.propagateEnumConstants = function () {
             return this._propagateEnumConstants;
@@ -34850,6 +34861,9 @@ var TypeScript;
         ImmutableCompilationSettings.prototype.codepage = function () {
             return this._codepage;
         };
+        ImmutableCompilationSettings.prototype.declarationDir = function () {
+            return this._declarationDir;
+        };
 
         ImmutableCompilationSettings.defaultSettings = function () {
             if (!ImmutableCompilationSettings._defaultSettings) {
@@ -34860,7 +34874,7 @@ var TypeScript;
         };
 
         ImmutableCompilationSettings.fromCompilationSettings = function (settings) {
-            return new ImmutableCompilationSettings(settings.propagateEnumConstants, settings.removeComments, settings.watch, settings.noResolve, settings.allowAutomaticSemicolonInsertion, settings.noImplicitAny, settings.noLib, settings.codeGenTarget, settings.moduleGenTarget, settings.outFileOption, settings.outDirOption, settings.mapSourceFiles, settings.mapRoot, settings.sourceRoot, settings.generateDeclarationFiles, settings.useCaseSensitiveFileResolution, settings.gatherDiagnostics, settings.codepage);
+            return new ImmutableCompilationSettings(settings.propagateEnumConstants, settings.removeComments, settings.watch, settings.noResolve, settings.allowAutomaticSemicolonInsertion, settings.noImplicitAny, settings.noLib, settings.codeGenTarget, settings.moduleGenTarget, settings.outFileOption, settings.outDirOption, settings.mapSourceFiles, settings.mapRoot, settings.sourceRoot, settings.generateDeclarationFiles, settings.useCaseSensitiveFileResolution, settings.gatherDiagnostics, settings.codepage, settings.declarationDir);
         };
 
         ImmutableCompilationSettings.prototype.toCompilationSettings = function () {
@@ -53751,6 +53765,7 @@ var TypeScript;
                 var document = this.getDocument(fileNames[i]);
 
                 sharedEmitter = this._emitDocumentDeclarations(document, emitOptions, function (file) {
+                    console.log(file);
                     return emitOutput.outputFiles.push(file);
                 }, sharedEmitter);
             }
@@ -60739,6 +60754,17 @@ var TypeScript;
                 }
             }, 'd');
 
+            opts.option('declarationDir', {
+                usage: {
+                    locCode: "Declaration output dir.",
+                    args: null
+                },
+                type: TypeScript.DiagnosticCode.DIRECTORY,
+                set: function (str) {
+                    mutableSettings.declarationDir = str;
+                }
+            });
+
             if (this.ioHost.watchFile) {
                 opts.flag('watch', {
                     usage: {
@@ -61165,7 +61191,6 @@ var TypeScript;
     })();
     TypeScript.BatchCompiler = BatchCompiler;
 
+    var batch = new TypeScript.BatchCompiler(TypeScript.IO);
+    batch.batchCompile();
 })(TypeScript || (TypeScript = {}));
-
-var batch = new TypeScript.BatchCompiler(TypeScript.IO);
-batch.batchCompile();

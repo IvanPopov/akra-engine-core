@@ -1,4 +1,4 @@
-/// <reference path="../../Lib/akra.d.ts" />
+/// <reference path="akra.d.ts" />
 declare module akra {
     enum EFileDataTypes {
         ARRAY_BUFFER = 0,

@@ -55,6 +55,7 @@ module.exports = function (grunt) {
 
 	var fail = grunt.fail.warn.bind(grunt.fail);
 	var fatal = grunt.fail.fatal.bind(grunt.fail);
+	var oklns = grunt.log.oklns.bind(grunt.log);
 
 	var isDir = grunt.file.isDir.bind(grunt.file);
 
@@ -107,7 +108,7 @@ module.exports = function (grunt) {
 		//}
 
 		var config = xml.documentElement;
-		
+
 		config.constructor.prototype.find = config.constructor.prototype.find || function (uri) {
 			// console.log(uri);
 			//console.trace();
@@ -224,129 +225,148 @@ module.exports = function (grunt) {
 		onlyExportSettings = onlyExportSettings || false;
 		cb = cb || function () { }
 
-		checkDependenceModules(config, function () { });
+		function _COMPILE() {
+			var compilerOptions = config.get("//ClosureCompiler");
 
-		var compilerOptions = config.get("//ClosureCompiler");
+			var cmd = "node";
+			var tscjs = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
+			var argv = [];
+			var dest = null;		//path ro destination js file.
+			var configDir = config.getAttribute("Path");
 
-		var cmd = "node";
-		var tscjs = path.normalize(__dirname + "/" + TYPESCRIPT + "/tsc.js");
-		var argv = [];
-		var dest = null;		//path ro destination js file.
-		var configDir = config.getAttribute("Path");
-
-		if (compilerOptions || grunt.option("tscc")) {
-			tscjs = path.normalize(__dirname + '/tscc/tscc.js');
-		}
-
-		argv.push(tscjs);
-
-		//load sources
-		config.find("//TypeScriptCompile").forEach(function (typescriptCompile) {
-			argv.push(path.join(configDir, typescriptCompile.getAttribute("Include")));
-		});
-
-
-		if (config.get("//TypeScriptTarget")) {
-			argv.push("--target", config.get("//TypeScriptTarget").textContent);
-		}
-
-		if (config.get("//TypeScriptModuleKind")) {
-			argv.push("--module", config.get("//TypeScriptModuleKind").textContent);
-		}
-
-		if (config.get("//TypeScriptSourceMap")) {
-			if (config.get("//TypeScriptSourceMap").textContent === "True") {
-				argv.push("--sourcemap");
+			if (compilerOptions || grunt.option("tscc")) {
+				tscjs = path.normalize(__dirname + '/tscc/tscc.js');
 			}
-		}
 
-		if (config.get("//TypeScriptGeneratesDeclarations")) {
-			if (config.get("//TypeScriptGeneratesDeclarations").textContent === "True") {
-				argv.push("--declaration");
+			argv.push(tscjs);
+
+			//load sources
+			config.find("//TypeScriptCompile").forEach(function (typescriptCompile) {
+				argv.push(path.join(configDir, typescriptCompile.getAttribute("Include")));
+			});
+
+
+			if (config.get("//TypeScriptTarget")) {
+				argv.push("--target", config.get("//TypeScriptTarget").textContent);
 			}
-		}
 
-		if (config.get("//TypeScriptPropagateEnumConstants")) {
-			if (config.get("//TypeScriptPropagateEnumConstants").textContent === "True") {
-				argv.push("--propagateEnumConstants");
+			if (config.get("//TypeScriptModuleKind")) {
+				argv.push("--module", config.get("//TypeScriptModuleKind").textContent);
 			}
-		}
 
-		if (config.get("//TypeScriptRemoveComments")) {
-			if (config.get("//TypeScriptRemoveComments").textContent === "True") {
-				argv.push("--removeComments");
-			}
-		}
-
-		if (config.get("//TypeScriptOutDir")) {
-			argv.push("--outDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutDir").textContent)));
-		}
-
-		if (config.get("//TypeScriptOutFile")) {
-			dest = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutFile").textContent));
-			dest = dest.replace(/\.min\.js$/, ".js");
-		}
-		else {
-			error("TypeScript out file must be specified.");
-			return cb(false);
-		}
-
-		argv.push("--out", dest);
-
-		if (config.get("//TypeScriptAdditionalFlags")) {
-			argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").textContent).split(/\s+/));
-		}
-
-		if (!onlyExportSettings) {
-			log(cmd + " " + argv.join(" "));
-		}
-
-		//return !compilerOptions ? cb(true) : minimize(config, cb);
-
-		function spawnCallback(code) {
-			stopAnimation(anim);
-			if (code === 0) {
-				config.setAttribute("OutFile", dest);
-
-				if (config.get("//TypeScriptDeclarationDir")) {
-					var decl = dest.replace(/\.js$/, ".d.ts");
-					var declFile = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptDeclarationDir").textContent), path.basename(decl));
-					config.setAttribute("DeclarationFile", declFile);
-
-					if (exists(decl)) {
-						mv(decl, declFile);
-					}
+			if (config.get("//TypeScriptSourceMap")) {
+				if (config.get("//TypeScriptSourceMap").textContent === "True") {
+					argv.push("--sourcemap");
 				}
+			}
 
-				if (compilerOptions) {
-					minimize(config, cb, onlyExportSettings);
-				} else {
-					cb(true);
+			if (config.get("//TypeScriptGeneratesDeclarations")) {
+				if (config.get("//TypeScriptGeneratesDeclarations").textContent === "True") {
+					argv.push("--declaration");
 				}
+			}
+
+			if (config.get("//TypeScriptPropagateEnumConstants")) {
+				if (config.get("//TypeScriptPropagateEnumConstants").textContent === "True") {
+					argv.push("--propagateEnumConstants");
+				}
+			}
+
+			if (config.get("//TypeScriptRemoveComments")) {
+				if (config.get("//TypeScriptRemoveComments").textContent === "True") {
+					argv.push("--removeComments");
+				}
+			}
+
+			if (config.get("//TypeScriptDeclarationDir")) {
+				argv.push("--declarationDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptDeclarationDir").textContent)));
+			}
+
+			if (config.get("//TypeScriptOutDir")) {
+				argv.push("--outDir", path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutDir").textContent)));
+			}
+
+			if (config.get("//TypeScriptOutFile")) {
+				dest = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptOutFile").textContent));
+				dest = dest.replace(/\.min\.js$/, ".js");
 			}
 			else {
-				error(new Error("Compilation failed."));
-				cb(false);
+				error("TypeScript out file must be specified.");
+				return cb(false);
 			}
+
+			argv.push("--out", dest);
+
+			if (config.get("//TypeScriptAdditionalFlags")) {
+				argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").textContent).split(/\s+/));
+			}
+
+			if (!onlyExportSettings) {
+				log(cmd + " " + argv.join(" "));
+			}
+
+			//return !compilerOptions ? cb(true) : minimize(config, cb);
+
+			function spawnCallback(code) {
+				stopAnimation(anim);
+				if (code === 0) {
+					config.setAttribute("OutFile", dest);
+
+					if (config.get("//TypeScriptDeclarationDir")) {
+						var decl = dest.replace(/\.js$/, ".d.ts");
+						var declFile = path.join(configDir, prepareSystemVariables(config.get("//TypeScriptDeclarationDir").textContent), path.basename(decl));
+						config.setAttribute("DeclarationFile", declFile);
+
+						if (exists(decl)) {
+							mv(decl, declFile);
+
+							//var declData = read(declFile);
+							//console.log(decl, declFile, "==", path.relative(decl, declFile), path.join(decl, path.relative(decl, declFile)));
+							//declData.replace(
+							//	/\/\/\/\s*\<reference\s+path\=[\"\']{1}([\w\d\_\.\-\/]+)[\"\']{1}\s*\/\>/g, function (match, p1, offset, string) {
+							//		console.log(path.normalize(p1), decl);
+							//		return p1;
+							//	});
+						}
+					}
+
+					if (compilerOptions) {
+						minimize(config, cb, onlyExportSettings);
+					} else {
+						cb(true);
+					}
+				}
+				else {
+					error(new Error("Compilation failed."));
+					cb(false);
+				}
+			}
+
+			if (onlyExportSettings) {
+				return spawnCallback(0);
+			}
+
+			var tsc = spawn(cmd, argv);
+			var anim = startAnimation();
+
+			tsc.stdout.on("data", function (data) {
+				log(data.toString());
+			});
+
+			tsc.stderr.on("data", function (data) {
+				error(data.toString());
+			});
+
+
+			tsc.on("close", spawnCallback);
 		}
 
 		if (onlyExportSettings) {
-			return spawnCallback(0);
+			_COMPILE();
 		}
-
-		var tsc = spawn(cmd, argv);
-		var anim = startAnimation();
-
-		tsc.stdout.on("data", function (data) {
-			log(data.toString());
-		});
-
-		tsc.stderr.on("data", function (data) {
-			error(data.toString());
-		});
-
-
-		tsc.on("close", spawnCallback);
+		else {
+			checkDependenceModules(config, _COMPILE);
+		}
 	}
 
 	function generateExterns(src) {
@@ -482,34 +502,54 @@ module.exports = function (grunt) {
 		closure.on("close", spawnCallback);
 	}
 
-	function checkModule(config, module) {
+	function checkModule(config, module, cb) {
 		var name = module.getAttribute("Name");
+		oklns("checking module " + name);
 		var buildConfig = cfg('build');
 		var pathToConfig = buildConfig[name].config;
 
 		var moduleConfig = loadConfig(pathToConfig);
-		 compileTypescript(moduleConfig, null, true);
+		compileTypescript(moduleConfig, null, true);
 
 		var outFile = moduleConfig.getAttribute("OutFile");
 		var declFile = moduleConfig.getAttribute("DeclarationFile");
 
+		var doBuild = false;
 		if (!exists(outFile)) {
-			error("Could not find dependence script '" + outFile + "'");
-			error("Use 'grunt build:" + name + "' for dependency module " + name);
+			//error("Could not find dependence script '" + outFile + "'");
+			//error("Use 'grunt build:" + name + "' for dependency module " + name);
+			return compileTypescript(moduleConfig, cb);
 		}
-		
+
 		if (declFile && !exists(declFile)) {
-			error("Could not find dependence declaration '" + declFile + "'.");
-			fail("Use 'grunt build:" + name + "' to create a dependence module " + name + ".");
+			//error("Could not find dependence declaration '" + declFile + "'.");
+			//error("Use 'grunt build:" + name + "' to create a dependence module " + name + ".");
+			return compileTypescript(moduleConfig, cb);
 		}
+
+		setTimeout(cb, 1, true);
 	}
 
 	function checkDependenceModules(config, cb) {
-		config.find("//PropertyGroup/Dependencies/Module").forEach(function (module) {
-			checkModule(config, module);
-		});
+		var modules = config.find("//PropertyGroup/Dependencies/Module");
 
-		cb(true);
+		function next(i) {
+			var module = modules[i];
+
+			if (!module) {
+				return cb(true);
+			}
+
+			checkModule(config, module, function (ok) {
+				if (!ok) {
+					return fail("FAIL :(");
+				}
+
+				next(i + 1);
+			});
+		}
+
+		next(0);
 	}
 
 	/** 
