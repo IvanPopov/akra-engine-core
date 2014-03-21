@@ -50,6 +50,7 @@ var akra;
         pCamera.addPosition(new akra.math.Vec3(0, 4, 5));
         pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
         pCamera.attachToParent(akra.pScene.getRootNode());
+        pCamera.setInheritance(0 /* NONE */);
 
         pCamera.update();
 
@@ -62,14 +63,15 @@ var akra;
         pKeymap.captureKeyboard(document);
 
         akra.pScene.beforeUpdate.connect(function () {
-            if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
-                var v2fMouseShift = pKeymap.getMouseShift();
+            if (pKeymap.isMousePress()) {
+                if (pKeymap.isMouseMoved()) {
+                    var v2fMouseShift = pKeymap.getMouseShift();
 
-                var fdX = v2fMouseShift.x / akra.pViewport.getActualWidth() * 10.0;
-                var fdY = v2fMouseShift.y / akra.pViewport.getActualHeight() * 10.0;
+                    pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / akra.pViewport.getActualHeight() * 10.0), 0., 0.);
+                    pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / akra.pViewport.getActualWidth() * 10.0), 0.);
 
-                pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
-
+                    pKeymap.update();
+                }
                 var fSpeed = 0.1 * 10;
                 if (pKeymap.isKeyPress(87 /* W */)) {
                     pCamera.addRelPosition(0, 0, -fSpeed);
@@ -128,9 +130,11 @@ var akra;
         akra.pCanvas.addViewport(pViewport);
         akra.pCanvas.resize(window.innerWidth, window.innerHeight);
 
-        window.onresize = function(event) {
+        window.onresize = function (event) {
             akra.pCanvas.resize(window.innerWidth, window.innerHeight);
-        }
+        };
+
+        pViewport.getEffect().addComponent("akra.custom.heatmap");
 
         //(<render.DSViewport>pViewport).setFXAA(false);
         return pViewport;
@@ -141,8 +145,8 @@ var akra;
 
         pOmniLight.attachToParent(akra.pScene.getRootNode());
         pOmniLight.setEnabled(true);
-        pOmniLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
-        pOmniLight.getParams().diffuse.set(0.5);
+        pOmniLight.getParams().ambient.set(0.27, 0.23, 0.2);
+        pOmniLight.getParams().diffuse.set(1.);
         pOmniLight.getParams().specular.set(1, 1, 1, 1);
         pOmniLight.getParams().attenuation.set(1, 0, 0);
         pOmniLight.setShadowCaster(false);
@@ -169,10 +173,11 @@ var akra;
         }
     }
 
-    function loadModel(sPath, fnCallback) {
+    function loadModel(sPath, fnCallback, name) {
         var pModelRoot = akra.pScene.createNode();
         var pModel = akra.pEngine.getResourceManager().loadModel(sPath);
 
+        pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
         pModelRoot.attachToParent(akra.pScene.getRootNode());
 
         function fnLoadModel(pModel) {
@@ -191,7 +196,7 @@ var akra;
             }
 
             akra.pScene.beforeUpdate.connect(function () {
-                pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+                pModelRoot.addRelRotationByXYZAxis(0, 0, 0);
                 // pController.update();
             });
 
@@ -306,17 +311,20 @@ var akra;
         //addons.navigation(pViewport);
         createKeymap(akra.pCamera);
 
-        //createSceneEnvironment();
+        createSceneEnvironment();
         createLighting();
         createSkyBox();
 
         //createSky();
         //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        loadManyModels(400, data + "models/cube.dae");
-
+        //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(100, data + "models/box/opened_box.dae");
-        //loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", null, 'WoodSoldier').addPosition(0, 0, 0);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(-2, 1, -4).addRotationByXYZAxis(0, akra.math.PI, 0);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(2, 1, -4);
+
+        // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4);
         pEngine.exec();
         //pEngine.renderFrame();
     }

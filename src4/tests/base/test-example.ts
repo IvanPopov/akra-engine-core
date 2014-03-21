@@ -61,15 +61,16 @@ module akra {
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
-		pScene.beforeUpdate.connect(() => {
-			if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
-				var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+        pScene.beforeUpdate.connect(() => {
+            if (pKeymap.isMousePress()) {
+                if (pKeymap.isMouseMoved()) {
+                    var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-				var fdX = v2fMouseShift.x / pViewport.getActualWidth() * 10.0;
-				var fdY = v2fMouseShift.y / pViewport.getActualHeight() * 10.0;
+                    pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
+                    pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
 
-				pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
-
+                    pKeymap.update();
+                }
 				var fSpeed: float = 0.1 * 10;
 				if (pKeymap.isKeyPress(EKeyCodes.W)) {
 					pCamera.addRelPosition(0, 0, -fSpeed);
@@ -131,7 +132,8 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		}
 
-		//(<render.DSViewport>pViewport).setFXAA(false);
+        (<render.DSViewport>pViewport).getEffect().addComponent("akra.custom.heatmap");
+        //(<render.DSViewport>pViewport).setFXAA(false);
 		return pViewport;
 	}
 
@@ -140,8 +142,8 @@ module akra {
 
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.setEnabled(true);
-		pOmniLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
-		pOmniLight.getParams().diffuse.set(0.5);
+		pOmniLight.getParams().ambient.set(0.27, 0.23, 0.2);
+		pOmniLight.getParams().diffuse.set(1.);
 		pOmniLight.getParams().specular.set(1, 1, 1, 1);
 		pOmniLight.getParams().attenuation.set(1, 0, 0);
 		pOmniLight.setShadowCaster(false);
@@ -168,10 +170,11 @@ module akra {
 		}
 	}
 
-	function loadModel(sPath, fnCallback?: Function): ISceneNode {
+    function loadModel(sPath, fnCallback?: Function, name?: String): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
 
+        pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
 		pModelRoot.attachToParent(pScene.getRootNode());
 
 		function fnLoadModel(pModel: ICollada): void {
@@ -190,7 +193,7 @@ module akra {
 			}
 
 			pScene.beforeUpdate.connect(() => {
-				pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+				pModelRoot.addRelRotationByXYZAxis(0, 0, 0);
 				// pController.update();
 			});
 
@@ -315,16 +318,19 @@ module akra {
 
 		createKeymap(pCamera);
 
-		//createSceneEnvironment();
+		createSceneEnvironment();
 		createLighting();
 		createSkyBox();
 		//createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
-		loadManyModels(400, data + "models/cube.dae");
+		//loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
-		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", null, 'WoodSoldier').addPosition(0, 0, 0);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(2, 1, -4);
+        // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
 
 		pEngine.exec();
 		//pEngine.renderFrame();
