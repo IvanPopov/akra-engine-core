@@ -380,9 +380,11 @@ module akra.addons {
 	}
 
 	export function getNavigationDependences(sPath?: string): IDependens {
+		var pDep: IDep = AE_NAVIGATION_DEPENDENCIES;
+
 		return deps.createDependenceByPath(
-			AE_NAVIGATION_DEPENDENCIES.path,
-			AE_NAVIGATION_DEPENDENCIES.type,
+			pDep.path,
+			pDep.type,
 			sPath || <string>addons['navigation'].path);
 	}
 

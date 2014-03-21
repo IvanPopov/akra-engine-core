@@ -1,4 +1,4 @@
-/// <reference path="../../Lib/akra.d.ts" />
+/// <reference path="akra.d.ts" />
 declare module akra.addons {
     function createSceneSurface(pScene: akra.IScene3d, nCell?: number): akra.ISceneModel;
     function createSceneSurface(pScene: akra.IScene3d, nCellW?: number, nCellH?: number): akra.ISceneModel;

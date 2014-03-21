@@ -1,12 +1,7 @@
-//TODO: separate build into DEBUG and RELEASE
 //TODO: after compilation into TS, use closure-linter
-//TODO: add minification with closure ADVANCED_MODE
 //TODO: add automatic insertion of copyright and license to start source 
-//TODO: obtain version from package.json
-
 'use strict';
 
-var files = require("./akraFiles").files;
 var path = require("path");
 var util = require('./lib/grunt/utils.js');
 
@@ -25,11 +20,15 @@ module.exports = function (grunt) {
 	require('time-grunt')(grunt);
 
 	grunt.initConfig({
-		//global configuration
+		//configuration
 		Configuration: 'Debug',
 		Version: util.getVersion(),
+		DemosSourceDir: "src/demos",
 		BuiltDir: "built",
-		pkg: grunt.file.readJSON("package.json"),
+		Pkg: grunt.file.readJSON("package.json"),
+
+
+
 
 		build: {
 			"parser": { config: "src/akra/parser.xml" },
@@ -42,7 +41,7 @@ module.exports = function (grunt) {
 		},
 		clean: {
 			build: {
-				src: ["build/*"]
+				src: ['built/*']
 			}
 		},
 		regarde: {
@@ -56,7 +55,7 @@ module.exports = function (grunt) {
 				configuration: grunt.file.readJSON("tslint.json")
 			},
 			files: {
-				src: files.all
+				src: []
 			}
 		},
 		gjslint: {
@@ -68,9 +67,6 @@ module.exports = function (grunt) {
 					name: 'console' //report to console
 				},
 				force: false //don't fail if python is not installed on the computer
-			},
-			parser: {
-				src: ['build/parser.js']
 			}
 		}
 	});
@@ -78,11 +74,6 @@ module.exports = function (grunt) {
 
 	grunt.config("Configuration", grunt.option('configuration') || 'Debug');
 	grunt.log.writeln("Configuration: " + grunt.config.get("Configuration"));
-
-	//grunt.registerTask('decl', 'Build with declaration.', function (target) {
-	//	grunt.config("build." + target + ".options.declaration", true);
-	//	grunt.task.run("build:" + target);
-	//});
 
 	grunt.registerTask("lint", ["tslint"]);
 	grunt.registerTask("default", ["all"]);

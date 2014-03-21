@@ -7,7 +7,7 @@ module akra.addons {
 	import addons = config.addons;
 
 	addons['progress'] = addons['progress'] || { css: null };
-	addons['progress'].css = addons['progress'].css || (uri.currentPath() + "/progress/css/progress.css");
+	addons['progress'].css = addons['progress'].css || (uri.currentPath() + "/progress/progress.css");
 
 	debug.log("config['addons']['progress'] = ", JSON.stringify(addons['progress']));
 

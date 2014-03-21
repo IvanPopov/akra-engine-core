@@ -40,8 +40,33 @@
             </xs:simpleContent>
           </xs:complexType>
         </xs:element>
-        <xs:element ref="Dependencies" maxOccurs="1"/>
-        <xs:element ref="Resource"/>
+        <xs:element name="PropertyGroup">
+          <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element ref="Resource" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element ref="Dependencies" maxOccurs="1"/>
+              <xs:element ref="TypeScriptTarget" maxOccurs="1"/>
+              <xs:element ref="TypeScriptRemoveComments" maxOccurs="1"/>
+              <xs:element ref="TypeScriptSourceMap" maxOccurs="1"/>
+              <xs:element ref="TypeScriptOutDir" maxOccurs="1"/>
+              <xs:element ref="TypeScriptAdditionalFlags" maxOccurs="1"/>
+              <xs:element ref="TypeScriptOutFile" maxOccurs="1"/>
+              <xs:element ref="TypeScriptDeclarationDir" maxOccurs="1" />
+              <xs:element ref="TypeScriptPropagateEnumConstants" maxOccurs="1"/>
+              <xs:element ref="TypeScriptModuleKind" maxOccurs="1"/>
+              <xs:element ref="TypeScriptGeneratesDeclarations" maxOccurs="1" />
+              <xs:element ref="ClosureCompiler" maxOccurs="1"/>
+            </xs:choice>
+            <xs:attribute name="Condition" type="xs:string" use="optional">
+              <xs:annotation>
+                <xs:documentation>
+                  JS condition, must return boolean value.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="ItemGroup"/>
       </xs:choice>
       <xs:attribute name="Name" use="required" type="xs:Name">
         <xs:annotation>
@@ -451,6 +476,7 @@
       </xs:all>
     </xs:complexType>
   </xs:element>
+  
   <xs:element name="ItemGroup">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded" minOccurs="0">
@@ -458,6 +484,7 @@
       </xs:choice>
     </xs:complexType>
   </xs:element>
+  
   <xs:simpleType name="variableName">
     <xs:annotation>
       <xs:documentation>Uppercase variable name style.</xs:documentation>

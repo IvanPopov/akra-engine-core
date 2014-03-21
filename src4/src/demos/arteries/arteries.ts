@@ -1,14 +1,14 @@
-/// <reference path="../../../build/akra.d.ts" />
-/// <reference path="../../../build/addons/base3dObjects.addon.d.ts" />
-/// <reference path="../../../build/addons/navigation.addon.d.ts" />
-/// <reference path="../../../build/addons/progress.addon.d.ts" />
-/// <reference path="../../../build/addons/filedrop.addon.d.ts" />
+/// <reference path="../../../built/Lib/akra.d.ts" />
+/// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
+/// <reference path="../../../built/Lib/navigation.addon.d.ts" />
+/// <reference path="../../../built/Lib/progress.addon.d.ts" />
+/// <reference path="../../../built/Lib/filedrop.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
 
-declare var RESOURCES: akra.IDep;
+declare var AE_RESOURCES: akra.IDep;
 
 module akra {
 
@@ -25,7 +25,7 @@ module akra {
 	var pOptions: IEngineOptions = {
 		renderer: pRenderOpts,
 		progress: pProgress.getListener(),
-		deps: { files: [RESOURCES], root: "./", deps: addons.getNavigationDependences() }
+		deps: { files: [AE_RESOURCES], root: "./", deps: addons.getNavigationDependences() }
 		//deps: {
 		//	files: [
 		//		{path: "grammars/HLSL.gr"}

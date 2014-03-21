@@ -1,5 +1,5 @@
-/// <reference path="../../../build/akra.d.ts" />
-/// <reference path="../../../build/addons/base3dObjects.addon.d.ts" />
+/// <reference path="../../../built/Lib/akra.d.ts" />
+/// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
 
 module akra.std {
 	/**

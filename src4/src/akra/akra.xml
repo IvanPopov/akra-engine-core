@@ -20,6 +20,7 @@
         <File Path="resources/js/zip.js/inflate.js"/>
         <Format>Enclosure</Format>
         <OutDir>zip.js</OutDir>
+        <Type>javascript</Type>
       </Attachment>
     </Dependencies>
   </PropertyGroup>

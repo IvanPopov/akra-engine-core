@@ -10,12 +10,9 @@ var fs = require('fs');
 var xmldom = require('xmldom');
 var domain = require('domain');
 var Zip = require('node-native-zip');
+var jade = require('jade');
 
 var TYPESCRIPT = "typescript-0.9.5";
-
-var DEMOS_SOURCE_DIR = "src/demos";
-var DEMOS_BUILD_DIR = "build/demos";
-
 
 module.exports = function (grunt) {
 
@@ -84,8 +81,14 @@ module.exports = function (grunt) {
 	 * @param configFile {String} Path to config file.
 	 */
 	function compile(configFile, cb) {
+		var config;
 
-		var config = loadConfig(configFile);
+		if (typeof configFile === "string") {
+			config = loadConfig(configFile);
+		}
+		else {
+			config = configFile;
+		}
 
 
 		compileTypescript(config, function (ok) {
@@ -183,7 +186,9 @@ module.exports = function (grunt) {
 			config.setAttribute("Name", path.basename(file, ".xml"));
 		}
 
-		config.setAttribute("OutDir", path.dirname(prepareSystemVariables(config.get("//TypeScriptOutFile").textContent)));
+		if (config.get("//TypeScriptOutFile")) {
+			config.setAttribute("OutDir", path.dirname(prepareSystemVariables(config.get("//TypeScriptOutFile").textContent)));
+		}
 
 		return config;
 	}
@@ -308,7 +313,9 @@ module.exports = function (grunt) {
 			//return !compilerOptions ? cb(true) : minimize(config, cb);
 
 			function spawnCallback(code) {
-				stopAnimation(anim);
+				if (!onlyExportSettings)
+					stopAnimation(anim);
+
 				if (code === 0) {
 					config.setAttribute("OutFile", dest);
 
@@ -504,7 +511,7 @@ module.exports = function (grunt) {
 
 	function checkModule(config, module, cb) {
 		var name = module.getAttribute("Name");
-		oklns("checking module " + name);
+		//oklns("checking module " + name);
 		var buildConfig = cfg('build');
 		var pathToConfig = buildConfig[name].config;
 
@@ -518,32 +525,50 @@ module.exports = function (grunt) {
 		if (!exists(outFile)) {
 			//error("Could not find dependence script '" + outFile + "'");
 			//error("Use 'grunt build:" + name + "' for dependency module " + name);
-			return compileTypescript(moduleConfig, cb);
+			return compile(moduleConfig, function (ok, attachments) {
+				cb(ok, outFile, attachments);
+			});
 		}
 
 		if (declFile && !exists(declFile)) {
 			//error("Could not find dependence declaration '" + declFile + "'.");
 			//error("Use 'grunt build:" + name + "' to create a dependence module " + name + ".");
-			return compileTypescript(moduleConfig, cb);
+			return compile(moduleConfig, function (ok, attachments) {
+				cb(ok, outFile, attachments);
+			});
 		}
 
-		setTimeout(cb, 1, true);
+		var attachments = {};
+		moduleConfig.find("//PropertyGroup/Dependencies/Attachment").forEach(function (attachment, i) {
+			var result = loadAttachment(moduleConfig, attachment);
+			var name = attachment.getAttribute("Name") || ("$" + i);
+			attachments[name] = result;
+		});
+
+		setTimeout(cb, 1, true, outFile, attachments);
 	}
 
 	function checkDependenceModules(config, cb) {
 		var modules = config.find("//PropertyGroup/Dependencies/Module");
+		var scripts = [];
+		var attachmentsList = [];
 
 		function next(i) {
 			var module = modules[i];
 
 			if (!module) {
-				return cb(true);
+				return cb(true, scripts, attachmentsList);
 			}
 
-			checkModule(config, module, function (ok) {
+			checkModule(config, module, function (ok, script, attachments) {
 				if (!ok) {
 					return fail("FAIL :(");
 				}
+
+				if (scripts.indexOf(script) == -1)
+					scripts.push(script);
+
+				attachmentsList.push(attachments);
 
 				next(i + 1);
 			});
@@ -561,6 +586,8 @@ module.exports = function (grunt) {
 	function buildProject(config, cb) {
 		var variables = {};
 		var outFile = config.getAttribute("OutFile");
+		var attachments = {};
+		debug("Build poject: " + outFile);
 
 		console.time("Build project " + config.getAttribute("Name"));
 
@@ -588,10 +615,14 @@ module.exports = function (grunt) {
 		});
 
 
-		config.find("//PropertyGroup/Dependencies/Attachment").forEach(function (attachment) {
+		config.find("//PropertyGroup/Dependencies/Attachment").forEach(function (attachment, i) {
 			var result = loadAttachment(config, attachment);
+			var name = attachment.getAttribute("Name") || ("$" + i);
+			var attachmentName = name;
+
+			attachments[name] = result;
+
 			if (attachment.hasAttribute("Name")) {
-				var attachmentName = attachment.getAttribute("Name");
 
 				variables[attachmentName] = JSON.stringify(result, null, '\t');
 				variables[attachmentName + ".format"] = JSON.stringify(result.format);
@@ -605,9 +636,8 @@ module.exports = function (grunt) {
 			}
 		});
 
-
 		if (Object.keys(variables).length === 0) {
-			return cb(true);
+			return cb(true, null);
 		}
 
 		var data = read(outFile);
@@ -625,10 +655,10 @@ module.exports = function (grunt) {
 
 		} while (i < list.length);
 
-		// write(outFile, data);
+		write(outFile, data);
 		console.timeEnd("Build project " + config.getAttribute("Name"));
 
-		cb(true);
+		cb(true, attachments);
 
 	}
 
@@ -819,10 +849,10 @@ module.exports = function (grunt) {
 			if (excludes) {
 				for (var f = 0; f < files.length; ++f) {
 					for (var n = 0; n < excludes.length; ++n) {
-						if (path.resolve(path.join(currentFolder, excludes[n].$.Path)) ==
+						if (path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path'))) ==
 							path.resolve(path.join(currentFolder, files[f]))) {
 							//Removing Exclude from files.
-							debug("@EXCLUDE", excludes[n].$.Path);
+							debug("@EXCLUDE", excludes[n].getAttribute('Path'));
 							files.splice(f, 1);
 							f--;
 						}
@@ -923,7 +953,7 @@ module.exports = function (grunt) {
 		var res = { path: resourceFile.getAttribute("Path") };
 
 		if (resourceFile.hasAttribute("Name")) {
-			res.name = resourceFile.getAttribute("name");
+			res.name = resourceFile.getAttribute("Name");
 		}
 
 		if (resourceFile.hasAttribute("Comment")) {
@@ -972,6 +1002,7 @@ module.exports = function (grunt) {
 		var minify = null;
 		var srcDir = config.getAttribute("Path");
 		var buildDir = path.join(config.getAttribute("Path"), config.getAttribute("OutDir"));
+		var type = null;
 
 		if (attachment.hasAttribute("Name")) {
 			name = attachment.getAttribute("Name");
@@ -987,6 +1018,10 @@ module.exports = function (grunt) {
 
 		if (attachment.get("Format")) {
 			format = attachment.get("Format").textContent;
+		}
+
+		if (attachment.get("Type")) {
+			type = attachment.get("Type").textContent;
 		}
 
 		files.forEach(function (file) {
@@ -1030,7 +1065,8 @@ module.exports = function (grunt) {
 
 			return {
 				content: data.join(";"),
-				format: format
+				format: format,
+				type: type
 			}
 		}
 
@@ -1053,229 +1089,91 @@ module.exports = function (grunt) {
 		};
 	}
 
-
-	//=====================================================================
-
-	function findAttachments(Project) {
-		var attachments = [];
-		if (Project.Attachment) {
-			for (var i = 0; i < Project.Attachment.length; ++i) {
-				var Attachment = Project.Attachment[i]
-				var name = Attachment.$ ? Attachment.$.Name || null : null;
-				if (!Attachment.PropertyGroup) {
-					attachments.push({ name: name, body: Attachment });
-				}
-				else {
-					for (var j = 0; j < Attachment.PropertyGroup.length; ++j) {
-						var PropertyGroup = Attachment.PropertyGroup[j];
-						//TODO: проверить Condition данной групы и убедиться, что она подходит
-						if (PropertyGroup.$ && PropertyGroup.$.Condition) {
-							if (!computeXmlData(PropertyGroup.$.Condition)) {
-								continue;
-							}
-						}
-
-						attachments.push({ name: name, body: Attachment.PropertyGroup[j] });
-					}
-				}
-			}
-		}
-
-		return attachments;
-	}
-
-	/** @param Module {XML} <Module/> tags from demo.xml */
-	function loadDependentScriptsFromModules(Module, destFolder) {
-		var scripts = [];
-		var buildConfig = cfg('build');
-
-		for (var i in Module) {
-			var module = Module[i];
-			var name = module.$.Name;
-
-			if (buildConfig[name]) {
-				scripts.push(path.relative(destFolder, buildConfig[name].dest).replace(/\\/g, '/'));
-
-				var resourceFile = findResourcesXML(buildConfig[name].src);
-				if (resourceFile) {
-					findModuleInResourcesXML(resourceFile, name, function (Project) {
-						if (!Project) return;
-						var attachments = findAttachments(Project);
-
-						for (var j in attachments) {
-							var attachment = attachments[j].body;
-
-							if (!attachment.Format || attachment.Format[0].toUpperCase() !== "ENCLOSURE") {
-								continue;
-							}
-
-							var files = getFilesFromAttachment(attachment, path.dirname(resourceFile));
-							files.forEach(function (file) {
-								var outDir = attachment.OutDir ? attachment.OutDir[0] : "";
-								var scriptPath = path.join(path.dirname(buildConfig[name].dest),
-									outDir, path.basename(file));
-								scripts.push(path.relative(destFolder, scriptPath).replace(/\\/g, '/'));
-							});
-						}
-					});
-				}
-			}
-
-			if (module.Module) {
-				scripts = scripts.concat(loadDependentScriptsFromModules(module.Module, destFolder));
-			}
-		}
-
-		return scripts;
-	}
-
-	function loadDependentJScripts(Script, srcFolder, destFolder) {
-		var scripts = [];
-
-		for (var i in Script) {
-			var script = Script[i];
-			var pathname = script.$.Path;
-			var destPath = path.join(destFolder, pathname);
-			var srcPath = path.join(srcFolder, pathname);
-			copy(srcPath, destPath);
-			scripts.push(path.relative(destFolder, destPath).replace(/\\/g, '/'));
-		}
-
-		return scripts;
-	}
-
-	function loadDependentStyles(Style, srcFolder, destFolder) {
-		var styles = [];
-
-		for (var i in Style) {
-			var script = Style[i];
-			var pathname = script.$.Path;
-			var destPath = path.join(destFolder, pathname);
-			var srcPath = path.join(srcFolder, pathname);
-			copy(srcPath, destPath);
-			styles.push(path.relative(destFolder, destPath).replace(/\\/g, '/'));
-		}
-
-		return styles;
-	}
-
-	function loadDependentFolder(Folder, srcFolder, destFolder) {
-
-		for (var i in Folder) {
-			var folder = Folder[i];
-			var pathname = folder.$.Path;
-			var destPath = path.join(destFolder, pathname);
-			var srcPath = path.join(srcFolder, pathname);
-			wrench.copyDirSyncRecursive(srcPath, destPath, {
-				forceDelete: true
-			});
-		}
-	}
-
-
 	function buildDemo(demo, srcFolder, cb) {
 		if (!exists(srcFolder)) {
 			warn("Could not find demo.xml");
-			cb(false);
+			return cb(false);
 		}
 
-		var xmlData = read(path.join(srcFolder, "demo.xml"));
-		var parser = new xml2js.Parser();
+		var config = loadConfig(path.join(srcFolder, "demo.xml"));
+		var name = config.getAttribute('Name');
+		var description = config.get('Description') ? config.get('Description').textContent : null;
+		var template = path.join(srcFolder, config.get('Template') ? config.get('Template').textContent : "index.jade");
+		var code = null;
+		var scripts = [];
+		var styles = [];
 
-		parser.parseString(xmlData, function (err, xml) {
-			var name = xml.Demo.$.Name;
-			var description = xml.Demo.Description ? xml.Demo.Description[0] : null;
-			var main = path.join(srcFolder, xml.Demo.Main ? xml.Demo.Main[0] : "main.ts");
-			var template = path.join(srcFolder, xml.Demo.Template ? xml.Demo.Template[0] : "index.jade");
-			var code = null;
-			var scripts = [];
-			var styles = [];
-			var destFolder = path.join(DEMOS_BUILD_DIR, demo.toLowerCase());
-			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
-			var destJs = path.join(destFolder, path.basename(main, path.extname(main)) + '.js');
-
-			if (!exists(main)) {
-				fatal(new Error("Could not find main file: " + main));
-				return cb(false);
-			}
-
-			if (xml.Demo.Dependencies) {
-				var Dependencies = xml.Demo.Dependencies[0];
-
-				if (Dependencies.Module) {
-					scripts = scripts.concat(loadDependentScriptsFromModules(Dependencies.Module, destFolder));
-				}
-
-				if (Dependencies.Script) {
-					scripts = scripts.concat(loadDependentJScripts(Dependencies.Script, srcFolder, destFolder));
-				}
-
-				if (Dependencies.Style) {
-					styles = styles.concat(loadDependentStyles(Dependencies.Style, srcFolder, destFolder));
-				}
-
-				if (Dependencies.Folder) {
-					loadDependentFolder(Dependencies.Folder, srcFolder, destFolder);
-				}
-			}
-
-			debug("Dest. js: ", destJs);
-			debug("Dest. folder: ", destFolder);
-			debug("Name:", name);
-			debug("Description:", description);
-			debug("Main:", main);
-			debug("Template:", template);
-
-
-			if (!exists(template)) {
-				code = read(path.join(__dirname, "demo.jade"));
-			}
-			else {
-				code = read(template);
-			}
-
-			// Compile a function
-			var fn = jade.compile(code, { pretty: true, debug: false, compileDebug: false });
-
-			// Render the function
-			var html = fn({
-				demo: {
-					name: name,
-					description: description,
-					scripts: scripts,
-					styles: styles,
-					src: path.relative(destFolder, destJs).replace(/\\/g, "/")
-				}
-			});
-
-			debug(html);
-			write(destHtml, html);
-			//return cb(true);
-
-			compileTypescript([main], {}, destJs, function (ok) {
+		checkDependenceModules(config, function (ok, moduleScripts, attachmentsList) {
+			compile(config, function (ok, attachments) {
 				if (!ok) return cb(false);
 
-				if (xml.Demo.Resource) {
-					var variables = {};
-					var data = read(destJs);
+				for (var i = 0; i < attachmentsList.length; ++i) {
+					var attachments = attachmentsList[i];
+					for (var j in attachments) {
+						if (attachments[j].format === "Enclosure") {
+							if (attachments[j].type === "javascript") {
+								scripts = scripts.concat(attachments[j].content.split(";"));
+							}
 
-					for (var i = 0; i < xml.Demo.Resource.length; ++i) {
-						var resource = packResource(srcFolder, xml.Demo.Resource[i], destFolder);
-
-						if (!resource) {
-							continue;
+							if (attachments[j].type === "css") {
+								scripts.push(attachments[j].content);
+							}
 						}
-
-						data = data.replace(new RegExp(xml.Demo.Resource[i].$.Name, "g"),
-							function replacer(str, name) {
-								return JSON.stringify(resource);
-							});
 					}
-
-					write(destJs, data);
 				}
 
+				for (var i in attachments) {
+					if (attachments[i].type === "javascript") {
+						scripts.push(attachments[i].content);
+					}
+
+					if (attachments[i].type === "css") {
+						styles.push(attachments[i].content);
+					}
+				}
+
+				var destJs = config.getAttribute("OutFile");
+				var destFolder = path.dirname(destJs);
+				var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
+
+				debug("Dest. folder: ", destFolder);
+				debug("Dest. js: ", destJs);
+				debug("Name:", name);
+				debug("Description:", description);
+				debug("Template:", template);
+
+				scripts = scripts.concat(
+					moduleScripts.map(function (script) {
+						//console.log(destFolder, script);
+						return path.relative(destFolder, script).replace(/\\/g, '/');
+					}));
+
+				if (!exists(template)) {
+					code = read(path.join(__dirname, "demo.jade"));
+				}
+				else {
+					code = read(template);
+				}
+
+				// Compile a function
+				var fn = jade.compile(code, { pretty: true, debug: false, compileDebug: false });
+
+				// Render the function
+				var html = fn({
+					demo: {
+						name: name,
+						description: description,
+						scripts: scripts.map(function (script) { return script.replace(/\\/g, '/'); }),
+						styles: styles.map(function (script) { return script.replace(/\\/g, '/'); }),
+						src: path.relative(destFolder, destJs).replace(/\\/g, "/")
+					}
+				});
+
+				debug(html);
+				write(destHtml, html);
+
 				cb(true);
+
 			});
 		});
 	}
@@ -1290,14 +1188,13 @@ module.exports = function (grunt) {
 
 	grunt.registerTask("demo", function () {
 		var done = this.async();
+		var demo = this.args[0];
 
 		if (!demo) {
-			fatal(new Error("Could not determ demo name."));
+			grunt.fail.fatal(new Error("Could not determ demo name."));
 		}
 
 		debug("Current demo: ", demo);
-
-		var src = path.join(DEMOS_SOURCE_DIR, demo);
-		buildDemo(demo, src, done);
+		buildDemo(demo, path.join(cfg('DemosSourceDir'), demo), done);
 	});
 }

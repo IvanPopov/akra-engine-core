@@ -1,17 +1,17 @@
-/// <reference path="../../../build/akra.d.ts" />
-/// <reference path="../../../build/addons/base3dObjects.addon.d.ts" />
-/// <reference path="../../../build/addons/navigation.addon.d.ts" />
-/// <reference path="../../../build/addons/progress.addon.d.ts" />
+/// <reference path="../../../built/Lib/akra.d.ts" />
+/// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
+/// <reference path="../../../built/Lib/navigation.addon.d.ts" />
+/// <reference path="../../../built/Lib/progress.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
-declare var RESOURCES: akra.IDep;
+declare var AE_RESOURCES: akra.IDep;
 
 module akra {
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
-	var pEngine = createEngine({
-		deps: { files: [RESOURCES], root: "./" },
+	export var pEngine = createEngine({
+		deps: { files: [AE_RESOURCES], root: "./" },
 		progress: pProgress.getListener(),
 		renderer: {
 			alpha: false
@@ -98,7 +98,7 @@ module akra {
 		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
 		pLight.setShadowCaster(false);
 
-		loadManyModels(400, "CUBE_DAE");
+		loadManyModels(400, "CUBE.DAE");
 		pProgress.destroy();
 		pEngine.exec();
 	}

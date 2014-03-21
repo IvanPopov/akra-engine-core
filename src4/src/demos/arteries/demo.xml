@@ -1,22 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Demo Name="Arteries" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="../../../lib/grunt/resources.xsd">
-  <Main>arteries.ts</Main>
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
   <Description>Caroid artery viewer.</Description>
-  <Dependencies>
-    <Module Name="core">
+  <ItemGroup>
+    <TypeScriptCompile Include="arteries.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/arteries/arteries.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Module Name="core" />
       <Module Name="addon-progress" />
       <Module Name="addon-navigation" />
       <Module Name="addon-filedrop" />
       <Module Name="addon-base3dObjects" />
-    </Module>
-    <Script Path="dat.gui/dat.gui.js" />
-    <Style Path="../css/metro-bootstrap.css" />
-    <Folder Path="../fonts" />
-  </Dependencies>
-  <Resource Name="RESOURCES">
-    <Filename>arteries</Filename>
-    <PropertyGroup >
+
+      <Attachment>
+        <File Path="dat.gui/dat.gui.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+      </Attachment>
+
+      <Attachment>
+        <File Path="../css/metro-bootstrap.css"/>
+        <Format>Enclosure</Format>
+        <OutDir>../css</OutDir>
+        <Type>css</Type>
+      </Attachment>
+
+      <Attachment>
+        <Folder Path="../fonts"/>
+        <Format>Enclosure</Format>
+        <OutDir>../fonts</OutDir>
+      </Attachment>
+     
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>arteries</Filename>
       <Archive>False</Archive>
       <UseInlining>False</UseInlining>
       <Data>
@@ -32,15 +53,13 @@
         <ResourceFile Path="data/models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N.OBJ"/>
         <ResourceFile Path="data/models/tof_multislab_tra_2.obj" Name="TOF_MULTISLAB_TRA_2.OBJ"/>
       </Data>
-    </PropertyGroup>
-  </Resource>
-  <Resource Name="COORDS">
-    <PropertyGroup>
+    </Resource>
+    <Resource Name="AE_COORDS">
       <Archive>False</Archive>
       <Data>
         <File Path="data/coords/coord_real_ag.txt" />
         <File Path="data/coords/coord4.txt" />
       </Data>
-    </PropertyGroup>
-  </Resource>
+    </Resource>
+  </PropertyGroup>
 </Demo>
