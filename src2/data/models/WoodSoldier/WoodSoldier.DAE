@@ -29,7 +29,7 @@
               <color>0 0 0 1</color>
             </emission>
             <ambient>
-              <color>0 0 0 1</color>
+              <color>1 1 1 1</color>
             </ambient>
             <diffuse>
               <texture texture="WoodSoldierBlue_psd-sampler" texcoord="CHANNEL1"/>
@@ -296,7 +296,7 @@
     <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
       <technique_common>
         <ambient>
-          <color>0 0 0</color>
+          <color>1 1 1</color>
         </ambient>
       </technique_common>
     </light>
