@@ -1,0 +1,54 @@
+provide akra.system;
+
+texture tex0 : INPUT_TEXTURE;
+texture tex1 : SUNSHAFT_INFO;
+
+sampler screenSampler : INPUT_SAMPLER
+{
+	Texture = <tex0>;
+};
+
+sampler sunshaftInfoSampler : SUNSHAFT_SAMPLER
+{
+	Texture = <tex1>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};
+
+VS_OUT vs_sunshaft_shading(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+    Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+    Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float SUNSHAFT_DECAY = 1.0/4.0;
+
+float4 fs_sunshaft_shading(VS_OUT IN) : COLOR{
+    float4 deferredData = tex2D(sunshaftInfoSampler,IN.textureCoords);
+
+    if(deferredData.w != 0.){
+        return tex2D(screenSampler, IN.textureCoords);
+    }
+    else {
+    	//return texCUBE(skyboxSampler,IN.texCoordsSkybox);
+    	return new Color(1.);
+    }
+};	
+
+technique sunshaft : POST_EFFECT {
+	pass pass1{
+		VertexShader = compile vs_sunshaft_shading();
+		PixelShader = compile fs_sunshaft_shading();
+	};
+};
+
+
