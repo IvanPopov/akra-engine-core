@@ -130,10 +130,13 @@ module akra {
 
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
-		}
+		};
 
-        (<render.DSViewport>pViewport).getEffect().addComponent("akra.custom.heatmap");
-        //(<render.DSViewport>pViewport).setFXAA(false);
+        (<render.DSViewport>pViewport).setFXAA(false);
+        (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
+        pViewport.render.connect(() => {
+        	
+        	});
 		return pViewport;
 	}
 
@@ -318,8 +321,8 @@ module akra {
 
 		createKeymap(pCamera);
 
-		createSceneEnvironment();
-		createLighting();
+		// createSceneEnvironment();
+		// createLighting();
 		createSkyBox();
 		//createSky();
 
@@ -327,9 +330,9 @@ module akra {
 		//loadHero();
 		//loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
-        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", null, 'WoodSoldier').addPosition(0, 0, 0);
-        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
-        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(2, 1, -4);
+        loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0, 0, 0);
+        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
+        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
         // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
 
 		pEngine.exec();

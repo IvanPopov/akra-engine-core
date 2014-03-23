@@ -50,7 +50,6 @@ var akra;
         pCamera.addPosition(new akra.math.Vec3(0, 4, 5));
         pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
         pCamera.attachToParent(akra.pScene.getRootNode());
-        pCamera.setInheritance(0 /* NONE */);
 
         pCamera.update();
 
@@ -134,9 +133,8 @@ var akra;
             akra.pCanvas.resize(window.innerWidth, window.innerHeight);
         };
 
-        pViewport.getEffect().addComponent("akra.custom.heatmap");
-
-        //(<render.DSViewport>pViewport).setFXAA(false);
+        pViewport.setFXAA(false);
+        pViewport.getEffect().addComponent("akra.system.sunshaft");
         return pViewport;
     }
 
@@ -311,8 +309,8 @@ var akra;
         //addons.navigation(pViewport);
         createKeymap(akra.pCamera);
 
-        createSceneEnvironment();
-        createLighting();
+        // createSceneEnvironment();
+        // createLighting();
         createSkyBox();
 
         //createSky();
@@ -320,10 +318,10 @@ var akra;
         //loadHero();
         //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(100, data + "models/box/opened_box.dae");
-        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", null, 'WoodSoldier').addPosition(0, 0, 0);
-        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(-2, 1, -4).addRotationByXYZAxis(0, akra.math.PI, 0);
-        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock').addPosition(2, 1, -4);
+        loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0, 0, 0);
 
+        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
+        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
         // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4);
         pEngine.exec();
         //pEngine.renderFrame();
