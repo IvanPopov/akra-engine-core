@@ -61,16 +61,16 @@ module akra {
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
-        pScene.beforeUpdate.connect(() => {
-            if (pKeymap.isMousePress()) {
-                if (pKeymap.isMouseMoved()) {
-                    var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+		pScene.beforeUpdate.connect(() => {
+			if (pKeymap.isMousePress()) {
+				if (pKeymap.isMouseMoved()) {
+					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-                    pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
-                    pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
+					pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
+					pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
 
-                    pKeymap.update();
-                }
+					pKeymap.update();
+				}
 				var fSpeed: float = 0.1 * 10;
 				if (pKeymap.isKeyPress(EKeyCodes.W)) {
 					pCamera.addRelPosition(0, 0, -fSpeed);
@@ -132,11 +132,11 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-        (<render.DSViewport>pViewport).setFXAA(false);
-        (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
-        pViewport.render.connect(() => {
-        	
-        	});
+		(<render.DSViewport>pViewport).setFXAA(false);
+		(<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
+		/*pViewport.render.connect(() => {
+			
+			});*/
 		return pViewport;
 	}
 
@@ -173,11 +173,11 @@ module akra {
 		}
 	}
 
-    function loadModel(sPath, fnCallback?: Function, name?: String): ISceneNode {
+	function loadModel(sPath, fnCallback?: Function, name?: String): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
 
-        pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
+		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
 		pModelRoot.attachToParent(pScene.getRootNode());
 
 		function fnLoadModel(pModel: ICollada): void {
@@ -330,10 +330,10 @@ module akra {
 		//loadHero();
 		//loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
-        loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0, 0, 0);
-        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
-        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
-        // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
+		loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0, 0, 0);
+		// loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
+		// loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
+		// loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
 
 		pEngine.exec();
 		//pEngine.renderFrame();

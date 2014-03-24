@@ -135,6 +135,10 @@ var akra;
 
         pViewport.setFXAA(false);
         pViewport.getEffect().addComponent("akra.system.sunshaft");
+
+        /*pViewport.render.connect(() => {
+        
+        });*/
         return pViewport;
     }
 
