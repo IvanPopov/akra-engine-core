@@ -146,9 +146,20 @@ var akra;
         pOmniLight.getParams().diffuse.set(0.5);
         pOmniLight.getParams().specular.set(1, 1, 1, 1);
         pOmniLight.getParams().attenuation.set(1, 0, 0);
-        pOmniLight.setShadowCaster(false);
+        pOmniLight.setShadowCaster(true);
 
-        pOmniLight.addPosition(1, 5, 3);
+        pOmniLight.addPosition(1, 5, -3);
+
+        // var pProjectShadowLight = akra.pScene.createLightPoint(1, true, 512, "test-project-0");
+        // pProjectShadowLight.attachToParent(akra.pScene.getRootNode());
+        // pProjectShadowLight.setEnabled(true);
+        // pProjectShadowLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
+        // pProjectShadowLight.getParams().diffuse.set(0.5);
+        // pProjectShadowLight.getParams().specular.set(1, 1, 1, 1);
+        // pProjectShadowLight.getParams().attenuation.set(1,0,0);
+        // pProjectShadowLight.setShadowCaster(true);
+        // pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+        // pProjectShadowLight.addRelPosition(0, 3, 10);
     }
 
     function createSky() {
@@ -307,17 +318,17 @@ var akra;
         //addons.navigation(pViewport);
         createKeymap(akra.pCamera);
 
-        //createSceneEnvironment();
+        createSceneEnvironment();
         createLighting();
         createSkyBox();
 
-        createSky();
-        pTerrain = createTerrain(akra.pScene, true, akra.EEntityTypes.TERRAIN);
+        //createSky();
+        //pTerrain = createTerrain(akra.pScene, true, akra.EEntityTypes.TERRAIN);
         //loadHero();
         //loadManyModels(400, data + "models/cube.dae");
 
         //loadManyModels(100, data + "models/box/opened_box.dae");
-        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 0.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }

@@ -263,7 +263,7 @@ module TypeScript {
 
 		private interfaceExternsStream = null;
 		private isEnabledInterfaceExternStream = false;
-		private externFile = null;
+		private externFileStream = null;
 
 		private shortNameMap: { [longName: string]: string } = {};
 		private shorter: number = 0;
@@ -275,12 +275,12 @@ module TypeScript {
 
 			if (emitOptions.sharedOutputFile()) {
 				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
-				this.externFile = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".externs");
+				this.externFileStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".externs");
 			}
 			else {
 				console.warn("TSCC warn >> Bad compilation options! Better if you specify output file.");
 				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__interface__.js.tmp.externs");
-				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__externs__.js.externs");
+				this.externFileStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__externs__.js.externs");
 			}
 		}
 
@@ -468,7 +468,7 @@ module TypeScript {
 			this.recordSourceMappingEnd(astSpan);
 		}
 
-		private writeToStream(s: string) {
+		private writeToStream(stream: any, s: string) {
 			//if (this.bufferForStream !== "" && this.bufferForStream !== s) {
 			//	this.bufferForStream += s;
 			//}
@@ -485,12 +485,12 @@ module TypeScript {
 			//	}
 			//}
 
-			this.interfaceExternsStream.buffer += s;
+			stream.buffer += s;
 		}
 
 		public writeToOutput(s: string) {
 			if (this.isEnabledInterfaceExternStream) {
-				this.writeToStream(s);
+				this.writeToStream(this.interfaceExternsStream, s);
 				return;
 			}
 
@@ -498,9 +498,17 @@ module TypeScript {
 			this.updateLineAndColumn(s);
 		}
 
+		public writeToExternOutput(s: string) {
+			this.writeToStream(this.externFileStream, s);
+		}
+
+		public writeLineToExternOutput(s: string) {
+			this.writeToStream(this.externFileStream, s + "\n");
+		}
+
 		public writeLineToOutput(s: string, force = false) {
 			if (this.isEnabledInterfaceExternStream) {
-				this.writeToStream(s + "\n");
+				this.writeToStream(this.interfaceExternsStream, s + "\n");
 				return;
 			}
 			// No need to print a newline if we're already at the start of the line.
@@ -1044,6 +1052,9 @@ module TypeScript {
 			this.recordSourceMappingStart(moduleDecl);
 			this.recordSourceMappingNameStart(this.moduleName);
 
+			if (isExported) {
+				this.writeLineToExternOutput(this.moduleName + " = {");
+			}
 			//this.indenter.increaseIndent();
 
 			//if (this.shouldCaptureThis(moduleDecl)) {
@@ -1093,6 +1104,12 @@ module TypeScript {
 
 			if (isExported) {
 				this.exportSymbol(pullDecl.getSymbol());
+				//FIX ME: to delete comma symbol from last enum element
+				var buffer: string = this.externFileStream.buffer;
+				if (buffer[buffer.length - 2] === "," && buffer[buffer.length - 1] === "\n") {
+					this.externFileStream.buffer = buffer.substr(0, buffer.length - 2) + "\n";
+				}
+				this.writeLineToExternOutput("};");
 			}
 
 			//if (temp !== EmitContainer.Prog && isExported) {
@@ -1234,10 +1251,12 @@ module TypeScript {
 
 				if (fullModuleName.indexOf(".") < 0) {
 					this.writeToOutput("var ");
+					this.writeToExternOutput("var ");
 				}
 
 				this.recordSourceMappingStart(moduleName);
 				this.writeToOutput(fullModuleName);
+				this.writeLineToExternOutput(fullModuleName + ";");
 				this.recordSourceMappingEnd(moduleName);
 
 				var exportedName = this.getNameForExport(pullDecl.getSymbol());
@@ -1393,6 +1412,10 @@ module TypeScript {
 			//this.writeToOutput(this.moduleName);
 			//this.writeToOutput('[');
 			this.writeToOutput((isNeedQuoted ? ('"' + name + '"') : name) + ": ");
+
+			if (this.isEmittedEnumExported) {
+				this.writeLineToExternOutput((isNeedQuoted ? ('"' + name + '"') : name) + ": null,");
+			}
 			//this.writeToOutput(']');
 
 			if (varDecl.equalsValueClause) {

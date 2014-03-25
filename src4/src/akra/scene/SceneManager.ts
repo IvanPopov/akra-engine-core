@@ -58,7 +58,7 @@ module akra.scene {
 			for (var i = 0; i < this._pSceneList.length; ++ i) {
 				var pScene: IScene = this._pSceneList[i];
 				
-				if (pScene.getType() != ESceneTypes.TYPE_3D) {
+				if (pScene.getType() !== ESceneTypes.TYPE_3D) {
 					continue;
 				}
 				
@@ -70,7 +70,7 @@ module akra.scene {
 			for (var i = 0; i < this._pSceneList.length; ++ i) {
 				var pScene: IScene = this._pSceneList[i];
 				
-				if (pScene.getType() != ESceneTypes.TYPE_3D) {
+				if (pScene.getType() !== ESceneTypes.TYPE_3D) {
 					continue;
 				}
 				

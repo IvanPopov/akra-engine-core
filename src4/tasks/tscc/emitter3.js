@@ -264,15 +264,18 @@ var TypeScript;
             this._emitGlobal = true;
             this.interfaceExternsStream = null;
             this.isEnabledInterfaceExternStream = false;
+            this.externFileStream = null;
             this.shortNameMap = {};
             this.shorter = 0;
             this._emittedModuleNames = [];
             this._bEmitEscapedName = false;
             if (emitOptions.sharedOutputFile()) {
                 this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
+                this.externFileStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".externs");
             } else {
-                console.warn("Bad compilation options! Better if you specify output file.");
+                console.warn("TSCC warn >> Bad compilation options! Better if you specify output file.");
                 this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__interface__.js.tmp.externs");
+                this.externFileStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__externs__.js.externs");
             }
         }
         Emitter.prototype.pushDecl = function (decl) {
@@ -448,7 +451,7 @@ var TypeScript;
             this.recordSourceMappingEnd(astSpan);
         };
 
-        Emitter.prototype.writeToStream = function (s) {
+        Emitter.prototype.writeToStream = function (stream, s) {
             //if (this.bufferForStream !== "" && this.bufferForStream !== s) {
             //	this.bufferForStream += s;
             //}
@@ -463,12 +466,12 @@ var TypeScript;
             //		});
             //	}
             //}
-            this.interfaceExternsStream.buffer += s;
+            stream.buffer += s;
         };
 
         Emitter.prototype.writeToOutput = function (s) {
             if (this.isEnabledInterfaceExternStream) {
-                this.writeToStream(s);
+                this.writeToStream(this.interfaceExternsStream, s);
                 return;
             }
 
@@ -476,10 +479,18 @@ var TypeScript;
             this.updateLineAndColumn(s);
         };
 
+        Emitter.prototype.writeToExternOutput = function (s) {
+            this.writeToStream(this.externFileStream, s);
+        };
+
+        Emitter.prototype.writeLineToExternOutput = function (s) {
+            this.writeToStream(this.externFileStream, s + "\n");
+        };
+
         Emitter.prototype.writeLineToOutput = function (s, force) {
             if (typeof force === "undefined") { force = false; }
             if (this.isEnabledInterfaceExternStream) {
-                this.writeToStream(s + "\n");
+                this.writeToStream(this.interfaceExternsStream, s + "\n");
                 return;
             }
 
@@ -1013,6 +1024,10 @@ var TypeScript;
             this.recordSourceMappingStart(moduleDecl);
             this.recordSourceMappingNameStart(this.moduleName);
 
+            if (isExported) {
+                this.writeLineToExternOutput(this.moduleName + " = {");
+            }
+
             //this.indenter.increaseIndent();
             //if (this.shouldCaptureThis(moduleDecl)) {
             //	this.writeCaptureThisStatement(moduleDecl);
@@ -1059,6 +1074,13 @@ var TypeScript;
 
             if (isExported) {
                 this.exportSymbol(pullDecl.getSymbol());
+
+                //FIX ME: to delete comma symbol from last enum element
+                var buffer = this.externFileStream.buffer;
+                if (buffer[buffer.length - 2] === "," && buffer[buffer.length - 1] === "\n") {
+                    this.externFileStream.buffer = buffer.substr(0, buffer.length - 2) + "\n";
+                }
+                this.writeLineToExternOutput("};");
             }
 
             //if (temp !== EmitContainer.Prog && isExported) {
@@ -1193,10 +1215,12 @@ var TypeScript;
 
                 if (fullModuleName.indexOf(".") < 0) {
                     this.writeToOutput("var ");
+                    this.writeToExternOutput("var ");
                 }
 
                 this.recordSourceMappingStart(moduleName);
                 this.writeToOutput(fullModuleName);
+                this.writeLineToExternOutput(fullModuleName + ";");
                 this.recordSourceMappingEnd(moduleName);
 
                 var exportedName = this.getNameForExport(pullDecl.getSymbol());
@@ -1342,6 +1366,10 @@ var TypeScript;
             //this.writeToOutput(this.moduleName);
             //this.writeToOutput('[');
             this.writeToOutput((isNeedQuoted ? ('"' + name + '"') : name) + ": ");
+
+            if (this.isEmittedEnumExported) {
+                this.writeLineToExternOutput((isNeedQuoted ? ('"' + name + '"') : name) + ": null,");
+            }
 
             //this.writeToOutput(']');
             if (varDecl.equalsValueClause) {

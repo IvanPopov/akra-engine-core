@@ -509,7 +509,8 @@ module.exports = function (grunt) {
                     "--use_types_for_optimization",
                     "--externs", src + ".tmp.externs",
                     "--output_wrapper", "(function(){%output%})();",
-                    "--summary_detail_level", 3
+                    "--summary_detail_level", 3,
+                    "--warning_level", "VERBOSE"
                     /*"--create_source_map", dest + ".map",
                     "--source_map_format=V3"*/];
 

@@ -110,17 +110,17 @@ module akra.webgl {
 			return ERenderers.WEBGL;
 		}
 
-		constructor (pEngine: IEngine);
-		constructor (pEngine: IEngine, sCanvas: string);
-		constructor (pEngine: IEngine, pOptions: IRendererOptions);
-		constructor (pEngine: IEngine, pCanvas: HTMLCanvasElement);
-		constructor (pEngine: IEngine, options?: any) {
+		constructor(pEngine: IEngine);
+		constructor(pEngine: IEngine, sCanvas: string);
+		constructor(pEngine: IEngine, pOptions: IRendererOptions);
+		constructor(pEngine: IEngine, pCanvas: HTMLCanvasElement);
+		constructor(pEngine: IEngine, options?: any) {
 			super(pEngine);
 
 			var pOptions: IRendererOptions = null;
 
 			if (isDefAndNotNull(arguments[1])) {
-				
+
 				//get HTMLCanvasElement by id
 				if (isString(arguments[1])) {
 					this._pCanvas = <HTMLCanvasElement>document.getElementById(arguments[1]);
@@ -136,7 +136,7 @@ module akra.webgl {
 					}
 				}
 			}
-			
+
 			if (isNull(this._pCanvas)) {
 				this._pCanvas = <HTMLCanvasElement>document.createElement('canvas');
 			}
@@ -145,7 +145,7 @@ module akra.webgl {
 				pOptions = WebGLRenderer.DEFAULT_OPTIONS;
 			}
 			else {
-				for (var i: int = 0, pOptList: string[] = Object.keys(WebGLRenderer.DEFAULT_OPTIONS); i < pOptList.length; ++ i) {
+				for (var i: int = 0, pOptList: string[] = Object.keys(WebGLRenderer.DEFAULT_OPTIONS); i < pOptList.length; ++i) {
 					var sOpt: string = pOptList[i];
 
 					if (!isDef(pOptions[sOpt])) {
@@ -153,7 +153,7 @@ module akra.webgl {
 					}
 				}
 			}
-			
+
 			debug.log("webgl context attributes:", pOptions);
 
 			this._pWebGLContext = createContext(this._pCanvas, pOptions);
@@ -163,7 +163,7 @@ module akra.webgl {
 			this._pWebGLFramebufferList = new Array(config.webgl.preparedFramebuffersNum);
 
 
-			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++ i) {
+			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
 
@@ -174,11 +174,11 @@ module akra.webgl {
 
 			this._pTextureSlotList = new Array(maxTextureImageUnits);
 
-			for (var i: int = 0; i < this._pTextureSlotList.length; i++){
+			for (var i: int = 0; i < this._pTextureSlotList.length; i++) {
 				this._pTextureSlotList[i] = null;
 			}
 
-			for (var i: int = 0; i < 4; i++){
+			for (var i: int = 0; i < 4; i++) {
 				this._pFreeRenderStatesPool.push(WebGLRenderer.createWebGLContextStates());
 			}
 
@@ -192,18 +192,18 @@ module akra.webgl {
 
 			if (bValue) {
 				if (isDef((<any>window).WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
-					
-					this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext, 
+
+					this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext,
 						(err: int, funcName: string, args: IArguments): void => {
 							throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
 						},
-						useApiTrace? 
-						(funcName: string, args: IArguments): void => {   
-						   logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");   
-						}: null);
+						useApiTrace ?
+						(funcName: string, args: IArguments): void => {
+							logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");
+						} : null);
 
 					this._pWebGLInternalContext = pWebGLInternalContext;
-					
+
 					return true;
 				}
 			}
@@ -303,7 +303,7 @@ module akra.webgl {
 		disable(iWebGLCap: uint): void {
 			this._pWebGLContext.disable(iWebGLCap);
 
-			switch(iWebGLCap){
+			switch (iWebGLCap) {
 				case gl.CULL_FACE:
 					this._pCurrentContextStates.cull_face = false;
 					return;
@@ -336,8 +336,8 @@ module akra.webgl {
 
 		enable(iWebGLCap: uint): void {
 			this._pWebGLContext.enable(iWebGLCap);
-			
-			switch(iWebGLCap){
+
+			switch (iWebGLCap) {
 				case gl.CULL_FACE:
 					this._pCurrentContextStates.cull_face = true;
 					return;
@@ -374,7 +374,7 @@ module akra.webgl {
 		}
 
 		getParameter(iWebGLName: uint): any {
-			switch(iWebGLName){
+			switch (iWebGLName) {
 				case gl.BLEND:
 					return this._pCurrentContextStates.blend;
 				case gl.BLEND_COLOR:
@@ -480,7 +480,7 @@ module akra.webgl {
 		pixelStorei(iWebGLName: uint, iParam: int): void {
 			this._pWebGLContext.pixelStorei(iWebGLName, iParam);
 
-			if(iWebGLName === gl.UNPACK_ALIGNMENT){
+			if (iWebGLName === gl.UNPACK_ALIGNMENT) {
 				this._pCurrentContextStates.unpack_alignment = iParam;
 			}
 			else {
@@ -513,7 +513,7 @@ module akra.webgl {
 		stencilFuncSeparate(iWebGLFace: uint, iWebGLFunc: uint, iRef: int, iMask: uint): void {
 			this._pWebGLContext.stencilFuncSeparate(iWebGLFace, iWebGLFunc, iRef, iMask);
 
-			if(iWebGLFace === gl.FRONT_AND_BACK){
+			if (iWebGLFace === gl.FRONT_AND_BACK) {
 				this._pCurrentContextStates.stencil_func = iWebGLFunc;
 				this._pCurrentContextStates.stencil_ref = iRef;
 				this._pCurrentContextStates.stencil_value_mask = iMask;
@@ -521,7 +521,7 @@ module akra.webgl {
 				this._pCurrentContextStates.stencil_back_ref = iRef;
 				this._pCurrentContextStates.stencil_back_value_mask = iMask;
 			}
-			else if(iWebGLFace === gl.FRONT){
+			else if (iWebGLFace === gl.FRONT) {
 				this._pCurrentContextStates.stencil_func = iWebGLFunc;
 				this._pCurrentContextStates.stencil_ref = iRef;
 				this._pCurrentContextStates.stencil_value_mask = iMask;
@@ -542,11 +542,11 @@ module akra.webgl {
 		stencilMaskSeparate(iWebGLFace: uint, iMask: uint): void {
 			this._pWebGLContext.stencilMaskSeparate(iWebGLFace, iMask);
 
-			if(iWebGLFace === gl.FRONT_AND_BACK){
+			if (iWebGLFace === gl.FRONT_AND_BACK) {
 				this._pCurrentContextStates.stencil_writemask = iMask;
 				this._pCurrentContextStates.stencil_back_writemask = iMask;
 			}
-			else if(iWebGLFace === gl.FRONT){
+			else if (iWebGLFace === gl.FRONT) {
 				this._pCurrentContextStates.stencil_writemask = iMask;
 			}
 			else {
@@ -568,7 +568,7 @@ module akra.webgl {
 		stencilOpSeparate(iWebGLFace: uint, iFail: uint, iZFail: uint, iZPass: uint): void {
 			this._pWebGLContext.stencilOpSeparate(iWebGLFace, iFail, iZFail, iZPass);
 
-			if(iWebGLFace === gl.FRONT_AND_BACK){
+			if (iWebGLFace === gl.FRONT_AND_BACK) {
 				this._pCurrentContextStates.stencil_fail = iFail;
 				this._pCurrentContextStates.stencil_pass_depth_fail = iZFail;
 				this._pCurrentContextStates.stencil_pass_depth_pass = iZPass;
@@ -576,7 +576,7 @@ module akra.webgl {
 				this._pCurrentContextStates.stencil_back_pass_depth_fail = iZFail;
 				this._pCurrentContextStates.stencil_back_pass_depth_pass = iZPass;
 			}
-			else if(iWebGLFace === gl.FRONT){
+			else if (iWebGLFace === gl.FRONT) {
 				this._pCurrentContextStates.stencil_fail = iFail;
 				this._pCurrentContextStates.stencil_pass_depth_fail = iZFail;
 				this._pCurrentContextStates.stencil_pass_depth_pass = iZPass;
@@ -588,10 +588,10 @@ module akra.webgl {
 			}
 		}
 
-		 _getTextureStateManager(): WebGLInternalTextureStateManager {
+		_getTextureStateManager(): WebGLInternalTextureStateManager {
 			return this._pTextureStateManager;
 		}
- 
+
 		_beginRender(): void {
 			this.enable(gl.SCISSOR_TEST);
 			this.disable(gl.BLEND);
@@ -601,14 +601,14 @@ module akra.webgl {
 
 		_printTime(): void {
 			var _iTotalTime: uint = 0;
-			for(var i: uint = 0; i < this._time.length; i++){
+			for (var i: uint = 0; i < this._time.length; i++) {
 				_iTotalTime += this._time[i];
 			}
 
 			var _pPrinted: string[] = new Array(this._time.length);
 
-			for(var i: uint = 0; i < this._time.length; i++){
-				_pPrinted[i] = (this._time[i]/ _iTotalTime).toFixed(2);
+			for (var i: uint = 0; i < this._time.length; i++) {
+				_pPrinted[i] = (this._time[i] / _iTotalTime).toFixed(2);
 			}
 
 			logger.log(_pPrinted.join("% "));
@@ -617,7 +617,7 @@ module akra.webgl {
 
 		_renderEntry(pEntry: IRenderEntry): void {
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
-			if(isNull(pViewport)){
+			if (isNull(pViewport)) {
 				logger.log(pEntry);
 			}
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
@@ -628,7 +628,7 @@ module akra.webgl {
 				console.log(pEntry);
 			}
 
-			if(!isNull(pEntry.renderTarget)){
+			if (!isNull(pEntry.renderTarget)) {
 				this._setRenderTarget(pEntry.renderTarget);
 				this._lockRenderTarget();
 
@@ -653,18 +653,18 @@ module akra.webgl {
 
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
-			if(!isNull(pBufferMap.getIndex())){
+			if (!isNull(pBufferMap.getIndex())) {
 				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
 			}
-			
-			for(var i: uint = 0; i < pAttributeInfo.length; i++){
+
+			for (var i: uint = 0; i < pAttributeInfo.length; i++) {
 				var sAttrName: string = pAttributeInfo[i].name;
 				var sAttrSemantic: string = pAttributeInfo[i].semantic;
 				var iLoc: int = pAttribLocations[sAttrName];
 				var pFlow: IDataFlow = pInput.attrs[i];
 				var pData: data.VertexData = null;
 				var sSemantics: string = null;
-				
+
 				if (pFlow.type === EDataFlowTypes.MAPPABLE) {
 					pData = <data.VertexData>pFlow.mapper.data;
 					sSemantics = pFlow.mapper.semantics;
@@ -679,11 +679,11 @@ module akra.webgl {
 
 				this.bindWebGLBuffer(gl.ARRAY_BUFFER, (<WebGLVertexBuffer>pData.getBuffer()).getWebGLBuffer());
 				this._pWebGLContext.vertexAttribPointer(iLoc,
-									pVertexElement.count,
-									pVertexElement.type,
-									false,
-									pData.getStride(),
-									pVertexElement.offset);
+					pVertexElement.count,
+					pVertexElement.type,
+					false,
+					pData.getStride(),
+					pVertexElement.offset);
 			}
 
 			var pUniformNames: string[] = pMaker.getUniformNames();
@@ -693,8 +693,8 @@ module akra.webgl {
 			}
 
 			pEntry.bufferMap._draw();
-			
-			if(isNeedPopRenderStates){
+
+			if (isNeedPopRenderStates) {
 				this._popRenderStates(false);
 			}
 		}
@@ -705,7 +705,7 @@ module akra.webgl {
 		}
 
 		_setViewport(pViewport: IViewport): void {
-			if(isNull(pViewport)){
+			if (isNull(pViewport)) {
 				this._pActiveViewport = null;
 				this._setRenderTarget(null);
 				return;
@@ -714,12 +714,12 @@ module akra.webgl {
 			var isViewportUpdate: boolean = pViewport !== this._pActiveViewport || pViewport.isUpdated();
 			var isRenderTargetUpdate: boolean = pViewport.getTarget() !== this._pActiveRenderTarget;
 
-			if(isViewportUpdate || isRenderTargetUpdate) {
+			if (isViewportUpdate || isRenderTargetUpdate) {
 				var pTarget: IRenderTarget = pViewport.getTarget();
 
 				this._setRenderTarget(pTarget);
-				
-				if(isViewportUpdate){
+
+				if (isViewportUpdate) {
 					this._pActiveViewport = pViewport;
 
 					var x: uint = pViewport.getActualLeft(),
@@ -743,16 +743,16 @@ module akra.webgl {
 			// 	return;
 			// }
 			//May be unbind()
-			
-			if(this._isLockRenderTarget()){
+
+			if (this._isLockRenderTarget()) {
 				return;
 			}
 
 			this._pActiveRenderTarget = pTarget;
 
-			if(!isNull(pTarget)){
+			if (!isNull(pTarget)) {
 				var pFrameBuffer: WebGLInternalFrameBuffer = pTarget.getCustomAttribute("FBO");
-				if(!isNull(pFrameBuffer)){
+				if (!isNull(pFrameBuffer)) {
 					pFrameBuffer._bind();
 				}
 				else {
@@ -764,7 +764,7 @@ module akra.webgl {
 		_setCullingMode(eMode: ECullingMode): void {
 			var iWebGLCullMode: uint = 0;
 
-			switch(eMode){
+			switch (eMode) {
 				case ECullingMode.NONE:
 					this.disable(gl.CULL_FACE);
 					return;
@@ -783,9 +783,9 @@ module akra.webgl {
 			this.cullFace(iWebGLCullMode);
 		}
 
-		_setDepthBufferParams(bDepthTest: boolean, bDepthWrite: boolean, 
-							  eDepthFunction: ECompareFunction, fClearDepth: float = 1.): void {
-			if(bDepthTest){
+		_setDepthBufferParams(bDepthTest: boolean, bDepthWrite: boolean,
+			eDepthFunction: ECompareFunction, fClearDepth: float = 1.): void {
+			if (bDepthTest) {
 				this.clearDepth(fClearDepth);
 				this.enable(gl.DEPTH_TEST);
 			}
@@ -795,45 +795,45 @@ module akra.webgl {
 
 			var iWebGLDepthFunc: uint = this.convertCompareFunction(eDepthFunction);
 
-			this.depthMask(bDepthWrite); 
+			this.depthMask(bDepthWrite);
 			this.depthFunc(iWebGLDepthFunc);
 		}
-		
+
 		isDebug(): boolean {
 			return !isNull(this._pWebGLInternalContext);
 		}
 
-		 getHTMLCanvas(): HTMLCanvasElement {
+		getHTMLCanvas(): HTMLCanvasElement {
 			return this._pCanvas;
 		}
 
-		 getWebGLContext(): WebGLRenderingContext {
+		getWebGLContext(): WebGLRenderingContext {
 			return this._pWebGLContext;
 		}
 
 
 		/** Buffer Objects. */
-		 bindWebGLBuffer(eTarget: uint, pBuffer: WebGLBuffer): void {
+		bindWebGLBuffer(eTarget: uint, pBuffer: WebGLBuffer): void {
 			this._pWebGLContext.bindBuffer(eTarget, pBuffer);
 		}
 
-		 createWebGLBuffer(): WebGLBuffer {
+		createWebGLBuffer(): WebGLBuffer {
 			return this._pWebGLContext.createBuffer();
 		}
 
-		 deleteWebGLBuffer(pBuffer: WebGLBuffer): void {
+		deleteWebGLBuffer(pBuffer: WebGLBuffer): void {
 			this._pWebGLContext.deleteBuffer(pBuffer);
 		}
-		
+
 		/** Texture Objects. */
-		 bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
+		bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
 			//if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
-				this._pWebGLContext.bindTexture(eTarget, pTexture);
-				this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			this._pWebGLContext.bindTexture(eTarget, pTexture);
+			this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
 			//}
 		}
 
-		 activateWebGLTexture(iWebGLSlot: int): void {
+		activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
 			// this._iCurrentTextureSlot = iWebGLSlot - gl.TEXTURE0;
 		}
@@ -843,35 +843,35 @@ module akra.webgl {
 			// var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
 
 			// if(iSlot === -1) {
-				var iSlot = this._iNextTextureSlot;
+			var iSlot = this._iNextTextureSlot;
 
-				this._iNextTextureSlot++;
+			this._iNextTextureSlot++;
 
-				if(this._iNextTextureSlot === maxTextureImageUnits){
-					this._iNextTextureSlot = 0;
-				}
-				
-				this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-				this.bindWebGLTexture(eTarget, pTexture);
+			if (this._iNextTextureSlot === maxTextureImageUnits) {
+				this._iNextTextureSlot = 0;
+			}
+
+			this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+			this.bindWebGLTexture(eTarget, pTexture);
 			// }
 			// else {
 			// 	this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
 			// }
 
-			return iSlot;			
+			return iSlot;
 		}
 
-		 createWebGLTexture(): WebGLTexture {
+		createWebGLTexture(): WebGLTexture {
 			return this._pWebGLContext.createTexture();
 		}
 
-		 deleteWebGLTexture(pTexture: WebGLTexture): void {
+		deleteWebGLTexture(pTexture: WebGLTexture): void {
 			this._pWebGLContext.deleteTexture(pTexture);
 		}
 
 		/** Framebuffer Objects */
-		 createWebGLFramebuffer(): WebGLFramebuffer {
-			
+		createWebGLFramebuffer(): WebGLFramebuffer {
+
 			if (this._pWebGLFramebufferList.length === 0) {
 				logger.critical("WebGL framebuffer limit exidit");
 			}
@@ -879,42 +879,42 @@ module akra.webgl {
 			return this._pWebGLFramebufferList.pop();
 		}
 
-		 bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void {
+		bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void {
 			this._pWebGLContext.bindFramebuffer(eTarget, pBuffer);
 			//this._pCurrentContextStates.framebuffer = pBuffer;
 		}
 
-		 bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment:uint,eTexTarget:uint, pTexture: WebGLTexture, iMipLevel:uint = 0): void {
+		bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment: uint, eTexTarget: uint, pTexture: WebGLTexture, iMipLevel: uint = 0): void {
 			this._pWebGLContext.framebufferTexture2D(eTarget, eAttachment, eTexTarget, pTexture, iMipLevel)
 		}
 
-		 deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void {
+		deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void {
 			this._pWebGLFramebufferList.push(pBuffer);
 		}
 
 		/** Renderbuffer Objects */
-		 createWebGLRenderbuffer(): WebGLRenderbuffer {
+		createWebGLRenderbuffer(): WebGLRenderbuffer {
 			return this._pWebGLContext.createRenderbuffer();
 		}
 
-		 bindWebGLRenderbuffer(eTarget: uint, pBuffer: WebGLRenderbuffer): void {
+		bindWebGLRenderbuffer(eTarget: uint, pBuffer: WebGLRenderbuffer): void {
 			this._pWebGLContext.bindRenderbuffer(eTarget, pBuffer);
 		}
 
-		 deleteWebGLRenderbuffer(pBuffer: WebGLRenderbuffer): void {
+		deleteWebGLRenderbuffer(pBuffer: WebGLRenderbuffer): void {
 			this._pWebGLContext.deleteRenderbuffer(pBuffer);
 		}
 
 
-		 createWebGLProgram(): WebGLProgram {
+		createWebGLProgram(): WebGLProgram {
 			return this._pWebGLContext.createProgram();
 		}
 
-		 deleteWebGLProgram(pProgram: WebGLProgram): void {
+		deleteWebGLProgram(pProgram: WebGLProgram): void {
 			this._pWebGLContext.deleteProgram(pProgram);
 		}
 
-		 useWebGLProgram(pProgram: WebGLProgram): void {
+		useWebGLProgram(pProgram: WebGLProgram): void {
 			this._pWebGLContext.useProgram(pProgram);
 		}
 
@@ -934,12 +934,12 @@ module akra.webgl {
 		}
 
 		disableAllWebGLVertexAttribs(): void {
-			var i:uint = 0;
-			for(i = 0; i < this._nActiveAttributes; i++) {
-				this._pWebGLContext.disableVertexAttribArray(i);	
+			var i: uint = 0;
+			for (i = 0; i < this._nActiveAttributes; i++) {
+				this._pWebGLContext.disableVertexAttribArray(i);
 			}
 
-			this._nActiveAttributes = 0;		
+			this._nActiveAttributes = 0;
 		}
 
 		getDefaultCanvas(): ICanvas3d {
@@ -955,22 +955,22 @@ module akra.webgl {
 			var iWebGLFlag: int = 0;
 			var bOldDepthWrite: boolean = this.getParameter(gl.DEPTH_WRITEMASK);
 
-			if(iBuffers & EFrameBufferTypes.COLOR){
+			if (iBuffers & EFrameBufferTypes.COLOR) {
 				iWebGLFlag |= gl.COLOR_BUFFER_BIT;
 				this._pWebGLContext.clearColor(cColor.r, cColor.g, cColor.b, cColor.a);
 			}
 
-			if(iBuffers & EFrameBufferTypes.DEPTH){
+			if (iBuffers & EFrameBufferTypes.DEPTH) {
 				iWebGLFlag |= gl.DEPTH_BUFFER_BIT;
 
-				if(!bOldDepthWrite){
+				if (!bOldDepthWrite) {
 					this._pWebGLContext.depthMask(true);
 				}
 
 				this._pWebGLContext.clearDepth(fDepth);
 			}
 
-			if(iBuffers & EFrameBufferTypes.STENCIL){
+			if (iBuffers & EFrameBufferTypes.STENCIL) {
 				iWebGLFlag |= gl.STENCIL_BUFFER_BIT;
 
 				this._pWebGLContext.stencilMask(0xFFFFFFFF);
@@ -983,14 +983,14 @@ module akra.webgl {
 				this._pWebGLContext.depthMask(false);
 			}
 
-			if(!bScissorTestEnable){
+			if (!bScissorTestEnable) {
 				this.disable(gl.SCISSOR_TEST);
 			}
 		}
 
-		 _disableTextureUnitsFrom(iUnit: uint): void {
-			for(var i: int = iUnit; i < this._pTextureSlotList.length; i++) {
-				this._pTextureSlotList[i] = null;				
+		_disableTextureUnitsFrom(iUnit: uint): void {
+			for (var i: int = iUnit; i < this._pTextureSlotList.length; i++) {
+				this._pTextureSlotList[i] = null;
 			}
 		}
 
@@ -1007,7 +1007,7 @@ module akra.webgl {
 
 			this._pFreeRenderStatesPool.push(this._pCurrentContextStates);
 
-			if(isForce){
+			if (isForce) {
 				this.forceUpdateContextRenderStates();
 			}
 
@@ -1034,8 +1034,8 @@ module akra.webgl {
 		private restoreBlendStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.blend !== pStatesFrom.blend){
-				if(pRestoreStates.blend) {
+			if (pRestoreStates.blend !== pStatesFrom.blend) {
+				if (pRestoreStates.blend) {
 					this._pWebGLContext.enable(gl.BLEND);
 				}
 				else {
@@ -1046,12 +1046,12 @@ module akra.webgl {
 			if (pRestoreStates.blend_equation_rgb !== pStatesFrom.blend_equation_rgb ||
 				pRestoreStates.blend_equation_alpha !== pStatesFrom.blend_equation_alpha) {
 
-				if(pRestoreStates.blend_equation_rgb === pRestoreStates.blend_equation_alpha) {
+				if (pRestoreStates.blend_equation_rgb === pRestoreStates.blend_equation_alpha) {
 					this._pWebGLContext.blendEquation(pRestoreStates.blend_equation_rgb);
 				}
 				else {
-					this._pWebGLContext.blendEquationSeparate(pRestoreStates.blend_equation_rgb, 
-															  pRestoreStates.blend_equation_alpha);
+					this._pWebGLContext.blendEquationSeparate(pRestoreStates.blend_equation_rgb,
+						pRestoreStates.blend_equation_alpha);
 				}
 			}
 
@@ -1067,7 +1067,7 @@ module akra.webgl {
 				}
 				else {
 					this._pWebGLContext.blendFuncSeparate(pRestoreStates.blend_src_rgb, pRestoreStates.blend_dst_rgb,
-														  pRestoreStates.blend_src_alpha, pRestoreStates.blend_dst_alpha);
+						pRestoreStates.blend_src_alpha, pRestoreStates.blend_dst_alpha);
 				}
 			}
 		}
@@ -1075,8 +1075,8 @@ module akra.webgl {
 		private restoreCullStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.cull_face !== pStatesFrom.cull_face){
-				if(pRestoreStates.cull_face) {
+			if (pRestoreStates.cull_face !== pStatesFrom.cull_face) {
+				if (pRestoreStates.cull_face) {
 					this._pWebGLContext.enable(gl.CULL_FACE);
 				}
 				else {
@@ -1084,7 +1084,7 @@ module akra.webgl {
 				}
 			}
 
-			if (pRestoreStates.cull_face_mode !== pStatesFrom.cull_face_mode){
+			if (pRestoreStates.cull_face_mode !== pStatesFrom.cull_face_mode) {
 				this._pWebGLContext.cullFace(pRestoreStates.cull_face_mode);
 			}
 		}
@@ -1095,31 +1095,31 @@ module akra.webgl {
 			if (pRestoreStates.color_clear_value[0] !== pStatesFrom.color_clear_value[0] ||
 				pRestoreStates.color_clear_value[1] !== pStatesFrom.color_clear_value[1] ||
 				pRestoreStates.color_clear_value[2] !== pStatesFrom.color_clear_value[2] ||
-				pRestoreStates.color_clear_value[3] !== pStatesFrom.color_clear_value[3]){
+				pRestoreStates.color_clear_value[3] !== pStatesFrom.color_clear_value[3]) {
 
 				this._pWebGLContext.clearColor(pRestoreStates.color_clear_value[0],
-											   pRestoreStates.color_clear_value[1],
-											   pRestoreStates.color_clear_value[2],
-											   pRestoreStates.color_clear_value[3]);
+					pRestoreStates.color_clear_value[1],
+					pRestoreStates.color_clear_value[2],
+					pRestoreStates.color_clear_value[3]);
 			}
 
 			if (pRestoreStates.color_writemask[0] !== pStatesFrom.color_writemask[0] ||
 				pRestoreStates.color_writemask[1] !== pStatesFrom.color_writemask[1] ||
 				pRestoreStates.color_writemask[2] !== pStatesFrom.color_writemask[2] ||
-				pRestoreStates.color_writemask[3] !== pStatesFrom.color_writemask[3]){
-				
+				pRestoreStates.color_writemask[3] !== pStatesFrom.color_writemask[3]) {
+
 				this._pWebGLContext.colorMask(pRestoreStates.color_writemask[0],
-											  pRestoreStates.color_writemask[1],
-											  pRestoreStates.color_writemask[2],
-											  pRestoreStates.color_writemask[3]);
+					pRestoreStates.color_writemask[1],
+					pRestoreStates.color_writemask[2],
+					pRestoreStates.color_writemask[3]);
 			}
 		}
 
 		private restoreDepthStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.depth_test !== pStatesFrom.depth_test){
-				if(pRestoreStates.depth_test) {
+			if (pRestoreStates.depth_test !== pStatesFrom.depth_test) {
+				if (pRestoreStates.depth_test) {
 					this._pWebGLContext.enable(gl.DEPTH_TEST);
 				}
 				else {
@@ -1127,20 +1127,20 @@ module akra.webgl {
 				}
 			}
 
-			if (pRestoreStates.depth_clear_value !== pStatesFrom.depth_clear_value){
+			if (pRestoreStates.depth_clear_value !== pStatesFrom.depth_clear_value) {
 				this._pWebGLContext.clearDepth(pRestoreStates.depth_clear_value);
 			}
 
-			if (pRestoreStates.depth_func !== pStatesFrom.depth_func){
+			if (pRestoreStates.depth_func !== pStatesFrom.depth_func) {
 				this._pWebGLContext.depthFunc(pRestoreStates.depth_func);
 			}
 
-			if (pRestoreStates.depth_writemask !== pStatesFrom.depth_writemask){
+			if (pRestoreStates.depth_writemask !== pStatesFrom.depth_writemask) {
 				this._pWebGLContext.depthMask(pRestoreStates.depth_writemask);
 			}
 
 			if (pRestoreStates.depth_range[0] !== pStatesFrom.depth_range[0] ||
-				pRestoreStates.depth_range[1] !== pStatesFrom.depth_range[1]){
+				pRestoreStates.depth_range[1] !== pStatesFrom.depth_range[1]) {
 				this._pWebGLContext.depthRange(pRestoreStates.depth_range[0], pRestoreStates.depth_range[1]);
 			}
 		}
@@ -1148,8 +1148,8 @@ module akra.webgl {
 		private restoreDitherStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.dither !== pStatesFrom.dither){
-				if(pRestoreStates.dither) {
+			if (pRestoreStates.dither !== pStatesFrom.dither) {
+				if (pRestoreStates.dither) {
 					this._pWebGLContext.enable(gl.DITHER);
 				}
 				else {
@@ -1161,7 +1161,7 @@ module akra.webgl {
 		private restoreFrontFaceStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.front_face !== pStatesFrom.front_face){
+			if (pRestoreStates.front_face !== pStatesFrom.front_face) {
 				this._pWebGLContext.frontFace(pRestoreStates.front_face);
 			}
 		}
@@ -1169,8 +1169,8 @@ module akra.webgl {
 		private restorePolygonStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.polygon_offset_fill !== pStatesFrom.polygon_offset_fill){
-				if(pRestoreStates.polygon_offset_fill) {
+			if (pRestoreStates.polygon_offset_fill !== pStatesFrom.polygon_offset_fill) {
+				if (pRestoreStates.polygon_offset_fill) {
 					this._pWebGLContext.enable(gl.POLYGON_OFFSET_FILL);
 				}
 				else {
@@ -1179,7 +1179,7 @@ module akra.webgl {
 			}
 
 			if (pRestoreStates.polygon_offset_factor !== pStatesFrom.polygon_offset_factor ||
-				pRestoreStates.polygon_offset_units !== pStatesFrom.polygon_offset_units){
+				pRestoreStates.polygon_offset_units !== pStatesFrom.polygon_offset_units) {
 
 				this._pWebGLContext.polygonOffset(pRestoreStates.polygon_offset_factor, pRestoreStates.polygon_offset_units);
 			}
@@ -1190,7 +1190,7 @@ module akra.webgl {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
 			if (pRestoreStates.sample_coverage_value !== pStatesFrom.sample_coverage_value ||
-				pRestoreStates.sample_coverage_invert !== pStatesFrom.sample_coverage_invert){
+				pRestoreStates.sample_coverage_invert !== pStatesFrom.sample_coverage_invert) {
 
 				this._pWebGLContext.sampleCoverage(pRestoreStates.sample_coverage_value, pRestoreStates.sample_coverage_invert);
 			}
@@ -1199,8 +1199,8 @@ module akra.webgl {
 		private restoreScissorStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.scissor_test !== pStatesFrom.scissor_test){
-				if(pRestoreStates.scissor_test) {
+			if (pRestoreStates.scissor_test !== pStatesFrom.scissor_test) {
+				if (pRestoreStates.scissor_test) {
 					this._pWebGLContext.enable(gl.SCISSOR_TEST);
 				}
 				else {
@@ -1212,8 +1212,8 @@ module akra.webgl {
 		private restoreStencilStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if (pRestoreStates.stencil_test !== pStatesFrom.stencil_test){
-				if(pRestoreStates.stencil_test) {
+			if (pRestoreStates.stencil_test !== pStatesFrom.stencil_test) {
+				if (pRestoreStates.stencil_test) {
 					this._pWebGLContext.enable(gl.STENCIL_TEST);
 				}
 				else {
@@ -1221,7 +1221,7 @@ module akra.webgl {
 				}
 			}
 
-			if(pRestoreStates.stencil_clear_value !== pStatesFrom.stencil_clear_value){
+			if (pRestoreStates.stencil_clear_value !== pStatesFrom.stencil_clear_value) {
 				this._pWebGLContext.clearStencil(pRestoreStates.stencil_clear_value)
 			}
 
@@ -1239,18 +1239,18 @@ module akra.webgl {
 					this._pWebGLContext.stencilFunc(pRestoreStates.stencil_func, pRestoreStates.stencil_ref, pRestoreStates.stencil_value_mask);
 				}
 				else {
-					this._pWebGLContext.stencilFuncSeparate(gl.FRONT, 
-							pRestoreStates.stencil_func, pRestoreStates.stencil_ref, pRestoreStates.stencil_value_mask);
+					this._pWebGLContext.stencilFuncSeparate(gl.FRONT,
+						pRestoreStates.stencil_func, pRestoreStates.stencil_ref, pRestoreStates.stencil_value_mask);
 
-					this._pWebGLContext.stencilFuncSeparate(gl.BACK, 
-							pRestoreStates.stencil_back_func, pRestoreStates.stencil_back_ref, pRestoreStates.stencil_back_value_mask);
+					this._pWebGLContext.stencilFuncSeparate(gl.BACK,
+						pRestoreStates.stencil_back_func, pRestoreStates.stencil_back_ref, pRestoreStates.stencil_back_value_mask);
 				}
 			}
 
 			if (pRestoreStates.stencil_writemask !== pStatesFrom.stencil_writemask ||
-				pRestoreStates.stencil_back_writemask !== pStatesFrom.stencil_back_writemask){
+				pRestoreStates.stencil_back_writemask !== pStatesFrom.stencil_back_writemask) {
 
-				if(pRestoreStates.stencil_writemask === pRestoreStates.stencil_back_writemask){
+				if (pRestoreStates.stencil_writemask === pRestoreStates.stencil_back_writemask) {
 					this._pWebGLContext.stencilMask(pRestoreStates.stencil_writemask);
 				}
 				else {
@@ -1274,10 +1274,10 @@ module akra.webgl {
 				}
 				else {
 					this._pWebGLContext.stencilOpSeparate(gl.FRONT,
-							pRestoreStates.stencil_fail, pRestoreStates.stencil_pass_depth_fail, pRestoreStates.stencil_pass_depth_pass);
+						pRestoreStates.stencil_fail, pRestoreStates.stencil_pass_depth_fail, pRestoreStates.stencil_pass_depth_pass);
 
 					this._pWebGLContext.stencilOpSeparate(gl.BACK,
-							pRestoreStates.stencil_back_fail, pRestoreStates.stencil_back_pass_depth_fail, pRestoreStates.stencil_back_pass_depth_pass);
+						pRestoreStates.stencil_back_fail, pRestoreStates.stencil_back_pass_depth_fail, pRestoreStates.stencil_back_pass_depth_pass);
 				}
 			}
 
@@ -1286,21 +1286,21 @@ module akra.webgl {
 		private restorePackStates(pStatesFrom: IWebGLContextStates): void {
 			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-			if(pRestoreStates.unpack_alignment !== pStatesFrom.unpack_alignment){
+			if (pRestoreStates.unpack_alignment !== pStatesFrom.unpack_alignment) {
 				this._pWebGLContext.pixelStorei(gl.UNPACK_ALIGNMENT, pRestoreStates.unpack_alignment);
 			}
 
-			if(pRestoreStates.pack_alignment !== pStatesFrom.pack_alignment){
+			if (pRestoreStates.pack_alignment !== pStatesFrom.pack_alignment) {
 				this._pWebGLContext.pixelStorei(gl.PACK_ALIGNMENT, pRestoreStates.pack_alignment);
 			}
 		}
 
-		private  forceUpdateContextRenderStates(): void {
+		private forceUpdateContextRenderStates(): void {
 			WebGLRenderer.initStatesFromWebGLContext(this._pCurrentContextStates, this._pWebGLContext);
 		}
 
 		private getFreeRenderStates(): IWebGLContextStates {
-			if (this._pFreeRenderStatesPool.getLength() > 0){
+			if (this._pFreeRenderStatesPool.getLength() > 0) {
 				return this._pFreeRenderStatesPool.pop();
 			}
 			else {
@@ -1312,16 +1312,16 @@ module akra.webgl {
 			var isStatesChanged: boolean = false;
 			var iWebGLValue: uint = 0;
 
-			if (pStates[ERenderStates.BLENDENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.BLENDENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.BLENDENABLE]);
-				if(this._pCurrentContextStates.blend !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.blend !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.blend = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.blend){
+					if (this._pCurrentContextStates.blend) {
 						this._pWebGLContext.enable(gl.BLEND);
 					}
 					else {
@@ -1331,16 +1331,16 @@ module akra.webgl {
 
 			}
 
-			if (pStates[ERenderStates.CULLFACEENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.CULLFACEENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.CULLFACEENABLE]);
-				if(this._pCurrentContextStates.cull_face !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.cull_face !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.cull_face = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.cull_face){
+					if (this._pCurrentContextStates.cull_face) {
 						this._pWebGLContext.enable(gl.CULL_FACE);
 					}
 					else {
@@ -1349,16 +1349,16 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.ZENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.ZENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.ZENABLE]);
-				if(this._pCurrentContextStates.depth_test !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.depth_test !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.depth_test = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.depth_test){
+					if (this._pCurrentContextStates.depth_test) {
 						this._pWebGLContext.enable(gl.DEPTH_TEST);
 					}
 					else {
@@ -1367,16 +1367,16 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.DITHERENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.DITHERENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.DITHERENABLE]);
-				if(this._pCurrentContextStates.dither !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.dither !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.dither = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.dither){
+					if (this._pCurrentContextStates.dither) {
 						this._pWebGLContext.enable(gl.DITHER);
 					}
 					else {
@@ -1385,25 +1385,25 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.ZWRITEENABLE] !== ERenderStateValues.UNDEF){
+			if (pStates[ERenderStates.ZWRITEENABLE] !== ERenderStateValues.UNDEF) {
 
-				!isStatesChanged && this._pushRenderStates();				
+				!isStatesChanged && this._pushRenderStates();
 				isStatesChanged = true;
 				this._pCurrentContextStates.depth_writemask = this.convertRenderStateValue(pStates[ERenderStates.ZWRITEENABLE]);
 
 				this._pWebGLContext.depthMask(this._pCurrentContextStates.depth_writemask);
 			}
 
-			if (pStates[ERenderStates.SCISSORTESTENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.SCISSORTESTENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.SCISSORTESTENABLE]);
-				if(this._pCurrentContextStates.scissor_test !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.scissor_test !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.scissor_test = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.scissor_test){
+					if (this._pCurrentContextStates.scissor_test) {
 						this._pWebGLContext.enable(gl.SCISSOR_TEST);
 					}
 					else {
@@ -1412,16 +1412,16 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.STENCILTESTENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.STENCILTESTENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.STENCILTESTENABLE]);
-				if(this._pCurrentContextStates.stencil_test !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.stencil_test !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.stencil_test = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.stencil_test){
+					if (this._pCurrentContextStates.stencil_test) {
 						this._pWebGLContext.enable(gl.STENCIL_TEST);
 					}
 					else {
@@ -1430,16 +1430,16 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.POLYGONOFFSETFILLENABLE] !== ERenderStateValues.UNDEF){
-				
+			if (pStates[ERenderStates.POLYGONOFFSETFILLENABLE] !== ERenderStateValues.UNDEF) {
+
 				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.POLYGONOFFSETFILLENABLE]);
-				if(this._pCurrentContextStates.polygon_offset_fill !== !!iWebGLValue){
-					
-					!isStatesChanged && this._pushRenderStates();				
+				if (this._pCurrentContextStates.polygon_offset_fill !== !!iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.polygon_offset_fill = !!iWebGLValue;
 
-					if(this._pCurrentContextStates.polygon_offset_fill){
+					if (this._pCurrentContextStates.polygon_offset_fill) {
 						this._pWebGLContext.enable(gl.POLYGON_OFFSET_FILL);
 					}
 					else {
@@ -1448,12 +1448,12 @@ module akra.webgl {
 				}
 			}
 
-			if(pStates[ERenderStates.CULLFACE] !== ERenderStateValues.UNDEF) {
-				
-				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.CULLFACE]);
-				if(this._pCurrentContextStates.cull_face_mode !== iWebGLValue){
+			if (pStates[ERenderStates.CULLFACE] !== ERenderStateValues.UNDEF) {
 
-					!isStatesChanged && this._pushRenderStates();				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.CULLFACE]);
+				if (this._pCurrentContextStates.cull_face_mode !== iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.cull_face_mode = iWebGLValue;
 
@@ -1461,12 +1461,12 @@ module akra.webgl {
 				}
 			}
 
-			if(pStates[ERenderStates.FRONTFACE] !== ERenderStateValues.UNDEF) {
-				
-				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.FRONTFACE]);
-				if(this._pCurrentContextStates.front_face !== iWebGLValue){
+			if (pStates[ERenderStates.FRONTFACE] !== ERenderStateValues.UNDEF) {
 
-					!isStatesChanged && this._pushRenderStates();				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.FRONTFACE]);
+				if (this._pCurrentContextStates.front_face !== iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.front_face = iWebGLValue;
 
@@ -1474,12 +1474,12 @@ module akra.webgl {
 				}
 			}
 
-			if(pStates[ERenderStates.ZFUNC] !== ERenderStateValues.UNDEF) {
-				
-				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.ZFUNC]);
-				if(this._pCurrentContextStates.depth_func !== iWebGLValue){
+			if (pStates[ERenderStates.ZFUNC] !== ERenderStateValues.UNDEF) {
 
-					!isStatesChanged && this._pushRenderStates();				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.ZFUNC]);
+				if (this._pCurrentContextStates.depth_func !== iWebGLValue) {
+
+					!isStatesChanged && this._pushRenderStates();
 					isStatesChanged = true;
 					this._pCurrentContextStates.depth_func = iWebGLValue;
 
@@ -1487,13 +1487,13 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.SRCBLEND] !== ERenderStateValues.UNDEF || 
+			if (pStates[ERenderStates.SRCBLEND] !== ERenderStateValues.UNDEF ||
 				pStates[ERenderStates.DESTBLEND] !== ERenderStateValues.UNDEF) {
-				
+
 				var iWebGLValue1: uint = this.convertRenderStateValue(pStates[ERenderStates.SRCBLEND]);
 				var iWebGLValue2: uint = this.convertRenderStateValue(pStates[ERenderStates.DESTBLEND]);
 
-				!isStatesChanged && this._pushRenderStates();				
+				!isStatesChanged && this._pushRenderStates();
 				isStatesChanged = true;
 
 				this._pCurrentContextStates.blend_src_rgb = iWebGLValue1;
@@ -1508,7 +1508,7 @@ module akra.webgl {
 		}
 
 		private convertRenderStateValue(eStateValue: ERenderStateValues): any {
-			switch(eStateValue){
+			switch (eStateValue) {
 				case ERenderStateValues.TRUE:
 					return 1;
 				case ERenderStateValues.FALSE:
@@ -1562,12 +1562,12 @@ module akra.webgl {
 				case ERenderStateValues.GREATEREQUAL:
 					return gl.GEQUAL;
 				case ERenderStateValues.ALWAYS:
-					return gl.ALWAYS;			
+					return gl.ALWAYS;
 			}
 		}
 
 		private convertCompareFunction(eFunc: ECompareFunction): uint {
-			switch(eFunc) {
+			switch (eFunc) {
 				case ECompareFunction.ALWAYS_FAIL:
 					return gl.NEVER;
 				case ECompareFunction.ALWAYS_PASS:

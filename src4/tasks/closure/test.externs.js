@@ -1,17 +1,9 @@
-/** @interface */
-var ITestBase = function(){};
-/** @type {number} */
-ITestBase.prototype.myProp_0;
-
-/** @type {number} */
-ITestBase.prototype.config;
-
-
-/** 
-* @interface 
-* @extends {ITestBase}
-*/
-var ITest = function(){};
-
-/** @type {function()} */
-ITest.prototype.getMyProp;
+var akra;
+akra.config;
+/** @constructor 
+* @param {number} x
+* @param {number} y
+*/ 
+akra.config.MyClass = function(x, y){/** @type {number} */ this.myVar;}
+/** @constructor */ akra.config.MyClass2 = function(x){this.myVar2;}
+/** @enum */ akra.myEnum = {"kA":null};

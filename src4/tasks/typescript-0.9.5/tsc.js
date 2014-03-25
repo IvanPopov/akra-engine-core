@@ -24268,7 +24268,7 @@ var TypeScript;
 
             ParserImpl.prototype.isVariableStatement = function () {
                 var index = this.modifierCount();
-                return this.peekToken(index).tokenKind === 40 /* VarKeyword */;
+                return this.peekToken(index).tokenKind === 40 /* VarKeyword */ || this.peekToken(index).tokenKind === 45 /* ConstKeyword */;
             };
 
             ParserImpl.prototype.parseVariableStatement = function () {
@@ -24280,7 +24280,7 @@ var TypeScript;
             };
 
             ParserImpl.prototype.parseVariableDeclaration = function (allowIn) {
-                var varKeyword = this.eatKeyword(40 /* VarKeyword */);
+                var varKeyword = this.tryEatToken(40 /* VarKeyword */) || this.eatKeyword(45 /* ConstKeyword */);
 
                 var listParsingState = allowIn ? 4096 /* VariableDeclaration_VariableDeclarators_AllowIn */ : 8192 /* VariableDeclaration_VariableDeclarators_DisallowIn */;
 
@@ -61165,7 +61165,6 @@ var TypeScript;
     })();
     TypeScript.BatchCompiler = BatchCompiler;
 
+    var batch = new TypeScript.BatchCompiler(TypeScript.IO);
+    batch.batchCompile();
 })(TypeScript || (TypeScript = {}));
-
-var batch = new TypeScript.BatchCompiler(TypeScript.IO);
-batch.batchCompile();
