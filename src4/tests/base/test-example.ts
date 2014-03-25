@@ -9,7 +9,8 @@ module akra {
 			{ path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP" },
 			{ path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
 			{ path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
-			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
+			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" },
+			{ path: "effects/sunshaft.afx" }
 		]
 	};
 
@@ -71,19 +72,19 @@ module akra {
 
 					pKeymap.update();
 				}
-				var fSpeed: float = 0.1 * 10;
-				if (pKeymap.isKeyPress(EKeyCodes.W)) {
-					pCamera.addRelPosition(0, 0, -fSpeed);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.S)) {
-					pCamera.addRelPosition(0, 0, fSpeed);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.A)) {
-					pCamera.addRelPosition(-fSpeed, 0, 0);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.D)) {
-					pCamera.addRelPosition(fSpeed, 0, 0);
-				}
+			}
+			var fSpeed: float = 0.1 * 10;
+			if (pKeymap.isKeyPress(EKeyCodes.W)) {
+				pCamera.addRelPosition(0, 0, -fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.S)) {
+				pCamera.addRelPosition(0, 0, fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.A)) {
+				pCamera.addRelPosition(-fSpeed, 0, 0);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.D)) {
+				pCamera.addRelPosition(fSpeed, 0, 0);
 			}
 		});
 	}
@@ -132,11 +133,22 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.DSViewport>pViewport).setFXAA(false);
+		// (<render.DSViewport>pViewport).setFXAA(false);
 		(<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
-		/*pViewport.render.connect(() => {
-			
-			});*/
+
+		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			var pDefferedTexture: ITexture = (<render.DSViewport>pViewport).getColorTextures()[0];
+			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			pPass.setTexture('SUNSHAFT_INFO',pDefferedTexture);
+			pPass.setUniform('SUNSHAFT_SAMPLES', 100);
+			pPass.setUniform('SUNSHAFT_INTENSITY', 0.6);
+			pPass.setUniform('SUNSHAFT_POSITION', math.Vec2.temp(0.5,0.5));
+			pPass.setUniform("INPUT_TEXTURE_RATIO",
+						math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
+		});
 		return pViewport;
 	}
 
@@ -144,7 +156,7 @@ module akra {
 		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
 		pOmniLight.attachToParent(pScene.getRootNode());
-		pOmniLight.setEnabled(true);
+		pOmniLight.setEnabled(false);
 		pOmniLight.getParams().ambient.set(0.27, 0.23, 0.2);
 		pOmniLight.getParams().diffuse.set(1.);
 		pOmniLight.getParams().specular.set(1, 1, 1, 1);
@@ -322,7 +334,7 @@ module akra {
 		createKeymap(pCamera);
 
 		// createSceneEnvironment();
-		// createLighting();
+		createLighting();
 		createSkyBox();
 		//createSky();
 
@@ -330,8 +342,11 @@ module akra {
 		//loadHero();
 		//loadManyModels(400, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
-		loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0, 0, 0);
-		// loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
+		var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
+		pSceneQuad.attachToParent(pScene.getRootNode());
+
+		// loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0., 4., 0.);
+		loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
 		// loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
 		// loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
 

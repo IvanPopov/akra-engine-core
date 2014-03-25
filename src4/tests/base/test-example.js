@@ -9,7 +9,8 @@ var akra;
             { path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP" },
             { path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
             { path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
-            { path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
+            { path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" },
+            { path: "effects/sunshaft.afx" }
         ]
     };
 
@@ -71,19 +72,19 @@ var akra;
 
                     pKeymap.update();
                 }
-                var fSpeed = 0.1 * 10;
-                if (pKeymap.isKeyPress(87 /* W */)) {
-                    pCamera.addRelPosition(0, 0, -fSpeed);
-                }
-                if (pKeymap.isKeyPress(83 /* S */)) {
-                    pCamera.addRelPosition(0, 0, fSpeed);
-                }
-                if (pKeymap.isKeyPress(65 /* A */)) {
-                    pCamera.addRelPosition(-fSpeed, 0, 0);
-                }
-                if (pKeymap.isKeyPress(68 /* D */)) {
-                    pCamera.addRelPosition(fSpeed, 0, 0);
-                }
+            }
+            var fSpeed = 0.1 * 10;
+            if (pKeymap.isKeyPress(87 /* W */)) {
+                pCamera.addRelPosition(0, 0, -fSpeed);
+            }
+            if (pKeymap.isKeyPress(83 /* S */)) {
+                pCamera.addRelPosition(0, 0, fSpeed);
+            }
+            if (pKeymap.isKeyPress(65 /* A */)) {
+                pCamera.addRelPosition(-fSpeed, 0, 0);
+            }
+            if (pKeymap.isKeyPress(68 /* D */)) {
+                pCamera.addRelPosition(fSpeed, 0, 0);
             }
         });
     }
@@ -133,12 +134,20 @@ var akra;
             akra.pCanvas.resize(window.innerWidth, window.innerHeight);
         };
 
-        pViewport.setFXAA(false);
+        // (<render.DSViewport>pViewport).setFXAA(false);
         pViewport.getEffect().addComponent("akra.system.sunshaft");
 
-        /*pViewport.render.connect(() => {
-        
-        });*/
+        pViewport.render.connect(function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
+            var pDefferedTexture = pViewport.getColorTextures()[0];
+            var pDepthTexture = pViewport.getDepthTexture();
+            var pPass = pTechnique.getPass(iPass);
+
+            pPass.setTexture('SUNSHAFT_INFO', pDefferedTexture);
+            pPass.setUniform('SUNSHAFT_SAMPLES', 100);
+            pPass.setUniform('SUNSHAFT_INTENSITY', 0.6);
+            pPass.setUniform('SUNSHAFT_POSITION', akra.math.Vec2.temp(0.5, 0.5));
+            pPass.setUniform("INPUT_TEXTURE_RATIO", akra.math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
+        });
         return pViewport;
     }
 
@@ -146,7 +155,7 @@ var akra;
         var pOmniLight = akra.pScene.createLightPoint(2 /* OMNI */, true, 512, "test-omni-0");
 
         pOmniLight.attachToParent(akra.pScene.getRootNode());
-        pOmniLight.setEnabled(true);
+        pOmniLight.setEnabled(false);
         pOmniLight.getParams().ambient.set(0.27, 0.23, 0.2);
         pOmniLight.getParams().diffuse.set(1.);
         pOmniLight.getParams().specular.set(1, 1, 1, 1);
@@ -322,9 +331,12 @@ var akra;
         //loadHero();
         //loadManyModels(400, data + "models/cube.dae");
         //loadManyModels(100, data + "models/box/opened_box.dae");
-        loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0, 0, 0);
+        var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
+        pSceneQuad.attachToParent(akra.pScene.getRootNode());
 
-        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
+        // loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0., 4., 0.);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, akra.math.PI, 0);
+
         // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
         // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4);
         pEngine.exec();
