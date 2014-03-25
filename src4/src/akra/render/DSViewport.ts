@@ -82,6 +82,10 @@ module akra.render {
 			return this._pDeferredEffect;
 		}
 
+		getColorTextures() : ITexture[] {
+			return this._pDeferredColorTextures;
+		}
+
 		getDepthTexture(): ITexture {
 			return this._pDeferredDepthTexture;
 		}
