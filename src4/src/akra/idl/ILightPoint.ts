@@ -25,7 +25,7 @@ module akra {
 		getLightType(): ELightTypes;
 
 		/** optimized camera frustum for better shadow casting */
-		getPptimizedCameraFrustum(): IFrustum;
+		getOptimizedCameraFrustum(): IFrustum;
 		
 		isEnabled(): boolean;
 		setEnabled(bValue: boolean): void;
