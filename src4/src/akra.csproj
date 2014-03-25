@@ -16,9 +16,8 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="akra\resources.xml">
-      <SubType>Designer</SubType>
-    </Content>
+    <Content Include="akra\core.xml" />
+    <Content Include="akra\parser.xml" />
     <Content Include="akra\resources\fx\apply_lights_and_shadows.afx" />
     <Content Include="akra\resources\fx\color_maps.afx" />
     <Content Include="akra\resources\fx\deferredShading.afx" />

@@ -17,20 +17,21 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="demos\perfomance\demo.xml" />
-    <Content Include="demos\perfomance\index.html" />
+    <Content Include="demos\css\metro-bootstrap.css" />
+    <Content Include="demos\fonts\fontawesome-webfont.svg" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="demos\performance\demo.xml" />
+    <Content Include="demos\performance\index.html" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="demos\arteries\arteries.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\codemirror.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\dat.gui.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\FileSaver.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\jquery.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\jqueryui.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\raphael.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\swig.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\zip.d.ts" />
-    <TypeScriptCompile Include="demos\perfomance\perfomance.ts" />
+    <TypeScriptCompile Include="demos\performance\performance.ts" />
     <TypeScriptCompile Include="demos\std\std.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -88,12 +89,22 @@
     <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline.2n_poyda.obj" />
     <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline_smoothed.2n.obj" />
     <Content Include="demos\arteries\data\models\tof_multislab_tra_2.obj" />
+    <Content Include="demos\fonts\fontawesome-webfont.eot" />
+    <Content Include="demos\fonts\fontawesome-webfont.ttf" />
+    <Content Include="demos\fonts\fontawesome-webfont.woff" />
+    <Content Include="demos\fonts\FontAwesome.otf" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.woff" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
     <None Include="web.Release.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="demos\miner\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

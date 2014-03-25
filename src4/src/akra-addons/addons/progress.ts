@@ -24,116 +24,73 @@ module akra.addons {
 	}
 
 	/*
-	<div>
-		<div class="ae-loader bounceInLeft greenPulse" >
-			<img src="logo2.png" class="ae-loader-logo" width = "67" height = "67" >
-			<h2 class="ae-caption" >{{caption}}< / h2 >
+	<div class="ae-preloader">
+		<div class="ae-title">
+			LOADING
+		</div>
+		<div class='ae-circle'>
+			<div id='' class='circle_1 circle'></div>
+			<div id='' class='circle_2 circle'></div>
+			<div id='' class='circle_3 circle'></div>
+			<div id='' class='circle_4 circle'></div>
+			<div id='' class='circle_5 circle'></div>
+			<div id='' class='circle_6 circle'></div>
+			<div id='' class='circle_7 circle'></div>
+			<div class='clearfix'></div>
+		</div>
+		<div class="ae-progress" style="margin-bottom: 20px;">
+			<span class="ae-string">{{process}}</span>
+			<span class="ae-string ae-tip">{{tip}}</span>
+			<div class="ae-bar">
+				<div class="ae-complete">
+				</div>
 
-			<div class="ae-progress" style = "margin-bottom: 20px;" >
+			</div>
+		</div>
+		<div class="ae-progress" style="margin-bottom: 20px;">
+			<span class="ae-string">{{process}}</span>
+			<span class="ae-string ae-tip">{{tip}}</span>
+			<div class="ae-bar">
+				<div class="ae-complete">
+				</div>
 
-				<span class="ae-string" >{{process}}:< / span >
-				<div class="ae-bar" >
-					<div class="ae-complete" >< / div >
-					<span class="ae-string ae-tip" >{{tip}}< / span >
-				< / div >
-			< / div >
+			</div>
+		</div>
+	</div>*/
 
-			<div class="ae-slider" >
-				<div class="line" >< / div >
-				<div class="break dot1" >< / div >
-				<div class="break dot2" >< / div >
-				<div class="break dot3" >< / div >
-			< / div >
-			<div class="ae-footer" >< / div >
-		< / div >
-	< / div >*/
+	var code = 
+	"<div class='ae-preloader'>" +
+	"<div class='ae-title'>" +
+	"LOADING" +
+	"</div>" +
+	"<div class='ae-circle'>" +
+	"<div id='' class='circle_1 circle'></div>" +
+	"<div id='' class='circle_2 circle'></div>" +
+	"<div id='' class='circle_3 circle'></div>" +
+	"<div id='' class='circle_4 circle'></div>" +
+	"<div id='' class='circle_5 circle'></div>" +
+	"<div id='' class='circle_6 circle'></div>" +
+	"<div id='' class='circle_7 circle'></div>" +
+	"<div class='clearfix'></div>" +
+	"</div>" +
+	"<div class='ae-progress' style='margin-bottom: 20px;'>" +
+	"<span class='ae-string'>Acquiring&nbsp;</span>" +
+	"<span class='ae-string ae-tip'></span>" +
+	"<div class='ae-bar'>" +
+	"<div class='ae-complete'>" +
+	"</div>" +
+	"</div>" +
+	"</div>" +
+	"<div class='ae-progress' style='margin-bottom: 20px;'>" +
+	"<span class='ae-string'>Applying&nbsp;</span>" +
+	"<span class='ae-string ae-tip'></span>" +
+	"<div class='ae-bar'>" +
+	"<div class='ae-complete'>" +
+	"</div>" +
+	"</div>" +
+	"</div>" +
+	"</div>";
 
-	var code = {
-		div: [
-			{
-				$: { "class": "ae-loader bounceInLeft greenPulse", "id": "ae-loader" },
-
-				"h2": [
-					{
-						$: { "class": "ae-caption" }, _: "Loading"
-					}
-				],
-
-				"div": [
-					{
-						$: { "class": "ae-progress", "style": "margin-bottom: 20px;" },
-						"span": [
-							{
-								$: { "class": "ae-string" },
-								_: "Acquiring"
-							}
-						],
-						"div": [
-							{
-								$: { "class": "ae-bar" },
-								"div": [
-									{
-										$: { "class": "ae-complete" }
-									}
-								],
-								"span": [
-									{
-										$: { "class": "ae-string ae-tip" },
-										_: "{{tip}}"
-									}
-								],
-							}
-						]
-					},
-					{
-						$: { "class": "ae-progress", "style": "margin-bottom: 20px;" },
-						"span": [
-							{
-								$: { "class": "ae-string" },
-								_: "Applying"
-							}
-						],
-						"div": [
-							{
-								$: { "class": "ae-bar" },
-								"div": [
-									{
-										$: { "class": "ae-complete" }
-									}
-								],
-								"span": [
-									{
-										$: { "class": "ae-string ae-tip" },
-										_: "{{tip}}"
-									}
-								],
-							}
-						]
-					},
-					{
-						$: { "class": "ae-slider" },
-						div: [
-							{
-								$: { "class": "line" }
-							},
-							{
-								$: { "class": "break dot1" }
-							},
-							{
-								$: { "class": "break dot2" }
-							},
-							{
-								$: { "class": "break dot3" }
-							}
-						]
-					},
-					{
-						$: { "class": "ae-footer" }
-					}
-				],
-			}
-		]
-	};
 
 	export class Progress {
 		private acquiring: HTMLDivElement;
@@ -143,9 +100,6 @@ module akra.addons {
 		private applyingTip: HTMLSpanElement;
 
 		constructor(private element: HTMLElement = null, bRender: boolean = true) {
-			if (isNull(element)) {
-				this.element = document.body;
-			}
 
 			if (bRender) {
 				this.render();
@@ -153,7 +107,16 @@ module akra.addons {
 		}
 
 		render(): void {
-			Progress.js2html(code, this.element);
+			var el = akra.conv.parseHTML(code)[0];
+			if (isNull(this.element)) {
+				this.element = <HTMLElement>el;
+				document.body.appendChild(this.element);
+			}
+			else {
+				this.element.appendChild(el);
+			}
+			
+			
 			var pBars: HTMLDivElement[] = <HTMLDivElement[]><any>document.getElementsByClassName('ae-complete');
 			var pTips: HTMLSpanElement[] = <HTMLSpanElement[]><any>document.getElementsByClassName('ae-tip');
 
@@ -165,8 +128,7 @@ module akra.addons {
 		}
 
 		destroy(): void {
-			var pNode: HTMLDivElement = <HTMLDivElement>document.getElementById("ae-loader");
-			pNode.className += " bounceOutRight";
+			this.element.className += " bounceOutRight";
 		}
 
 		getListener(): (e: IDepEvent) => void {
@@ -198,36 +160,6 @@ module akra.addons {
 
 		private setAcquiringTip(sTip: string): void {
 			this.acquiringTip.innerHTML = sTip;
-		}
-
-		private static js2html(pObject, pElement: HTMLElement = document.createElement("div")): Element {
-			var pKeys: string[] = Object.keys(pObject);
-
-			for (var i = 0; i < pKeys.length; ++i) {
-				switch (pKeys[i]) {
-					case '$':
-						for (var sAttr in pObject["$"]) {
-							pElement.setAttribute(sAttr, pObject["$"][sAttr]);
-						}
-						break;
-					case '_':
-						pElement.innerHTML = pObject["_"];
-						break;
-					default:
-						var sTag: string = pKeys[i];
-						for (var j = 0; j < pObject[sTag].length; ++j) {
-							var pChild: HTMLElement = document.createElement(sTag);
-
-							if (pElement) {
-								pElement.appendChild(pChild);
-							}
-
-							Progress.js2html(pObject[sTag][j], pChild);
-						}
-				}
-			}
-
-			return pElement;
 		}
 	}
 }

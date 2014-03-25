@@ -32,7 +32,7 @@ module.exports = function (grunt) {
 
 		build: {
 			"parser": { config: "src/akra/parser.xml" },
-			"core": { config: "src/akra/akra.xml" },
+			"core": { config: "src/akra/core.xml" },
 			"ui": { config: "src/akra-ui/ui.xml" },
 			"addon-navigation": { config: "src/akra-addons/addons/navigation.xml" },
 			"addon-filedrop": { config: "src/akra-addons/addons/filedrop.xml" },

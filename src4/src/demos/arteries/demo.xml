@@ -9,7 +9,7 @@
     <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/arteries/arteries.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
-      <Module Name="core" />
+      <!--<Module Name="core" />-->
       <Module Name="addon-progress" />
       <Module Name="addon-navigation" />
       <Module Name="addon-filedrop" />

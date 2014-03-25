@@ -18,6 +18,5 @@ declare module akra.addons {
         private setApplying(fValue);
         private setApplyingTip(sTip);
         private setAcquiringTip(sTip);
-        private static js2html(pObject, pElement?);
     }
 }

@@ -1,4 +1,148 @@
-﻿@import url(http://fonts.googleapis.com/css?family=Raleway:100);
+.ae-preloader {
+	width: 504px;
+	height: 613px;
+	background-color: #343637;
+	margin: 0 auto;
+	background-image: url(bg.png);
+	text-align: center;
+
+	position: relative;
+	left: -50%;
+	top: -306px;
+
+	animation: bounceInLeft 1s;
+	-webkit-animation: bounceInLeft 1s;
+}
+
+	.ae-preloader .ae-title {
+		display: block;
+		padding-top: 175px;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 45px;
+		color: black;
+		letter-spacing: 7px;
+		text-align: center;
+	}
+
+div.ae-progress:last-child {
+	margin-bottom: 0px;
+}
+
+div.ae-progress {
+	width: 70%;
+	margin: 0 auto;
+	padding-top: 0px;
+	padding-bottom: 70px;
+	text-align: left;
+}
+
+.ae-string {
+	color: #f1f1f1;
+	font-size: 11px;
+	padding-bottom: 5px;
+	display: inline-block;
+	font-family: Tahoma;
+	padding-left: 1px;
+}
+
+div.ae-bar {
+	background-color: #262626;
+	height: 2px;
+	padding: 0;
+}
+
+.ae-tip {
+	color: #f1f1f1;
+	padding-top: 7px;
+}
+
+.ae-complete {
+	background-color: #ff9600;
+	height: 100%;
+	-webkit-transition: width 1s ease-in-out;
+	-moz-transition: width 1s ease-in-out;
+	-o-transition: width 1s ease-in-out;
+	transition: width 1s ease-in-out;
+	width: 0%;
+}
+
+/**animation**/
+.ae-circle {
+	margin-top: 15px;
+	display: inline-block;
+	margin-bottom: 80px;
+}
+
+	.ae-circle .circle {
+		background-color: #000;
+		float: left;
+		height: 7px;
+		margin-left: 29px;
+		width: 7px;
+		-webkit-animation-name: bounce_circle;
+		-webkit-border-radius: 4px;
+		-webkit-animation-duration: 2.45s;
+		-webkit-animation-iteration-count: infinite;
+		-webkit-animation-direction: linear;
+		opacity: 1.0;
+	}
+
+	.ae-circle .circle_1 {
+		-webkit-animation-delay: 0.35s;
+		margin-left: 0;
+	}
+
+	.ae-circle .circle_2 {
+		-webkit-animation-delay: 0.7s;
+	}
+
+	.ae-circle .circle_3 {
+		-webkit-animation-delay: 1.05s;
+	}
+
+	.ae-circle .circle_4 {
+		-webkit-animation-delay: 1.4s;
+	}
+
+	.ae-circle .circle_5 {
+		-webkit-animation-delay: 1.75s;
+	}
+
+	.ae-circle .circle_6 {
+		-webkit-animation-delay: 2.1s;
+	}
+
+	.ae-circle .circle_7 {
+		-webkit-animation-delay: 2.45s;
+	}
+
+@-webkit-keyframes bounce_circle {
+	0% {
+		opacity: 1;
+		background-color: #000;
+		box-shadow: 0 0 0px #000;
+	}
+
+	15% {
+		opacity: 1;
+		background-color: #ffae00;
+		box-shadow: 0 0 10px #ffae00;
+	}
+
+	30% {
+		opacity: 1;
+		background-color: #000;
+		box-shadow: 0 0 0px #000;
+	}
+
+	100% {
+		opacity: 1;
+		background-color: #000;
+		box-shadow: 0 0 0px #000;
+	}
+}
+
+
 
 @-webkit-keyframes bounceInLeft {
 	0% {
@@ -75,175 +219,3 @@
 	animation-iteration-count: 1;
 	animation-fill-mode: forwards;
 }
-
-@keyframes loading {
-	from {
-		left: 0;
-	}
-
-	to {
-		left: 400px;
-	}
-}
-
-@-moz-keyframes loading {
-	from {
-		left: 0;
-	}
-
-	to {
-		left: 400px;
-	}
-}
-
-@-webkit-keyframes loading {
-	from {
-		left: 0;
-	}
-
-	to {
-		left: 400px;
-	}
-}
-
-@-ms-keyframes loading {
-	from {
-		left: 0;
-	}
-
-	to {
-		left: 400px;
-	}
-}
-
-@-o-keyframes loading {
-	from {
-		left: 0;
-	}
-
-	to {
-		left: 400px;
-	}
-}
-
-div.ae-loader {
-	overflow: hidden;
-	width: 400px;
-	background-color: #2d2d30;
-	box-shadow: 0 0 5px #333;
-	animation: bounceInLeft 1s;
-	-webkit-animation: bounceInLeft 1s;
-	position: relative;
-	left: -50%;
-	top: -150px;
-}
-
-div.ae-progress:last-child {
-	margin-bottom: 0px;
-}
-
-div.ae-progress {
-	width: 90%;
-	margin: 0 auto;
-	padding-top: 0px;
-	padding-bottom: 20px;
-	/*margin-bottom;*/
-}
-
-.ae-string {
-	color: #b3b3b3;
-	font-size: 11px;
-	padding-bottom: 5px;
-	display: inline-block;
-	font-family: Tahoma;
-	padding-left: 1px;
-}
-
-div.ae-bar {
-	background-color: #204d6d;
-	height: 8px;
-	padding: 0;
-}
-
-.ae-caption {
-	font-family: 'Raleway', cursive;
-	font-weight: 100;
-	font-stretch: normal;
-	font-size: 4em;
-	color: #ffffff;
-	width: 90%;
-	display: block;
-	margin: 20px auto;
-}
-
-.ae-tip {
-	color: #f1f1f1;
-	padding-top: 7px;
-}
-
-.ae-footer {
-	height: 20px;
-	background-color: #252526;
-}
-
-.ae-complete {
-	background-color: #0097fb;
-	height: 100%;
-	box-shadow: inset 0px 1px 0px #1072b4;
-	-webkit-transition: width 1s ease-in-out;
-	-moz-transition: width 1s ease-in-out;
-	-o-transition: width 1s ease-in-out;
-	transition: width 1s ease-in-out;
-	width: 0%;
-}
-
-/*.ae-loader:hover .ae-complete {
-	width: 100%;
-}*/
-
-.ae-slider {
-	position: relative;
-	margin-top: 30px;
-	width: 400px;
-	height: 2px;
-	overflow: hidden;
-}
-
-	.ae-slider .line {
-		position: relative;
-		background: #204d6d;
-		width: 400px;
-		height: 2px;
-	}
-
-	.ae-slider .break {
-		position: relative;
-		background: #0097fb;
-		width: 6px;
-		height: 2px;
-		margin-top: -2px;
-	}
-
-	.ae-slider .dot1 {
-		-webkit-animation: loading 2s infinite;
-		-moz-animation: loading 2s infinite;
-		-ms-animation: loading 2s infinite;
-		-o-animation: loading 2s infinite;
-		animation: loading 2s infinite;
-	}
-
-	.ae-slider .dot2 {
-		-webkit-animation: loading 2s 0.5s infinite;
-		-moz-animation: loading 2s 0.5s infinite;
-		-ms-animation: loading 2s 0.5s infinite;
-		-o-animation: loading 2s 0.5s infinite;
-		animation: loading 2s 0.5s infinite;
-	}
-
-	.ae-slider .dot3 {
-		-webkit-animation: loading 2s 1s infinite;
-		-moz-animation: loading 2s 1s infinite;
-		-ms-animation: loading 2s 1s infinite;
-		-o-animation: loading 2s 1s infinite;
-		animation: loading 2s 1s infinite;
-	}

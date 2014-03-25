@@ -17,10 +17,12 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="akra-addons\addons\base3dObjects.xml" />
+    <Content Include="akra-addons\addons\filedrop.xml" />
+    <Content Include="akra-addons\addons\navigation.xml" />
     <Content Include="akra-addons\addons\navigation\cubemap.png" />
-    <Content Include="akra-addons\addons\progress\index.html" />
+    <Content Include="akra-addons\addons\progress.xml" />
     <Content Include="akra-addons\addons\progress\css\progress.css" />
-    <Content Include="akra-addons\addons\resources.xml" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
