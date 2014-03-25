@@ -137,6 +137,16 @@ var akra;
         return pViewport;
     }
 
+    akra.pDepthRange = new akra.math.Vec2(0.5, 1.);
+    var zIndex = 40.;
+    function createTextureViewportForDepthTexture(pTexture, fLeft, fTop) {
+        var pTextureViewport = akra.pCanvas.addViewport(new akra.render.TextureViewport(pTexture, fLeft, fTop, .15, .15, zIndex++));
+        pTextureViewport.getEffect().addComponent("akra.system.display_depth");
+        pTextureViewport.render.connect(function (pViewport, pTechnique, iPass) {
+            pTechnique.getPass(iPass).setUniform("depthRange", akra.pDepthRange);
+        });
+    }
+
     function createLighting() {
         var pOmniLight = akra.pScene.createLightPoint(2 /* OMNI */, true, 512, "test-omni-0");
 
@@ -148,18 +158,26 @@ var akra;
         pOmniLight.getParams().attenuation.set(1, 0, 0);
         pOmniLight.setShadowCaster(true);
 
-        pOmniLight.addPosition(1, 5, -3);
+        pOmniLight.addPosition(1, 5, 3);
 
-        // var pProjectShadowLight = akra.pScene.createLightPoint(1, true, 512, "test-project-0");
-        // pProjectShadowLight.attachToParent(akra.pScene.getRootNode());
-        // pProjectShadowLight.setEnabled(true);
-        // pProjectShadowLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
-        // pProjectShadowLight.getParams().diffuse.set(0.5);
-        // pProjectShadowLight.getParams().specular.set(1, 1, 1, 1);
-        // pProjectShadowLight.getParams().attenuation.set(1,0,0);
-        // pProjectShadowLight.setShadowCaster(true);
-        // pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
-        // pProjectShadowLight.addRelPosition(0, 3, 10);
+        for (var i = 0; i < pOmniLight.getDepthTextureCube().length; i++) {
+            createTextureViewportForDepthTexture(pOmniLight.getDepthTextureCube()[i], 0.02, 0.01 + 0.16 * (i));
+        }
+
+        var pProjectShadowLight = akra.pScene.createLightPoint(1 /* PROJECT */, true, 512, "test-project-0");
+
+        pProjectShadowLight.attachToParent(akra.pScene.getRootNode());
+        pProjectShadowLight.setEnabled(true);
+        pProjectShadowLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
+        pProjectShadowLight.getParams().diffuse.set(0.5);
+        pProjectShadowLight.getParams().specular.set(1, 1, 1, 1);
+        pProjectShadowLight.getParams().attenuation.set(1, 0, 0);
+        pProjectShadowLight.setShadowCaster(true);
+
+        pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+        pProjectShadowLight.addRelPosition(0, 3, 10);
+
+        createTextureViewportForDepthTexture(pProjectShadowLight.getDepthTexture(), 0.18, 0.01);
     }
 
     function createSky() {
@@ -323,12 +341,16 @@ var akra;
         createSkyBox();
 
         //createSky();
-        //pTerrain = createTerrain(akra.pScene, true, akra.EEntityTypes.TERRAIN);
+        //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        //loadManyModels(400, data + "models/cube.dae");
+        loadManyModels(1, data + "models/cube.dae");
 
         //loadManyModels(100, data + "models/box/opened_box.dae");
-        loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 0.1, 0.);
+        //var pSoldier = loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", () => {
+        //	(<ISceneModel>pSoldier.getChild().getChild().getChild()).getMesh().showBoundingBox();
+        //	(<ISceneModel>pSoldier.getChild().getChild().getChild().getSibling()).getMesh().showBoundingBox();
+        //});
+        //pSoldier.addPosition(0., 1.1, 0.);
         pEngine.exec();
         //pEngine.renderFrame();
     }

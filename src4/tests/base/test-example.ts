@@ -124,7 +124,7 @@ module akra {
 	}
 
 	function createViewport(): IViewport {
-		var pViewport: IViewport = new render.DSViewport(pCamera);
+		var pViewport: IDSViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -136,6 +136,16 @@ module akra {
 		return pViewport;
 	}
 
+	export var pDepthRange: IVec2 = new math.Vec2(0.5, 1.);
+	var zIndex = 40.;
+	function createTextureViewportForDepthTexture(pTexture: ITexture, fLeft: float, fTop: float): void {
+		var pTextureViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTexture, fLeft, fTop, .15, .15, zIndex++));
+		pTextureViewport.getEffect().addComponent("akra.system.display_depth");
+		pTextureViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint) => {
+			pTechnique.getPass(iPass).setUniform("depthRange", pDepthRange);
+		});
+	}
+
 	function createLighting(): void {
 		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
@@ -145,9 +155,28 @@ module akra {
 		pOmniLight.getParams().diffuse.set(0.5);
 		pOmniLight.getParams().specular.set(1, 1, 1, 1);
 		pOmniLight.getParams().attenuation.set(1, 0, 0);
-		pOmniLight.setShadowCaster(false);
+		pOmniLight.setShadowCaster(true);
 
 		pOmniLight.addPosition(1, 5, 3);
+
+		for (var i = 0; i < pOmniLight.getDepthTextureCube().length; i++) {
+			createTextureViewportForDepthTexture(pOmniLight.getDepthTextureCube()[i], 0.02, 0.01 + 0.16 * (i));
+		}
+
+		var pProjectShadowLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+
+		pProjectShadowLight.attachToParent(pScene.getRootNode());
+		pProjectShadowLight.setEnabled(true);
+		pProjectShadowLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
+		pProjectShadowLight.getParams().diffuse.set(0.5);
+		pProjectShadowLight.getParams().specular.set(1, 1, 1, 1);
+		pProjectShadowLight.getParams().attenuation.set(1, 0, 0);
+		pProjectShadowLight.setShadowCaster(true);
+
+		pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+		pProjectShadowLight.addRelPosition(0, 3, 10);
+
+		createTextureViewportForDepthTexture(pProjectShadowLight.getDepthTexture(), 0.18, 0.01);
 	}
 
 	function createSky(): void {
@@ -316,16 +345,20 @@ module akra {
 
 		createKeymap(pCamera);
 
-		//createSceneEnvironment();
+		createSceneEnvironment();
 		createLighting();
 		createSkyBox();
 		//createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
-		loadManyModels(400, data + "models/cube.dae");
+		loadManyModels(1, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
-		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+		//var pSoldier = loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", () => {
+		//	(<ISceneModel>pSoldier.getChild().getChild().getChild()).getMesh().showBoundingBox();
+		//	(<ISceneModel>pSoldier.getChild().getChild().getChild().getSibling()).getMesh().showBoundingBox();
+		//});
+		//pSoldier.addPosition(0., 1.1, 0.);		
 
 		pEngine.exec();
 		//pEngine.renderFrame();
