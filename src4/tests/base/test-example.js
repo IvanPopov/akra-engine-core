@@ -22,6 +22,7 @@ var akra;
     akra.pRmgr = akra.pEngine.getResourceManager();
     akra.pSky = null;
     akra.pTerrain = null;
+    akra.pSunshaftData = null;
 
     var data = "../../../src2/data/";
 
@@ -138,6 +139,17 @@ var akra;
         var counter = 0;
         pViewport.getEffect().addComponent("akra.system.sunshaft");
 
+        akra.pSunshaftData = {
+            LIGHT_MODEL_MATRIX: null,
+            SUNSHAFT_ANGLE: null,
+            SUNSHAFT_SAMPLES: 100,
+            SUNSHAFT_COLOR: new akra.math.Vec3(1., 0.8, 0.6),
+            SUNSHAFT_INTENSITY: 0.75,
+            SUNSHAFT_DECAY: 0.4,
+            SUNSHAFT_SUN_SIZE: null
+        };
+
+        //var iCounter: int = 0;
         pViewport.render.connect(function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
             var pDefferedTexture = pViewport.getColorTextures()[0];
             var pDepthTexture = pViewport.getDepthTexture();
@@ -146,19 +158,32 @@ var akra;
             var pLightInDeviceSpace = akra.math.Vec3.temp();
             akra.pCamera.projectPoint(pLight.getWorldPosition(), pLightInDeviceSpace);
 
+            var v3fLightDir = akra.math.Vec3.temp();
+            pLight.getWorldPosition().subtract(akra.pCamera.getWorldPosition(), v3fLightDir).normalize();
+            akra.pSunshaftData.LIGHT_MODEL_MATRIX = pLight.getWorldMatrix();
+            akra.pSunshaftData.SUNSHAFT_ANGLE = akra.pCamera.getWorldMatrix().toQuat4().multiplyVec3(akra.math.Vec3.temp(0., 0., -1.)).dot(v3fLightDir);
+            akra.pSunshaftData.SUNSHAFT_SUN_SIZE = 60. / pViewport.getActualHeight();
+
             pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
             pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
-            if (counter++ % 240 === 0) {
-                console.log(pLightInDeviceSpace.x, pLightInDeviceSpace.y);
-            }
-            pPass.setUniform('LIGHT_MODEL_MATRIX', pLight.getWorldMatrix());
+            pPass.setUniform('LIGHT_MODEL_MATRIX', akra.pSunshaftData.LIGHT_MODEL_MATRIX);
             pPass.setTexture('SUNSHAFT_INFO', pDefferedTexture);
-            pPass.setUniform('SUNSHAFT_SAMPLES', 100);
-            pPass.setUniform('SUNSHAFT_INTENSITY', 0.6);
+            pPass.setUniform('SUNSHAFT_ANGLE', akra.pSunshaftData.SUNSHAFT_ANGLE);
+            pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
+            pPass.setUniform('SUNSHAFT_SAMPLES', akra.pSunshaftData.SUNSHAFT_SAMPLES);
+            pPass.setUniform('SUNSHAFT_DEPTH', pLightInDeviceSpace.z);
+            pPass.setUniform('SUNSHAFT_COLOR', akra.pSunshaftData.SUNSHAFT_COLOR);
+            pPass.setUniform('SUNSHAFT_INTENSITY', akra.pSunshaftData.SUNSHAFT_INTENSITY);
+            pPass.setUniform('SUNSHAFT_DECAY', akra.pSunshaftData.SUNSHAFT_DECAY);
             pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
+            pPass.setUniform('SUNSHAFT_SUN_SIZE', akra.pSunshaftData.SUNSHAFT_SUN_SIZE);
 
+            //if (iCounter++%240 === 0) {
+            //console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
+            //}
             pPass.setUniform("INPUT_TEXTURE_RATIO", akra.math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
+            pPass.setUniform("SCREEN_ASPECT_RATIO", akra.math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
         });
         return pViewport;
     }
@@ -349,10 +374,11 @@ var akra;
         var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
         pSceneQuad.attachToParent(akra.pScene.getRootNode());
 
-        // loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0., 4., 0.);
+        loadModel(data + "models/WoodSoldier/WoodSoldier.dae", null, 'WoodSoldier-01');
         loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, akra.math.PI, 0);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 5, -4);
 
-        //loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
         // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4);
         pEngine.exec();
         //pEngine.renderFrame();
