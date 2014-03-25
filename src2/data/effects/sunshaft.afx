@@ -1,14 +1,15 @@
 provide akra.system;
 
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
 texture tex0 : INPUT_TEXTURE;
 texture tex1 : SUNSHAFT_INFO;
 
-sampler screenSampler : INPUT_SAMPLER
+sampler screenSampler : INPUT_SAMPLER = sampler_state
 {
 	Texture = <tex0>;
 };
 
-sampler sunshaftInfoSampler : SUNSHAFT_SAMPLER
+sampler sunshaftInfoSampler : SUNSHAFT_SAMPLER = sampler_state
 {
 	Texture = <tex1>;
 };
@@ -23,25 +24,41 @@ VS_OUT vs_sunshaft_shading(float2 pos: POSITION){
 	VS_OUT Out;
 
 	Out.position = float4(pos,0.,1.);
-    Out.screenPosition = pos;
+	Out.screenPosition = pos;
 	//Out.textureCoords = float2(texCoodrX,texCoordY);
-    Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
 	
 	return Out;
 };
 
-float SUNSHAFT_DECAY = 1.0/4.0;
+int samples : SUNSHAFT_SAMPLES = 100;
+int skyDomeId : SUNSHAFT_SKYDOME_ID = 0;
+float sunshaftIntensity : SUNSHAFT_INTENSITY = 0.3;
+float2 sunshaftPos : SUNSHAFT_POSITION = float2(0.5,0.5);
 
-float4 fs_sunshaft_shading(VS_OUT IN) : COLOR{
-    float4 deferredData = tex2D(sunshaftInfoSampler,IN.textureCoords);
+float4 fs_sunshaft_shading(VS_OUT IN) : COLOR {
+	sunshaftPos *= screenTextureRatio;
+	if(length(IN.textureCoords-sunshaftPos)<0.01) {
+		return float4(1.,0.,0.,1.);
+	}
 
-    if(deferredData.w != 0.){
-        return tex2D(screenSampler, IN.textureCoords);
-    }
-    else {
-    	//return texCUBE(skyboxSampler,IN.texCoordsSkybox);
-    	return new Color(1.);
-    }
+	float sunshaftStep = 1./float(samples);
+
+	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
+	for(int i=0;i<100;i++) {
+		if(i>samples) {
+			break;
+		}
+		else {
+			float2 tPos = sunshaftPos + (IN.textureCoords-sunshaftPos)*float(i)*sunshaftStep;
+			float4 deferredData = tex2D(sunshaftInfoSampler,tPos);
+			if(deferredData.w == 0.) {
+				baseImage += tex2D(screenSampler, tPos)*sunshaftStep*sunshaftIntensity * length(IN.textureCoords-tPos)/length(IN.textureCoords-sunshaftPos);
+			}
+		}
+	}
+	// baseImage += float4(0.6);
+	return baseImage;
 };	
 
 technique sunshaft : POST_EFFECT {
