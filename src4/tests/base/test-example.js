@@ -135,6 +135,7 @@ var akra;
         };
 
         // (<render.DSViewport>pViewport).setFXAA(false);
+        var counter = 0;
         pViewport.getEffect().addComponent("akra.system.sunshaft");
 
         pViewport.render.connect(function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
@@ -142,20 +143,31 @@ var akra;
             var pDepthTexture = pViewport.getDepthTexture();
             var pPass = pTechnique.getPass(iPass);
 
+            var pLightInDeviceSpace = akra.math.Vec3.temp();
+            akra.pCamera.projectPoint(pLight.getWorldPosition(), pLightInDeviceSpace);
+
+            pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
+            pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
+
+            if (counter++ % 240 === 0) {
+                console.log(pLightInDeviceSpace.x, pLightInDeviceSpace.y);
+            }
+            pPass.setUniform('LIGHT_MODEL_MATRIX', pLight.getWorldMatrix());
             pPass.setTexture('SUNSHAFT_INFO', pDefferedTexture);
             pPass.setUniform('SUNSHAFT_SAMPLES', 100);
             pPass.setUniform('SUNSHAFT_INTENSITY', 0.6);
-            pPass.setUniform('SUNSHAFT_POSITION', akra.math.Vec2.temp(0.5, 0.5));
-            pPass.setUniform("INPUT_TEXTURE_RATIO", akra.math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
+            pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
+
+            pPass.setUniform("INPUT_TEXTURE_RATIO", akra.math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
         });
         return pViewport;
     }
-
+    var pLight;
     function createLighting() {
         var pOmniLight = akra.pScene.createLightPoint(2 /* OMNI */, true, 512, "test-omni-0");
 
         pOmniLight.attachToParent(akra.pScene.getRootNode());
-        pOmniLight.setEnabled(false);
+        pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.27, 0.23, 0.2);
         pOmniLight.getParams().diffuse.set(1.);
         pOmniLight.getParams().specular.set(1, 1, 1, 1);
@@ -163,6 +175,9 @@ var akra;
         pOmniLight.setShadowCaster(false);
 
         pOmniLight.addPosition(1, 5, 3);
+
+        //loadModel(data + "models/cube.DAE", null, 'camera').setPosition(1, 5, 3).scale(0.1);
+        pLight = pOmniLight;
     }
 
     function createSky() {
@@ -323,7 +338,7 @@ var akra;
         createKeymap(akra.pCamera);
 
         // createSceneEnvironment();
-        // createLighting();
+        createLighting();
         createSkyBox();
 
         //createSky();
@@ -337,7 +352,7 @@ var akra;
         // loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0., 4., 0.);
         loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, akra.math.PI, 0);
 
-        // loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
+        //loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
         // loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4);
         pEngine.exec();
         //pEngine.renderFrame();

@@ -134,29 +134,39 @@ module akra {
 		};
 
 		// (<render.DSViewport>pViewport).setFXAA(false);
+		var counter = 0;
 		(<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
-				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+
 			var pDefferedTexture: ITexture = (<render.DSViewport>pViewport).getColorTextures()[0];
 			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
+			var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
+			pCamera.projectPoint(pLight.getWorldPosition(), pLightInDeviceSpace);
+
+			pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
+			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
+
+			pPass.setUniform('LIGHT_MODEL_MATRIX', pLight.getWorldMatrix());
 			pPass.setTexture('SUNSHAFT_INFO',pDefferedTexture);
 			pPass.setUniform('SUNSHAFT_SAMPLES', 100);
 			pPass.setUniform('SUNSHAFT_INTENSITY', 0.6);
-			pPass.setUniform('SUNSHAFT_POSITION', math.Vec2.temp(0.5,0.5));
+			pPass.setUniform('SUNSHAFT_POSITION',pLightInDeviceSpace.clone("xy"));
+
 			pPass.setUniform("INPUT_TEXTURE_RATIO",
-						math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
+						math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
 		});
 		return pViewport;
 	}
-
+	var pLight: IOmniLight;
 	function createLighting(): void {
 		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
 		pOmniLight.attachToParent(pScene.getRootNode());
-		pOmniLight.setEnabled(false);
+		pOmniLight.setEnabled(true);
 		pOmniLight.getParams().ambient.set(0.27, 0.23, 0.2);
 		pOmniLight.getParams().diffuse.set(1.);
 		pOmniLight.getParams().specular.set(1, 1, 1, 1);
@@ -164,6 +174,10 @@ module akra {
 		pOmniLight.setShadowCaster(false);
 
 		pOmniLight.addPosition(1, 5, 3);
+
+		//loadModel(data + "models/cube.DAE", null, 'camera').setPosition(1, 5, 3).scale(0.1);
+
+		pLight = pOmniLight;
 	}
 
 	function createSky(): void {
@@ -347,7 +361,7 @@ module akra {
 
 		// loadModel(data + "models/cube.dae", null, 'Cube-01').addPosition(0., 4., 0.);
 		loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
-		// loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
+		//loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
 		// loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
 
 		pEngine.exec();

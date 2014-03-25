@@ -37,8 +37,8 @@ float sunshaftIntensity : SUNSHAFT_INTENSITY = 0.3;
 float2 sunshaftPos : SUNSHAFT_POSITION = float2(0.5,0.5);
 
 float4 fs_sunshaft_shading(VS_OUT IN) : COLOR {
-	sunshaftPos *= screenTextureRatio;
-	if(length(IN.textureCoords-sunshaftPos)<0.01) {
+	float2 sunShaftPosInTexture = sunshaftPos * screenTextureRatio;
+	if(length(IN.textureCoords - sunShaftPosInTexture)<0.01) {
 		return float4(1.,0.,0.,1.);
 	}
 
@@ -50,10 +50,10 @@ float4 fs_sunshaft_shading(VS_OUT IN) : COLOR {
 			break;
 		}
 		else {
-			float2 tPos = sunshaftPos + (IN.textureCoords-sunshaftPos)*float(i)*sunshaftStep;
+			float2 tPos = sunShaftPosInTexture + (IN.textureCoords-sunShaftPosInTexture)*float(i)*sunshaftStep;
 			float4 deferredData = tex2D(sunshaftInfoSampler,tPos);
 			if(deferredData.w == 0.) {
-				baseImage += tex2D(screenSampler, tPos)*sunshaftStep*sunshaftIntensity * length(IN.textureCoords-tPos)/length(IN.textureCoords-sunshaftPos);
+				baseImage += tex2D(screenSampler, tPos)*sunshaftStep*sunshaftIntensity * length(IN.textureCoords-tPos)/length(IN.textureCoords-sunShaftPosInTexture);
 			}
 		}
 	}
