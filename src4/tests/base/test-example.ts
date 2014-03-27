@@ -10,7 +10,9 @@ module akra {
 			{ path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
 			{ path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
 			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" },
-			{ path: "effects/sunshaft.afx" }
+            { path: "effects/sunshaft.afx" },
+            { path: "effects/lensflare.afx" },
+            { path: "effects/blur.afx" }
 		]
 	};
 
@@ -23,6 +25,9 @@ module akra {
 	export var pSky: model.Sky = null;
     export var pTerrain: ITerrain = null;
     export var pSunshaftData = null;
+    export var pLensflareData = null;
+    export var pBlurData = null;
+    export var animateTimeOfDay = function () { akra.pSky.setTime(new Date().getTime() % 24000 / 500 - 24); requestAnimationFrame(animateTimeOfDay); }
 
 	var data = "../../../src2/data/";
 
@@ -49,7 +54,7 @@ module akra {
 	function createCamera(): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
 
-		pCamera.addPosition(new math.Vec3(0, 4, 5));
+		pCamera.addPosition(math.Vec3.temp(0, 4, 5));
 		pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 		pCamera.attachToParent(pScene.getRootNode());
 
@@ -137,15 +142,31 @@ module akra {
 		// (<render.DSViewport>pViewport).setFXAA(false);
 		var counter = 0;
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
+        (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.blur");
 
         pSunshaftData = {
             LIGHT_MODEL_MATRIX: null,
             SUNSHAFT_ANGLE: null,
-            SUNSHAFT_SAMPLES: 100,
-            SUNSHAFT_COLOR: new math.Vec3(1., 0.8, 0.6),
-            SUNSHAFT_INTENSITY: 0.75,
-            SUNSHAFT_DECAY: 0.4,
-            SUNSHAFT_SUN_SIZE: null,
+            SUNSHAFT_SAMPLES: 70,
+            SUNSHAFT_COLOR: new math.Vec3(1., 0.96, 0.9),
+            SUNSHAFT_INTENSITY: 0.14,
+            SUNSHAFT_DECAY: 1.2,
+            SUNSHAFT_SHARPNESS: 2,
+            SUNSHAFT_SUN_SIZE: 60.,
+        };
+
+        pLensflareData = {
+            LENSFLARE_SAMPLES: 5,
+            LENSFLARE_BLUR_SIZE: 0.02,
+            LENSFLARE_ANGLES: 4,
+            LENSFLARE_ROTATE_ANGLE: 0,
+            LENSFLARE_INTENSITY: 0.2,
+            LENSFLARE_DECAY: 1,
+        };
+
+        pBlurData = {
+            BLUR_SAMPLES: 25,
+            BLUR_RADIUS: 50,
         };
 
         //var iCounter: int = 0;
@@ -157,29 +178,35 @@ module akra {
 			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
-            pCamera.projectPoint(pLight.getWorldPosition(), pLightInDeviceSpace);
-
-            var v3fLightDir : IVec3 = math.Vec3.temp();
-            pLight.getWorldPosition().subtract(pCamera.getWorldPosition(),v3fLightDir).normalize();
-            pSunshaftData.LIGHT_MODEL_MATRIX = pLight.getWorldMatrix();
+            var v3fLightDir: IVec3 = math.Vec3.temp(akra.pSky['_v3fSunDir']);
+            var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
+            pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
             pSunshaftData.SUNSHAFT_ANGLE = pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).dot(v3fLightDir);
-            pSunshaftData.SUNSHAFT_SUN_SIZE = 60. / pViewport.getActualHeight();
 
 			pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
 			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
-            pPass.setUniform('LIGHT_MODEL_MATRIX', pSunshaftData.LIGHT_MODEL_MATRIX);
             pPass.setTexture('SUNSHAFT_INFO', pDefferedTexture);
             pPass.setUniform('SUNSHAFT_ANGLE', pSunshaftData.SUNSHAFT_ANGLE);
             pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
             pPass.setUniform('SUNSHAFT_SAMPLES', pSunshaftData.SUNSHAFT_SAMPLES);
-            pPass.setUniform('SUNSHAFT_DEPTH', pLightInDeviceSpace.z);
+            pPass.setUniform('SUNSHAFT_DEPTH', 1.);
             pPass.setUniform('SUNSHAFT_COLOR', pSunshaftData.SUNSHAFT_COLOR);
             pPass.setUniform('SUNSHAFT_INTENSITY', pSunshaftData.SUNSHAFT_INTENSITY);
             pPass.setUniform('SUNSHAFT_DECAY', pSunshaftData.SUNSHAFT_DECAY);
+            pPass.setUniform('SUNSHAFT_SHARPNESS', pSunshaftData.SUNSHAFT_SHARPNESS);
             pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
-            pPass.setUniform('SUNSHAFT_SUN_SIZE', pSunshaftData.SUNSHAFT_SUN_SIZE);
+            pPass.setUniform('SUNSHAFT_SUN_SIZE', pSunshaftData.SUNSHAFT_SUN_SIZE / pViewport.getActualHeight());
+
+            pPass.setUniform('LENSFLARE_SAMPLES', pLensflareData.LENSFLARE_SAMPLES);
+            pPass.setUniform('LENSFLARE_BLUR_SIZE', pLensflareData.LENSFLARE_BLUR_SIZE);
+            pPass.setUniform('LENSFLARE_ANGLES', pLensflareData.LENSFLARE_ANGLES);
+            pPass.setUniform('LENSFLARE_ROTATE_ANGLE', pLensflareData.LENSFLARE_ROTATE_ANGLE);
+            pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
+            pPass.setUniform('LENSFLARE_DECAY', pLensflareData.LENSFLARE_DECAY);
+
+            pPass.setUniform('BLUR_SAMPLES', pBlurData.BLUR_SAMPLES);
+            pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS / pViewport.getActualHeight());
 
             //if (iCounter++%240 === 0) {
                 //console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
@@ -192,7 +219,7 @@ module akra {
 		});
 		return pViewport;
 	}
-	var pLight: IOmniLight;
+	var pLight: ISunLight;
 	function createLighting(): void {
 		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
@@ -208,7 +235,7 @@ module akra {
 
 		//loadModel(data + "models/cube.DAE", null, 'camera').setPosition(1, 5, 3).scale(0.1);
 
-		pLight = pOmniLight;
+	    //pLight = pOmniLight;
 	}
 
 	function createSky(): void {
@@ -218,7 +245,9 @@ module akra {
 		pSky.sun.setShadowCaster(false);
 
 		var pSceneModel: ISceneModel = pSky.skyDome;
-		pSceneModel.attachToParent(pScene.getRootNode());
+        pSceneModel.attachToParent(pScene.getRootNode());
+
+        //pLight = pSky.sun;
 	}
 
 	function createSkyBox(): void {
@@ -230,12 +259,13 @@ module akra {
 		}
 	}
 
-	function loadModel(sPath, fnCallback?: Function, name?: String): ISceneNode {
+	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
 
 		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
-		pModelRoot.attachToParent(pScene.getRootNode());
+        pModelRoot.attachToParent(pRoot || pScene.getRootNode());
+        pModelRoot.setInheritance(ENodeInheritance.ROTPOSITION);
 
 		function fnLoadModel(pModel: ICollada): void {
 			pModel.attachToScene(pModelRoot);
@@ -379,9 +409,9 @@ module akra {
 		createKeymap(pCamera);
 
 		// createSceneEnvironment();
-		createLighting();
-		createSkyBox();
-		//createSky();
+		//createLighting();
+		//createSkyBox();
+		createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
@@ -393,11 +423,14 @@ module akra {
 		loadModel(data + "models/WoodSoldier/WoodSoldier.dae", null, 'WoodSoldier-01');
 		loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
         loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 1, -4);
-        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-02').addPosition(2, 5, -4);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-03').addPosition(2, 5, -4);
+        loadModel(data + "models/rock/rock-1-low-p.DAE", null, 'Rock-04', pCamera).scale(0.2).setPosition(0.4, -0.2, -2);
 		// loadModel(data + "models/hero/hero.DAE", null, 'Hero').addPosition(2, 0, -4); 
 
 		pEngine.exec();
 		//pEngine.renderFrame();
+
+        //animateTimeOfDay();
 	}
 
 	pEngine.depsLoaded.connect(main);
