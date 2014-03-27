@@ -13,6 +13,91 @@ module akra {
 		]
 	};
 
+	class SimpleSceneObject extends akra.scene.SceneObject {
+		protected _pRenderable: IRenderableObject = null;
+
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
+
+			this._pLocalBounds.set(-1, 1, -1, 1, -1, 1);
+
+			var pRenderable: IRenderableObject = new render.RenderableObject();
+			var pCollection: IRenderDataCollection = pEngine.createRenderDataCollection(0);
+			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
+
+			pData.allocateAttribute(akra.data.VertexDeclaration.normalize([akra.data.VertexElement.float3(akra.data.Usages.POSITION)]),
+				new Float32Array([
+					// Front face
+					-1.0, -1.0, 1.0,
+					1.0, -1.0, 1.0,
+					1.0, 1.0, 1.0,
+					-1.0, 1.0, 1.0,
+
+					// Back face
+					-1.0, -1.0, -1.0,
+					-1.0, 1.0, -1.0,
+					1.0, 1.0, -1.0,
+					1.0, -1.0, -1.0,
+
+					// Top face
+					-1.0, 1.0, -1.0,
+					-1.0, 1.0, 1.0,
+					1.0, 1.0, 1.0,
+					1.0, 1.0, -1.0,
+
+					// Bottom face
+					-1.0, -1.0, -1.0,
+					1.0, -1.0, -1.0,
+					1.0, -1.0, 1.0,
+					-1.0, -1.0, 1.0,
+
+				// Right face
+					1.0, -1.0, -1.0,
+					1.0, 1.0, -1.0,
+					1.0, 1.0, 1.0,
+					1.0, -1.0, 1.0,
+
+					// Left face
+					-1.0, -1.0, -1.0,
+					-1.0, -1.0, 1.0,
+					-1.0, 1.0, 1.0,
+					-1.0, 1.0, -1.0,
+				]));
+
+			pRenderable._setRenderData(pData);
+			pRenderable._setup(pEngine.getRenderer());
+
+			pRenderable.getEffect().addComponent("akra.system.mesh_geometry");
+			pRenderable.getEffect().addComponent("akra.system.mesh_texture");
+
+			pRenderable.getMaterial().emissive = new color.Color(1., 0., 0., 1.);
+
+			this._pRenderable = pRenderable;
+		}
+
+		getTotalRenderable(): uint {
+			return 1;
+		}
+
+		getRenderable(i?: uint): IRenderableObject {
+			return this._pRenderable;
+		}
+	}
+
+	function createSimpleCube(sName: string = null): ISceneObject {
+		var pCube = new SimpleSceneObject(pScene);
+
+		pCube.create();
+
+		pCube.setName(sName);
+		pCube.attached.connect(pScene.nodeAttachment);
+		pCube.detached.connect(pScene.nodeDetachment);
+
+		pCube.attachToParent(pScene.getRootNode());
+
+		return pCube;
+	}
+
 	export var pEngine = akra.createEngine({ deps: pDeps });
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
@@ -345,14 +430,15 @@ module akra {
 
 		createKeymap(pCamera);
 
-		createSceneEnvironment();
-		createLighting();
-		createSkyBox();
+		//createSceneEnvironment();
+		//createLighting();
+		//createSkyBox();
+		createSimpleCube();
 		//createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
-		loadManyModels(1, data + "models/cube.dae");
+		//loadManyModels(1, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
 		//var pSoldier = loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", () => {
 		//	(<ISceneModel>pSoldier.getChild().getChild().getChild()).getMesh().showBoundingBox();

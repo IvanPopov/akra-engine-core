@@ -1,6 +1,12 @@
 /// <reference path="../../build/akra.d.ts" />
 /// <reference path="../../build/addons/base3dObjects.addon.d.ts" />
 /// <reference path="../../build/addons/navigation.addon.d.ts" />
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var akra;
 (function (akra) {
     var pDeps = {
@@ -12,6 +18,82 @@ var akra;
             { path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" }
         ]
     };
+
+    var SimpleSceneObject = (function (_super) {
+        __extends(SimpleSceneObject, _super);
+        function SimpleSceneObject(pScene, eType) {
+            if (typeof eType === "undefined") { eType = 64 /* SCENE_OBJECT */; }
+            _super.call(this, pScene, eType);
+            this._pRenderable = null;
+
+            this._pLocalBounds.set(-1, 1, -1, 1, -1, 1);
+
+            var pRenderable = new akra.render.RenderableObject();
+            var pCollection = akra.pEngine.createRenderDataCollection(0);
+            var pData = pCollection.getEmptyRenderData(5 /* TRIANGLESTRIP */);
+
+            pData.allocateAttribute(akra.data.VertexDeclaration.normalize([akra.data.VertexElement.float3(akra.data.Usages.POSITION)]), new Float32Array([
+                -1.0, -1.0, 1.0,
+                1.0, -1.0, 1.0,
+                1.0, 1.0, 1.0,
+                -1.0, 1.0, 1.0,
+                -1.0, -1.0, -1.0,
+                -1.0, 1.0, -1.0,
+                1.0, 1.0, -1.0,
+                1.0, -1.0, -1.0,
+                -1.0, 1.0, -1.0,
+                -1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0,
+                1.0, 1.0, -1.0,
+                -1.0, -1.0, -1.0,
+                1.0, -1.0, -1.0,
+                1.0, -1.0, 1.0,
+                -1.0, -1.0, 1.0,
+                // Right face
+                1.0, -1.0, -1.0,
+                1.0, 1.0, -1.0,
+                1.0, 1.0, 1.0,
+                1.0, -1.0, 1.0,
+                -1.0, -1.0, -1.0,
+                -1.0, -1.0, 1.0,
+                -1.0, 1.0, 1.0,
+                -1.0, 1.0, -1.0
+            ]));
+
+            pRenderable._setRenderData(pData);
+            pRenderable._setup(akra.pEngine.getRenderer());
+
+            pRenderable.getEffect().addComponent("akra.system.mesh_geometry");
+            pRenderable.getEffect().addComponent("akra.system.mesh_texture");
+
+            pRenderable.getMaterial().emissive = new akra.color.Color(1., 0., 0., 1.);
+
+            this._pRenderable = pRenderable;
+        }
+        SimpleSceneObject.prototype.getTotalRenderable = function () {
+            return 1;
+        };
+
+        SimpleSceneObject.prototype.getRenderable = function (i) {
+            return this._pRenderable;
+        };
+        return SimpleSceneObject;
+    })(akra.scene.SceneObject);
+
+    function createSimpleCube(sName) {
+        if (typeof sName === "undefined") { sName = null; }
+        var pCube = new SimpleSceneObject(akra.pScene);
+
+        pCube.create();
+
+        pCube.setName(sName);
+        pCube.attached.connect(akra.pScene.nodeAttachment);
+        pCube.detached.connect(akra.pScene.nodeDetachment);
+
+        pCube.attachToParent(akra.pScene.getRootNode());
+
+        return pCube;
+    }
 
     akra.pEngine = akra.createEngine({ deps: pDeps });
     akra.pScene = akra.pEngine.getScene();
@@ -336,15 +418,15 @@ var akra;
         //addons.navigation(pViewport);
         createKeymap(akra.pCamera);
 
-        createSceneEnvironment();
-        createLighting();
-        createSkyBox();
+        //createSceneEnvironment();
+        //createLighting();
+        //createSkyBox();
+        createSimpleCube();
 
         //createSky();
         //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        loadManyModels(1, data + "models/cube.dae");
-
+        //loadManyModels(1, data + "models/cube.dae");
         //loadManyModels(100, data + "models/box/opened_box.dae");
         //var pSoldier = loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", () => {
         //	(<ISceneModel>pSoldier.getChild().getChild().getChild()).getMesh().showBoundingBox();
