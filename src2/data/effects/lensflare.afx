@@ -1,0 +1,70 @@
+provide akra.system;
+
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
+texture tex0 : INPUT_TEXTURE;
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};
+
+VS_OUT vs_lensflare_shading(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+int samples : LENSFLARE_SAMPLES = 5;
+float lensflareBlurSize : LENSFLARE_BLUR_SIZE = 0.1;
+int lensflareAngles : LENSFLARE_ANGLES = 4;
+float lensflareRotateAngle : LENSFLARE_ROTATE_ANGLE = 0.;
+
+float lensflareIntensity : LENSFLARE_INTENSITY = 0.3;
+float lensflareDecay : LENSFLARE_DECAY = 3.;
+float2 lensflarePos : LENSFLARE_POSITION = float2(0.5,0.5);
+
+float4 fs_lensflare_shading1(VS_OUT IN) : COLOR {
+	float2 lensFlarePosInTexture = lensflarePos * screenTextureRatio;
+	float2 imageCenter = float2(0.5) * screenTextureRatio;
+
+	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
+
+	int samp = int(max(min(float(samples), 50.),0.));
+	float lensflareStep = 1./float(samp);
+
+	float4 lensflare_result = float4(0.);
+
+	for(int i=0;i<50;i++) {
+		if(i>samp) {
+			break;
+		}
+		else {
+			float dr = lensflareBlurSize*(-0.5+(float(i)+0.5)*lensflareStep);
+			lensflare_result += tex2D(screenSampler, IN.textureCoords + float2(0.,dr))*lensflareStep*exp(-dr*dr/lensflareBlurSize/lensflareBlurSize);
+		}
+	}
+
+	lensflare_result = pow(lensflare_result, float4(lensflareDecay)) * lensflareIntensity;
+	return baseImage * (1.-lensflareIntensity) + lensflare_result;
+};
+
+technique lensflare : POST_EFFECT {
+	pass pass1{
+		VertexShader = compile vs_lensflare_shading();
+		PixelShader = compile fs_lensflare_shading1();
+	};
+};
+
+
