@@ -481,11 +481,13 @@
     <None Include="akra\render\RenderEntry.ts" />
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
+    <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
     <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
+    <TypeScriptCompile Include="akra\render\LPPViewport.ts" />
     <TypeScriptCompile Include="akra\render\Renderer.ts" />
     <TypeScriptCompile Include="akra\render\RenderTexture.ts" />
     <TypeScriptCompile Include="akra\render\Screen.ts" />

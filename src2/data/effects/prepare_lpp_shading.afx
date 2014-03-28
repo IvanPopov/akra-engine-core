@@ -1,0 +1,19 @@
+provide akra.system;
+
+struct VS_IN_1{
+    float3 vert:VERTEX;
+    float3 norm:NORMAL;
+}
+
+float4 prepare_lpp_geometry() : COLOR {
+	return float4(float3(norm), vert.z);
+}
+
+technique prepare_lpp_geometry {
+	pass p1{
+		PixelShader = compile prepare_lpp_geometry();
+	};
+}
+
+
+
