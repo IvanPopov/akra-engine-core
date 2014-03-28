@@ -240,7 +240,7 @@ module akra.fx {
 					var iFlow: uint = pFindFlow.flow;
 					var iSlot: uint = this._pSlotByFlows[iFlow];
 
-					if (iSlot >= 0 && iSlot < this._nSlots && this._pFlowBySlots[iSlot] === iFlow) {
+					if (pFindFlow.type === EDataFlowTypes.MAPPABLE && iSlot >= 0 && iSlot < this._nSlots && this._pFlowBySlots[iSlot] === iFlow) {
 						this._pSlotBySemanticIndex[i] = iSlot;
 						iHash += ((iSlot + 1) << 5 + (this._pBufferSlotBySlots[iSlot] + 1)) << iSlot;
 						// continue;

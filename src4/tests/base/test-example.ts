@@ -23,7 +23,7 @@ module akra {
 
 			var pRenderable: IRenderableObject = new render.RenderableObject();
 			var pCollection: IRenderDataCollection = pEngine.createRenderDataCollection(0);
-			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
+			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLELIST);
 
 			pData.allocateAttribute(akra.data.VertexDeclaration.normalize([akra.data.VertexElement.float3(akra.data.Usages.POSITION)]),
 				new Float32Array([
@@ -51,7 +51,7 @@ module akra {
 					1.0, -1.0, 1.0,
 					-1.0, -1.0, 1.0,
 
-				// Right face
+					// Right face
 					1.0, -1.0, -1.0,
 					1.0, 1.0, -1.0,
 					1.0, 1.0, 1.0,
@@ -64,13 +64,69 @@ module akra {
 					-1.0, 1.0, -1.0,
 				]));
 
+			pData.allocateAttribute(akra.data.VertexDeclaration.normalize([akra.data.VertexElement.float3(akra.data.Usages.NORMAL)]),
+				new Float32Array([
+					// Front face
+					0.0, 0.0, 1.0,
+					0.0, 0.0, 1.0,
+					0.0, 0.0, 1.0,
+					0.0, 0.0, 1.0,
+
+					// Back face
+					0.0, 0.0, -1.0,
+					0.0, 0.0, -1.0,
+					0.0, 0.0, -1.0,
+					0.0, 0.0, -1.0,
+
+					// Top face
+					0.0, 1.0, 0.0,
+					0.0, 1.0, 0.0,
+					0.0, 1.0, 0.0,
+					0.0, 1.0, 0.0,
+
+					// Bottom face
+					0.0, -1.0, 0.0,
+					0.0, -1.0, 0.0,
+					0.0, -1.0, 0.0,
+					0.0, -1.0, 0.0,
+
+					// Right face
+					1.0, 0.0, 0.0,
+					1.0, 0.0, 0.0,
+					1.0, 0.0, 0.0,
+					1.0, 0.0, 0.0,
+
+					// Left face
+					-1.0, 0.0, 0.0,
+					-1.0, 0.0, 0.0,
+					-1.0, 0.0, 0.0,
+					-1.0, 0.0, 0.0,
+				]));
+
+			var pMap: IBufferMap = pData["_pMap"];
+			var pIndexBuffer: IIndexBuffer = pRmgr.createIndexBuffer("simple-cube-indecies");
+			pIndexBuffer.create(36, EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.STATIC);
+
+			pMap.setIndex(pIndexBuffer.allocateData(EPrimitiveTypes.TRIANGLELIST, EDataTypes.UNSIGNED_SHORT, new Uint16Array([
+				0, 1, 2, 0, 2, 3,    // Front face
+				4, 5, 6, 4, 6, 7,    // Back face
+				8, 9, 10, 8, 10, 11,  // Top face
+				12, 13, 14, 12, 14, 15, // Bottom face
+				16, 17, 18, 16, 18, 19, // Right face
+				20, 21, 22, 20, 22, 23  // Left face
+			])));
+
 			pRenderable._setRenderData(pData);
 			pRenderable._setup(pEngine.getRenderer());
 
 			pRenderable.getEffect().addComponent("akra.system.mesh_geometry");
 			pRenderable.getEffect().addComponent("akra.system.mesh_texture");
 
-			pRenderable.getMaterial().emissive = new color.Color(1., 0., 0., 1.);
+			pRenderable.getMaterial().emissive = new color.Color(0., 0., 0., 1.);
+			pRenderable.getMaterial().ambient = new color.Color(1., 1., 1., 1.);
+			pRenderable.getMaterial().diffuse = new color.Color(1., 0., 0., 1.);
+			pRenderable.getMaterial().specular = new color.Color(1., 0., 0., 1.);
+			pRenderable.getMaterial().shininess = 20;
 
 			this._pRenderable = pRenderable;
 		}
@@ -431,14 +487,14 @@ module akra {
 		createKeymap(pCamera);
 
 		//createSceneEnvironment();
-		//createLighting();
-		//createSkyBox();
+		createLighting();
+		createSkyBox();
 		createSimpleCube();
 		//createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
-		//loadManyModels(1, data + "models/cube.dae");
+		//loadManyModels(20, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
 		//var pSoldier = loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", () => {
 		//	(<ISceneModel>pSoldier.getChild().getChild().getChild()).getMesh().showBoundingBox();

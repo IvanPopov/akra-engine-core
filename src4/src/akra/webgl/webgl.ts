@@ -433,6 +433,27 @@ module akra.webgl {
 		return false;
 	}
 
+	export function getWebglElementType(eType: EDataTypes): int {
+		switch (eType) {
+			case EDataTypes.BYTE:
+				return gl.BYTE;
+			case EDataTypes.UNSIGNED_BYTE:
+				return gl.UNSIGNED_BYTE;
+			case EDataTypes.SHORT:
+				return gl.SHORT;
+			case EDataTypes.UNSIGNED_SHORT:
+				return gl.UNSIGNED_SHORT;
+			case EDataTypes.INT:
+				return gl.INT;
+			case EDataTypes.UNSIGNED_INT:
+				return gl.UNSIGNED_INT;
+			case EDataTypes.FLOAT:
+				return gl.FLOAT;
+			default:
+				logger.critical("getWebglElementType unknown data type");
+				return 0;
+		}
+	}
 
 	export function getWebGLDataType(eFormat: EPixelFormats): int {
 		switch (eFormat) {
