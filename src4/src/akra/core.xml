@@ -12,6 +12,7 @@
     <TypeScriptDeclarationDir>../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
     <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
     <Variable Name="AE_VERSION">'$(Version.full)'</Variable>
+    <Variable Name="AE_WEBGL_DEBUG">$(WebGLDebug)</Variable>
     <Dependencies>
       <Attachment>
         <File Path="resources/js/zip.js/zip.js"/>
@@ -54,6 +55,12 @@
         <File Path="io/FileInterface.t.js"/>
         <Format>Enclosure</Format>
         <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_FILEINTERFACE">
+        <File Path="resources/js/webgl-debug.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
       </Attachment>
       <Attachment Name="AE_THREAD_REMOTEFILE">
         <File Path="io/RemoteFile.t.js"/>

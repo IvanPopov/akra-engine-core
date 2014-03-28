@@ -9,6 +9,7 @@ declare var AE_THREAD_FILEINTERFACE: { content: any; format: string};
 declare var AE_THREAD_LOCALFILE: { content: any; format: string };
 declare var AE_THREAD_REMOTEFILE: { content: any; format: string };
 declare var AE_THREAD_TESSELATION: { content: any; format: string };
+declare var AE_WEBGL_DEBUG: boolean;
 
 module akra.config {
 
@@ -46,7 +47,7 @@ module akra.config {
 	 * If [WebGLDebugUtils](https://www.khronos.org/registry/webgl/sdk/debug/webgl-debug.js) presented,
 	 * they will use to create a context.
 	 */
-	export var WEBGL_DEBUG: boolean = false;
+	export var WEBGL_DEBUG: boolean = AE_WEBGL_DEBUG;
 
 	/**
 	 * Calculate profile information for terrain tesselation

@@ -6623,6 +6623,7 @@ declare var AE_THREAD_TESSELATION: {
     content: any;
     format: string;
 };
+declare var AE_WEBGL_DEBUG: boolean;
 declare module akra.config {
     var DEBUG: boolean;
     var VERSION: string;

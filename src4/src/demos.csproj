@@ -20,6 +20,7 @@
     <Content Include="demos\css\metro-bootstrap.css" />
     <Content Include="demos\fonts\fontawesome-webfont.svg" />
     <Content Include="demos\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="demos\miner\textures\light_icon.png" />
     <Content Include="demos\performance\demo.xml" />
     <Content Include="demos\performance\index.html" />
   </ItemGroup>
@@ -31,6 +32,7 @@
     <TypeScriptCompile Include="demos\idl\3d-party\jqueryui.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\raphael.d.ts" />
     <TypeScriptCompile Include="demos\idl\3d-party\swig.d.ts" />
+    <TypeScriptCompile Include="demos\miner\miner.ts" />
     <TypeScriptCompile Include="demos\performance\performance.ts" />
     <TypeScriptCompile Include="demos\std\std.ts" />
   </ItemGroup>
@@ -96,6 +98,26 @@
     <Content Include="demos\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="demos\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="demos\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="demos\miner\miner.map" />
+    <Content Include="demos\miner\models\cube.DAE" />
+    <Content Include="demos\miner\models\miner\idle0.DAE" />
+    <Content Include="demos\miner\models\miner\idle1.DAE" />
+    <Content Include="demos\miner\models\miner\idle2.DAE" />
+    <Content Include="demos\miner\models\miner\images\gun_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\gun_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\gun_specular.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_specular.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_specular.dds" />
+    <Content Include="demos\miner\models\miner\miner.DAE" />
+    <Content Include="demos\miner\models\miner\walk1.DAE" />
+    <Content Include="demos\miner\models\miner\walk2.DAE" />
+    <Content Include="demos\miner\models\miner\walk3.DAE" />
+    <Content Include="demos\miner\models\miner\work_gun.DAE" />
+    <Content Include="demos\miner\models\miner\work_hammer.DAE" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -103,9 +125,7 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="demos\miner\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

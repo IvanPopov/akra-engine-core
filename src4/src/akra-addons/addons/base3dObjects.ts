@@ -1,8 +1,15 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 
+//declare var AE_BASE3DOBJECTS_DEPENDENCIES: akra.IDep;
+
 module akra.addons {
 	import VE = data.VertexElement;
 	import Color = color.Color;
+
+	//addons['base3dObjects'] = addons['base3dObjects'] || { path: null };
+	//addons['base3dObjects'].path = addons['base3dObjects'].path || uri.currentPath();
+
+	//debug.log("config['addons']['base3dObjects'] = ", JSON.stringify(addons['base3dObjects']));
 
 	export function createSceneSurface(pScene: IScene3d, nCell?: uint): ISceneModel;
 	export function createSceneSurface(pScene: IScene3d, nCellW?: uint, nCellH?: uint): ISceneModel;
@@ -88,7 +95,10 @@ module akra.addons {
 		return pSceneModel;
 	}
 
-	export function createQuad(pScene: IScene3d, fSize: float = 20.): ISceneModel {
+	export function createQuad(pScene: IScene3d, fSize: float = 20., v2UV: IVec2 = Vec2.temp(1.)): ISceneModel {
+
+		//pScene.getManager().getEngine().getResourceManager().getImagePool().findResource();
+
 		var pMesh: IMesh = null,
 			pSubMesh: IMeshSubset = null;
 
@@ -98,33 +108,48 @@ module akra.addons {
 			-fSize, 0., fSize,
 			fSize, 0., fSize
 		]);
+
+		var pTexCoordData: Float32Array = new Float32Array([
+			0., 0.,
+			v2UV.x, 0.,
+			0., v2UV.y,
+			v2UV.x, v2UV.y
+		]);
+
 		var pNormalsData: Float32Array = new Float32Array([
 			0., 1., 0.
 		]);
+
 		var pVertexIndicesData: Float32Array = new Float32Array([
 			0., 1., 2., 3.
 		]);
+
 
 		var pNormalIndicesData: Float32Array = new Float32Array([
 			0., 0., 0., 0.
 		]);
 
 		var iPos: uint = 0,
-			iNorm: uint = 0;
+			iNorm: uint = 0,
+			iTex: uint = 0;
 
 		var pEngine: IEngine = pScene.getManager().getEngine();
 
 		pMesh = model.createMesh(pEngine, 'quad', EMeshOptions.HB_READABLE);
 		pSubMesh = pMesh.createSubset('quad::main', EPrimitiveTypes.TRIANGLESTRIP);
 
-		iPos = pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
+		pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
+		pSubMesh.getData().allocateData([VE.float2('TEXCOORD0')], pTexCoordData);
 		pSubMesh.getData().allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
+		pSubMesh.getData().allocateIndex([VE.float('INDEX2')], pVertexIndicesData);
 		pSubMesh.getData().index('POSITION', 'INDEX0');
+		pSubMesh.getData().index('TEXCOORD0', 'INDEX2');
 
 		iNorm = pSubMesh.getData().allocateData([VE.float3('NORMAL')], pNormalsData);
 		pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
-
 		pSubMesh.getData().index('NORMAL', 'INDEX1');
+
+		
 
 		pSubMesh.setShadow(false);
 
@@ -330,4 +355,12 @@ module akra.addons {
 		return pSceneModel;
 	}
 
+	//export function getBase3DObjectsDependences(sPath?: string): IDependens {
+	//	var pDep: IDep = AE_BASE3DOBJECTS_DEPENDENCIES;
+
+	//	return deps.createDependenceByPath(
+	//		pDep.path,
+	//		pDep.type,
+	//		sPath || <string>addons['base3dObjects'].path);
+	//}
 }

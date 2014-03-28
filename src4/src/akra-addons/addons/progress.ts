@@ -129,6 +129,9 @@ module akra.addons {
 
 		destroy(): void {
 			this.element.className += " bounceOutRight";
+			setTimeout(() => {
+				this.element.parentNode.removeChild(this.element);
+			}, 2000);
 		}
 
 		getListener(): (e: IDepEvent) => void {

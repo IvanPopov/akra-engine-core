@@ -6,7 +6,7 @@ var path = require("path");
 var util = require('./lib/grunt/utils.js');
 
 module.exports = function (grunt) {
-	require('./lib/grunt/build2.js')(grunt);
+	require('./lib/grunt/build.js')(grunt);
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
 	grunt.loadNpmTasks("grunt-contrib-concat");
@@ -26,7 +26,7 @@ module.exports = function (grunt) {
 		DemosSourceDir: "src/demos",
 		BuiltDir: "built",
 		Pkg: grunt.file.readJSON("package.json"),
-
+		WebGLDebug: false,
 
 
 
@@ -74,6 +74,9 @@ module.exports = function (grunt) {
 
 	grunt.config("Configuration", grunt.option('configuration') || 'Debug');
 	grunt.log.writeln("Configuration: " + grunt.config.get("Configuration"));
+
+	grunt.config("WebGLDebug", grunt.option('webgl-debug') || false);
+	grunt.log.writeln("WebGL debug: " + (grunt.option('webgl-debug') || false));
 
 	grunt.registerTask("lint", ["tslint"]);
 	grunt.registerTask("default", ["all"]);

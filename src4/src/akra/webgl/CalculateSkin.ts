@@ -6,6 +6,7 @@
 module akra.webgl {
 	import Vec2 = math.Vec2;
 	export function calculateSkin(pMeshSubset: IMeshSubset): boolean {
+		return false;
 		var pRenderData: IRenderData = pMeshSubset.getData();
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");

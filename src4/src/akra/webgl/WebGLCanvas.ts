@@ -141,6 +141,7 @@ module akra.webgl {
 				this.getElement().addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					//0 --> 149, 149/150 --> 0
+					//debug.log(e.offsetX, e.offsetY);
 					this.click.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);

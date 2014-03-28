@@ -26,17 +26,6 @@ module akra {
 		renderer: pRenderOpts,
 		progress: pProgress.getListener(),
 		deps: { files: [AE_RESOURCES], root: "./", deps: addons.getNavigationDependences() }
-		//deps: {
-		//	files: [
-		//		{path: "grammars/HLSL.gr"}
-		//	],
-		//	deps: {
-		//		files: [
-		//			{path: "effects/custom/arteries2.afx"},
-		//			{path: "textures/arteries/AG/arteries.ara"},
-		//		]
-		//	}
-		//}
 	};
 
 	var pEngine: IEngine = createEngine(pOptions);
