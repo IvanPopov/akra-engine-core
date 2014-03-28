@@ -54,8 +54,8 @@ eval(fs
   .replace(/batch\.batchCompile\(\);\s*$/, '')
   .replace(/\btsc\b/g, 'tscc'));
 
-eval(fs.readFileSync(path.resolve(__dirname, 'emitter3.js'), 'utf8'));
-eval(fs.readFileSync(path.resolve(__dirname, 'patches2.js'), 'utf8'));
+eval(fs.readFileSync(path.resolve(__dirname, 'emitter.js'), 'utf8'));
+eval(fs.readFileSync(path.resolve(__dirname, 'patches.js'), 'utf8'));
 
 TypeScript.OptionsParser.prototype.printUsage = function(printUsage) {
   var optionsText = 'TypeScript.getLocalizedText(TypeScript.DiagnosticCode.Options, null)';

@@ -37,7 +37,7 @@ module akra.math {
 	var pBuffer: IMat3[];
 	var iElement: uint;
 
-	export class Mat3 {
+	export class Mat3 implements IMat3 {
 		data: Float32Array;
 
 		constructor();

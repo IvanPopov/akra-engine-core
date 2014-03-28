@@ -11,7 +11,7 @@ module akra.webgl {
 		[index: string]: WebGLUniformLocation;
 	}
 
-	export class WebGLShaderProgram extends pool.ResourcePoolItem implements IShaderProgram {
+	final export class WebGLShaderProgram extends pool.ResourcePoolItem implements IShaderProgram {
 		protected _pWebGLRenderer: WebGLRenderer;
 		protected _pWebGLContext: WebGLRenderingContext;
 		protected _pWebGLProgram: WebGLProgram;
