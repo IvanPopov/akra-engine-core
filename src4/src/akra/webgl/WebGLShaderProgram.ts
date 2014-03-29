@@ -78,6 +78,10 @@ module akra.webgl {
 							"\ntranslated(from GLSL) PS shader: \n" +
 							pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLFs));
 					}
+					else {
+						logger.log("translated(from GLSL) VS shader: \n" + csVertex +
+							"\ntranslated(from GLSL) PS shader: \n" + csPixel);
+					}
 				}
 
 				return false;
