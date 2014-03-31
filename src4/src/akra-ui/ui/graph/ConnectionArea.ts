@@ -51,7 +51,7 @@ module akra.ui.graph {
 		}
 
 		protected setupSignals(): void {
-			this.connected = this.connected || new Signal(<any>this);
+			this.connected = this.connected || new Signal(this);
 			super.setupSignals();
 		}
 

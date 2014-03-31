@@ -4,8 +4,8 @@
 /// <reference path="Component.ts" />
 
 module akra.ui {
-	class MoveSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class MoveSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			super.emit(e);
 			this.getSender().getElement().css("bottom", "auto");
 		}
@@ -74,7 +74,7 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.closed = this.closed || new Signal(<any>this);
+			this.closed = this.closed || new Signal(this);
 			this.move = this.move || new MoveSignal(this);
 
 			super.setupSignals();

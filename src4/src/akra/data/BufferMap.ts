@@ -20,7 +20,7 @@
 //#endif
 
 module akra.data {
-	import DeclUsages = data.Usages;
+	import DeclUsages = akra.data.Usages;
 
 	interface IBuffersCompatibleMap {
 		[handle: int]: IVertexData;
@@ -64,7 +64,7 @@ module akra.data {
 		}
 
 		protected setupSignals(): void {
-			this.modified = this.modified || new Signal(<any>this);
+			this.modified = this.modified || new Signal(this);
 		}
 
 
@@ -159,8 +159,8 @@ module akra.data {
 			if (config.WEBGL) {
 				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
 					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-					this._pIndex.getPrimitiveCount(),
-					webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
+					this._pIndex.getLength(),
+					webgl.getWebglElementType(this._pIndex.getType()),
 					this._pIndex.getByteOffset() / 4);
 				//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
 			}

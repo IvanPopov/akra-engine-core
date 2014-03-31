@@ -22,7 +22,8 @@ module akra {
 		DSVIEWPORT = 1,
 		SHADOWVIEWPORT = 2,
 		COLORVIEWPORT,
-		TEXTUREVIEWPORT
+		TEXTUREVIEWPORT,
+		LPPVIEWPORT
 	}
 	
 	export interface IViewport extends IEventProvider, IClickable {

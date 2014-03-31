@@ -23,6 +23,8 @@
 		"deps": {
 			"files": [
 				{"path": "effects/mesh_texture.afx"},
+				{"path": "effects/apply_lpp_shading.afx"},
+				{"path": "effects/prepare_lpp_shading.afx"},
 				{"path": "effects/deferredShading.afx"},
 				{"path": "effects/apply_lights_and_shadows.afx"}
 			],

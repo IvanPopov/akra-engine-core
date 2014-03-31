@@ -38,10 +38,10 @@ module akra.net {
 		}
 
 		protected setupSignals(): void {
-			this.opened = this.opened || new Signal(<any>this);
-			this.closed = this.closed || new Signal(<any>this);
-			this.error = this.error || new Signal(<any>this);
-			this.message = this.message || new Signal(<any>this);
+			this.opened = this.opened || new Signal(this);
+			this.closed = this.closed || new Signal(this);
+			this.error = this.error || new Signal(this);
+			this.message = this.message || new Signal(this);
 		}
 
 		getURI(): IURI {

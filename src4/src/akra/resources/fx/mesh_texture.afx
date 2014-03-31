@@ -163,6 +163,57 @@ void fs_mesh_texture_pass_2(VS_OUT_2 IN){
     }
 }
 
+void fs_mesh_texture_full(VS_OUT_2 IN){
+    float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
+    float4 norm;
+
+    if(texNormal == float3(0.) || !useNormal){
+        norm = float4(IN.norm.xyz, 0.);
+    }
+    else {
+        
+        float3 normal = normalize(IN.norm.xyz);
+        //float3 binormal = normalize(cross(float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), -length(normal.xy)), normal));
+
+        float3 tangent = float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), 0.);
+        tangent.z = -dot(tangent.xy,normal.xy)/normal.z;
+        tangent = normalize(tangent);
+
+        float3 binormal = cross(tangent, normal);
+
+        /*float3 binormal = float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), 0.);
+        binormal.z = -dot(binormal.xy,normal.xy)/normal.z;
+        binormal = normalize(binormal);*/
+            
+        /*if (binormal == float3(0.)) {
+            binormal = normalize(cross(float3(0., 1., 0.), normal));
+        }*/
+
+        //формируем матрицу трансформации
+        float3x3 m3fTransform;
+        m3fTransform[0] = tangent;
+        m3fTransform[1] = binormal;
+        m3fTransform[2] = normal;
+
+
+        //texNormal.z *= 2.;
+        texNormal.xy = (texNormal.xy - 0.5) * 2.;
+
+        texNormal = normalize(texNormal);
+
+        norm = float4(m3fTransform * texNormal, 0.);
+    }
+
+    Normal = normalize(norm.xyz);
+//    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));
+    Fragment_material.emissive = clamp(defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy)), 0., 1.);
+    Fragment_material.diffuse = clamp(defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy)), 0., 1.);
+    Fragment_material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
+    Fragment_material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
+
+    Fragment_material.shininess = defaultMaterial.shininess;
+}
+
 technique mesh_texture{
     import akra.system.mesh_geometry shift 0;
     import akra.system.mesh_geometry shift 1;
@@ -173,5 +224,13 @@ technique mesh_texture{
     pass p1 {
         VertexShader = compile vs_mesh_texture();
         PixelShader = compile fs_mesh_texture_pass_2();
+    }
+}
+
+technique mesh_texture_full{
+    import akra.system.mesh_geometry;
+    pass p0 {
+        VertexShader = compile vs_mesh_texture();
+        PixelShader = compile fs_mesh_texture_full();
     }
 }

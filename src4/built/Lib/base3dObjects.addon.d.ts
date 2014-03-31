@@ -1,9 +1,9 @@
 /// <reference path="akra.d.ts" />
 declare module akra.addons {
-    function createSceneSurface(pScene: akra.IScene3d, nCell?: number): akra.ISceneModel;
-    function createSceneSurface(pScene: akra.IScene3d, nCellW?: number, nCellH?: number): akra.ISceneModel;
-    function createQuad(pScene: akra.IScene3d, fSize?: number, v2UV?: akra.IVec2): akra.ISceneModel;
-    function basis(pScene: akra.IScene3d, eOptions?: number, fSize?: number): akra.ISceneModel;
-    function bone(pJoint: akra.IJoint): akra.ISceneModel;
-    function lineCube(pScene: akra.IScene3d, eOptions?: number): akra.ISceneModel;
+    function createSceneSurface(pScene: IScene3d, nCell?: number): ISceneModel;
+    function createSceneSurface(pScene: IScene3d, nCellW?: number, nCellH?: number): ISceneModel;
+    function createQuad(pScene: IScene3d, fSize?: number, v2UV?: IVec2): ISceneModel;
+    function basis(pScene: IScene3d, eOptions?: number, fSize?: number): ISceneModel;
+    function bone(pJoint: IJoint): ISceneModel;
+    function lineCube(pScene: IScene3d, eOptions?: number): ISceneModel;
 }

@@ -107,7 +107,7 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.nodeNameChanged = this.nodeNameChanged || new Signal(<any>this);
+			this.nodeNameChanged = this.nodeNameChanged || new Signal(this);
 			super.setupSignals();
 		}
 

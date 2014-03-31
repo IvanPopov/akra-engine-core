@@ -13,8 +13,8 @@ module akra.ui {
 	export var $document = $(document);
 	export var $body = $(document.body);
 
-	class RelocatedSignal extends Signal<{ (pNode: IUINode, pLocation: IUINode): void; }, IUINode> {
-		emit(pLocation?: IUINode): void {
+	class RelocatedSignal extends Signal<IUINode> {
+		emit(pLocation: IUINode): void {
 			super.emit(pLocation);
 
 			var pNode = this.getSender();

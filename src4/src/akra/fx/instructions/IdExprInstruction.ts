@@ -9,8 +9,8 @@ module akra.fx.instructions {
 		private _isInPassUnifoms: boolean = false;
 		private _isInPassForeigns: boolean = false;
 
-		isVisible(): boolean {
-			return this._pInstructionList[0].isVisible();
+		_isVisible(): boolean {
+			return this._pInstructionList[0]._isVisible();
 		}
 
 		constructor() {
@@ -19,24 +19,24 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
 		}
 
-		getType(): IAFXVariableTypeInstruction {
+		_getType(): IAFXVariableTypeInstruction {
 			if (!isNull(this._pType)) {
 				return this._pType;
 			}
 			else {
 				var pVar: IdInstruction = <IdInstruction>this._pInstructionList[0];
-				this._pType = (<IAFXVariableDeclInstruction>pVar.getParent()).getType();
+				this._pType = (<IAFXVariableDeclInstruction>pVar._getParent())._getType();
 				return this._pType;
 			}
 		}
 
-		isConst(): boolean {
-			return this.getType().isConst();
+		_isConst(): boolean {
+			return this._getType()._isConst();
 		}
 
-		evaluate(): boolean {
-			if (this.getType().isForeign()) {
-				var pVal = this.getType()._getParentVarDecl().getValue();
+		_evaluate(): boolean {
+			if (this._getType()._isForeign()) {
+				var pVal = this._getType()._getParentVarDecl()._getValue();
 				if (!isNull(pVal)) {
 					this._pLastEvalResult = pVal;
 					return true;
@@ -46,15 +46,15 @@ module akra.fx.instructions {
 			return false;
 		}
 
-		prepareFor(eUsedMode: EFunctionType): void {
-			if (!this.isVisible()) {
+		_prepareFor(eUsedMode: EFunctionType): void {
+			if (!this._isVisible()) {
 				this._bToFinalCode = false;
 			}
 
 			if (eUsedMode === EFunctionType.k_PassFunction) {
-				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
-				if (!this.getType()._isUnverifiable() && isNull(pVarDecl.getParent())) {
-					if (pVarDecl.getType().isForeign()) {
+				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getInstructions()[0]._getParent();
+				if (!this._getType()._isUnverifiable() && isNull(pVarDecl._getParent())) {
+					if (pVarDecl._getType()._isForeign()) {
 						this._isInPassForeigns = true;
 					}
 					else {
@@ -64,11 +64,11 @@ module akra.fx.instructions {
 			}
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			var sCode: string = "";
 			if (this._bToFinalCode) {
 				if (this._isInPassForeigns || this._isInPassUnifoms) {
-					var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
+					var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getInstructions()[0]._getParent();
 					if (this._isInPassForeigns) {
 						sCode += "foreigns[\"" + pVarDecl._getNameIndex() + "\"]";
 					}
@@ -77,28 +77,28 @@ module akra.fx.instructions {
 					}
 				}
 				else {
-					sCode += this.getInstructions()[0].toFinalCode();
+					sCode += this._getInstructions()[0]._toFinalCode();
 				}
 			}
 			return sCode;
 		}
 
-		clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction {
-			return <IAFXIdExprInstruction>super.clone(pRelationMap);
+		_clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction {
+			return <IAFXIdExprInstruction>super._clone(pRelationMap);
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			if (!this.getType().isFromVariableDecl()) {
+			if (!this._getType()._isFromVariableDecl()) {
 				return;
 			}
 
 			var pInfo: IAFXTypeUseInfoContainer = null;
-			pInfo = pUsedDataCollector[this.getType()._getInstructionID()];
+			pInfo = pUsedDataCollector[this._getType()._getInstructionID()];
 
 			if (!isDef(pInfo)) {
 				pInfo = <IAFXTypeUseInfoContainer>{
-					type: this.getType(),
+					type: this._getType(),
 					isRead: false,
 					isWrite: false,
 					numRead: 0,
@@ -106,7 +106,7 @@ module akra.fx.instructions {
 					numUsed: 0
 				}
 
-				pUsedDataCollector[this.getType()._getInstructionID()] = pInfo;
+				pUsedDataCollector[this._getType()._getInstructionID()] = pInfo;
 			}
 
 			if (eUsedMode !== EVarUsedMode.k_Write && eUsedMode !== EVarUsedMode.k_Undefined) {

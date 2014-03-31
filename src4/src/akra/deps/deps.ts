@@ -210,7 +210,7 @@ module akra.deps {
 
 		Promise.all<uint>(pAll).then((pValues: uint[]): void => {
 			cb(null, pValues.reduce((a, b) => { return parseInt(<any>a) + parseInt(<any>b); }));
-		}).catch(<any>cb);
+		}, <any>cb);
 	}
 
 	function createResources(pEngine: IEngine, pDeps: IDependens): void {

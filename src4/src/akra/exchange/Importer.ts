@@ -27,7 +27,7 @@ module akra.exchange {
 
 		}
 
-		/**  */ getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

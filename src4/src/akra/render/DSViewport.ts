@@ -68,8 +68,8 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.addedSkybox = this.addedSkybox || new Signal(<any>this);
-			this.addedBackground = this.addedBackground || new Signal(<any>this);
+			this.addedSkybox = this.addedSkybox || new Signal(this);
+			this.addedBackground = this.addedBackground || new Signal(this);
 
 			super.setupSignals();
 		}
@@ -269,8 +269,7 @@ module akra.render {
 						}
 					}
 				}
-			};
-	
+			}	
 		}
 
 		getSkybox(): ITexture { return this._pDeferredSkyTexture; }

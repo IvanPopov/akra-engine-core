@@ -3,7 +3,7 @@
 
 module akra {
 	//export var logger: ILogger = util.Logger.getInstance();
-	export var logger: ILogger = new util.Logger();
+	export const logger: ILogger = new util.Logger();
 
 	logger.init();
 	logger.setUnknownCode(0, "unknown");

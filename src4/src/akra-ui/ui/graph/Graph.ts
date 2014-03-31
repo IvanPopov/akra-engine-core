@@ -8,8 +8,8 @@
 
 module akra.ui.graph {
 
-	class KeydownSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void;}, IUIGraph> {
-		emit(e?: IUIEvent): void {
+	class KeydownSignal extends Signal<IUIGraph> {
+		emit(e: IUIEvent): void {
 			var pGraph: IUIGraph = this.getSender();
 			var pNodes: IUIGraphNode[] = pGraph.getNodes();
 
@@ -24,8 +24,8 @@ module akra.ui.graph {
 		}
 	}
 
-	class MouseupSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void; }, IUIGraph> {
-		emit(e?: IUIEvent): void {
+	class MouseupSignal extends Signal<IUIGraph> {
+		emit(e: IUIEvent): void {
 			var pGraph: Graph = <Graph>this.getSender();
 
 			if (!isNull(pGraph.getTempRoute())) {
@@ -34,8 +34,8 @@ module akra.ui.graph {
 		}
 	}
 
-	class MousemoveSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void; }, IUIGraph> {
-		emit(e?: IUIEvent): void {
+	class MousemoveSignal extends Signal<IUIGraph> {
+		emit(e: IUIEvent): void {
 			var pGraph: Graph = <Graph>this.getSender();
 
 			if (!isNull(pGraph.getTempRoute())) {
@@ -46,8 +46,8 @@ module akra.ui.graph {
 	}
 
 
-	class ClickSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void; }, IUIGraph> {
-		emit(e?: IUIEvent): void {
+	class ClickSignal extends Signal<IUIGraph> {
+		emit(e: IUIEvent): void {
 			var pGraph: IUIGraph = this.getSender();
 
 			super.emit(e);
@@ -107,8 +107,8 @@ module akra.ui.graph {
 			this.mouseup = this.mouseup || new MouseupSignal(this);
 			this.click = this.click || new ClickSignal(this);
 
-			this.connectionBegin = this.connectionBegin || new Signal(<any>this);
-			this.connectionEnd = this.connectionEnd || new Signal(<any>this);
+			this.connectionBegin = this.connectionBegin || new Signal(this);
+			this.connectionEnd = this.connectionEnd || new Signal(this);
 			super.setupSignals();
 		}
 
@@ -180,5 +180,5 @@ module akra.ui.graph {
 		}
 	}
 
-	register("Graph", Graph);
+	register("Graph", <any>Graph);
 }

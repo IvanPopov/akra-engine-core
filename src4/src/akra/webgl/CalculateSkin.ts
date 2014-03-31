@@ -11,7 +11,7 @@ module akra.webgl {
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");
 
-		if (!isOk) {
+		if (true || !isOk) {
 			return false;
 		}
 

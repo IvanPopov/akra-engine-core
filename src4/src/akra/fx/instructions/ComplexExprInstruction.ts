@@ -13,21 +13,21 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_ComplexExprInstruction;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
 
-            sCode += "(" + this.getInstructions()[0].toFinalCode() + ")";
+            sCode += "(" + this._getInstructions()[0]._toFinalCode() + ")";
 
             return sCode;
         }
 
-        isConst(): boolean {
-            return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+        _isConst(): boolean {
+            return (<IAFXExprInstruction>this._getInstructions()[0])._isConst();
         }
 
-        evaluate(): boolean {
-            if ((<IAFXExprInstruction>this.getInstructions()[0]).evaluate()) {
-                this._pLastEvalResult = (<IAFXExprInstruction>this.getInstructions()[0]).getEvalValue();
+        _evaluate(): boolean {
+            if ((<IAFXExprInstruction>this._getInstructions()[0])._evaluate()) {
+                this._pLastEvalResult = (<IAFXExprInstruction>this._getInstructions()[0])._getEvalValue();
                 return true;
             }
             else {
@@ -35,10 +35,10 @@ module akra.fx.instructions {
             }
         }
 
-        // addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        // _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
         //				   eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        // 	var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-        // 	pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        // 	var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
+        // 	pSubExpr._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         // }
     }
 }

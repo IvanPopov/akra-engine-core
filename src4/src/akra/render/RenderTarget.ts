@@ -6,6 +6,7 @@
 /// <reference path="Viewport.ts" />
 /// <reference path="TextureViewport.ts" />
 /// <reference path="DSViewport.ts" />
+/// <reference path="LPPViewport.ts" />
 /// <reference path="ColorViewport.ts" />
 /// <reference path="ShadowViewport.ts" />
 
@@ -83,16 +84,16 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.preUpdate = this.preUpdate || new Signal(<any>this);
-			this.postUpdate = this.postUpdate || new Signal(<any>this);
+			this.preUpdate = this.preUpdate || new Signal(this);
+			this.postUpdate = this.postUpdate || new Signal(this);
 			
-			this.viewportPreUpdate = this.viewportPreUpdate || new Signal(<any>this);
-			this.viewportPostUpdate = this.viewportPostUpdate || new Signal(<any>this);
-			this.viewportAdded = this.viewportAdded || new Signal(<any>this);
-			this.viewportRemoved = this.viewportRemoved || new Signal(<any>this);
+			this.viewportPreUpdate = this.viewportPreUpdate || new Signal(this);
+			this.viewportPostUpdate = this.viewportPostUpdate || new Signal(this);
+			this.viewportAdded = this.viewportAdded || new Signal(this);
+			this.viewportRemoved = this.viewportRemoved || new Signal(this);
 
-			this.resized = this.resized || new Signal(<any>this);
-			this.cameraRemoved = this.cameraRemoved || new Signal(<any>this);
+			this.resized = this.resized || new Signal(this);
+			this.cameraRemoved = this.cameraRemoved || new Signal(this);
 		}
 
 		getWidth(): uint {

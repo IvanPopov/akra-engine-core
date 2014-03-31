@@ -13,39 +13,39 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_UnaryExprInstruction;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
-            sCode += this.getOperator();
-            sCode += this.getInstructions()[0].toFinalCode();
+            sCode += this._getOperator();
+            sCode += this._getInstructions()[0]._toFinalCode();
             return sCode;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            if (this.getOperator() === "++" || this.getOperator() === "--") {
-                (<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+            if (this._getOperator() === "++" || this._getOperator() === "--") {
+                (<IAFXExprInstruction>this._getInstructions()[0])._addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
             }
             else {
-                (<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+                (<IAFXExprInstruction>this._getInstructions()[0])._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
             }
         }
 
-        isConst(): boolean {
-            return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+        _isConst(): boolean {
+            return (<IAFXExprInstruction>this._getInstructions()[0])._isConst();
         }
 
-        evaluate(): boolean {
-            var sOperator: string = this.getOperator();
-            var pExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+        _evaluate(): boolean {
+            var sOperator: string = this._getOperator();
+            var pExpr: IAFXExprInstruction = <IAFXExprInstruction>this._getInstructions()[0];
 
-            if (!pExpr.evaluate()) {
+            if (!pExpr._evaluate()) {
                 return;
             }
 
             var pRes: any = null;
 
             try {
-                pRes = pExpr.getEvalValue();
+                pRes = pExpr._getEvalValue();
                 switch (sOperator) {
                     case "+":
                         pRes = +pRes;

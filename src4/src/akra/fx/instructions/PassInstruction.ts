@@ -7,6 +7,15 @@
 
 
 module akra.fx.instructions {
+	interface IEvaluateOutput {
+		"fragment": IAFXFunctionDeclInstruction;
+		"vertex": IAFXFunctionDeclInstruction;
+	};
+
+	interface IPassFunction {
+		(engine: any, foreigtn: any, uniforms: any, states: IMap<ERenderStateValues>, shaderMap: IAFXFunctionDeclMap, out: IEvaluateOutput): void; 
+	}
+
 	export class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
 		private _pTempNodeList: parser.IParseNode[] = null;
 		private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
@@ -15,14 +24,14 @@ module akra.fx.instructions {
 
 		private _sFunctionCode: string = "";
 
-		private _isComlexPass: boolean = false;
 		private _pShadersMap: IAFXFunctionDeclMap = null;
-		private _fnPassFunction: { (engine: any, foreigtn: any, uniforms: any): void; } = null;
+		private _pPassStateMap: IMap<ERenderStateValues> = null;
+
+		private _bIsComlexPass: boolean = false;
+		private _fnPassFunction: IPassFunction = null;
 
 		private _pVertexShader: IAFXFunctionDeclInstruction = null;
 		private _pPixelShader: IAFXFunctionDeclInstruction = null;
-		private _pPassStateMap: IMap<ERenderStateValues> = null;
-
 
 		private _pSharedVariableMapV: IAFXVariableDeclMap = null;
 		private _pGlobalVariableMapV: IAFXVariableDeclMap = null;
@@ -42,6 +51,7 @@ module akra.fx.instructions {
 		private _pFullForeignVariableMap: IAFXVariableDeclMap = null;
 		private _pFullTextureVariableMap: IAFXVariableDeclMap = null;
 
+		private _pComplexPassEvaluateOutput: IEvaluateOutput = { "fragment": null, "vertex": null };
 
 		constructor() {
 			super();
@@ -98,13 +108,13 @@ module akra.fx.instructions {
 		}
 
 		_addCodeFragment(sCode: string): void {
-			if (this.isComplexPass()) {
+			if (this._isComplexPass()) {
 				this._sFunctionCode += sCode;
 			}
 		}
 
 		_markAsComplex(isComplex: boolean): void {
-			this._isComlexPass = isComplex;
+			this._bIsComlexPass = isComplex;
 		}
 
 		_getSharedVariableMapV(): IAFXVariableDeclMap {
@@ -168,30 +178,30 @@ module akra.fx.instructions {
 		}
 
 
-		isComplexPass(): boolean {
-			return this._isComlexPass;
+		_isComplexPass(): boolean {
+			return this._bIsComlexPass;
 		}
 
-		getVertexShader(): IAFXFunctionDeclInstruction {
+		_getVertexShader(): IAFXFunctionDeclInstruction {
 			return this._pVertexShader;
 		}
 
-		getPixelShader(): IAFXFunctionDeclInstruction {
+		_getPixelShader(): IAFXFunctionDeclInstruction {
 			return this._pPixelShader;
 		}
 
-		addShader(pShader: IAFXFunctionDeclInstruction): void {
-			var isVertex: boolean = pShader.getFunctionType() === EFunctionType.k_Vertex;
+		_addShader(pShader: IAFXFunctionDeclInstruction): void {
+			var isVertex: boolean = pShader._getFunctionType() === EFunctionType.k_Vertex;
 
-			if (this.isComplexPass()) {
+			if (this._isComplexPass()) {
 				if (isNull(this._pShadersMap)) {
 					this._pShadersMap = <IAFXFunctionDeclMap>{};
 				}
 				var iShader: uint = pShader._getInstructionID();
 				this._pShadersMap[iShader] = pShader;
 
-				var sCode: string = isVertex ? "this._pVertexShader=" : "this._pPixelShader=";
-				sCode += "this._pShadersMap[" + iShader.toString() + "];"
+				var sCode: string = isVertex ? "out.vertex=" : "out.fragment=";
+				sCode += "shaderMap[" + iShader.toString() + "];"
 				this._addCodeFragment(sCode);
 			}
 			else {
@@ -204,22 +214,22 @@ module akra.fx.instructions {
 			}
 		}
 
-		setState(eType: ERenderStates, eValue: ERenderStateValues): void {
+		_setState(eType: ERenderStates, eValue: ERenderStateValues): void {
 			if (isNull(this._pPassStateMap)) {
 				this._pPassStateMap = render.createRenderStateMap();
 			}
 
-			if (this.isComplexPass()) {
-				this._addCodeFragment("this._pPassStateMap[" + eType + "]=" + eValue + ";");
+			if (this._isComplexPass()) {
+				this._addCodeFragment("states[" + eType + "]=" + eValue + ";");
 			}
 			else {
 				this._pPassStateMap[eType] = eValue;
 			}
 		}
 
-		finalizePass(): void {
-			if (this.isComplexPass()) {
-				this._fnPassFunction = <any>(new Function("engine", "foreigns", "uniforms", this._sFunctionCode));
+		_finalizePass(): void {
+			if (this._isComplexPass()) {
+				this._fnPassFunction = <any>(new Function("engine", "foreigns", "uniforms", "states", "shaderMap", "out", this._sFunctionCode));
 			}
 
 			this.generateInfoAboutUsedVaraibles();
@@ -231,19 +241,22 @@ module akra.fx.instructions {
 			this._sFunctionCode = "";
 		}
 
-		evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean {
-			if (this.isComplexPass()) {
-				this._pVertexShader = null;
-				this._pPixelShader = null;
+		_evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean {
+			if (this._isComplexPass()) {
+				this._pComplexPassEvaluateOutput.fragment = null;
+				this._pComplexPassEvaluateOutput.vertex = null;
 				this.clearPassStates();
 
-				this._fnPassFunction.call(this, pEngineStates, pForeigns, pUniforms);
+				this._fnPassFunction(pEngineStates, pForeigns, pUniforms, this._pPassStateMap, this._pShadersMap, this._pComplexPassEvaluateOutput);
+
+				this._pVertexShader = this._pComplexPassEvaluateOutput["vertex"];
+				this._pPixelShader = this._pComplexPassEvaluateOutput["fragment"];
 			}
 
 			return true;
 		}
 
-		getState(eType: ERenderStates): ERenderStateValues {
+		_getState(eType: ERenderStates): ERenderStateValues {
 			return !isNull(this._pPassStateMap) ? this._pPassStateMap[eType] : ERenderStateValues.UNDEF;
 		}
 
@@ -292,7 +305,7 @@ module akra.fx.instructions {
 				this._pFullTextureVariableMap = <IAFXVariableDeclMap>{};
 			}
 
-			if (this.isComplexPass()) {
+			if (this._isComplexPass()) {
 				for (var i in this._pShadersMap) {
 					this.addInfoAbouUsedVariablesFromFunction(this._pShadersMap[i]);
 				}
@@ -323,7 +336,7 @@ module akra.fx.instructions {
 			var pTextureVarsTo: IAFXVariableDeclMap = null;
 			var pTypesTo: IAFXTypeMap = null;
 
-			if (pFunction.getFunctionType() === EFunctionType.k_Vertex) {
+			if (pFunction._getFunctionType() === EFunctionType.k_Vertex) {
 				pSharedVarsTo = this._pSharedVariableMapV;
 				pGlobalVarsTo = this._pGlobalVariableMapV;
 				pUniformVarsTo = this._pUniformVariableMapV;
@@ -341,7 +354,7 @@ module akra.fx.instructions {
 			}
 
 			for (var i in pSharedVars) {
-				if (!isNull(pSharedVars[i]) && !pSharedVars[i].isField()) {
+				if (!isNull(pSharedVars[i]) && !pSharedVars[i]._isField()) {
 					pSharedVarsTo[i] = pSharedVars[i];
 				}
 			}

@@ -30,9 +30,13 @@
     </Resource>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ClosureCompiler>
+      <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
+      <CreateSourceMap>False</CreateSourceMap>
+    </ClosureCompiler>
     <Resource Name="AE_NAVIGATION_DEPENDENCIES">
       <Archive>True</Archive>
-      <UseInlining>True</UseInlining>
+      <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="navigation">
           <Exclude Path="cubemap.psd" />

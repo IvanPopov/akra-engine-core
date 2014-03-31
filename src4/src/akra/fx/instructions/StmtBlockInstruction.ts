@@ -13,11 +13,11 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_StmtBlockInstruction;
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "{" + "\n";
 
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                sCode += "\t" + this._pInstructionList[i].toFinalCode() + "\n";
+                sCode += "\t" + this._pInstructionList[i]._toFinalCode() + "\n";
             }
 
             sCode += "}";

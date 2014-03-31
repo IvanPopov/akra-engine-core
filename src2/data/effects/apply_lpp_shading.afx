@@ -1,0 +1,45 @@
+provide akra.system;
+
+struct base_material{
+    float4 diffuse:DIFFUSE;
+    float4 ambient:AMBIENT;
+    float4 emissive:EMISSIVE;
+    float4 specular:SPECULAR;
+    float shininess:SHININESS;
+};
+
+shared float3 Normal;
+shared base_material Fragment_material;
+
+texture tex0:LPP_LIGHT_MAP_BUFFER;
+
+sampler sampler_lpp_lights:LPP_LIGHT_MAP_SAMPLER  = sampler_state
+{
+    Texture = <tex0>;
+    MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
+float2 screenSize: SCREEN_SIZE;
+
+float4 fs_apply_lpp_shading() : COLOR {
+	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
+	float4 lightsData = tex2D(sampler_lpp_lights, texcoords);
+
+	float4 color = Fragment_material.emissive;
+
+	//float4 dif = Fragment_material.diffuse;
+	//color = float4(dif.xyz, 1.);
+	//color += float4(dif.x * lightsData.x, dif.y * lightsData.y, dif.z * lightsData.z, dif.w);
+	color += Fragment_material.diffuse * float4(lightsData.xyz, 1.);
+	color += Fragment_material.specular * float4(lightsData.www, 1.);
+
+	return color;
+}
+
+technique apply_lpp_shading{
+	pass p1 {
+		PixelShader = compile fs_apply_lpp_shading();
+	}
+}

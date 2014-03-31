@@ -3,8 +3,8 @@
 /// <reference path="Component.ts" />
 
 module akra.ui {
-	class ClickSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class ClickSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			e.stopPropagation();
 			super.emit(e);
 		}

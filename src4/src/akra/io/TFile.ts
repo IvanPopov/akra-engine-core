@@ -12,7 +12,7 @@
 /// <reference path="../math/math.ts" />
 
 module akra.io {
-	enum EFileActions {
+	export enum EFileActions {
 		k_Open = 1,
 		k_Read = 2,
 		k_Write,
@@ -21,7 +21,7 @@ module akra.io {
 		k_Remove
 	}
 
-	interface IFileCommand {
+	export interface IFileCommand {
 		act: EFileActions;
 		name: string;
 		mode: int;
@@ -32,27 +32,24 @@ module akra.io {
 		progress?: boolean;
 	}
 
-	var cio: any = config.io;
-	var iface = cio.tfile.iface;
-	var local = cio.tfile.local;
-	var remote = cio.tfile.remote;
+	import cio = config.io;
 
-	var sRemote: string = remote.content;
-	var sLocal: string = local.content;
+	var sRemote: string = cio.tfile.remote.content;
+	var sLocal: string = cio.tfile.local.content;
 
-	if (local.format === "STRING") {
+	if (cio.tfile.local.format === "String") {
 		//attachment contain inline thread file dataa
 		sLocal = conv.toURL("var $INTERFACE_DEFINED = true;\n" +
-			local.content + "\n" + iface.content, "application/javascript");
+			cio.tfile.local.content + "\n" + cio.tfile.iface.content, "application/javascript");
 	}
 	else {
 		sLocal = config.data + sLocal;
 	}
 
-	if (remote.format === "STRING") {
+	if (cio.tfile.remote.format === "String") {
 		//attachment contain inline thread file dataa
 		sRemote = conv.toURL("var $INTERFACE_DEFINED = true;\n" +
-			remote.content + "\n" + iface.content, "application/javascript");
+			cio.tfile.remote.content + "\n" + cio.tfile.iface.content, "application/javascript");
 	}
 	else {
 		sRemote = config.data + sRemote;
@@ -182,7 +179,7 @@ module akra.io {
 				this._iMode = (isString(arguments[1]) ? io.filemode(<string>arguments[1]) : arguments[1]);
 			}
 
-			this.update(function (err) {
+			this.update((err) => {
 				if (err) {
 					logger.warn("file update err", err);
 					cb.call(pFile, err);
@@ -190,7 +187,7 @@ module akra.io {
 				}
 
 				if (io.isAppend(this._iMode)) {
-					this.setPosition(this.size);
+					this.setPosition(this.getByteLength());
 				}
 
 				cb.call(pFile, null, this._pFileMeta);
@@ -289,19 +286,18 @@ module akra.io {
 				return;
 			}
 
-			var pFile: IFile = this;
 			var iMode: int = this._iMode;
 			var pCommand: IFileCommand;
-			var fnCallbackSystem: Function = function (err, pMeta) {
+			var fnCallbackSystem: Function = (err, pMeta) => {
 				if (err) {
-					cb.call(pFile, err);
+					cb.call(this, err);
 					return;
 				}
 
-				pFile.setPosition(pFile.getPosition() + (isString(pData) ? pData.length : pData.byteLength));
-				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
+				this.setPosition(this.getPosition() + (isString(pData) ? pData.length : pData.byteLength));
+				this._pFileMeta = <IFileMeta>pMeta;
 
-				cb.call(pFile, null, pMeta);
+				cb.call(this, null, pMeta);
 			};
 
 			logger.assert(io.canWrite(iMode), "The file is not writable.");
@@ -388,8 +384,6 @@ module akra.io {
 				return;
 			}
 
-			var pFile: IFile = this;
-
 			var pCommand: IFileCommand = {
 				act: EFileActions.k_Remove,
 				name: this.getPath(),
@@ -398,10 +392,10 @@ module akra.io {
 
 			this.execCommand(pCommand, (e: Error): void => {
 				if (!e) {
-					pFile.close();
+					this.close();
 				}
 
-				cb.call(pFile, e);
+				cb.call(this, e);
 			});
 		}
 
@@ -483,16 +477,15 @@ module akra.io {
 		}
 
 		protected update(cb: Function = TFile.defaultCallback) {
-			var pFile: IFile = this;
 			var pCommand: IFileCommand = {
 				act: EFileActions.k_Open,
 				name: this._pUri.toString(),
 				mode: this._iMode
 			};
 
-			var fnCallbackSystem: Function = function (err, pMeta) {
-				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
-				cb.call(pFile, err, pFile);
+			var fnCallbackSystem: Function = (err, pMeta) => {
+				this._pFileMeta = <IFileMeta>pMeta;
+				cb.call(this, err, this);
 			};
 
 			this.execCommand(pCommand, fnCallbackSystem);

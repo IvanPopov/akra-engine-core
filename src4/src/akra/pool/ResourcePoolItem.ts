@@ -55,16 +55,17 @@ module akra.pool {
 		}
 
 		protected setupSignals(): void {
-			this.created = this.created || new Signal(<any>this);
-			this.destroyed = this.destroyed || new Signal(<any>this);
-			this.loaded = this.loaded || new Signal(<any>this);
-			this.unloaded = this.unloaded || new Signal(<any>this);
-			this.restored = this.restored || new Signal(<any>this);
-			this.disabled = this.disabled || new Signal(<any>this);
-			this.altered = this.altered || new Signal(<any>this);
-			this.saved = this.saved || new Signal(<any>this);
+			this.created = this.created || new Signal(this);
+			this.destroyed = this.destroyed || new Signal(this);
+			this.loaded = this.loaded || new Signal(this);
+			this.unloaded = this.unloaded || new Signal(this);
+			this.restored = this.restored || new Signal(this);
+			this.disabled = this.disabled || new Signal(this);
+			this.altered = this.altered || new Signal(this);
+			this.saved = this.saved || new Signal(this);
 
-			this.stateChanged = this.stateChanged || new Signal(<any>this);
+			this.stateChanged = this.stateChanged || new Signal(this);
+
 		}
 
 		getResourceCode(): IResourceCode {
@@ -87,7 +88,7 @@ module akra.pool {
 			return bf.testBit(this._iResourceFlags, <number>EResourceItemEvents.ALTERED);
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			var pManager: IResourcePoolManager = this.getManager();
 
 			if (pManager) {

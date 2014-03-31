@@ -137,7 +137,6 @@ module akra {
 	export interface IColladaLibraryTemplate {
 		lib: string; 				   /** library tag name.*/
 		element: string;			   /** element in liibrary. */
-		loader: string;				/** loader function */
 	}
 	
 	

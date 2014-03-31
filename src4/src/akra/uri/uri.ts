@@ -234,7 +234,7 @@ module akra.uri {
 	}
 
 	export function currentPath(): string {
-		var pUri = uri.parse(document.currentScript.src);
+		var pUri = uri.parse(document["currentScript"]["src"]);
 		var sDirname: string = path.parse(pUri.getPath()).getDirName();
 		return pUri.getURL() + sDirname + "/";
 	}

@@ -6,16 +6,16 @@ module akra.addons {
 
 	import addons = config.addons;
 
-	addons['progress'] = addons['progress'] || { css: null };
-	addons['progress'].css = addons['progress'].css || (uri.currentPath() + "/progress/progress.css");
+	addons['progress'] = addons['progress'] || { "css": null };
+	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + "/progress/progress.css");
 
 	debug.log("config['addons']['progress'] = ", JSON.stringify(addons['progress']));
 
 	if (document.createStyleSheet) {
-		document.createStyleSheet(addons['progress'].css);
+		document.createStyleSheet(addons['progress']["css"]);
 	}
 	else {
-		var sStyles: string = "@import url(' " + addons['progress'].css + " ');";
+		var sStyles: string = "@import url(' " + addons['progress']["css"] + " ');";
 		var pLink: HTMLLinkElement = <HTMLLinkElement>document.createElement('link');
 
 		pLink.rel = 'stylesheet';

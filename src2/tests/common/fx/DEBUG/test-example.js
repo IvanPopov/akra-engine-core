@@ -76,13 +76,14 @@ var akra;
         // pStats.el.css({position: "relative", top: "-600"});
             }
     function createLighting() {
-        var pOmniLight = pScene.createLightPoint(akra.ELightTypes.OMNI, false, 0, "test-omni-0");
+        var pOmniLight = pScene.createLightPoint(akra.ELightTypes.OMNI, true, 512, "test-omni-0");
         pOmniLight.attachToParent(pScene.getRootNode());
-        pOmniLight.enabled = false;
+        pOmniLight.enabled = true;
         pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
         pOmniLight.params.diffuse.set(0.2);
         pOmniLight.params.specular.set(1, 1, 1, 1);
         pOmniLight.params.attenuation.set(0.5, 0, 0);
+        pOmniLight.isShadowCaster = true;
         pOmniLight.addPosition(1, 5, 3);
         // var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
         // pProjectShadowLight.attachToParent(pScene.getRootNode());
@@ -154,15 +155,15 @@ var akra;
         // pProjectShadowLight.isShadowCaster = true;
         // pProjectShadowLight.addRelRotationByXYZAxis(0, -0.1, 0);
         // pProjectShadowLight.addRelPosition(0, 3, 10);
-        var pOmniShadowLight = pScene.createLightPoint(akra.ELightTypes.OMNI, true, 512, "test-omni-1");
-        pOmniShadowLight.attachToParent(pScene.getRootNode());
-        pOmniShadowLight.enabled = true;
-        pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-        pOmniShadowLight.params.diffuse.set(0.5);
-        pOmniShadowLight.params.specular.set(1, 1, 1, 1);
-        pOmniShadowLight.params.attenuation.set(1, 0.0, 0);
-        pOmniShadowLight.isShadowCaster = false;
-        pOmniShadowLight.setPosition(1, 5, 5);
+        // var pOmniShadowLight = pScene.createLightPoint(akra.ELightTypes.OMNI, true, 512, "test-omni-1");
+        // pOmniShadowLight.attachToParent(pScene.getRootNode());
+        // pOmniShadowLight.enabled = true;
+        // pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+        // pOmniShadowLight.params.diffuse.set(0.5);
+        // pOmniShadowLight.params.specular.set(1, 1, 1, 1);
+        // pOmniShadowLight.params.attenuation.set(1, 0.0, 0);
+        // pOmniShadowLight.isShadowCaster = false;
+        // pOmniShadowLight.setPosition(1, 5, 5);
     }
     function createSkyBox() {
         pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
@@ -259,7 +260,7 @@ var akra;
     }
     function main(pEngine) {
         setup();
-        // createSceneEnvironment();
+        createSceneEnvironment();
         createCameras();
         createViewports();
         createLighting();
@@ -278,7 +279,7 @@ var akra;
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        loadManyModels(400, akra.DATA + "models/cube.dae");
+        loadManyModels(1, akra.DATA + "models/cube.dae");
         //loadManyModels(150, akra.DATA + "models/box/opened_box.dae");
     }
     akra.pEngine.bind("depsLoaded", main);

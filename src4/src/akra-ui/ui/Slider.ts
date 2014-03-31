@@ -55,7 +55,7 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.updated = this.updated || new Signal(<any>this);
+			this.updated = this.updated || new Signal(this);
 
 			super.setupSignals();
 		}

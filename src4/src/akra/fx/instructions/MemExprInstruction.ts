@@ -17,12 +17,12 @@ module akra.fx.instructions {
 
 		setBuffer(pBuffer: IAFXVariableDeclInstruction): void {
 			this._pBuffer = pBuffer;
-			this.setType(pBuffer.getType());
+			this._setType(pBuffer._getType());
 		}
 
-		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+		_addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
 			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			var pBufferType: IAFXVariableTypeInstruction = this.getBuffer().getType();
+			var pBufferType: IAFXVariableTypeInstruction = this.getBuffer()._getType();
 			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pBufferType._getInstructionID()];
 
 			if (!isDef(pInfo)) {

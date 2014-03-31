@@ -14,11 +14,11 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_KeywordInstruction;
 		}
 
-		setValue(sValue: string): void {
+		_setValue(sValue: string): void {
 			this._sValue = sValue;
 		}
 
-		isValue(sTestValue: string): boolean {
+		_isValue(sTestValue: string): boolean {
 			return this._sValue === sTestValue;
 		}
 
@@ -26,7 +26,7 @@ module akra.fx.instructions {
 			return this._sValue;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			return this._sValue;
 		}
 	}

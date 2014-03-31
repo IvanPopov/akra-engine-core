@@ -1,0 +1,40 @@
+var zip;
+zip.workerScriptsPath;
+
+/** @constructor */
+zip.BlobReader = function(){};
+zip.BlobReader.prototype.getEntries = function(){};
+zip.BlobReader.prototype.close = function(){};
+
+/** @constructor */
+zip.ArrayBufferReader = function(){};
+zip.ArrayBufferReader.prototype.getEntries = function(){};
+zip.ArrayBufferReader.prototype.close = function(){};
+
+/** @constructor */
+zip.Data64URIReader = function(){};
+zip.Data64URIReader.prototype.getEntries = function(){};
+zip.Data64URIReader.prototype.close = function(){};
+
+
+/** @constructor */
+zip.BlobWriter = function(){};
+/** @constructor */
+zip.TextWriter = function(){};
+/** @constructor */
+zip.ArrayBufferWriter = function(){};
+
+zip.createReader = function(){};
+
+/** @interface */
+var ZipEntry = function(){};
+
+ZipEntry.prototype.filename;
+ZipEntry.prototype.directory;
+ZipEntry.prototype.compressedSize;
+ZipEntry.prototype.uncompressedSize;
+ZipEntry.prototype.lastModDate;
+ZipEntry.prototype.lastModDateRaw;
+ZipEntry.prototype.comment;
+ZipEntry.prototype.crc32;
+ZipEntry.prototype.getData = function(){};

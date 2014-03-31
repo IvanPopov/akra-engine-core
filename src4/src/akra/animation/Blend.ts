@@ -3,7 +3,6 @@
 /// <reference path="Base.ts" />
 /// <reference path="Frame.ts" />
 
-
 module akra.animation {
 	export class Blend extends Base implements IAnimationBlend {
 		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }>;
@@ -18,8 +17,8 @@ module akra.animation {
 		}
 
 		protected setupSignals(): void {
-			this.weightUpdated = this.weightUpdated || new Signal(<any>this);
-			this.durationUpdated = this.durationUpdated || new Signal(<any>this);
+			this.weightUpdated = this.weightUpdated || new Signal(this);
+			this.durationUpdated = this.durationUpdated || new Signal(this);
 
 			super.setupSignals();
 		}
@@ -193,17 +192,17 @@ module akra.animation {
 
 		getAnimation(sName: string): IAnimationBase;
 		getAnimation(iAnimation: int): IAnimationBase;
-		getAnimation(animation): IAnimationBase {
-			var iAnimation: int = isString(animation) ? this.getAnimationIndex(animation) : <int>animation;
+		getAnimation(indexOrName): IAnimationBase {
+			var iAnimation: int = isString(indexOrName) ? this.getAnimationIndex(indexOrName) : <int>indexOrName;
 			return this._pAnimationList[iAnimation].animation;
 		}
 
 		getAnimationWeight(iAnimation: int): float;
 		getAnimationWeight(sName: string): float;
-		getAnimationWeight(animation): float {
-			var iAnimation: int = <int>animation;
-			if (isString(animation)) {
-				iAnimation = this.getAnimationIndex(animation);
+		getAnimationWeight(indexOrName): float {
+			var iAnimation: int = <int>indexOrName;
+			if (isString(indexOrName)) {
+				iAnimation = this.getAnimationIndex(indexOrName);
 			}
 
 			return this._pAnimationList[iAnimation].weight;
@@ -263,7 +262,7 @@ module akra.animation {
 		setAnimationWeight(fWeight: float): boolean;
 		setAnimationWeight(iAnimation: int, fWeight: float): boolean;
 		setAnimationWeight(sName: string, fWeight: float): boolean;
-		setAnimationWeight(animation, fWeight?: float): boolean {
+		setAnimationWeight(indexOrNameOrWeight, fWeight?: float): boolean {
 			var pAnimationList = this._pAnimationList;
 
 			if (arguments.length === 1) {
@@ -277,7 +276,7 @@ module akra.animation {
 				this.updateDuration();
 			}
 			else {
-				var iAnimation: int = isString(animation) ? this.getAnimationIndex(animation) : <int>animation;
+				var iAnimation: int = isString(indexOrNameOrWeight) ? this.getAnimationIndex(indexOrNameOrWeight) : <int>indexOrNameOrWeight;
 
 				//trace('set weight for animation: ', iAnimation, 'to ', fWeight);
 				if (pAnimationList[iAnimation].weight !== fWeight) {
@@ -292,8 +291,8 @@ module akra.animation {
 
 		setAnimationMask(iAnimation: int, pMask: IMap<float>): boolean;
 		setAnimationMask(sName: string, pMask: IMap<float>): boolean;
-		setAnimationMask(animation, pMask: IMap<float>): boolean {
-			var iAnimation: int = isString(animation) ? this.getAnimationIndex(animation) : <int>animation;
+		setAnimationMask(indexOrName, pMask: IMap<float>): boolean {
+			var iAnimation: int = isString(indexOrName) ? this.getAnimationIndex(indexOrName) : <int>indexOrName;
 
 			this._pAnimationList[iAnimation].mask = pMask;
 
@@ -302,16 +301,16 @@ module akra.animation {
 
 		getAnimationMask(iAnimation: int): IMap<float>;
 		getAnimationMask(sName: string): IMap<float>;
-		getAnimationMask(animation): IMap<float> {
-			var iAnimation: int = isString(animation) ? this.getAnimationIndex(animation) : <int>animation;
+		getAnimationMask(indexOrName): IMap<float> {
+			var iAnimation: int = isString(indexOrName) ? this.getAnimationIndex(indexOrName) : <int>indexOrName;
 
 			return this._pAnimationList[iAnimation].mask;
 		}
 
 		getAnimationAcceleration(iAnimation: int): float;
 		getAnimationAcceleration(sName: string): float;
-		getAnimationAcceleration(animation): float {
-			var iAnimation: int = isString(animation) ? this.getAnimationIndex(animation) : <int>animation;
+		getAnimationAcceleration(indexOrName): float {
+			var iAnimation: int = isString(indexOrName) ? this.getAnimationIndex(indexOrName) : <int>indexOrName;
 
 			return this._pAnimationList[iAnimation].acceleration;
 		}
@@ -390,7 +389,6 @@ module akra.animation {
 			return pAnimation.getType() === EAnimationTypes.BLEND;
 		}
 	}
-
 
 	export function createBlend(sName?: string): IAnimationBlend {
 		return new Blend(sName);

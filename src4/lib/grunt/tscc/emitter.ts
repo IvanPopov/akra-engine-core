@@ -1,7 +1,19 @@
-///<reference path='typescript2.d.ts' />
+///<reference path='typescript.d.ts' />
 
+declare function createStreamForInterfaceExterns(path: string): any;
+declare var STRIP_TYPES: string[];
 
 module TypeScript {
+	var isNeedEscape = "_isNeedEscape";
+	var splitToExternMode = "_splitToExternsMode";
+	var escapeNamesMap = "_escapeOptionsMap";
+
+	enum InterfaceExternsSplitMode {
+		k_None,
+		k_All,
+		k_Part
+	}
+
 	export enum EmitContainer {
 		Prog,
 		Module,
@@ -45,15 +57,24 @@ module TypeScript {
 
 		public compilationSettings() { return this._settings; }
 
-		constructor(compiler: TypeScriptCompiler,
-			public resolvePath: (path: string) => string) {
-
+		constructor(compiler: TypeScriptCompiler, public resolvePath: (path: string) => string) {
 			var settings = compiler.compilationSettings();
 			this._settings = settings;
 
-			if (settings.moduleGenTarget() === ModuleGenTarget.Unspecified && compiler._isDynamicModuleCompilation()) {
-				this._diagnostic = new Diagnostic(null, null, 0, 0, DiagnosticCode.Cannot_compile_external_modules_unless_the_module_flag_is_provided, null);
-				return;
+			// If the document is an external module, then report if the the user has not 
+			// provided the right command line option.
+			if (settings.moduleGenTarget() === ModuleGenTarget.Unspecified) {
+				var fileNames = compiler.fileNames();
+				for (var i = 0, n = fileNames.length; i < n; i++) {
+					var document = compiler.getDocument(fileNames[i]);
+					if (!document.isDeclareFile() && document.isExternalModule()) {
+						var errorSpan = document.externalModuleIndicatorSpan();
+						this._diagnostic = new Diagnostic(document.fileName, document.lineMap(), errorSpan.start(), errorSpan.length(),
+							DiagnosticCode.Cannot_compile_external_modules_unless_the_module_flag_is_provided);
+
+						return;
+					}
+				}
 			}
 
 			if (!settings.mapSourceFiles()) {
@@ -62,7 +83,8 @@ module TypeScript {
 					if (settings.sourceRoot()) {
 						this._diagnostic = new Diagnostic(null, null, 0, 0, DiagnosticCode.Options_mapRoot_and_sourceRoot_cannot_be_specified_without_specifying_sourcemap_option, null);
 						return;
-					} else {
+					}
+					else {
 						this._diagnostic = new Diagnostic(null, null, 0, 0, DiagnosticCode.Option_mapRoot_cannot_be_specified_without_specifying_sourcemap_option, null);
 						return;
 					}
@@ -113,7 +135,8 @@ module TypeScript {
 						// So common path = directory of file
 						commonComponents = fileComponents;
 						commonComponentsLength = commonComponents.length;
-					} else {
+					}
+					else {
 						var updatedPath = false;
 						for (var j = 0; j < commonComponentsLength && j < fileComponents.length; j++) {
 							if (commonComponents[j] !== fileComponents[j]) {
@@ -122,10 +145,7 @@ module TypeScript {
 								updatedPath = true;
 
 								if (j === 0) {
-									if (this._outputDirectory || // there is --outDir specified
-										this._sourceRootDirectory || // there is --sourceRoot specified
-										(this._sourceMapRootDirectory && // there is --map Specified and there would be multiple js files generated
-										(!this._sharedOutputFile || compiler._isDynamicModuleCompilation()))) {
+									if (this._outputDirectory || this._sourceMapRootDirectory) {
 										// Its error to not have common path
 										this._diagnostic = new Diagnostic(null, null, 0, 0, DiagnosticCode.Cannot_find_the_common_subdirectory_path_for_the_input_files, null);
 										return;
@@ -194,15 +214,16 @@ module TypeScript {
 		public captureThisStmtString = "var _this = this;";
 		private currentVariableDeclaration: VariableDeclaration;
 		private declStack: PullDecl[] = [];
-		private exportAssignmentIdentifier: string = null;
+		private exportAssignment: ExportAssignment = null;
 		private inWithBlock = false;
 
 		public document: Document = null;
-		private copyrightElement: AST = null;
+		// private copyrightElement: AST = null;
 
 		/**
 		* For closure
 		*/
+		private thisShortClassNameForMethods: string = null;
 		private thisFullClassName: string = null;
 		private thisFullExtendClassName: string = null;
 		private obfuscatedSymbolList: PullSymbol[] = [];
@@ -210,9 +231,10 @@ module TypeScript {
 		private obfuscatorCounter: number = 0;
 
 		private thisFullInterfaceName: string = null;
+		private thisFullInterfaceExternPartName: string = null;
 
-		private emittedInterfaceSymbols: PullSymbol[] = [];
-		private usedButNotEmittedInterfaces: PullSymbol[] = [];
+		private emittedInterfaces: InterfaceDeclaration[] = [];
+		private usedButNotEmittedInterfaces: InterfaceDeclaration[] = [];
 
 		/** For emit typedef comments without type parameters */
 		private isTypeParametersEmitBlocked = false;
@@ -225,6 +247,10 @@ module TypeScript {
 		private totalEmitedConstansts = 0;
 		private lastEmitConstantValue = null;
 
+		// If we choose to detach comments from an element (for example, the Copyright comments),
+		// then keep track of that element so that we don't emit all on the comments on it when
+		// we visit it.
+		private detachedCommentsElement: AST = null;
 		/** for emitting jsDoc cooments for class properties */
 		private emittedClassProperties: PullSymbol[] = null;
 
@@ -236,10 +262,27 @@ module TypeScript {
 
 		private _emitGlobal: boolean = true;
 
+		private interfaceExternsStream = null;
+		private isEnabledInterfaceExternStream = false;
+		private externFileStream = null;
+
+		private shortNameMap: { [longName: string]: string } = {};
+		private shorter: number = 0;
+
 		constructor(public emittingFileName: string,
 			public outfile: TextWriter,
 			public emitOptions: EmitOptions,
 			private semanticInfoChain: SemanticInfoChain) {
+
+			if (emitOptions.sharedOutputFile()) {
+				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".tmp.externs");
+				this.externFileStream = createStreamForInterfaceExterns(emitOptions.sharedOutputFile() + ".externs");
+			}
+			else {
+				console.warn("TSCC warn >> Bad compilation options! Better if you specify output file.");
+				this.interfaceExternsStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__interface__.js.tmp.externs");
+				this.externFileStream = createStreamForInterfaceExterns(emitOptions.sourceRootDirectory() + "/__externs__.js.externs");
+			}
 		}
 
 		private pushDecl(decl: PullDecl) {
@@ -260,12 +303,12 @@ module TypeScript {
 			return enclosingDecl;
 		}
 
-		public setExportAssignmentIdentifier(id: string) {
-			this.exportAssignmentIdentifier = id;
+		public setExportAssignment(exportAssignment: ExportAssignment) {
+			this.exportAssignment = exportAssignment;
 		}
 
-		public getExportAssignmentIdentifier() {
-			return this.exportAssignmentIdentifier;
+		public getExportAssignment() {
+			return this.exportAssignment;
 		}
 
 		public setDocument(document: Document) {
@@ -273,14 +316,50 @@ module TypeScript {
 		}
 
 		public shouldEmitImportDeclaration(importDeclAST: ImportDeclaration) {
-			return importDeclarationIsElided(importDeclAST, this.semanticInfoChain, this.emitOptions.compilationSettings());
+			var isExternalModuleReference = importDeclAST.moduleReference.kind() === SyntaxKind.ExternalModuleReference;
+			var importDecl = this.semanticInfoChain.getDeclForAST(importDeclAST);
+			var isExported = hasFlag(importDecl.flags, PullElementFlags.Exported);
+			var isAmdCodeGen = this.emitOptions.compilationSettings().moduleGenTarget() === ModuleGenTarget.Asynchronous;
+
+			// 1) Any internal reference needs to check if the emit can happen
+			// 2) External module reference with export modifier always needs to be emitted
+			// 3) commonjs needs the var declaration for the import declaration
+			if (isExternalModuleReference && !isExported && isAmdCodeGen) {
+				return false;
+			}
+
+			var importSymbol = <PullTypeAliasSymbol>importDecl.getSymbol();
+			if (importSymbol.isUsedAsValue()) {
+				return true;
+			}
+
+			if (importDeclAST.moduleReference.kind() !== SyntaxKind.ExternalModuleReference) {
+				var canBeUsedExternally = isExported || importSymbol.typeUsedExternally() || importSymbol.isUsedInExportedAlias();
+				if (!canBeUsedExternally && !this.document.isExternalModule()) {
+					// top level import in non-external module are visible across the whole global module
+					canBeUsedExternally = hasFlag(importDecl.getParentDecl().kind, PullElementKind.Script | PullElementKind.DynamicModule);
+				}
+
+				if (canBeUsedExternally) {
+					if (importSymbol.getExportAssignedValueSymbol()) {
+						return true;
+					}
+
+					var containerSymbol = importSymbol.getExportAssignedContainerSymbol();
+					if (containerSymbol && containerSymbol.getInstanceSymbol()) {
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		public emitImportDeclaration(importDeclAST: ImportDeclaration) {
 			var isExternalModuleReference = importDeclAST.moduleReference.kind() === SyntaxKind.ExternalModuleReference;
 			var importDecl = this.semanticInfoChain.getDeclForAST(importDeclAST);
 			var isExported = hasFlag(importDecl.flags, PullElementFlags.Exported);
-			var isAmdCodeGen = this.emitOptions.compilationSettings().moduleGenTarget() == ModuleGenTarget.Asynchronous;
+			var isAmdCodeGen = this.emitOptions.compilationSettings().moduleGenTarget() === ModuleGenTarget.Asynchronous;
 
 			this.emitComments(importDeclAST, true);
 
@@ -296,19 +375,21 @@ module TypeScript {
 			var moduleNamePrefix: string;
 
 			if (isExported &&
-				(parentKind == PullElementKind.Container ||
+				(parentKind === PullElementKind.Container ||
 				parentKind === PullElementKind.DynamicModule ||
 				associatedParentSymbolKind === PullElementKind.Container ||
 				associatedParentSymbolKind === PullElementKind.DynamicModule)) {
 				if (importSymbol.getExportAssignedTypeSymbol() || importSymbol.getExportAssignedContainerSymbol()) {
 					// Type or container assignment that is exported
 					needsPropertyAssignment = true;
-				} else {
+				}
+				else {
 					var valueSymbol = importSymbol.getExportAssignedValueSymbol();
 					if (valueSymbol &&
-						(valueSymbol.kind == PullElementKind.Method || valueSymbol.kind == PullElementKind.Function)) {
+						(valueSymbol.kind === PullElementKind.Method || valueSymbol.kind === PullElementKind.Function)) {
 						needsPropertyAssignment = true;
-					} else {
+					}
+					else {
 						usePropertyAssignmentInsteadOfVarDecl = true;
 					}
 				}
@@ -326,12 +407,13 @@ module TypeScript {
 				// For amdCode gen of exported external module reference, do not emit var declaration
 				// Emit the property assignment since it is exported
 				needsPropertyAssignment = true;
-			} else {
+			}
+			else {
 				this.recordSourceMappingStart(importDeclAST);
 				if (usePropertyAssignmentInsteadOfVarDecl) {
 					this.writeToOutput(moduleNamePrefix);
 				} else {
-					this.writeToOutput("var ");
+					this.writeToOutput("var /** @const */");
 				}
 
 				this.writeToOutput(this.getObfuscatedName(importSymbol, importDeclAST.identifier.text()) + " = ");
@@ -374,7 +456,8 @@ module TypeScript {
 				// There are new lines in the string, update the line and column number accordingly
 				this.emitState.line += lineNumbers.length - 1;
 				this.emitState.column = s.length - lineNumbers[lineNumbers.length - 1];
-			} else {
+			}
+			else {
 				// No new lines in the string
 				this.emitState.column += s.length;
 			}
@@ -386,12 +469,49 @@ module TypeScript {
 			this.recordSourceMappingEnd(astSpan);
 		}
 
+		private writeToStream(stream: any, s: string) {
+			//if (this.bufferForStream !== "" && this.bufferForStream !== s) {
+			//	this.bufferForStream += s;
+			//}
+			//else {
+			//	this.bufferForStream = "";
+			//	var ok = this.interfaceExternsStream.write(s);
+
+			//	if (!ok) {
+			//		this.bufferForStream = s;
+			//		var me = this;
+			//		this.interfaceExternsStream.once('drain', () => {
+			//			me.writeToStream(me.bufferForStream);
+			//		});
+			//	}
+			//}
+
+			stream.buffer += s;
+		}
+
 		public writeToOutput(s: string) {
+			if (this.isEnabledInterfaceExternStream) {
+				this.writeToStream(this.interfaceExternsStream, s);
+				return;
+			}
+
 			this.outfile.Write(s);
 			this.updateLineAndColumn(s);
 		}
 
+		public writeToExternOutput(s: string) {
+			this.writeToStream(this.externFileStream, s);
+		}
+
+		public writeLineToExternOutput(s: string) {
+			this.writeToStream(this.externFileStream, s + "\n");
+		}
+
 		public writeLineToOutput(s: string, force = false) {
+			if (this.isEnabledInterfaceExternStream) {
+				this.writeToStream(this.interfaceExternsStream, s + "\n");
+				return;
+			}
 			// No need to print a newline if we're already at the start of the line.
 			if (!force && s === "" && this.emitState.column === 0) {
 				return;
@@ -451,7 +571,8 @@ module TypeScript {
 					this.recordSourceMappingEnd(comment);
 					this.writeLineToOutput("");
 					// Fall through
-				} else {
+				}
+				else {
 					this.recordSourceMappingEnd(comment);
 					this.writeToOutput(" ");
 					return;
@@ -465,7 +586,7 @@ module TypeScript {
 				// Fall through
 			}
 
-			if (!trailing && emitColumn != 0) {
+			if (!trailing && emitColumn !== 0) {
 				// If we were indented before, stay indented after.
 				this.emitIndent();
 			}
@@ -483,16 +604,17 @@ module TypeScript {
 			if (pre) {
 				var preComments = ast.preComments();
 
-				if (preComments && ast === this.copyrightElement) {
+				if (preComments && ast === this.detachedCommentsElement) {
 					// We're emitting the comments for the first script element.  Skip any 
 					// copyright comments, as we'll already have emitted those.
-					var copyrightComments = this.getCopyrightComments();
-					preComments = preComments.slice(copyrightComments.length);
+					var detachedComments = this.getDetachedComments(ast);
+					preComments = preComments.slice(detachedComments.length);
+					this.detachedCommentsElement = null;
 				}
 
 				// We're emitting comments on an elided element.  Only keep the comment if it is
 				// a triple slash or pinned comment.
-				if (onlyPinnedOrTripleSlashComments) {
+				if (preComments && onlyPinnedOrTripleSlashComments) {
 					preComments = ArrayUtilities.where(preComments, c => this.isPinnedOrTripleSlash(c));
 				}
 
@@ -614,7 +736,8 @@ module TypeScript {
 					this.writeToOutput(", ");
 					this.emitCommaSeparatedList(callNode.argumentList, args, /*buffer:*/ "", /*preserveNewLines:*/ false);
 				}
-			} else {
+			}
+			else {
 				if (callNode.expression.kind() === SyntaxKind.SuperKeyword && this.emitState.container === EmitContainer.Constructor) {
 					this.writeToOutput(this.thisFullExtendClassName + ".call");
 				}
@@ -640,7 +763,7 @@ module TypeScript {
 		private emitParameterList(list: ParameterList): void {
 			this.writeToOutput("(");
 			this.emitCommentsArray(list.openParenTrailingComments, /*trailing:*/ true);
-			this.emitFunctionParameters(Parameters.fromParameterList(list));
+			this.emitFunctionParameters(ASTHelpers.parametersFromParameterList(list));
 			this.writeToOutput(")");
 		}
 
@@ -689,13 +812,23 @@ module TypeScript {
 
 			this.indenter.increaseIndent();
 
+			if (block) {
+				// We want any detached statements at the start of hte block to stay at the start.
+				// This is important for features like VSDoc which place their comments inside a
+				// block, but can't have them preceded by things like "var _this = this" when we
+				// emit.
+
+				this.emitDetachedComments(block.statements);
+			}
+
+			// Parameter list parameters with defaults could capture this
+			if (this.shouldCaptureThis(funcDecl)) {
+				this.writeCaptureThisStatement(funcDecl);
+			}
+
 			if (parameterList) {
 				this.emitDefaultValueAssignments(parameterList);
 				this.emitRestParameterInitializer(parameterList);
-			}
-
-			if (this.shouldCaptureThis(funcDecl)) {
-				this.writeCaptureThisStatement(funcDecl);
 			}
 
 			if (block) {
@@ -920,6 +1053,9 @@ module TypeScript {
 			this.recordSourceMappingStart(moduleDecl);
 			this.recordSourceMappingNameStart(this.moduleName);
 
+			if (isExported) {
+				this.writeLineToExternOutput("/** @enum {number} */ " + this.moduleName + " = {");
+			}
 			//this.indenter.increaseIndent();
 
 			//if (this.shouldCaptureThis(moduleDecl)) {
@@ -969,6 +1105,12 @@ module TypeScript {
 
 			if (isExported) {
 				this.exportSymbol(pullDecl.getSymbol());
+				//FIX ME: to delete comma symbol from last enum element
+				var buffer: string = this.externFileStream.buffer;
+				if (buffer[buffer.length - 2] === "," && buffer[buffer.length - 1] === "\n") {
+					this.externFileStream.buffer = buffer.substr(0, buffer.length - 2) + "\n";
+				}
+				this.writeLineToExternOutput("};");
 			}
 
 			//if (temp !== EmitContainer.Prog && isExported) {
@@ -994,7 +1136,8 @@ module TypeScript {
 			if (ArrayUtilities.contains(this.declStack, moduleDecl)) {
 				// Given decl is in the scope, we would need to check for child name collision
 				return moduleDecl;
-			} else if (changeNameIfAnyDeclarationInContext) {
+			}
+			else if (changeNameIfAnyDeclarationInContext) {
 				// Check if any other declaration of the given symbol is in scope 
 				// (eg. when emitting expression of type defined from different declaration in reopened module)
 				var symbol = moduleDecl.getSymbol();
@@ -1012,13 +1155,31 @@ module TypeScript {
 			return null;
 		}
 
-		private hasChildNameCollision(moduleName: string, childDecls: PullDecl[]) {
+		private hasChildNameCollision(moduleName: string, parentDecl: PullDecl) {
+			var childDecls = parentDecl.getChildDecls();
 			return ArrayUtilities.any(childDecls, (childDecl: PullDecl) => {
-				if (childDecl.name == moduleName) {
+				var childAST = this.semanticInfoChain.getASTForDecl(childDecl);
+				// Enum member it can never conflict with module name as it is property of the enum
+				// Only if this child would be emitted we need to look further in
+				if (childDecl.kind != PullElementKind.EnumMember && this.shouldEmit(childAST)) {
 					// same name child
-					var childAST = this.semanticInfoChain.getASTForDecl(childDecl);
-					if (this.shouldEmit(childAST)) {
-						// Child ast would be emitted
+					if (childDecl.name === moduleName) {
+						// collision if the parent was not class
+						if (parentDecl.kind != PullElementKind.Class) {
+							return true;
+						}
+
+						// If the parent was class, we would find name collision if this was not a property/method/accessor
+						if (!(childDecl.kind == PullElementKind.Method ||
+							childDecl.kind == PullElementKind.Property ||
+							childDecl.kind == PullElementKind.SetAccessor ||
+							childDecl.kind == PullElementKind.GetAccessor)) {
+							return true;
+						}
+					}
+
+					// Check if the name collision exists in any of the children
+					if (this.hasChildNameCollision(moduleName, childDecl)) {
 						return true;
 					}
 				}
@@ -1034,11 +1195,9 @@ module TypeScript {
 
 			// If the decl is in stack it may need name change in the js file
 			moduleDecl = this.getModuleDeclToVerifyChildNameCollision(moduleDecl, changeNameIfAnyDeclarationInContext);
-			if (moduleDecl) {
-				var childDecls = moduleDecl.getChildDecls();
-
+			if (moduleDecl && moduleDecl.kind != PullElementKind.Enum) {
 				// If there is any child that would be emitted with same name as module, js files would need to use rename for the module
-				while (this.hasChildNameCollision(moduleName, childDecls)) {
+				while (this.hasChildNameCollision(moduleName, moduleDecl)) {
 					// there was name collision with member which could result in faulty codegen, try rename with prepend of '_'
 					moduleName = "_" + moduleName;
 					moduleDisplayName = "_" + moduleDisplayName;
@@ -1046,8 +1205,6 @@ module TypeScript {
 			}
 
 			return moduleDisplayName;
-
-			//return moduleDecl.getSymbol().fullName();
 		}
 
 		private emitModuleDeclarationWorker(moduleDecl: ModuleDeclaration) {
@@ -1063,7 +1220,7 @@ module TypeScript {
 		_emittedModuleNames: string[] = [];
 
 		public emitSingleModuleDeclaration(moduleDecl: ModuleDeclaration, moduleName: IASTToken) {
-			var isLastName = isLastNameOfModule(moduleDecl, moduleName);
+			var isLastName = ASTHelpers.isLastNameOfModule(moduleDecl, moduleName);
 
 			if (isLastName) {
 				// Doc Comments on the ast belong to the innermost module being emitted.
@@ -1095,21 +1252,34 @@ module TypeScript {
 
 				if (fullModuleName.indexOf(".") < 0) {
 					this.writeToOutput("var ");
+					this.writeToExternOutput("var ");
 				}
 
 				this.recordSourceMappingStart(moduleName);
 				this.writeToOutput(fullModuleName);
+				this.writeLineToExternOutput(fullModuleName + ";");
 				this.recordSourceMappingEnd(moduleName);
-				this.writeLineToOutput(" = {};");
 
-				this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
+				var exportedName = this.getNameForExport(pullDecl.getSymbol());
+				//this.writeLineToOutput(" = " + fullModuleName + " || {};");
+
+				//view like: (container['akra'] = container['akra'] || {}) || {};
+
+				this.writeLineToOutput(" = (" + exportedName + " = " + exportedName + " || {}) || {};");
+
+				//var shortName = this.getShortName(exportedName, pullDecl.getSymbol());
+				var shortName = this.getShortName(pullDecl.getSymbol().fullName());
+
+				this.writeLineToOutput("var " + shortName + " = " + exportedName + ";");
+
+				//this.writeLineToOutput(fullModuleName + " = " + fullModuleName);
 
 				this.recordSourceMappingEnd(moduleDecl);
 				this.emitIndent();
 
 				this._emittedModuleNames.push(fullModuleName);
 
-				this.exportSymbol(pullDecl.getSymbol());
+				//this.exportSymbol(pullDecl.getSymbol());
 			}
 
 			// prologue
@@ -1243,6 +1413,10 @@ module TypeScript {
 			//this.writeToOutput(this.moduleName);
 			//this.writeToOutput('[');
 			this.writeToOutput((isNeedQuoted ? ('"' + name + '"') : name) + ": ");
+
+			if (this.isEmittedEnumExported) {
+				this.writeLineToExternOutput(name + ": null,");
+			}
 			//this.writeToOutput(']');
 
 			if (varDecl.equalsValueClause) {
@@ -1270,7 +1444,16 @@ module TypeScript {
 
 		public emitElementAccessExpression(expression: ElementAccessExpression) {
 			this.recordSourceMappingStart(expression);
-			this.emit(expression.expression);
+
+			var symbol = this.semanticInfoChain.getSymbolForAST(expression.expression);
+
+			if (symbol && PullHelpers.symbolIsModule(symbol.type) && this.hasShortName(symbol.type.fullName())) {
+				this.writeToOutput(this.getShortName(symbol.type.fullName()));
+			}
+			else {
+				this.emit(expression.expression);
+			}
+
 			this.writeToOutput("[");
 			this.emit(expression.argumentExpression);
 			this.writeToOutput("]");
@@ -1279,12 +1462,12 @@ module TypeScript {
 
 		public emitSimpleArrowFunctionExpression(arrowFunction: SimpleArrowFunctionExpression): void {
 			this.emitAnyArrowFunctionExpression(arrowFunction, null /*arrowFunction.getNameText()*/,
-				Parameters.fromIdentifier(arrowFunction.identifier), arrowFunction.block, arrowFunction.expression);
+				ASTHelpers.parametersFromIdentifier(arrowFunction.identifier), arrowFunction.block, arrowFunction.expression);
 		}
 
 		public emitParenthesizedArrowFunctionExpression(arrowFunction: ParenthesizedArrowFunctionExpression): void {
 			this.emitAnyArrowFunctionExpression(arrowFunction, null /* arrowFunction.getNameText() */,
-				Parameters.fromParameterList(arrowFunction.callSignature.parameterList), arrowFunction.block, arrowFunction.expression);
+				ASTHelpers.parametersFromParameterList(arrowFunction.callSignature.parameterList), arrowFunction.block, arrowFunction.expression);
 		}
 
 		private emitAnyArrowFunctionExpression(arrowFunction: AST, funcName: string, parameters: IParameters, block: Block, expression: AST): void {
@@ -1338,7 +1521,7 @@ module TypeScript {
 			this.writeToOutput("function ");
 			//this.writeToOutput(this.thisClassNode.identifier.text());
 			this.writeToOutput("(");
-			var parameters = Parameters.fromParameterList(funcDecl.parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(funcDecl.callSignature.parameterList);
 			this.emitFunctionParameters(parameters);
 			this.writeLineToOutput(") {");
 
@@ -1393,7 +1576,7 @@ module TypeScript {
 			this.writeToOutput("(");
 			this.writeToOutput(")");
 
-			this.emitFunctionBodyStatements(null, accessor, Parameters.fromParameterList(accessor.parameterList), accessor.block, /*bodyExpression:*/ null);
+			this.emitFunctionBodyStatements(null, accessor, ASTHelpers.parametersFromParameterList(accessor.parameterList), accessor.block, /*bodyExpression:*/ null);
 
 			this.recordSourceMappingEnd(accessor);
 
@@ -1426,7 +1609,7 @@ module TypeScript {
 			this.writeToOutput(accessor.propertyName.text());
 			this.writeToOutput("(");
 
-			var parameters = Parameters.fromParameterList(accessor.parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(accessor.parameterList);
 			this.emitFunctionParameters(parameters);
 			this.writeToOutput(")");
 
@@ -1468,7 +1651,7 @@ module TypeScript {
 
 			this.writeToOutput("(");
 
-			var parameters = Parameters.fromParameterList(funcDecl.callSignature.parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(funcDecl.callSignature.parameterList);
 			this.emitFunctionParameters(parameters);
 			this.writeToOutput(")");
 
@@ -1550,10 +1733,9 @@ module TypeScript {
 				}
 			}
 
-
 			this.emitParameterList(funcDecl.callSignature.parameterList);
 
-			var parameters = Parameters.fromParameterList(funcDecl.callSignature.parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(funcDecl.callSignature.parameterList);
 			this.emitFunctionBodyStatements(funcDecl.identifier.text(), funcDecl, parameters, funcDecl.block, /*bodyExpression:*/ null);
 
 			this.recordSourceMappingEnd(funcDecl);
@@ -1571,6 +1753,14 @@ module TypeScript {
 			if (pullFunctionDecl && hasFlag(pullFunctionDecl.flags, PullElementFlags.Exported)) {
 				this.writeToOutput(";");
 				this.exportSymbol(pullFunctionDecl.getSymbol());
+
+				if (funcDecl.block && isModuleContainer) {
+					this.writeLineToExternOutput(modName + "." + funcName + " = function(){};")
+				}
+				else {
+					this.writeLineToExternOutput("function " + funcName + "(){};")
+				}
+
 			}
 
 			//if (funcDecl.block) {
@@ -1629,11 +1819,11 @@ module TypeScript {
 					if (i > 0 && (prevLine !== this.emitState.line || prevColumn !== this.emitState.column)) {
 						this.writeToOutput(", ");
 					}
-					
+
 					prevLine = this.emitState.line;
 					prevColumn = this.emitState.column;
 
-					this.emit(declarator);					
+					this.emit(declarator);
 				}
 				this.currentVariableDeclaration = prevVariableDeclaration;
 
@@ -1645,7 +1835,7 @@ module TypeScript {
 		}
 
 		private emitMemberVariableDeclaration(varDecl: MemberVariableDeclaration) {
-			Debug.assert(!hasModifier(varDecl.modifiers, PullElementFlags.Static)/* && varDecl.variableDeclarator.equalsValueClause*/);
+			//Debug.assert(!hasModifier(varDecl.modifiers, PullElementFlags.Static) && varDecl.variableDeclarator.equalsValueClause);
 
 			var pullDecl = this.semanticInfoChain.getDeclForAST(varDecl);
 			this.pushDecl(pullDecl);
@@ -1666,23 +1856,38 @@ module TypeScript {
 
 			var varDeclName = varDecl.variableDeclarator.propertyName.text();
 			var quotedOrNumber = isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== SyntaxKind.IdentifierName;
+			var isNeedEscapeMember = this.isNeedEscapeName(symbol);
 
 			var symbol = this.semanticInfoChain.getSymbolForAST(varDecl);
 			var parentSymbol = symbol ? symbol.getContainer() : null;
 			var parentDecl = pullDecl && pullDecl.getParentDecl();
+			var isNeedExtern = this.isNeedExternClassMember(symbol);
 
 			if (quotedOrNumber) {
 				this.writeToOutput("this[");
+				isNeedExtern && this.writeToExternOutput("this[");
+			}
+			else if (isNeedEscapeMember) {
+				this.writeToOutput("this[\"");
+				isNeedExtern && this.writeToExternOutput("this.");
 			}
 			else {
 				this.writeToOutput("this.");
+				isNeedExtern && this.writeToExternOutput("this.");
 			}
 
 			this.writeToOutputWithSourceMapRecord(varDecl.variableDeclarator.propertyName.text(), varDecl.variableDeclarator.propertyName);
+			isNeedExtern && this.writeToExternOutput(varDecl.variableDeclarator.propertyName.text());
 
 			if (quotedOrNumber) {
 				this.writeToOutput("]");
+				isNeedExtern && this.writeToExternOutput("]");
 			}
+			else if (isNeedEscapeMember) {
+				this.writeToOutput("\"]");
+			}
+
+			isNeedExtern && this.writeToExternOutput(" = null;");
 
 			if (varDecl.variableDeclarator.equalsValueClause) {
 				// Ensure we have a fresh var list count when recursing into the variable 
@@ -1708,7 +1913,6 @@ module TypeScript {
 			var pullDecl = this.semanticInfoChain.getDeclForAST(varDecl);
 			this.pushDecl(pullDecl);
 
-
 			if (pullDecl && (pullDecl.flags & PullElementFlags.Ambient) === PullElementFlags.Ambient) {
 				this.emitAmbientVarDecl(varDecl);
 			}
@@ -1718,7 +1922,8 @@ module TypeScript {
 				var hasInitializer = varDecl.equalsValueClause !== null;
 				var jsDocComments = null;
 				var isAdditionalDeclaration = false;
-				
+
+
 				this.recordSourceMappingStart(this.currentVariableDeclaration);
 
 				// Google's Closure Compiler requires one variable statement per function.
@@ -1740,6 +1945,19 @@ module TypeScript {
 				}
 
 				if (!isAdditionalDeclaration) {
+					var userComments = null;
+
+					if (this.currentVariableDeclaration && this.currentVariableDeclaration.kind() === SyntaxKind.VariableDeclaration) {
+						userComments = Emitter.getUserComments(this.currentVariableDeclaration.parent);
+					}
+					else {
+						userComments = Emitter.getUserComments(varDecl);
+					}
+
+					var isConst = userComments.join(' ').search("@const") >= 0 || userComments.join(' ').search("@define") >= 0;
+				}
+
+				if (!isAdditionalDeclaration) {
 					if (symbol.isProperty()) {
 						if (this.emittedClassProperties.indexOf(symbol) < 0) {
 							jsDocComments = this.getJSDocForClassMemberVariable(symbol);
@@ -1752,7 +1970,7 @@ module TypeScript {
 					else {
 						jsDocComments = this.getJSDocForVariableDeclaration(symbol);
 					}
-				}				
+				}
 
 				//this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
 
@@ -1772,12 +1990,12 @@ module TypeScript {
 					if (!hasFlag(pullDecl.flags, PullElementFlags.Exported)/* && !varDecl.isProperty() */) {
 						this.emitVarDeclVar();
 						if (!isAdditionalDeclaration) {
-							this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
-						}					
+							this.emitInlineJSDocComment(userComments, jsDocComments);
+						}
 					}
 					else {
 						if (!isAdditionalDeclaration) {
-							this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
+							this.emitInlineJSDocComment(userComments, jsDocComments);
 						}
 
 						if (this.emitState.container === EmitContainer.DynamicModule) {
@@ -1793,8 +2011,8 @@ module TypeScript {
 				else {
 					this.emitVarDeclVar();
 					if (!isAdditionalDeclaration) {
-						this.emitInlineJSDocComment(Emitter.getUserComments(varDecl), jsDocComments);
-					}					
+						this.emitInlineJSDocComment(userComments, jsDocComments);
+					}
 				}
 
 				this.writeToOutputWithSourceMapRecord(this.getObfuscatedName(symbol, varDecl.propertyName.text()), varDecl.propertyName);
@@ -1817,6 +2035,23 @@ module TypeScript {
 
 			if (!isAdditionalDeclaration && hasFlag(pullDecl.flags, PullElementFlags.Exported)/* && symbol.type.isFunction()*/) {
 				this.exportSymbol(symbol);
+				if (symbol.getContainer()) {
+					this.writeToExternOutput(symbol.getContainer().fullName() + ".");
+				}
+				else {
+					this.writeToExternOutput("var ");
+				}
+
+				this.writeToExternOutput(symbol.getDisplayName());
+
+				if (symbol.type.isFunction()) {
+					this.writeToExternOutput(" = function(){};");
+				}
+				else {
+					this.writeToExternOutput(" = null;");
+				}
+
+				this.writeLineToExternOutput("");
 			}
 		}
 
@@ -1900,7 +2135,8 @@ module TypeScript {
 			for (var i = startingIndex - 1; i > commonNodeIndex; i--) {
 				if (symbolContainerDeclPath[i + 1].flags & PullElementFlags.Exported) {
 					startingIndex = i;
-				} else {
+				}
+				else {
 					break;
 				}
 			}
@@ -1922,14 +2158,22 @@ module TypeScript {
 			}
 		}
 
+		private _bEmitEscapedName: boolean = false;
+
 		// Emits the container name of the symbol in the given enclosing context
 		private emitSymbolContainerNameInEnclosingContext(pullSymbol: PullSymbol) {
 			var declPathInfo = this.getPotentialDeclPathInfoForEmit(pullSymbol);
 			var potentialDeclPath = declPathInfo.potentialPath;
 			var startingIndex = declPathInfo.startingIndex;
 
-			// Emit dotted names for the path
-			this.emitDottedNameFromDeclPath(potentialDeclPath, startingIndex, potentialDeclPath.length - 1);
+			if (this.isNeedEscapeName(pullSymbol) && this.isNeedEscapeVariableInModule(pullSymbol)) {
+				this.writeToOutput(this.getShortName(pullSymbol.getContainer().fullName()));
+				this._bEmitEscapedName = true;
+			}
+			else {
+				// Emit dotted names for the path
+				this.emitDottedNameFromDeclPath(potentialDeclPath, startingIndex, potentialDeclPath.length - 1);
+			}
 		}
 
 		// Get the symbol information to be used for emitting the ast
@@ -1941,7 +2185,7 @@ module TypeScript {
 					pullSymbolAlias.getExportAssignedTypeSymbol() :
 					pullSymbolAlias.getExportAssignedValueSymbol();
 
-				if (pullSymbol == symbolToCompare) {
+				if (pullSymbol === symbolToCompare) {
 					pullSymbol = pullSymbolAlias;
 					pullSymbolAlias = null;
 				}
@@ -1952,8 +2196,8 @@ module TypeScript {
 		public emitName(name: Identifier, addThis: boolean) {
 			this.emitComments(name, true);
 			this.recordSourceMappingStart(name);
-
 			if (name.text().length > 0) {
+
 				var symbolForEmit = this.getSymbolForEmit(name);
 				var pullSymbol = symbolForEmit.symbol;
 				if (!pullSymbol) {
@@ -1961,8 +2205,7 @@ module TypeScript {
 				}
 				var pullSymbolAlias = symbolForEmit.aliasSymbol;
 				var pullSymbolKind = pullSymbol.kind;
-				var isLocalAlias = pullSymbolAlias && (pullSymbolAlias.getDeclarations()[0].getParentDecl() == this.getEnclosingDecl());
-
+				var isLocalAlias = pullSymbolAlias && (pullSymbolAlias.getDeclarations()[0].getParentDecl() === this.getEnclosingDecl());
 				if (addThis && (this.emitState.container !== EmitContainer.Args) && pullSymbol) {
 					var pullSymbolContainer = pullSymbol.getContainer();
 
@@ -2008,7 +2251,13 @@ module TypeScript {
 								this.emitSymbolContainerNameInEnclosingContext(pullSymbol);
 							}
 							else if (this.isNeedObfuscateName(pullSymbol)) {
-								this.writeToOutput(this.getObfuscatedName(pullSymbol, name.text()));
+								if (pullSymbol.isAlias() && pullSymbol.isType()) {
+									var aliasSymbol = <PullTypeAliasSymbol>pullSymbol;
+									this.writeToOutput(this.getFullSymbolName(aliasSymbol.assignedValue()));
+								}
+								else {
+									this.writeToOutput(this.getObfuscatedName(pullSymbol, name.text()));
+								}
 
 								this.recordSourceMappingEnd(name);
 								this.emitComments(name, false);
@@ -2034,7 +2283,14 @@ module TypeScript {
 					}
 				}
 
-				this.writeToOutput(name.text());
+				if (this._bEmitEscapedName) {
+					this.writeToOutput("[\"" + name.text() + "\"]");
+
+					this._bEmitEscapedName = false;
+				}
+				else {
+					this.writeToOutput(name.text());
+				}
 			}
 
 			this.recordSourceMappingEnd(name);
@@ -2047,7 +2303,7 @@ module TypeScript {
 				if (name) {
 					if (this.sourceMapper.currentNameIndex.length > 0) {
 						var parentNameIndex = this.sourceMapper.currentNameIndex[this.sourceMapper.currentNameIndex.length - 1];
-						if (parentNameIndex != -1) {
+						if (parentNameIndex !== -1) {
 							name = this.sourceMapper.names[parentNameIndex] + "." + name;
 						}
 					}
@@ -2055,12 +2311,12 @@ module TypeScript {
 					// Look if there already exists name
 					var nameIndex = this.sourceMapper.names.length - 1;
 					for (nameIndex; nameIndex >= 0; nameIndex--) {
-						if (this.sourceMapper.names[nameIndex] == name) {
+						if (this.sourceMapper.names[nameIndex] === name) {
 							break;
 						}
 					}
 
-					if (nameIndex == -1) {
+					if (nameIndex === -1) {
 						nameIndex = this.sourceMapper.names.length;
 						this.sourceMapper.names.push(name);
 					}
@@ -2076,7 +2332,7 @@ module TypeScript {
 		}
 
 		public recordSourceMappingStart(ast: IASTSpan) {
-			if (this.sourceMapper && isValidAstNode(ast)) {
+			if (this.sourceMapper && ASTHelpers.isValidAstNode(ast)) {
 				var lineCol = { line: -1, character: -1 };
 				var sourceMapping = new SourceMapping();
 				sourceMapping.start.emittedColumn = this.emitState.column;
@@ -2109,7 +2365,7 @@ module TypeScript {
 		}
 
 		public recordSourceMappingEnd(ast: IASTSpan) {
-			if (this.sourceMapper && isValidAstNode(ast)) {
+			if (this.sourceMapper && ASTHelpers.isValidAstNode(ast)) {
 				// Pop source mapping childs
 				this.sourceMapper.currentMappings.pop();
 
@@ -2144,9 +2400,9 @@ module TypeScript {
 			// emit any parameter properties first
 			var constructorDecl = getLastConstructor(this.thisClassNode);
 
-			if (constructorDecl && constructorDecl.parameterList) {
-				for (var i = 0, n = constructorDecl.parameterList.parameters.nonSeparatorCount(); i < n; i++) {
-					var parameter = <Parameter>constructorDecl.parameterList.parameters.nonSeparatorAt(i);
+			if (constructorDecl) {
+				for (var i = 0, n = constructorDecl.callSignature.parameterList.parameters.nonSeparatorCount(); i < n; i++) {
+					var parameter = <Parameter>constructorDecl.callSignature.parameterList.parameters.nonSeparatorAt(i);
 					var parameterDecl = this.semanticInfoChain.getDeclForAST(parameter);
 					if (hasFlag(parameterDecl.flags, PullElementFlags.PropertyParameter)) {
 						this.emitIndent();
@@ -2327,15 +2583,15 @@ module TypeScript {
 			}
 		}
 
-		// We consider a sequence of comments to be a copyright header if there are no blank lines 
+		// We consider a sequence of comments to be a detached from an ast if there are no blank lines 
 		// between them, and there is a blank line after the last one and the node they're attached 
 		// to.
-		private getCopyrightComments(): Comment[] {
-			var preComments = this.copyrightElement.preComments();
+		private getDetachedComments(element: AST): Comment[] {
+			var preComments = element.preComments();
 			if (preComments) {
 				var lineMap = this.document.lineMap();
 
-				var copyrightComments: Comment[] = [];
+				var detachedComments: Comment[] = [];
 				var lastComment: Comment = null;
 
 				for (var i = 0, n = preComments.length; i < n; i++) {
@@ -2349,21 +2605,21 @@ module TypeScript {
 							// There was a blank line between the last comment and this comment.  This
 							// comment is not part of the copyright comments.  Return what we have so 
 							// far.
-							return copyrightComments;
+							return detachedComments;
 						}
 					}
 
-					copyrightComments.push(comment);
+					detachedComments.push(comment);
 					lastComment = comment;
 				}
 
 				// All comments look like they could have been part of the copyright header.  Make
 				// sure there is at least one blank line between it and the node.  If not, it's not
 				// a copyright header.
-				var lastCommentLine = lineMap.getLineNumberFromPosition(ArrayUtilities.last(copyrightComments).end());
-				var astLine = lineMap.getLineNumberFromPosition(this.copyrightElement.start());
+				var lastCommentLine = lineMap.getLineNumberFromPosition(ArrayUtilities.last(detachedComments).end());
+				var astLine = lineMap.getLineNumberFromPosition(element.start());
 				if (astLine >= lastCommentLine + 2) {
-					return copyrightComments;
+					return detachedComments;
 				}
 			}
 
@@ -2372,12 +2628,15 @@ module TypeScript {
 		}
 
 		private emitPossibleCopyrightHeaders(script: SourceUnit): void {
-			var list = script.moduleElements;
+			this.emitDetachedComments(script.moduleElements);
+		}
+
+		private emitDetachedComments(list: ISyntaxList2): void {
 			if (list.childCount() > 0) {
 				var firstElement = list.childAt(0);
 
-				this.copyrightElement = firstElement;
-				this.emitCommentsArray(this.getCopyrightComments(), /*trailing:*/ false);
+				this.detachedCommentsElement = firstElement;
+				this.emitCommentsArray(this.getDetachedComments(this.detachedCommentsElement), /*trailing:*/ false);
 			}
 		}
 
@@ -2407,7 +2666,7 @@ module TypeScript {
 			this.emitPrologue(sourceUnit);
 
 			var isExternalModule = this.document.isExternalModule();
-			var isNonElidedExternalModule = isExternalModule && !scriptIsElided(sourceUnit);
+			var isNonElidedExternalModule = isExternalModule && !ASTHelpers.scriptIsElided(sourceUnit);
 			if (isNonElidedExternalModule) {
 				this.recordSourceMappingStart(sourceUnit);
 
@@ -2434,7 +2693,7 @@ module TypeScript {
 
 				// if the external module has an "export =" identifier, we'll
 				// set it in the ExportAssignment emit method
-				this.setExportAssignmentIdentifier(null);
+				this.setExportAssignment(null);
 
 				if (this.emitOptions.compilationSettings().moduleGenTarget() === ModuleGenTarget.Asynchronous) {
 					this.indenter.increaseIndent();
@@ -2457,22 +2716,25 @@ module TypeScript {
 				}
 
 				if (isNonElidedExternalModule) {
-					var exportAssignmentIdentifier = this.getExportAssignmentIdentifier();
+					var exportAssignment = this.getExportAssignment();
+					var exportAssignmentIdentifierText = exportAssignment ? exportAssignment.identifier.text() : null;
 					var exportAssignmentValueSymbol = (<PullContainerSymbol>externalModule.getSymbol()).getExportAssignedValueSymbol();
 
 					if (this.emitOptions.compilationSettings().moduleGenTarget() === ModuleGenTarget.Asynchronous) { // AMD
-						if (exportAssignmentIdentifier && exportAssignmentValueSymbol && !(exportAssignmentValueSymbol.kind & PullElementKind.SomeTypeReference)) {
+						if (exportAssignmentIdentifierText && exportAssignmentValueSymbol && !(exportAssignmentValueSymbol.kind & PullElementKind.SomeTypeReference)) {
 							// indent was decreased for AMD above
 							this.indenter.increaseIndent();
 							this.emitIndent();
-							this.writeLineToOutput("return " + exportAssignmentIdentifier + ";");
+							this.writeToOutputWithSourceMapRecord("return " + exportAssignmentIdentifierText, exportAssignment);
+							this.writeLineToOutput(";");
 							this.indenter.decreaseIndent();
 						}
 						this.writeToOutput("});");
 					}
-					else if (exportAssignmentIdentifier && exportAssignmentValueSymbol && !(exportAssignmentValueSymbol.kind & PullElementKind.SomeTypeReference)) {
+					else if (exportAssignmentIdentifierText && exportAssignmentValueSymbol && !(exportAssignmentValueSymbol.kind & PullElementKind.SomeTypeReference)) {
 						this.emitIndent();
-						this.writeToOutput("module.exports = " + exportAssignmentIdentifier + ";");
+						this.writeToOutputWithSourceMapRecord("module.exports = " + exportAssignmentIdentifierText, exportAssignment);
+						this.writeToOutput(";");
 					}
 
 					this.recordSourceMappingEnd(sourceUnit);
@@ -2487,8 +2749,8 @@ module TypeScript {
 			if (this.usedButNotEmittedInterfaces.length > 0) {
 				var pArr = this.usedButNotEmittedInterfaces;
 
-				while (pArr.length !== 0) {
-					this.emitInterfaceDeclaration(<InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(pArr[0].getDeclarations()[0]));
+				while (this.usedButNotEmittedInterfaces.length !== 0) {
+					this.emitInterfaceDeclaration(this.usedButNotEmittedInterfaces[0]);
 					this.writeLineToOutput("");
 				}
 			}
@@ -2503,7 +2765,7 @@ module TypeScript {
 
 			this.emitComments(list, true);
 
-			var emitPropertyAssignmentsAfterSuperCall = getExtendsHeritageClause(this.thisClassNode.heritageClauses) !== null;
+			var emitPropertyAssignmentsAfterSuperCall = ASTHelpers.getExtendsHeritageClause(this.thisClassNode.heritageClauses) !== null;
 			var propertyAssignmentIndex = emitPropertyAssignmentsAfterSuperCall ? 1 : 0;
 			var lastEmittedNode: AST = null;
 
@@ -2520,6 +2782,7 @@ module TypeScript {
 
 				if (this.shouldEmit(node)) {
 					this.emitSpaceBetweenConstructs(lastEmittedNode, node);
+
 					this.emitJavascript(node, true);
 					this.writeLineToOutput("");
 
@@ -2620,7 +2883,7 @@ module TypeScript {
 
 			this.writeToOutput("(");
 
-			var parameters = Parameters.fromParameterList(parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(parameterList);
 			this.emitFunctionParameters(parameters);
 			this.writeToOutput(")");
 
@@ -2640,13 +2903,16 @@ module TypeScript {
 			var svClassNode = this.thisClassNode;
 			var svFullClassName = this.thisFullClassName;
 			var svFullExtendClassName = this.thisFullExtendClassName;
+			var svShortClassNameForMethods = this.thisShortClassNameForMethods;
 
 			this.thisClassNode = classDecl;
 			this.thisFullClassName = null;
 			this.thisFullExtendClassName = null;
+			this.thisShortClassNameForMethods = null;
 
 			var className = classDecl.identifier.text();
 			var fullClassName = className;
+			var emittedClassName = className;
 			var constrDecl = getLastConstructor(classDecl);
 
 			//this.emitComments(classDecl, true);
@@ -2655,19 +2921,19 @@ module TypeScript {
 
 			var temp = this.setContainer(EmitContainer.Class);
 
-			var hasBaseClass = getExtendsHeritageClause(classDecl.heritageClauses) !== null;
+			var hasBaseClass = ASTHelpers.getExtendsHeritageClause(classDecl.heritageClauses) !== null;
 			var baseTypeReference: AST = null;
 
 			if ((temp === EmitContainer.Module || temp === EmitContainer.DynamicModule) && hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
 				var modName = temp === EmitContainer.Module ? pullDecl.getSymbol().getContainer().fullName()/*this.moduleName*/ : "exports";
-				this.thisFullClassName = fullClassName = modName + "." + className;
+				fullClassName = modName + "." + className;
 			}
 
-			this.thisFullClassName = fullClassName;
+			this.thisFullClassName = emittedClassName = fullClassName;
 
 			if (hasBaseClass) {
 
-				baseTypeReference = getExtendsHeritageClause(classDecl.heritageClauses).typeNames.nonSeparatorAt(0);
+				baseTypeReference = ASTHelpers.getExtendsHeritageClause(classDecl.heritageClauses).typeNames.nonSeparatorAt(0);
 
 				var emitSymbol = this.getSymbolForEmit(baseTypeReference);
 				var fullExtendClassName = "";
@@ -2683,21 +2949,28 @@ module TypeScript {
 				this.thisFullExtendClassName = fullExtendClassName;
 			}
 
+			this.calcClassEscapeNamesMap(pullDecl.getSymbol());
 
 			this.recordSourceMappingStart(classDecl);
 
 			if (fullClassName.indexOf(".") < 0) {
 				var symbol = (<PullTypeSymbol>pullDecl.getSymbol()).getConstructorMethod();
-				this.thisFullClassName = fullClassName = this.getObfuscatedName(symbol, className);
-				this.writeToOutput("var " + fullClassName + " = ");
+				this.thisFullClassName = emittedClassName = this.getObfuscatedName(symbol, className, true);
+				this.writeToOutput("var " + emittedClassName + " = ");
 			}
 			else {
 				this.writeToOutput(fullClassName + " = ");
+				if (hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
+					this.writeLineToExternOutput("/** @constructor */ " + fullClassName + " = function(){");
+				}
 			}
+
+			this.thisShortClassNameForMethods = this.getShortName(this.thisFullClassName + ".prototype");
 
 			this.recordSourceMappingNameStart(className);
 
 			this.emittedClassProperties = [];
+
 			// output constructor
 			if (constrDecl) {
 				// declared constructor
@@ -2730,13 +3003,23 @@ module TypeScript {
 				this.recordSourceMappingEnd(classDecl);
 			}
 
+			if (hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
+				this.writeLineToExternOutput("};");
+			}
+
 			if (hasBaseClass) {
 				this.emitIndent();
-				this.writeLineToOutput("__extends(" + fullClassName + ", " + fullExtendClassName + ");");
+				this.writeLineToOutput("__extends(" + emittedClassName + ", " + fullExtendClassName + ");");
 			}
 
 			if (hasFlag(pullDecl.flags, PullElementFlags.Exported)) {
-				this.exportSymbol(pullDecl.getSymbol());
+				this.exportSymbol(pullDecl.getSymbol(), emittedClassName);
+			}
+
+			this.writeLineToOutput("var " + this.thisShortClassNameForMethods + " = " + this.thisFullClassName + ".prototype;");
+
+			if (fullClassName.indexOf(".") >= 0 && fullClassName !== emittedClassName) {
+				this.writeLineToOutput("/** @type {" + emittedClassName + "} */ " + fullClassName + " = " + emittedClassName + ";");
 			}
 
 			this.emitClassMembers(classDecl);
@@ -2754,6 +3037,7 @@ module TypeScript {
 			this.thisClassNode = svClassNode;
 			this.thisFullClassName = svFullClassName;
 			this.thisFullExtendClassName = svFullExtendClassName;
+			this.thisShortClassNameForMethods = svShortClassNameForMethods;
 
 			this.emittedClassProperties = null;
 
@@ -2807,14 +3091,27 @@ module TypeScript {
 						this.emitIndent();
 						this.recordSourceMappingStart(varDecl);
 
-						this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(this.semanticInfoChain.getDeclForAST(varDecl).getSymbol()));
+						var symbol = this.semanticInfoChain.getDeclForAST(varDecl).getSymbol();
+						this.emitInlineJSDocComment(this.getJSDocForClassMemberVariable(symbol));
 
 						var varDeclName = varDecl.variableDeclarator.propertyName.text();
 						if (isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== SyntaxKind.IdentifierName) {
 							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "[" + varDeclName + "]");
 						}
+						else if (this.isNeedEscapeName(symbol)) {
+							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "[\"" + varDeclName + "\"]");
+						}
 						else {
 							this.writeToOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "." + varDeclName);
+						}
+
+						if (this.isNeedExternClassMember(symbol)) {
+							if (isQuoted(varDeclName) || varDecl.variableDeclarator.propertyName.kind() !== SyntaxKind.IdentifierName) {
+								this.writeLineToExternOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "[" + varDeclName + "] = null;");
+							}
+							else {
+								this.writeLineToExternOutput(this.thisFullClassName/*classDecl.identifier.text()*/ + "." + varDeclName + " = null;");
+							}
 						}
 
 						this.emit(varDecl.variableDeclarator.equalsValueClause);
@@ -2837,11 +3134,15 @@ module TypeScript {
 
 			var functionName = funcDecl.propertyName.text();
 
-			this.writeToOutput(this.thisFullClassName);
+			//this.writeToOutput(this.thisFullClassName);
 			//this.writeToOutput(classDecl.identifier.text());
 
 			if (!hasModifier(funcDecl.modifiers, PullElementFlags.Static)) {
-				this.writeToOutput(".prototype");
+				this.writeToOutput("/** @this {" + this.thisFullClassName + "} */ " + this.thisShortClassNameForMethods);
+				//this.writeToOutput(".prototype");
+			}
+			else {
+				this.writeToOutput(this.thisFullClassName);
 			}
 
 			if (isQuoted(functionName) || funcDecl.propertyName.kind() !== SyntaxKind.IdentifierName) {
@@ -2854,12 +3155,37 @@ module TypeScript {
 			var pullDecl = this.semanticInfoChain.getDeclForAST(funcDecl);
 			this.pushDecl(pullDecl);
 
+			if (this.isNeedExternClassMember(pullDecl.getSymbol())) {
+				this.writeToExternOutput(this.thisFullClassName);
+
+				if (!hasModifier(funcDecl.modifiers, PullElementFlags.Static)) {
+					this.writeToExternOutput(".prototype");
+				}
+
+				if (isQuoted(functionName) || funcDecl.propertyName.kind() !== SyntaxKind.IdentifierName) {
+					this.writeToExternOutput("[" + functionName + "] = ");
+				}
+				else {
+					this.writeToExternOutput("." + functionName + " = ");
+				}
+
+				this.writeLineToExternOutput("function(){};");
+			}
+			
+			if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol()) && !isQuoted(functionName) && funcDecl.propertyName.kind() === SyntaxKind.IdentifierName) {
+				var className = this.thisFullClassName;
+				var exportLocation = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (this.thisShortClassNameForMethods);
+				var exportName = exportLocation + "[\"" + functionName + "\"]";
+
+				this.writeToOutput("/** @this {" + this.thisFullClassName + "} */ " + exportName + " = ");
+			}
+
 			this.recordSourceMappingStart(funcDecl);
 			this.writeToOutput("function ");
 
 			this.emitParameterList(funcDecl.callSignature.parameterList);
 
-			var parameters = Parameters.fromParameterList(funcDecl.callSignature.parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(funcDecl.callSignature.parameterList);
 			this.emitFunctionBodyStatements(funcDecl.propertyName.text(), funcDecl, parameters, funcDecl.block, /*bodyExpression:*/ null);
 
 			this.recordSourceMappingEnd(funcDecl);
@@ -2870,26 +3196,25 @@ module TypeScript {
 			this.popDecl(pullDecl);
 
 			this.writeLineToOutput(";");
+			//if (this.isNeedExportClassFunctionMember(pullDecl.getSymbol())) {
+			//	var className = this.thisFullClassName;
+			//	var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (this.thisShortClassNameForMethods/*className + ".prototype"*/);
+			//	var exportLocation = className === location ? location : (this.thisShortClassNameForMethods/*className + ".prototype"*/);
+			//	var fullName = location;
+			//	var exportName = exportLocation;
 
-			if (hasFlag(pullDecl.flags, PullElementFlags.Public)) {
-				var className = this.thisFullClassName;
-				var location = hasModifier(funcDecl.modifiers, PullElementFlags.Static) ? className : (className + ".prototype");
-				var exportLocation = className === location ? location : (className + "['prototype']");
-				var fullName = location;
-				var exportName = exportLocation;
+			//	if (isQuoted(functionName) || funcDecl.propertyName.kind() !== SyntaxKind.IdentifierName) {
+			//		exportName += "[" + functionName + "]";
+			//		fullName += "[" + functionName + "]";
+			//	}
+			//	else {
+			//		exportName += "['" + functionName + "']";
+			//		fullName += "." + functionName;
+			//	}
 
-				if (isQuoted(functionName) || funcDecl.propertyName.kind() !== SyntaxKind.IdentifierName) {
-					exportName += "[" + functionName + "]";
-					fullName += "[" + functionName + "]";
-				}
-				else {
-					exportName += "['" + functionName + "']";
-					fullName += "." + functionName;
-				}
-
-				this.writeLineToOutput("");
-				this.writeToOutput(exportName + " = " + fullName + ";");
-			}
+			//	this.writeLineToOutput("");
+			//	this.writeToOutput(exportName + " = " + fullName + ";");
+			//}
 		}
 
 		private requiresExtendsBlock(moduleElements: ISyntaxList2): boolean {
@@ -2906,7 +3231,7 @@ module TypeScript {
 				else if (moduleElement.kind() === SyntaxKind.ClassDeclaration) {
 					var classDeclaration = <ClassDeclaration>moduleElement;
 
-					if (!hasModifier(classDeclaration.modifiers, PullElementFlags.Ambient) && getExtendsHeritageClause(classDeclaration.heritageClauses) !== null) {
+					if (!hasModifier(classDeclaration.modifiers, PullElementFlags.Ambient) && ASTHelpers.getExtendsHeritageClause(classDeclaration.heritageClauses) !== null) {
 						return true;
 					}
 				}
@@ -3124,7 +3449,7 @@ module TypeScript {
 			var memberExpressionNodeType = expression.expression.kind();
 
 			// If the memberAccess is of Name or another member access, we could potentially emit the symbol using the this memberAccessSymol
-			if (memberExpressionNodeType == SyntaxKind.IdentifierName || memberExpressionNodeType == SyntaxKind.MemberAccessExpression) {
+			if (memberExpressionNodeType === SyntaxKind.IdentifierName || memberExpressionNodeType == SyntaxKind.MemberAccessExpression) {
 				var memberAccessSymbol = this.getSymbolForEmit(expression).symbol;
 				var memberAccessExpressionSymbol = this.getSymbolForEmit(expression.expression).symbol;
 				if (memberAccessSymbol && memberAccessExpressionSymbol // We have symbols resolved for this expression and access
@@ -3140,7 +3465,7 @@ module TypeScript {
 						|| ((memberAccessSymbol.anyDeclHasFlag(PullElementFlags.Exported) && !this.symbolIsUsedInItsEnclosingContainer(memberAccessSymbol)))) {
 
 						// If the expression is member access, we need to verify it as well
-						if (memberExpressionNodeType == SyntaxKind.MemberAccessExpression) {
+						if (memberExpressionNodeType === SyntaxKind.MemberAccessExpression) {
 							return this.canEmitDottedNameMemberAccessExpression(<MemberAccessExpression>expression.expression);
 						}
 
@@ -3155,24 +3480,45 @@ module TypeScript {
 		// Emit the member access expression using the declPath
 		private emitDottedNameMemberAccessExpressionWorker(expression: MemberAccessExpression, potentialPath: PullDecl[], startingIndex: number, lastIndex: number) {
 			this.recordSourceMappingStart(expression);
-			if (expression.expression.kind() == SyntaxKind.MemberAccessExpression) {
-				// Emit the dotted name access expression
-				this.emitDottedNameMemberAccessExpressionRecurse(<MemberAccessExpression>expression.expression, potentialPath, startingIndex, lastIndex - 1);
-			} else { // Name
-				this.emitComments(expression.expression, true);
-				this.recordSourceMappingStart(expression.expression);
 
-				// Emit the qualifying name fo the expression.expression
-				this.emitDottedNameFromDeclPath(potentialPath, startingIndex, lastIndex - 2); // We would be emitting two identifiers as part of member access
-				// Emit expression.expression
-				this.writeToOutput((<Identifier>expression.expression).text());
+			var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
 
-				this.recordSourceMappingEnd(expression.expression);
-				this.emitComments(expression.expression, false);
+			var isNeedEscapeSymbol = this.isNeedEscapeName(symbol);
+			var isEscapedVarInModule = isNeedEscapeSymbol ? this.isNeedEscapeVariableInModule(symbol) : false;
+
+			if (isEscapedVarInModule) {
+				var shortModuleName = this.getShortName(symbol.getContainer().fullName());
+
+				this.writeToOutput(shortModuleName);
+				var name = expression.name.text();
+				if (isQuoted(name)) {
+					this.writeToOutput("[" + name + "]");
+				}
+				else {
+					this.writeToOutput("[\"" + name + "\"]");
+				}
 			}
+			else {
+				if (expression.expression.kind() === SyntaxKind.MemberAccessExpression) {
+					// Emit the dotted name access expression
+					this.emitDottedNameMemberAccessExpressionRecurse(<MemberAccessExpression>expression.expression, potentialPath, startingIndex, lastIndex - 1);
+				}
+				else { // Name
+					this.emitComments(expression.expression, true);
+					this.recordSourceMappingStart(expression.expression);
 
-			this.writeToOutput(".");
-			this.emitName(expression.name, false);
+					// Emit the qualifying name fo the expression.expression
+					this.emitDottedNameFromDeclPath(potentialPath, startingIndex, lastIndex - 2); // We would be emitting two identifiers as part of member access
+					// Emit expression.expression
+					this.writeToOutput((<Identifier>expression.expression).text());
+
+					this.recordSourceMappingEnd(expression.expression);
+					this.emitComments(expression.expression, false);
+				}
+
+				this.writeToOutput(".");
+				this.emitName(expression.name, false);
+			}
 
 			this.recordSourceMappingEnd(expression);
 		}
@@ -3202,7 +3548,8 @@ module TypeScript {
 				// If the expression is dotted name of the modules, emit it using decl path so the name could be resolved correctly.
 				if (this.canEmitDottedNameMemberAccessExpression(expression)) {
 					this.emitDottedNameMemberAccessExpression(expression);
-				} else {
+				}
+				else {
 					//if (this.isEmitConstructorStatements) {
 					//	var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
 
@@ -3214,10 +3561,36 @@ module TypeScript {
 					//		this.emittedClassProperties.push(symbol);
 					//	}
 					//}
+
+					var symbol = this.semanticInfoChain.getSymbolForAST(expression.name);
+					var isNeedEscapeSymbol = this.isNeedEscapeName(symbol);
+
 					this.recordSourceMappingStart(expression);
+
+					//if (isNeedEscapeFunction) {
+					//	this.writeToOutput("(/** " + this.formatJSDocType(symbol.type) + " */(");
+					//}
+					//if(isVarInModule)
 					this.emit(expression.expression);
-					this.writeToOutput(".");
+
+					if (isNeedEscapeSymbol) {
+						this.writeToOutput("[\"");
+					}
+					else {
+						this.writeToOutput(".");
+					}
+
 					this.emitName(expression.name, false);
+
+					if (isNeedEscapeSymbol) {
+						this.writeToOutput("\"]");
+					}
+
+
+					//if (isNeedEscapeFunction) {
+					//	this.writeToOutput("))");
+					//}
+
 					this.recordSourceMappingEnd(expression);
 				}
 			}
@@ -3294,7 +3667,7 @@ module TypeScript {
 
 			this.writeToOutput("(");
 
-			var parameters = Parameters.fromParameterList(funcProp.callSignature.parameterList);
+			var parameters = ASTHelpers.parametersFromParameterList(funcProp.callSignature.parameterList);
 			this.emitFunctionParameters(parameters);
 			this.writeToOutput(")");
 
@@ -3311,8 +3684,6 @@ module TypeScript {
 
 			this.setContainer(temp);
 			this.inArrowFunction = savedInArrowFunction;
-
-			this.recordSourceMappingEnd(funcProp);
 		}
 
 		public emitConditionalExpression(expression: ConditionalExpression): void {
@@ -3469,7 +3840,7 @@ module TypeScript {
 			else {
 				this.emittedForInStatement = true;
 				this.emit(statement.variableDeclaration);
-				this.emittedForInStatement  = false;
+				this.emittedForInStatement = false;
 			}
 			this.writeToOutput(" in ");
 			this.emit(statement.expression);
@@ -3649,15 +4020,17 @@ module TypeScript {
 				this.pushDecl(pullDecl);
 				this.emitScriptElements(sourceUnit);
 				this.popDecl(pullDecl);
+
+				this.emitCommentsArray(sourceUnit.endOfFileTokenLeadingComments, /*trailing:*/ false);
 			}
 		}
 
 		public shouldEmitEnumDeclaration(declaration: EnumDeclaration): boolean {
-			return declaration.preComments() !== null || !enumIsElided(declaration);
+			return declaration.preComments() !== null || !ASTHelpers.enumIsElided(declaration);
 		}
 
 		public emitEnumDeclaration(declaration: EnumDeclaration): void {
-			if (!enumIsElided(declaration)) {
+			if (!ASTHelpers.enumIsElided(declaration)) {
 				this.emitComments(declaration, true);
 				this.emitEnum(declaration);
 				this.emitComments(declaration, false);
@@ -3668,11 +4041,11 @@ module TypeScript {
 		}
 
 		public shouldEmitModuleDeclaration(declaration: ModuleDeclaration): boolean {
-			return declaration.preComments() !== null || !moduleIsElided(declaration);
+			return declaration.preComments() !== null || !ASTHelpers.moduleIsElided(declaration);
 		}
 
 		private emitModuleDeclaration(declaration: ModuleDeclaration): void {
-			if (!moduleIsElided(declaration)) {
+			if (!ASTHelpers.moduleIsElided(declaration)) {
 				this.emitModuleDeclarationWorker(declaration);
 			}
 			else {
@@ -3706,21 +4079,52 @@ module TypeScript {
 			var name = symbol.getDisplayName();
 			var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
 
-			this.emittedInterfaceSymbols.push(symbol);
-
-			var index = this.usedButNotEmittedInterfaces.indexOf(symbol);
-			if (index >= 0) {
-				this.usedButNotEmittedInterfaces.splice(index);
+			if (this.emittedInterfaces.indexOf(declaration) >= 0) {
+				return;
 			}
 
-			if (name === "String" ||
-				name === "Number" ||
-				name === "Array" ||
-				name === "Function" ||
+			this.emittedInterfaces.push(declaration);
+
+			var index = this.usedButNotEmittedInterfaces.indexOf(declaration);
+			if (index >= 0) {
+				this.usedButNotEmittedInterfaces.splice(index, 1);
+				index = this.usedButNotEmittedInterfaces.indexOf(declaration);
+			}
+
+			if (name === 'String' ||
+				name === 'Number' ||
+				name === 'Array' ||
 				isDTSFile(declaration.fileName())) {
 				return;
 			}
 
+			this.calcInterfaceEscapeNamesMap(symbol);
+
+			var splitMode = this.getInterfaceSplitToExternsMode(declaration);
+
+			var svFullInterfaceName = this.thisFullInterfaceName;
+			var svExternPartName = this.thisFullInterfaceExternPartName;
+			this.thisFullInterfaceName = this.getFullSymbolName(symbol);
+			this.thisFullInterfaceExternPartName = this.thisFullInterfaceName;
+
+			if (splitMode === InterfaceExternsSplitMode.k_Part) {
+				this.thisFullInterfaceExternPartName = this.thisFullInterfaceName + "_BASE";
+			}
+
+			if (splitMode === InterfaceExternsSplitMode.k_All) {
+				this.isEnabledInterfaceExternStream = true;
+			}
+			else if (splitMode === InterfaceExternsSplitMode.k_Part) {
+				this.isEnabledInterfaceExternStream = true;
+				this.writeLineToOutput("");
+				this.emitJSDocComment(this.getJSDocForInterfaceDeclaration(declaration));
+				this.writeToOutput("var " + this.thisFullInterfaceExternPartName + " = function(){};");
+				this.isEnabledInterfaceExternStream = false;
+			}
+
+			this.writeLineToOutput("");
+
+			//if (splitMode !== InterfaceExternsSplitMode.k_All) {
 			var userComments = Emitter.getUserComments(declaration);
 
 			if (hasCallOrIndex) {
@@ -3730,12 +4134,21 @@ module TypeScript {
 				this.emitJSDocComment(Emitter.joinJSDocComments(userComments, this.getJSDocForInterfaceDeclaration(declaration)));
 			}
 
-			if (this.isNeedObfuscateName(symbol)) {
-				this.writeToOutput("var ");
-			}
+			if (symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
+				this.writeToExternOutput("/** @interface */ ");
+				if (symbol.getContainer()) {
+					this.writeToExternOutput(symbol.getContainer().fullName() + ".");
+				}
+				else {
+					this.writeToExternOutput("var ");
+				}
 
-			var svFullInterfaceName = this.thisFullInterfaceName;
-			this.thisFullInterfaceName = this.getFullSymbolName(symbol);
+				this.writeToExternOutput(symbol.getDisplayName() + " = function(){};");
+				this.writeLineToExternOutput("");
+			}
+			//if (this.isNeedObfuscateName(symbol)) {
+			this.writeToOutput("var ");
+			//}
 
 			this.writeToOutput(this.thisFullInterfaceName);
 
@@ -3744,12 +4157,18 @@ module TypeScript {
 			}
 
 			this.writeToOutput(";");
+			//}
 
 			if (!hasCallOrIndex) {
 				this.emitInterfaceMembers(declaration);
 			}
 
 			this.thisFullInterfaceName = svFullInterfaceName;
+			this.thisFullInterfaceExternPartName = svExternPartName;
+
+			if (splitMode === InterfaceExternsSplitMode.k_All) {
+				this.isEnabledInterfaceExternStream = false;
+			}
 		}
 
 		private emitInterfaceMembers(declaration: InterfaceDeclaration) {
@@ -3760,6 +4179,12 @@ module TypeScript {
 			var members = declaration.body.typeMembers;
 
 			var isExportedInterface = hasModifier(declaration.modifiers, PullElementFlags.Exported);
+			var svEnabledStream = this.isEnabledInterfaceExternStream;
+			var externMode = this.getInterfaceSplitToExternsMode(declaration);
+			var canEnabelExtern = externMode !== InterfaceExternsSplitMode.k_None;
+
+			var interafceSymbol = this.semanticInfoChain.getSymbolForAST(declaration);
+			var interfaceNameForExtern = (interafceSymbol.getContainer() ? (interafceSymbol.getContainer().fullName() + ".") : "") + interafceSymbol.getDisplayName() + ".prototype";
 
 			for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
 				var memberDecl = members.nonSeparatorAt(i);
@@ -3777,22 +4202,65 @@ module TypeScript {
 
 				alreadyEmittedMethods.push(name);
 
-				if (isFirstLine) {
-					this.writeLineToOutput('');
-					isFirstLine = false;
+				//if (isFirstLine) {
+				//	this.writeLineToOutput('');
+				//	isFirstLine = false;
+				//}
+				if (isExportedInterface) {
+					this.writeToExternOutput(interfaceNameForExtern );
+					if (isQuoted(name)) {
+						this.writeToExternOutput("[" + name + "];");
+					}
+					else {
+						this.writeToExternOutput("." + name + ";");
+					}
+
+					this.writeLineToExternOutput("");
 				}
 
-				this.writeLineToOutput('');
+				if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+					this.isEnabledInterfaceExternStream = true;
+
+					var jsDocComments: string[] = this.getJSDocForType(symbol.type);
+
+					this.writeLineToOutput('');
+					this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
+					this.writeToOutput(this.thisFullInterfaceExternPartName);
+
+					this.writeToOutput(".prototype");
+					if (isQuoted(name)) {
+						this.writeToOutput("[" + name + "];");
+					}
+					else {
+						this.writeToOutput('.' + name + ';');
+					}
+
+					this.isEnabledInterfaceExternStream = svEnabledStream;
+				}
 
 				var jsDocComments: string[] = this.getJSDocForType(symbol.type);
 
-				if (isExportedInterface && !symbol.type.isFunction()) {
-					jsDocComments.push("@expose");
-				}
-
+				this.writeLineToOutput('');
 				this.emitInlineJSDocComment(Emitter.getUserComments(memberDecl), jsDocComments);
-				this.writeToOutput(this.thisFullInterfaceName + '.prototype.' + name + ';');
+				//if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+				//	this.writeToOutput(this.thisFullInterfaceExternPartName);
+				//}
+				//else {
+				this.writeToOutput(this.thisFullInterfaceName);
+				//}
+
+				this.writeToOutput(".prototype");
+				if (isQuoted(name)) {
+					this.writeToOutput("[" + name + "];");
+				}
+				else {
+					this.writeToOutput('.' + name + ';');
+				}
 				lastEmittedMember = memberDecl;
+
+				//if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+				//	this.isEnabledInterfaceExternStream = svEnabledStream;
+				//}
 			}
 		}
 
@@ -3866,7 +4334,7 @@ module TypeScript {
 				case SyntaxKind.ImportDeclaration:
 					return this.emitImportDeclaration(<ImportDeclaration>ast);
 				case SyntaxKind.ExportAssignment:
-					return this.setExportAssignmentIdentifier((<ExportAssignment>ast).identifier.text());
+					return this.setExportAssignment(<ExportAssignment>ast);
 				case SyntaxKind.ClassDeclaration:
 					return this.emitClassDeclaration(<ClassDeclaration>ast);
 				case SyntaxKind.InterfaceDeclaration:
@@ -4058,11 +4526,12 @@ module TypeScript {
 
 
 		private isNeedObfuscateName(symbol: PullSymbol): boolean {
-			return PullHelpers.symbolIsModule(symbol.getContainer()) && !symbol.anyDeclHasFlag(PullElementFlags.Exported) && !symbol.isPrimitive();
+			return PullHelpers.symbolIsModule(symbol.getContainer()) && (!symbol.anyDeclHasFlag(PullElementFlags.Exported) || (symbol.isInterface() &&
+				!isDTSFile((<InterfaceDeclaration>(this.semanticInfoChain.getASTForDecl(symbol.type.getDeclarations()[0]))).fileName()))) && !symbol.isPrimitive();
 		}
 
-		private getObfuscatedName(symbol: PullSymbol, origName: string): string {
-			if (!this.isNeedObfuscateName(symbol)) {
+		private getObfuscatedName(symbol: PullSymbol, origName: string, force: boolean = false): string {
+			if (!force && !this.isNeedObfuscateName(symbol)) {
 				return origName;
 			}
 
@@ -4091,7 +4560,7 @@ module TypeScript {
 			}
 			return Emitter.EMPTY_STRING_LIST.concat<any>(comments.map((comment: Comment) => {
 				return comment.fullText().split('\n');
-			})).map((line: string) => (line + '').replace(/^\/\/\s?/, ''));
+			})).map((line: string) => (line + '').replace(/^\/\/\s?/, '').replace(/^\/\*\*/, '').replace(/\*\/$/, ''));
 		}
 
 		private static joinJSDocComments(first: string[], second: string[]): string[] {
@@ -4130,8 +4599,21 @@ module TypeScript {
 
 			var symbolName = this.getObfuscatedName(correctSymbol, correctSymbol.getDisplayName());
 
-			if (correctSymbol.isInterface() && this.emittedInterfaceSymbols.indexOf(correctSymbol) < 0) {
-				this.usedButNotEmittedInterfaces.push(correctSymbol);
+			if (correctSymbol.isInterface()) {
+				var decl = <InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(correctSymbol.getDeclarations()[0]);
+				if (this.emittedInterfaces.indexOf(decl) < 0 && this.usedButNotEmittedInterfaces.indexOf(decl) < 0) {
+					this.usedButNotEmittedInterfaces.push(decl);
+				}
+
+				if (this.isEnabledInterfaceExternStream) {
+					if (this.getInterfaceSplitToExternsMode(decl) === InterfaceExternsSplitMode.k_Part) {
+						symbolName += "_BASE";
+					}
+				}
+			}
+
+			if (this.isEnabledInterfaceExternStream && correctSymbol.type.isEnum()) {
+				return "number";
 			}
 
 			return moduleName + symbolName;
@@ -4166,7 +4648,12 @@ module TypeScript {
 		}
 
 		private getJSDocForInterfaceDeclaration(interfaceDecl: InterfaceDeclaration): string[] {
-			return ['@interface'].concat<any>(this.getJSDocForExtends(interfaceDecl.heritageClauses),
+			var result = ['@interface'];
+			var symbol = this.semanticInfoChain.getSymbolForAST(interfaceDecl);
+			if (symbol[splitToExternMode] === InterfaceExternsSplitMode.k_Part && !this.isEnabledInterfaceExternStream) {
+				result.push("@extends {" + this.thisFullInterfaceExternPartName + "}");
+			}
+			return result.concat<any>(this.getJSDocForExtends(interfaceDecl.heritageClauses),
 				this.getJSDocForTemplatesForAST(interfaceDecl));
 		}
 
@@ -4196,7 +4683,7 @@ module TypeScript {
 		}
 
 
-		private getJSDocForClass(classDecl: ClassDeclaration): string[]{
+		private getJSDocForClass(classDecl: ClassDeclaration): string[] {
 			var constrDecl = getLastConstructor(classDecl);
 			var jsDocForParams = Emitter.EMPTY_STRING_LIST;
 
@@ -4214,7 +4701,7 @@ module TypeScript {
 		}
 		private getJSDocForFunctionDeclaration(funcDecl: MemberFunctionDeclaration): string[];
 		private getJSDocForFunctionDeclaration(funcDecl: FunctionDeclaration): string[];
-		private getJSDocForFunctionDeclaration(memberOrFuncDecl: any): string[]{
+		private getJSDocForFunctionDeclaration(memberOrFuncDecl: any): string[] {
 			var jsDocComments: string[] = [];
 
 			var funcDecl = <FunctionDeclaration>memberOrFuncDecl;
@@ -4231,9 +4718,15 @@ module TypeScript {
 				var isPrivate = hasModifier(funcDecl.modifiers, PullElementFlags.Private);
 				var isProtected = hasModifier(funcDecl.modifiers, PullElementFlags.Protected);
 				var isStatic = hasModifier(funcDecl.modifiers, PullElementFlags.Static);
+				var isAkraSystemFunction = Emitter.isAkraSystemName(symbol.getDisplayName());
 
-				if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate) {
-					jsDocComments.push("@expose");
+				if (!isFinalClass && !isFinalMethod && isExportedClass && !isPrivate && !isAkraSystemFunction) {
+					if (isStatic) {
+						//jsDocComments.push("@expose");
+					}
+					else {
+						jsDocComments.push("1expose1");
+					}
 				}
 				else if (isFinalMethod) {
 					jsDocComments.push("@final");
@@ -4297,7 +4790,7 @@ module TypeScript {
 		}
 
 		private getJSDocForImplements(herigateList: ISyntaxList2): string[] {
-			var implementsClause = getImplementsHeritageClause(herigateList);
+			var implementsClause = ASTHelpers.getImplementsHeritageClause(herigateList);
 
 			if (implementsClause === null) {
 				return Emitter.EMPTY_STRING_LIST;
@@ -4316,7 +4809,7 @@ module TypeScript {
 		}
 
 		private getJSDocForExtends(herigateList: ISyntaxList2): string[] {
-			var extendsClause = getExtendsHeritageClause(herigateList);
+			var extendsClause = ASTHelpers.getExtendsHeritageClause(herigateList);
 
 			if (extendsClause === null) {
 				return Emitter.EMPTY_STRING_LIST;
@@ -4380,10 +4873,15 @@ module TypeScript {
 			return ['@enum {number}'];
 		}
 
-		private getJSDocForVariableDeclaration(symbol: PullSymbol): string[]{
+		private getJSDocForVariableDeclaration(symbol: PullSymbol): string[] {
 			var svIsBlockTemplate = this.isTypeParametersEmitBlocked;
 			this.isTypeParametersEmitBlocked = true;
 			var result = this.getJSDocForType(symbol.type);
+
+			if (symbol.anyDeclHasFlag(PullElementFlags.Const)) {
+				result.push("@const");
+			}
+
 			this.isTypeParametersEmitBlocked = svIsBlockTemplate;
 
 			return result;
@@ -4395,18 +4893,11 @@ module TypeScript {
 			var isClassFinal = hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final);
 
 			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
+				//if (isClassExports && !isClassFinal && !isConst) {
+				//	jsDocComments.push("@expose");
+				//}
+
 				jsDocComments.push("@protected");
-
-				if (isClassExports && !isClassFinal) {
-					jsDocComments.push("@expose");
-				}
-			}
-			else if (symbol.anyDeclHasFlag(PullElementFlags.Public)) {
-				//jsDocComments.push("@public");
-
-				if (isClassExports) {
-					jsDocComments.push("@expose");
-				}
 			}
 			else if (symbol.anyDeclHasFlag(PullElementFlags.Private)) {
 				jsDocComments.push("@private");
@@ -4476,13 +4967,13 @@ module TypeScript {
 			}
 
 			// Map types
-			if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface) && type.getIndexSignatures().length > 0) {
+			if ((type.isObject() || type.isInterface()) && type.hasOwnIndexSignatures()) {
 				return this.formatJSDocUnionType(type.getIndexSignatures().map(signature => 'Object.<' +
 					this.formatJSDocType(signature.parameters[0].type) + ', ' + this.formatJSDocType(signature.returnType) + '>'));
 			}
 
 			// Object types and interfaces
-			if (type.kind & (TypeScript.PullElementKind.ObjectType | TypeScript.PullElementKind.Interface)) {
+			if ((type.isObject() || type.isInterface())) {
 				if (type.getMembers().length === 0) {
 					return '?Object'; // Object types are nullable in TypeScript
 				}
@@ -4498,6 +4989,7 @@ module TypeScript {
 				return 'Array.<' + this.formatJSDocType(type.getTypeArguments()[0]) + '>';
 			}
 
+			//debugger;
 			throw new Error(TypeScript.PullElementKind[type.kind] + ' types like "' + type.getTypeName() + '" are not supported');
 		}
 
@@ -4530,15 +5022,69 @@ module TypeScript {
 			return symbol.getDisplayName() + "$rest";
 		}
 
-		private exportSymbol(symbol: PullSymbol): void {			
+		private getNameForExport(symbol: PullSymbol, symbolName?: string): string {
+			var result = "";
+
+			var pullDecl = symbol.getDeclarations()[0];
+			var path: PullDecl[] = pullDecl.getParentPath();
+
+			if (path.length === 2) {
+				result = "global['" + symbol.name + "']";
+			}
+			else {
+				for (var i = path.length - 1; i > 0; i--) {
+					var nextSymbol: PullSymbol = path[i - 1].getSymbol();
+
+					// Stop before functions since symbols inside functions are
+					// automatically available through regular lexical scoping
+					if (nextSymbol === null || nextSymbol.kind & TypeScript.PullElementKind.SomeFunction) {
+						break;
+					}
+				}
+
+				//var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+				//	return pullDecl.getSymbol().name;
+				//});
+
+				var containerShortName = "global";
+				//var me = this;
+
+				//path.slice(i, path.length - 1).forEach(function (pullDecl) {
+				//	containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol());
+				//});
+
+				containerShortName = this.getShortName(symbol.getContainer().fullName());
+
+				//var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
+				//	return pullDecl.getSymbol().name;
+				//});
+
+				//result = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
+				result = containerShortName + "['" + symbol.name + "']";
+			}
+
+			return result;
+		}
+
+		private exportSymbol(symbol: PullSymbol, symbolName?: string): void {
 			this.writeLineToOutput("");
 			this.emitIndent();
 			var pullDecl = symbol.getDeclarations()[0];
 			var path: PullDecl[] = pullDecl.getParentPath();
 
 			if (path.length === 2) {
-				this.writeToOutput("global['" + symbol.name + "'] = " + symbol.name + ";");
+				var internalPath = "global['" + symbol.name + "']";
+				this.writeToOutput(internalPath + " = " + internalPath + " || {};");
 				this.writeLineToOutput("");
+
+				if (PullHelpers.symbolIsModule(symbol)) {
+					//var shortName = this.getShortName(internalPath, symbol);
+					var shortName = this.getShortName(symbol.fullName());
+					this.writeToOutput("var " + shortName + " = " + internalPath + ";");
+				}
+
+				this.writeLineToOutput("");
+
 				return;
 			}
 
@@ -4552,15 +5098,470 @@ module TypeScript {
 				}
 			}
 
+			var containerShortName = "global";
+			var me = this;
+
 			var names: string[] = path.slice(i, path.length - 1).map(pullDecl => {
 				return pullDecl.getSymbol().name;
 			});
 
-			var externalPath = "global['" + names.join("']['") + "']";
+			//path.slice(i, path.length - 1).forEach(function (pullDecl) {
+			//	containerShortName = me.getShortName(containerShortName + "['" + pullDecl.getSymbol().name + "']", pullDecl.getSymbol())
+			//});
+			containerShortName = this.getShortName(symbol.getContainer().fullName());
+
+			//var externalName = this.getShortName("global['" + names.join("']['") + "']") + "['" + symbol.name + "']";
+
+			var externalName = containerShortName + "['" + symbol.name + "']";
 			var internalPath: string = names.join(".");
 
-			this.writeToOutput(externalPath + "['" + symbol.name + "'] = " + internalPath + "." + symbol.name + ";");
+			//this.writeToOutput(internalPath + "['" + symbol.name + "'] = ");
+
+			this.writeToOutput(externalName + " = ");
+
+			if (PullHelpers.symbolIsModule(symbol)) {
+				this.writeToOutput(externalName + " || {};");
+				this.writeLineToOutput("");
+
+				//var shortName = this.getShortName(externalName, symbol);
+				var shortName = this.getShortName(symbol.fullName());
+
+				this.writeToOutput("var " + shortName + " = " + externalName + ";");
+			}
+			else {
+				if (symbolName) {
+					this.writeToOutput(symbolName + ";");
+				}
+				else {
+					this.writeToOutput(internalPath + "." + symbol.name + ";");
+				}
+			}
 			this.writeLineToOutput("");
+		}
+
+		private static isAkraSystemName(name: string): boolean {
+			return name[0] === "_";
+		}
+
+		private getContainerEscapeOptionForName(symbol: PullSymbol, name: string): boolean {
+			if (symbol[escapeNamesMap]) {
+				return !!(symbol[escapeNamesMap][name]);
+			}
+
+			if (symbol.type.isInterface()) {
+				this.calcInterfaceEscapeNamesMap(symbol);
+			}
+			else if (symbol.type.isClass()) {
+				this.calcClassEscapeNamesMap(symbol);
+			}
+			else {
+				//console.log("something going wrong " + name);
+				return false;
+			}
+
+			return this.getContainerEscapeOptionForName(symbol, name);
+		}
+
+		private calcInterfaceEscapeNamesMap(interfaceSymbol: PullSymbol): any {
+			var interfaceType = interfaceSymbol.type;
+			if (interfaceType.isTypeReference()) {
+				interfaceType = (<PullTypeReferenceSymbol>interfaceType).referencedTypeSymbol;
+			}
+
+			if (interfaceType[escapeNamesMap]) {
+				return interfaceType[escapeNamesMap];
+			}
+
+			var result = interfaceType[escapeNamesMap] = {};
+			var declaration = <InterfaceDeclaration>this.semanticInfoChain.getASTForDecl(interfaceType.getDeclarations()[0]);
+
+			if (isDTSFile(declaration.fileName())) {
+				return result;
+			}
+
+			var extendsClause = ASTHelpers.getExtendsHeritageClause(declaration.heritageClauses);
+
+			if (extendsClause !== null) {
+				var extendsList = extendsClause.typeNames;
+				var count = extendsList.nonSeparatorCount();
+
+				for (var i = 0; i < count; i++) {
+					var extendsMember = <InterfaceDeclaration>extendsList.nonSeparatorAt(i);
+					var extendsType = this.semanticInfoChain.getSymbolForAST(extendsMember).type;
+					var escapes = this.calcInterfaceEscapeNamesMap(extendsType);
+
+					for (var j in escapes) {
+						result[j] = escapes[j];
+					}
+				}
+			}
+
+			if (!declaration.body) {
+				return result;
+			}
+
+			var members = declaration.body.typeMembers;
+			var alreadyCheckedMembers: string[] = [];
+			var externMode = this.getInterfaceSplitToExternsMode(declaration);
+			var canEnabelExtern = externMode !== InterfaceExternsSplitMode.k_None;
+
+			for (var i = 0, n = members.nonSeparatorCount(); i < n; i++) {
+				var memberDecl = members.nonSeparatorAt(i);
+
+				if (memberDecl.kind() === SyntaxKind.ConstructSignature ||
+					memberDecl.kind() === SyntaxKind.CallSignature ||
+					memberDecl.kind() === SyntaxKind.IndexSignature) {
+					continue;
+				}
+
+				var symbol: PullSymbol = this.semanticInfoChain.getSymbolForAST(memberDecl);
+				var name = symbol.getDisplayName();
+
+				if (alreadyCheckedMembers.indexOf(name) >= 0 || result[name] !== undefined) {
+					continue;
+				}
+
+				alreadyCheckedMembers.push(name);
+
+				if (canEnabelExtern && this.isInterfaceMemberForExtern(symbol)) {
+					this.setSymbolEscapeOption(symbol, true);
+				}
+
+				if (isQuoted(name)) {
+					name = name.substring(1, name.length - 2);
+				}
+
+				result[name] = this.isNeedPropertyEscape(symbol);
+			}
+
+			return result;
+		}
+
+		private calcClassEscapeNamesMap(classSymbol: PullSymbol): any {
+			var classType = classSymbol.type;
+			if (classType.isTypeReference()) {
+				classType = (<PullTypeReferenceSymbol>classType).referencedTypeSymbol;
+			}
+
+			if (classType[escapeNamesMap]) {
+				return classType[escapeNamesMap];
+			}
+
+			var result = classType[escapeNamesMap] = {};
+			var declaration = <ClassDeclaration>this.semanticInfoChain.getASTForDecl(classType.getDeclarations()[0]);
+
+			if (isDTSFile(declaration.fileName())) {
+				return result;
+			}
+
+			var extendsClause = ASTHelpers.getExtendsHeritageClause(declaration.heritageClauses);
+			var implementsClause = ASTHelpers.getImplementsHeritageClause(declaration.heritageClauses);
+
+			if (implementsClause) {
+				var implementsList = implementsClause.typeNames;
+				var count = implementsList.nonSeparatorCount();
+
+				for (var i = 0; i < count; i++) {
+					var implementsMember = <InterfaceDeclaration>implementsList.nonSeparatorAt(i);
+					var implementsType = this.semanticInfoChain.getSymbolForAST(implementsMember).type;
+					var escapes = this.calcInterfaceEscapeNamesMap(implementsType);
+
+					for (var j in escapes) {
+						result[j] = escapes[j];
+					}
+				}
+			}
+
+			if (extendsClause !== null) {
+				var extendsList = extendsClause.typeNames;
+				var count = extendsList.nonSeparatorCount();
+
+				for (var i = 0; i < count; i++) {
+					var extendsMember = <ClassDeclaration>extendsList.nonSeparatorAt(i);
+					var extendsType = this.semanticInfoChain.getSymbolForAST(extendsMember).type;
+					var escapes = this.calcClassEscapeNamesMap(extendsType);
+
+					for (var j in escapes) {
+						result[j] = escapes[j];
+					}
+				}
+			}
+
+			var isClassExported = hasModifier(declaration.modifiers, PullElementFlags.Exported);
+			var isClassFinal = hasModifier(declaration.modifiers, PullElementFlags.Final);
+			var constructorDecl = getLastConstructor(declaration);
+
+			if (!declaration.classElements && !(constructorDecl)) {
+				return result;
+			}
+
+			if (constructorDecl) {
+				for (var i = 0, n = constructorDecl.callSignature.parameterList.parameters.nonSeparatorCount(); i < n; i++) {
+					var parameter = <Parameter>constructorDecl.callSignature.parameterList.parameters.nonSeparatorAt(i);
+					var parameterDecl = this.semanticInfoChain.getDeclForAST(parameter);
+					if (hasFlag(parameterDecl.flags, PullElementFlags.PropertyParameter)) {
+						var symbol = this.semanticInfoChain.getSymbolForAST(parameter);
+						var name = symbol.getDisplayName();
+
+						if (result[name] === undefined) {
+							result[name] = this.isNeedPropertyEscape(symbol);
+						}
+					}
+				}
+			}
+
+			for (var i = 0, n = declaration.classElements.childCount(); i < n; i++) {
+				var childDecl = this.thisClassNode.classElements.childAt(i);
+				if (!childDecl ||
+					childDecl.kind() === SyntaxKind.ConstructorDeclaration ||
+					childDecl.kind() === SyntaxKind.GetAccessor ||
+					childDecl.kind() === SyntaxKind.SetAccessor) {
+					continue;
+				}
+
+				var symbol = this.semanticInfoChain.getSymbolForAST(childDecl);
+				var name = symbol.getDisplayName();
+
+				if (childDecl.kind() === SyntaxKind.MemberFunctionDeclaration && (isClassFinal || symbol.anyDeclHasFlag(PullElementFlags.Final))) {
+					result[name] = this.setSymbolEscapeOption(symbol, false);
+				}
+
+				if (result[name] === undefined) {
+					result[name] = this.isNeedPropertyEscape(symbol);
+				}
+			}
+
+			return result;
+		}
+
+		private setSymbolEscapeOption(symbol: PullSymbol, isEscape: boolean) {
+			return symbol[isNeedEscape] = isEscape;
+		}
+
+		private isNeedEscapeName(symbol: PullSymbol): boolean {
+			if (!symbol) {
+				return false;
+			}
+
+			if (symbol[isNeedEscape] !== undefined) {
+				return symbol[isNeedEscape];
+			}
+
+			if (symbol.isContainer() || !symbol.getContainer() ||
+				PullHelpers.symbolIsModule(symbol) ||
+				PullHelpers.symbolIsModule(symbol.type)) {
+
+				return this.setSymbolEscapeOption(symbol, false);
+			}
+
+			var container = symbol.getContainer();
+			var name = symbol.getDisplayName();
+
+			if (PullHelpers.symbolIsModule(container)) {
+				return this.setSymbolEscapeOption(symbol, this.isNeedEscapeVariableInModule(symbol));
+			}
+			else {
+				if (isQuoted(name)) {
+					return this.setSymbolEscapeOption(symbol, true);
+				}
+				//if (symbol.type.isFunction()) {
+				//	if (symbol.isMethod()) {
+				return this.setSymbolEscapeOption(symbol, this.getContainerEscapeOptionForName(container, name));
+				//	}
+				//}
+			}
+
+			return this.setSymbolEscapeOption(symbol, false);
+		}
+
+		private isNeedEscapeVariableInModule(symbol: PullSymbol): boolean {
+			if (!symbol || symbol.isContainer() || !symbol.getContainer()) {
+				return false;
+			}
+
+			var container = symbol.getContainer();
+			var name = symbol.getDisplayName();
+
+			if (!PullHelpers.symbolIsModule(container) ||
+				PullHelpers.symbolIsModule(symbol) ||
+				PullHelpers.symbolIsModule(symbol.type) ||
+				symbol.isContainer() ||
+				symbol.isInterface() ||
+				symbol.isType() ||
+				symbol.type.isFunction() ||
+				symbol.anyDeclHasFlag(PullElementFlags.Const) ||
+				!symbol.anyDeclHasFlag(PullElementFlags.Exported)) {
+				return false;
+			}
+
+			if (STRIP_TYPES.indexOf(symbol.fullName()) !== -1) {
+				return false;
+			}
+
+			var declaration = <ModuleDeclaration>this.semanticInfoChain.getASTForDecl(symbol.getDeclarations()[0]);
+
+			if (isDTSFile(declaration.fileName())) {
+				return false;
+			}
+
+			return true;
+		}
+
+		private isNeedPropertyEscape(symbol: PullSymbol) {
+			if (!symbol) {
+				return false;
+			}
+
+			if (symbol[isNeedEscape] !== undefined) {
+				return symbol[isNeedEscape];
+			}
+
+			var container = symbol.getContainer();
+			var name = symbol.getDisplayName();
+
+			if (isQuoted(name)) {
+				return this.setSymbolEscapeOption(symbol, true);
+			}
+
+			if (symbol.isMethod() &&
+				container.anyDeclHasFlag(PullElementFlags.Exported) &&
+				symbol.anyDeclHasFlag(PullElementFlags.Public) && !symbol.anyDeclHasFlag(PullElementFlags.Protected) &&
+				!symbol.anyDeclHasFlag(PullElementFlags.Final) && !container.anyDeclHasFlag(PullElementFlags.Final) &&
+				!symbol.anyDeclHasFlag(PullElementFlags.Static) &&
+				!Emitter.isAkraSystemName(name)) {
+
+				if (symbol.getContainer().isInterface()) {
+					return this.setSymbolEscapeOption(symbol, this.isMethodOfInterfaceAlwaysFinal(symbol));
+				}
+
+				return this.setSymbolEscapeOption(symbol, true);
+			}
+
+			if (symbol.isProperty() &&
+				container.anyDeclHasFlag(PullElementFlags.Exported) &&
+				symbol.anyDeclHasFlag(PullElementFlags.Public) && !symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
+
+				return this.setSymbolEscapeOption(symbol, true);
+			}
+
+			return this.setSymbolEscapeOption(symbol, false);
+		}
+
+		private isMethodOfInterfaceAlwaysFinal(symbol: PullSymbol, forceContainer?: PullTypeSymbol): boolean {
+			var interfaceType = forceContainer ? forceContainer : symbol.getContainer().type;
+			var methodName = symbol.getDisplayName();
+
+			var typesThatImplementInterface = interfaceType.getTypesThatExplicitlyImplementThisType();
+			var typesThatExtendInterface = interfaceType.getTypesThatExtendThisType();
+
+			if (typesThatImplementInterface.length === 0 && typesThatExtendInterface.length === 0) {
+				return false;
+			}
+
+			for (var i = 0; i < typesThatImplementInterface.length; i++) {
+				var type = typesThatImplementInterface[i];
+
+				if (!type.anyDeclHasFlag(PullElementFlags.Final)) {
+					var member = type.findMember(methodName, true);
+
+					if (member && !member.anyDeclHasFlag(PullElementFlags.Final)) {
+						return true;
+					}
+				}
+			}
+
+			for (var i = 0; i < typesThatExtendInterface.length; i++) {
+				if (this.isMethodOfInterfaceAlwaysFinal(symbol, typesThatExtendInterface[i])) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private getInterfaceSplitToExternsMode(declaration: InterfaceDeclaration): InterfaceExternsSplitMode {
+			var symbol = this.semanticInfoChain.getSymbolForAST(declaration);
+			var name = symbol.getDisplayName();
+
+			if (symbol[splitToExternMode] !== undefined) {
+				return symbol[splitToExternMode];
+			}
+
+			if (name === 'String' ||
+				name === 'Number' ||
+				name === 'Array' ||
+				isDTSFile(declaration.fileName())) {
+
+				return InterfaceExternsSplitMode.k_None;
+			}
+
+			var hasCallOrIndex = symbol.type.hasOwnCallSignatures() || symbol.type.hasOwnIndexSignatures();
+
+			if (hasCallOrIndex) {
+				return (symbol[splitToExternMode] = InterfaceExternsSplitMode.k_All);
+			}
+
+			if (!hasModifier(declaration.modifiers, PullElementFlags.Exported)) {
+				return (symbol[splitToExternMode] = InterfaceExternsSplitMode.k_None);
+			}
+
+			return (symbol[splitToExternMode] = InterfaceExternsSplitMode.k_Part);
+		}
+
+		private isInterfaceMemberForExtern(symbol: PullSymbol): boolean {
+			return !symbol.type.isFunction() && !Emitter.isAkraSystemName(symbol.getDisplayName()) && !isQuoted(symbol.getDisplayName());
+		}
+
+		private isNeedExportClassFunctionMember(symbol: PullSymbol): boolean {
+			if (symbol.anyDeclHasFlag(PullElementFlags.Private) || Emitter.isAkraSystemName(symbol.getDisplayName())) {
+				return false;
+			}
+
+			if (symbol.anyDeclHasFlag(PullElementFlags.Protected)) {
+				return this.isNeedEscapeName(symbol);
+			}
+
+			return true;
+		}
+
+		getShortName(longName: string/*, symbol?: PullSymbol*/): string {
+			if (this.shortNameMap[longName]) {
+				return this.shortNameMap[longName];
+			}
+
+			var result = (this.shortNameMap[longName] = "$$_shoter_$$_" + (this.shorter++));
+
+			//if (symbol) {
+			//	this.shortNameMap[symbol.fullName()] = result;
+			//}
+
+			return result;
+		}
+
+		hasShortName(longName: string): boolean {
+			return this.shortNameMap[longName] !== undefined;
+		}
+
+		isNeedExternClassMember(symbol: PullSymbol): boolean {
+			if (this.thisClassNode) {
+				if (!hasModifier(this.thisClassNode.modifiers, PullElementFlags.Exported)) {
+					return false;
+				}
+
+				if (symbol.anyDeclHasFlag(PullElementFlags.Protected) && (hasModifier(this.thisClassNode.modifiers, PullElementFlags.Final) || symbol.anyDeclHasFlag(PullElementFlags.Final))) {
+					return false;
+				}
+
+				if (symbol.type.isFunction() && Emitter.isAkraSystemName(symbol.getDisplayName())) {
+					return false;
+				}
+
+				if (symbol.anyDeclHasFlag(PullElementFlags.Public)) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 	}

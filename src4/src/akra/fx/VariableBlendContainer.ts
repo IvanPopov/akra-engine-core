@@ -67,14 +67,14 @@ module akra.fx {
         }
 
         addVariable(pVariable: IAFXVariableDeclInstruction, eBlendMode: EAFXBlendMode): boolean {
-            var sName: string = pVariable.getRealName();
+            var sName: string = pVariable._getRealName();
             var iNameIndex: uint = pVariable._getNameIndex();
             var iIndex: uint = this.getKeyIndexByNameIndex(iNameIndex);
 
             if (iIndex === -1) {
                 this._pVarBlendInfoList.push(<IAFXVariableBlendInfo>{
                     varList: [pVariable],
-                    blendType: pVariable.getType(),
+                    blendType: pVariable._getType(),
                     name: sName,
                     nameIndex: iNameIndex
                 });
@@ -87,7 +87,7 @@ module akra.fx {
                 return true;
             }
 
-            var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendInfoList[iIndex].blendType.blend(pVariable.getType(), eBlendMode);
+            var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendInfoList[iIndex].blendType._blend(pVariable._getType(), eBlendMode);
 
             if (pBlendType === this._pVarBlendInfoList[iIndex].blendType) {
                 return true;
@@ -109,12 +109,12 @@ module akra.fx {
             var pType: IAFXVariableTypeInstruction = pInfo.blendType;
             var pVar: IAFXVariableDeclInstruction = this.getVariable(iIndex);
 
-            var sCode: string = pType.toFinalCode() + " ";
-            sCode += pVar.getRealName();
+            var sCode: string = pType._toFinalCode() + " ";
+            sCode += pVar._getRealName();
 
-            if (pVar.getType().isNotBaseArray()) {
-                var iLength: uint = pVar.getType().getLength();
-                if (webgl.ANGLE && iLength === 1 && pVar.getType().isComplex()) {
+            if (pVar._getType()._isNotBaseArray()) {
+                var iLength: uint = pVar._getType()._getLength();
+                if (webgl.ANGLE && iLength === 1 && pVar._getType()._isComplex()) {
                     sCode += "[" + 2 + "]";
                 }
                 else {
@@ -122,8 +122,8 @@ module akra.fx {
                 }
             }
 
-            if (bWithInitializer && pVar.hasInitializer()) {
-                sCode += "=" + pVar.getInitializeExpr().toFinalCode();
+            if (bWithInitializer && pVar._hasInitializer()) {
+                sCode += "=" + pVar._getInitializeExpr()._toFinalCode();
             }
 
             return sCode;
@@ -149,7 +149,7 @@ module akra.fx {
             var pVarList: IAFXVariableDeclInstruction[] = this.getVarList(iIndex);
 
             for (var i: uint = 0; i < pVarList.length; i++) {
-                pVarList[i].setRealName(sNewRealName);
+                pVarList[i]._setRealName(sNewRealName);
             }
         }
     }

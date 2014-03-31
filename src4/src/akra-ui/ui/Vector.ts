@@ -16,10 +16,8 @@ module akra.ui {
 		return <string><any>x.toFixed(2);
 	}
 
-	class ChangedSignal extends Signal<{
-		(pNode: IUIVector, v: any): void;
-	}, IUIVector> {
-		emit(pLabel?: IUILabel, sValue?: string): void {
+	class ChangedSignal extends Signal<IUIVector> {
+		emit(pLabel: IUILabel, sValue: string): void {
 			var pVector: Vector = <Vector>this.getSender();
 
 			if (pVector.$lock.prop("checked")) {

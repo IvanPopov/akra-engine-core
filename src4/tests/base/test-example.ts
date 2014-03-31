@@ -19,9 +19,149 @@ module akra {
 		deps: addons.getNavigationDependences()
 	};
 
-	export var pProgress = new addons.Progress(document.getElementById("progress"));
+	class SimpleSceneObject extends akra.scene.SceneObject {
+		protected _pRenderable: IRenderableObject = null;
 
-	export var pEngine = createEngine({ deps: pDeps, progress: pProgress.getListener() });
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
+
+			this._pLocalBounds.set(-1, 1, -1, 1, -1, 1);
+
+			var pRenderable: IRenderableObject = new render.RenderableObject();
+			var pCollection: IRenderDataCollection = pEngine.createRenderDataCollection(0);
+			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLELIST);
+
+			pData.allocateAttribute(akra.data.VertexDeclaration.normalize([akra.data.VertexElement.float3(akra.data.Usages.POSITION)]),
+				new Float32Array([
+					// Front face
+					-1.0, -1.0, 1.0,
+					1.0, -1.0, 1.0,
+					1.0, 1.0, 1.0,
+					-1.0, 1.0, 1.0,
+
+					// Back face
+					-1.0, -1.0, -1.0,
+					-1.0, 1.0, -1.0,
+					1.0, 1.0, -1.0,
+					1.0, -1.0, -1.0,
+
+					// Top face
+					-1.0, 1.0, -1.0,
+					-1.0, 1.0, 1.0,
+					1.0, 1.0, 1.0,
+					1.0, 1.0, -1.0,
+
+					// Bottom face
+					-1.0, -1.0, -1.0,
+					1.0, -1.0, -1.0,
+					1.0, -1.0, 1.0,
+					-1.0, -1.0, 1.0,
+
+					// Right face
+					1.0, -1.0, -1.0,
+					1.0, 1.0, -1.0,
+					1.0, 1.0, 1.0,
+					1.0, -1.0, 1.0,
+
+					// Left face
+					-1.0, -1.0, -1.0,
+					-1.0, -1.0, 1.0,
+					-1.0, 1.0, 1.0,
+					-1.0, 1.0, -1.0,
+				]));
+
+			pData.allocateAttribute(akra.data.VertexDeclaration.normalize([akra.data.VertexElement.float3(akra.data.Usages.NORMAL)]),
+				new Float32Array([
+					// Front face
+					0.0, 0.0, 1.0,
+					0.0, 0.0, 1.0,
+					0.0, 0.0, 1.0,
+					0.0, 0.0, 1.0,
+
+					// Back face
+					0.0, 0.0, -1.0,
+					0.0, 0.0, -1.0,
+					0.0, 0.0, -1.0,
+					0.0, 0.0, -1.0,
+
+					// Top face
+					0.0, 1.0, 0.0,
+					0.0, 1.0, 0.0,
+					0.0, 1.0, 0.0,
+					0.0, 1.0, 0.0,
+
+					// Bottom face
+					0.0, -1.0, 0.0,
+					0.0, -1.0, 0.0,
+					0.0, -1.0, 0.0,
+					0.0, -1.0, 0.0,
+
+					// Right face
+					1.0, 0.0, 0.0,
+					1.0, 0.0, 0.0,
+					1.0, 0.0, 0.0,
+					1.0, 0.0, 0.0,
+
+					// Left face
+					-1.0, 0.0, 0.0,
+					-1.0, 0.0, 0.0,
+					-1.0, 0.0, 0.0,
+					-1.0, 0.0, 0.0,
+				]));
+
+			var pMap: IBufferMap = pData["_pMap"];
+			var pIndexBuffer: IIndexBuffer = pRmgr.createIndexBuffer("simple-cube-indecies");
+			pIndexBuffer.create(36, EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.STATIC);
+
+			pMap.setIndex(pIndexBuffer.allocateData(EPrimitiveTypes.TRIANGLELIST, EDataTypes.UNSIGNED_SHORT, new Uint16Array([
+				0, 1, 2, 0, 2, 3,    // Front face
+				4, 5, 6, 4, 6, 7,    // Back face
+				8, 9, 10, 8, 10, 11,  // Top face
+				12, 13, 14, 12, 14, 15, // Bottom face
+				16, 17, 18, 16, 18, 19, // Right face
+				20, 21, 22, 20, 22, 23  // Left face
+			])));
+
+			pRenderable._setRenderData(pData);
+			pRenderable._setup(pEngine.getRenderer());
+
+			pRenderable.getEffect().addComponent("akra.system.mesh_geometry");
+			pRenderable.getEffect().addComponent("akra.system.mesh_texture");
+
+			pRenderable.getMaterial().emissive = new color.Color(0., 0., 0., 1.);
+			pRenderable.getMaterial().ambient = new color.Color(1., 1., 1., 1.);
+			pRenderable.getMaterial().diffuse = new color.Color(1., 0., 0., 1.);
+			pRenderable.getMaterial().specular = new color.Color(1., 0., 0., 1.);
+			pRenderable.getMaterial().shininess = 20;
+
+			this._pRenderable = pRenderable;
+		}
+
+		getTotalRenderable(): uint {
+			return 1;
+		}
+
+		getRenderable(i?: uint): IRenderableObject {
+			return this._pRenderable;
+		}
+	}
+
+	function createSimpleCube(sName: string = null): ISceneObject {
+		var pCube = new SimpleSceneObject(pScene);
+
+		pCube.create();
+
+		pCube.setName(sName);
+		pCube.attached.connect(pScene.nodeAttachment);
+		pCube.detached.connect(pScene.nodeDetachment);
+
+		pCube.attachToParent(pScene.getRootNode());
+
+		return pCube;
+	}
+
+	export var pEngine = akra.createEngine({ deps: pDeps });
+
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
@@ -33,7 +173,7 @@ module akra {
 	var data = "../../../src2/data/";
 
 	function setup(pCanvas: ICanvas3d): void {
-		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
+		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas).getElement();
 		var pDiv: HTMLDivElement = <HTMLDivElement>document.createElement("div");
 
 		document.body.appendChild(pDiv);
@@ -66,31 +206,32 @@ module akra {
 
 	function createKeymap(pCamera: ICamera): void {
 		var pKeymap: IKeyMap = control.createKeymap();
-		pKeymap.captureMouse((<any>pCanvas)._pCanvas);
+		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
 				var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-				var fdX = v2fMouseShift.x / pViewport.getActualWidth() * 10.0;
-				var fdY = v2fMouseShift.y / pViewport.getActualHeight() * 10.0;
+				var fdX = v2fMouseShift.x / pViewport.getActualWidth() * 5.0;
+				var fdY = v2fMouseShift.y / pViewport.getActualHeight() * 5.0;
 
-				pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+				pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+				pKeymap.update();
+			}
 
-				var fSpeed: float = 0.1 * 10;
-				if (pKeymap.isKeyPress(EKeyCodes.W)) {
-					pCamera.addRelPosition(0, 0, -fSpeed);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.S)) {
-					pCamera.addRelPosition(0, 0, fSpeed);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.A)) {
-					pCamera.addRelPosition(-fSpeed, 0, 0);
-				}
-				if (pKeymap.isKeyPress(EKeyCodes.D)) {
-					pCamera.addRelPosition(fSpeed, 0, 0);
-				}
+			var fSpeed: float = 0.1 * 10;
+			if (pKeymap.isKeyPress(EKeyCodes.W)) {
+				pCamera.addRelPosition(0, 0, -fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.S)) {
+				pCamera.addRelPosition(0, 0, fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.A)) {
+				pCamera.addRelPosition(-fSpeed, 0, 0);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.D)) {
+				pCamera.addRelPosition(fSpeed, 0, 0);
 			}
 		});
 	}
@@ -131,12 +272,41 @@ module akra {
 	}
 
 	function createViewport(): IViewport {
-		var pViewport: IViewport = new render.DSViewport(pCamera);
+		var pViewport: IDSViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
+		window.onresize = function (event) {
+			pCanvas.resize(window.innerWidth, window.innerHeight);
+		}
+
 		//(<render.DSViewport>pViewport).setFXAA(false);
 		return pViewport;
+	}
+
+	function createLPPViewport(): IViewport {
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera);
+		pCanvas.addViewport(pViewport);
+		pCanvas.resize(window.innerWidth, window.innerHeight);
+
+		window.onresize = function (event) {
+			pCanvas.resize(window.innerWidth, window.innerHeight);
+		}
+
+		var pTextureViewport1: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightMapTexture"], 0.02, 0.01, .15, .15, 20));
+		var pTextureViewport2: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pViewport["_pNormalBufferTexture"], 0.02, 0.17, .15, .15, 21));
+
+		return pViewport;
+	}
+
+	export var pDepthRange: IVec2 = new math.Vec2(0.5, 1.);
+	var zIndex = 40.;
+	function createTextureViewportForDepthTexture(pTexture: ITexture, fLeft: float, fTop: float): void {
+		var pTextureViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTexture, fLeft, fTop, .15, .15, zIndex++));
+		pTextureViewport.getEffect().addComponent("akra.system.display_depth");
+		pTextureViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint) => {
+			pTechnique.getPass(iPass).setUniform("depthRange", pDepthRange);
+		});
 	}
 
 	function createLighting(): void {
@@ -151,6 +321,25 @@ module akra {
 		pOmniLight.setShadowCaster(false);
 
 		pOmniLight.addPosition(1, 5, 3);
+
+		//for (var i = 0; i < pOmniLight.getDepthTextureCube().length; i++) {
+		//	createTextureViewportForDepthTexture(pOmniLight.getDepthTextureCube()[i], 0.02, 0.01 + 0.16 * (i));
+		//}
+
+		//var pProjectShadowLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+
+		//pProjectShadowLight.attachToParent(pScene.getRootNode());
+		//pProjectShadowLight.setEnabled(true);
+		//pProjectShadowLight.getParams().ambient.set(0.1, 0.1, 0.1, 1);
+		//pProjectShadowLight.getParams().diffuse.set(0.5);
+		//pProjectShadowLight.getParams().specular.set(1, 1, 1, 1);
+		//pProjectShadowLight.getParams().attenuation.set(1, 0, 0);
+		//pProjectShadowLight.setShadowCaster(true);
+
+		//pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+		//pProjectShadowLight.addRelPosition(0, 3, 10);
+
+		//createTextureViewportForDepthTexture(pProjectShadowLight.getDepthTexture(), 0.18, 0.01);
 	}
 
 	function createSky(): void {
@@ -284,30 +473,54 @@ module akra {
 		pModelRoot.addController(pController);
 	}
 
+	function createStatsDIV() {
+		var pStatsDiv = document.createElement("div");
+
+		document.body.appendChild(pStatsDiv);
+		pStatsDiv.setAttribute("style",
+			"position: fixed;" +
+			"max-height: 40px;" +
+			"max-width: 120px;" +
+			"color: green;" +
+			"margin: 5px;");
+
+		return pStatsDiv;
+	}
+
 	function main(pEngine: IEngine) {
 		setup(pCanvas);
 
 		pCamera = createCamera();
-		pViewport = createViewport();
+		pViewport = createLPPViewport();
+
+		var pStatsDiv = createStatsDIV();
+
+		pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
+			pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
+		});
 
 		//addons.navigation(pViewport);
 
 		createKeymap(pCamera);
 
 
-		//createSceneEnvironment();
+		createSceneEnvironment();
 		createLighting();
-
-		createSkyBox();
+		//createSkyBox();
+		//createSimpleCube();
 		//createSky();
 
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();
-		loadManyModels(400, data + "models/cube.dae");
+		loadManyModels(20, data + "models/cube.dae");
 		//loadManyModels(100, data + "models/box/opened_box.dae");
 
-		//loadModel(data + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+		//var pSoldier = loadModel(data + "models/WoodSoldier/WoodSoldier.DAE", () => {
+		//	(<ISceneModel>pSoldier.getChild().getChild().getChild()).getMesh().showBoundingBox();
+		//	(<ISceneModel>pSoldier.getChild().getChild().getChild().getSibling()).getMesh().showBoundingBox();
+		//});
+		//pSoldier.addPosition(0., 1.1, 0.);		
 
 
 		pProgress.destroy();

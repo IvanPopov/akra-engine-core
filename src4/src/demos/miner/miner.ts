@@ -11,7 +11,7 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
-	var pProgress = new addons.Progress(document.getElementById("progress"))
+	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
@@ -27,7 +27,7 @@ module akra {
 	};
 
 	export var pEngine: IEngine = createEngine(pOptions);
-	 
+
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
 	export var pViewport: IDSViewport = null;
@@ -82,10 +82,10 @@ module akra {
 		var pGUI = new dat.GUI();
 
 		//std.createSceneEnvironment(pScene, true, false, 50);
-		
+
 
 		for (var i = 0; i < 10; ++i) {
-			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
+			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
 			pLightOmni.attachToParent(pScene.getRootNode());
 			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
 			var pSprite = pScene.createSprite();
@@ -94,11 +94,11 @@ module akra {
 			pSprite.setBillboard(true);
 			pSprite.setShadow(false);
 
-			
+
 
 
 			pSprite.attachToParent(pLightOmni);
-			pLightOmni.lookAt(Vec3.temp(0., 0., 0.))
+			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			// pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
 			pLightOmni.getParams().diffuse.set(math.random(), math.random(), math.random());
@@ -107,10 +107,10 @@ module akra {
 
 			((pSprite: ISprite, pLightOmni: IOmniLight) => {
 				pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
-				pSprite.mouseout.connect(() => { pViewport.highlight(null);});
+				pSprite.mouseout.connect(() => { pViewport.highlight(null); });
 				pSprite.click.connect(() => {
 					pLightOmni.setEnabled(!pLightOmni.isEnabled());
-					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled()? 0: 1);
+					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
 					debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
 				});
 			})(pSprite, pLightOmni);
@@ -137,7 +137,7 @@ module akra {
 		pQuad.setPosition(0, 10., -10.);
 		pQuad.getMesh().getSubset(0).getSurfaceMaterial().setTexture(0, pGrid);
 		pQuad.getMesh().getSubset(0).getMaterial().diffuse = new color.Color(0., 0., 0., 1.);
-		
+
 
 		pQuad = addons.createQuad(pScene, 10, Vec2.temp(4.));
 		pQuad.setRotationByXYZAxis(math.PI / 2, math.PI / 2, 0);

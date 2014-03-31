@@ -94,6 +94,7 @@ module akra.parser {
 
 		setOptimizeMode(isOptimize: boolean): void;
 
+		addToken(pToken: IToken): void;
 		addNode(pNode: IParseNode): void;
 		reduceByRule(pRule: IRule, eCreate: ENodeCreateMode);
 
@@ -109,14 +110,14 @@ module akra.parser {
 	}
 
 	export interface ILexer {
-		addPunctuator(sValue: string, sName?: string): string;
-		addKeyword(sValue: string, sName: string): string;
+		_addPunctuator(sValue: string, sName?: string): string;
+		_addKeyword(sValue: string, sName: string): string;
 
-		getTerminalValueByName(sName: string): string;
+		_getTerminalValueByName(sName: string): string;
 
-		init(sSource: string): void;
+		_init(sSource: string): void;
 
-		getNextToken(): IToken;
+		_getNextToken(): IToken;
 		_getIndex(): uint;
 		_setSource(sSource: string): void;
 		_setIndex(iIndex: uint): void;
@@ -141,6 +142,7 @@ module akra.parser {
 		returnCode(pNode: IParseNode): string;
 
 		init(sGrammar: string, eMode?: EParseMode, eType?: EParserType): boolean;
+		defaultInit(): void;
 
 		parse(sSource: string, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 

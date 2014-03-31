@@ -41,8 +41,8 @@ module akra.ui.animation {
 		}
 
 		protected setupSignals(): void {
-			this.edit = this.edit || new Signal(<any>this);
-			this.remove = this.remove || new Signal(<any>this);
+			this.edit = this.edit || new Signal(this);
+			this.remove = this.remove || new Signal(this);
 			super.setupSignals();
 		}
 

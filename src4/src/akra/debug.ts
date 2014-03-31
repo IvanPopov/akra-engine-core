@@ -2,6 +2,7 @@
 
 
 module akra {
+
 	export var debug: ILogger = new util.Logger();
 
 	debug.init();
@@ -41,4 +42,5 @@ module akra {
 	debug.setLogRoutine(logRoutine, ELogLevel.LOG | ELogLevel.INFORMATION);
 	debug.setLogRoutine(warningRoutine, ELogLevel.WARNING);
 	debug.setLogRoutine(errorRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
+
 }

@@ -1,4 +1,4 @@
-/// <reference path="../idl/IAFXMaker.ts" />
+﻿/// <reference path="../idl/IAFXMaker.ts" />
 /// <reference path="../idl/IAFXComposer.ts" />
 /// <reference path="../idl/IResourcePoolManager.ts" />
 /// <reference path="../idl/IShaderInput.ts" />
@@ -168,7 +168,7 @@ module akra.fx {
 	}
 
 
-	export class Maker implements IAFXMaker {
+	final export class Maker implements IAFXMaker {
 		guid: uint = guid();
 
 		private _pComposer: IAFXComposer = null;
@@ -443,9 +443,9 @@ module akra.fx {
 				}
 
 				var pSampler: IAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
-				var sSampler: string = pSampler.getSemantic() || pSampler.getName();
+				var sSampler: string = pSampler._getSemantic() || pSampler._getName();
 				var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sSampler);
-				var eType: EAFXShaderVariableType = pSampler.getType().isSampler2D() ?
+				var eType: EAFXShaderVariableType = pSampler._getType()._isSampler2D() ?
 					EAFXShaderVariableType.k_Sampler2D :
 					EAFXShaderVariableType.k_SamplerCUBE;
 
@@ -455,7 +455,7 @@ module akra.fx {
 				pShaderUniformInfo.length = 0;
 
 				pInputUniformInfo = createInputUniformInfo(sSampler, iNameIndex, pShaderUniformInfo, false);
-				pInputUniformInfo.isCollapsedArray = (pSampler.getType().getLength() > 0);
+				pInputUniformInfo.isCollapsedArray = (pSampler._getType()._getLength() > 0);
 
 				this._pInputSamplerInfoList.push(pInputUniformInfo);
 			}
@@ -516,7 +516,7 @@ module akra.fx {
 					var pShaderAttrInfo: IShaderAttrInfo = this._pShaderAttrInfoMap[sAttrName];
 					var isMappable: boolean = iBufferSlot >= 0;
 					var pVertexTextureInfo: IShaderUniformInfo = isMappable ? this._pShaderUniformInfoMap[sBufferName] : null;
-					var isComplex: boolean = pAttrs.getTypeBySemanticIndex(iSemanticIndex).isComplex();
+					var isComplex: boolean = pAttrs.getTypeBySemanticIndex(iSemanticIndex)._isComplex();
 
 					// need to init buffer
 					if (iBufferSlot > nPreparedBuffers) {
@@ -545,8 +545,8 @@ module akra.fx {
 					var pOffsetInfoList: IShaderAttrOffsetInfo[] = pShaderAttrInfo.offsets || new Array();
 
 					for (var j: uint = 0; j < pOffsetVars.length; j++) {
-						var sOffsetSemantic: string = pOffsetVars[j].getSemantic();
-						var sOffsetName: string = pOffsetVars[j].getRealName();
+						var sOffsetSemantic: string = pOffsetVars[j]._getSemantic();
+						var sOffsetName: string = pOffsetVars[j]._getRealName();
 
 						if (this.isUniformExists(sOffsetName)) {
 							var pOffsetUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoMap[sOffsetName];
@@ -1132,7 +1132,7 @@ module akra.fx {
 		}
 
 		private expandStructUniforms(pVariable: IAFXVariableDeclInstruction, sPrevName: string = ""): IUniformStructInfo {
-			var sRealName: string = pVariable.getRealName();
+			var sRealName: string = pVariable._getRealName();
 
 			if (sPrevName !== "") {
 				sPrevName += "." + sRealName;
@@ -1145,10 +1145,10 @@ module akra.fx {
 				sPrevName = sRealName;
 			}
 
-			var pVarType: IAFXVariableTypeInstruction = pVariable.getType();
-			var pFieldNameList: string[] = pVarType.getFieldNameList();
-			var isArray: boolean = pVarType.isNotBaseArray();
-			var iLength: uint = isArray ? pVarType.getLength() : 1;
+			var pVarType: IAFXVariableTypeInstruction = pVariable._getType();
+			var pFieldNameList: string[] = pVarType._getFieldNameList();
+			var isArray: boolean = pVarType._isNotBaseArray();
+			var iLength: uint = isArray ? pVarType._getLength() : 1;
 
 			if (isArray && (iLength === instructions.Instruction.UNDEFINE_LENGTH || iLength === 0)) {
 				logger.warn("Length of struct '" + sRealName + "' can not be undefined");
@@ -1173,17 +1173,17 @@ module akra.fx {
 
 				for (var j: uint = 0; j < pFieldNameList.length; j++) {
 					var sFieldName: string = pFieldNameList[j];
-					var pField: IAFXVariableDeclInstruction = pVarType.getField(sFieldName);
+					var pField: IAFXVariableDeclInstruction = pVarType._getField(sFieldName);
 					var pFieldInfo: IUniformStructInfo = null;
 
-					if (pField.getType().isComplex()) {
+					if (pField._getType()._isComplex()) {
 						pFieldInfo = this.expandStructUniforms(pField, sFieldPrevName);
 					}
 					else {
-						var sFieldRealName: string = sFieldPrevName + "." + pField.getRealName();
+						var sFieldRealName: string = sFieldPrevName + "." + pField._getRealName();
 						var eFieldType: EAFXShaderVariableType = VariableContainer.getVariableType(pField);
-						var iFieldLength: uint = pField.getType().getLength();
-						var isFieldArray: boolean = pField.getType().isNotBaseArray();
+						var iFieldLength: uint = pField._getType()._getLength();
+						var isFieldArray: boolean = pField._getType()._isNotBaseArray();
 						var sFieldShaderName: string = sFieldRealName;
 
 						if (isFieldArray) {
@@ -1198,7 +1198,7 @@ module akra.fx {
 						pShaderUniformInfo.type = eFieldType;
 						pShaderUniformInfo.length = iFieldLength;
 
-						pFieldInfo = createUniformStructFieldInfo(pField.getRealName(), false, isFieldArray);
+						pFieldInfo = createUniformStructFieldInfo(pField._getRealName(), false, isFieldArray);
 						pFieldInfo.shaderVarInfo = pShaderUniformInfo;
 					}
 

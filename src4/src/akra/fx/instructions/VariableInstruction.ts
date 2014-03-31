@@ -14,7 +14,7 @@ module akra.fx.instructions {
 	import StringDictionary = stringUtils.StringDictionary;
 
 	export class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
-		private _isVideoBuffer: boolean = null;
+		private _bIsVideoBuffer: boolean = null;
 		private _pVideoBufferSampler: IAFXVariableDeclInstruction = null;
 		private _pVideoBufferHeader: IAFXVariableDeclInstruction = null;
 		private _pFullNameExpr: IAFXExprInstruction = null;
@@ -31,6 +31,7 @@ module akra.fx.instructions {
 		private _bLockInitializer: boolean = false;
 
 		private _iNameIndex: uint = 0;
+
 		static pShaderVarNamesGlobalDictionary: StringDictionary = new StringDictionary();
 		static _getIndex(sName: string): uint {
 			return VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(sName);
@@ -45,64 +46,64 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
 		}
 
-		hasInitializer(): boolean {
-			return this._nInstructions === 3 && !isNull(this.getInitializeExpr());
+		_hasInitializer(): boolean {
+			return this._nInstructions === 3 && !isNull(this._getInitializeExpr());
 		}
 
-		getInitializeExpr(): IAFXInitExprInstruction {
-			return <IAFXInitExprInstruction>this.getInstructions()[2];
+		_getInitializeExpr(): IAFXInitExprInstruction {
+			return <IAFXInitExprInstruction>this._getInstructions()[2];
 		}
 
-		hasConstantInitializer(): boolean {
-			return this.hasInitializer() && this.getInitializeExpr().isConst();
+		_hasConstantInitializer(): boolean {
+			return this._hasInitializer() && this._getInitializeExpr()._isConst();
 		}
 
-		lockInitializer(): void {
+		_lockInitializer(): void {
 			this._bLockInitializer = true;
 		}
 
-		unlockInitializer(): void {
+		_unlockInitializer(): void {
 			this._bLockInitializer = false;
 		}
 
-		getDefaultValue(): any {
+		_getDefaultValue(): any {
 			return this._pDefaultValue;
 		}
 
-		prepareDefaultValue(): void {
-			this.getInitializeExpr().evaluate();
-			this._pDefaultValue = this.getInitializeExpr().getEvalValue();
+		_prepareDefaultValue(): void {
+			this._getInitializeExpr()._evaluate();
+			this._pDefaultValue = this._getInitializeExpr()._getEvalValue();
 		}
 
-		getValue(): any {
+		_getValue(): any {
 			return this._pValue;
 		}
 
-		setValue(pValue: any): any {
+		_setValue(pValue: any): any {
 			this._pValue = pValue;
 
-			if (this.getType().isForeign()) {
-				this.setRealName(pValue);
+			if (this._getType()._isForeign()) {
+				this._setRealName(pValue);
 			}
 		}
 
-		getType(): IAFXVariableTypeInstruction {
+		_getType(): IAFXVariableTypeInstruction {
 			return <IAFXVariableTypeInstruction>this._pInstructionList[0];
 		}
 
-		setType(pType: IAFXVariableTypeInstruction): void {
+		_setType(pType: IAFXVariableTypeInstruction): void {
 			this._pInstructionList[0] = <IAFXVariableTypeInstruction>pType;
-			pType.setParent(this);
+			pType._setParent(this);
 
 			if (this._nInstructions === 0) {
 				this._nInstructions = 1;
 			}
 		}
 
-		setName(sName: string): void {
+		_setName(sName: string): void {
 			var pName: IAFXIdInstruction = new IdInstruction();
-			pName.setName(sName);
-			pName.setParent(this);
+			pName._setName(sName);
+			pName._setParent(this);
 
 			this._pInstructionList[1] = <IAFXIdInstruction>pName;
 
@@ -111,41 +112,41 @@ module akra.fx.instructions {
 			}
 		}
 
-		setRealName(sRealName: string): void {
-			this.getNameId().setRealName(sRealName);
+		_setRealName(sRealName: string): void {
+			this._getNameId()._setRealName(sRealName);
 		}
 
-		setVideoBufferRealName(sSampler: string, sHeader: string): void {
-			if (!this.isVideoBuffer()) {
+		_setVideoBufferRealName(sSampler: string, sHeader: string): void {
+			if (!this._isVideoBuffer()) {
 				return;
 			}
 
-			this._getVideoBufferSampler().setRealName(sSampler);
-			this._getVideoBufferHeader().setRealName(sHeader);
+			this._getVideoBufferSampler()._setRealName(sSampler);
+			this._getVideoBufferHeader()._setRealName(sHeader);
 		}
 
-		getName(): string {
-			return (<IAFXIdInstruction>this._pInstructionList[1]).getName();
+		_getName(): string {
+			return (<IAFXIdInstruction>this._pInstructionList[1])._getName();
 		}
 
-		getRealName(): string {
-			return (<IAFXIdInstruction>this._pInstructionList[1]).getRealName();
+		_getRealName(): string {
+			return (<IAFXIdInstruction>this._pInstructionList[1])._getRealName();
 		}
 
-		getNameId(): IAFXIdInstruction {
+		_getNameId(): IAFXIdInstruction {
 			return <IAFXIdInstruction>this._pInstructionList[1];
 		}
 
-		isUniform(): boolean {
-			return this.getType().hasUsage("uniform");
+		_isUniform(): boolean {
+			return this._getType()._hasUsage("uniform");
 		}
 
-		isField(): boolean {
-			if (isNull(this.getParent())) {
+		_isField(): boolean {
+			if (isNull(this._getParent())) {
 				return false;
 			}
 
-			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+			var eParentType: EAFXInstructionTypes = this._getParent()._getInstructionType();
 			if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction ||
 				eParentType === EAFXInstructionTypes.k_ComplexTypeInstruction ||
 				eParentType === EAFXInstructionTypes.k_SystemTypeInstruction) {
@@ -155,56 +156,56 @@ module akra.fx.instructions {
 			return false;
 		}
 
-		isPointer(): boolean {
-			return this.getType().isPointer();
+		_isPointer(): boolean {
+			return this._getType()._isPointer();
 		}
 
-		isVideoBuffer(): boolean {
-			if (isNull(this._isVideoBuffer)) {
-				this._isVideoBuffer = this.getType().isStrongEqual(Effect.getSystemType("video_buffer"));
+		_isVideoBuffer(): boolean {
+			if (isNull(this._bIsVideoBuffer)) {
+				this._bIsVideoBuffer = this._getType()._isStrongEqual(Effect.getSystemType("video_buffer"));
 			}
 
-			return this._isVideoBuffer;
+			return this._bIsVideoBuffer;
 		}
 
-		isSampler(): boolean {
-			return this.getType().isSampler();
+		_isSampler(): boolean {
+			return this._getType()._isSampler();
 		}
 
-		getSubVarDecls(): IAFXVariableDeclInstruction[] {
-			return this.getType().getSubVarDecls();
+		_getSubVarDecls(): IAFXVariableDeclInstruction[] {
+			return this._getType()._getSubVarDecls();
 		}
 
-		isDefinedByZero(): boolean {
+		_isDefinedByZero(): boolean {
 			return this._bDefineByZero;
 		}
 
-		defineByZero(isDefine: boolean): void {
+		_defineByZero(isDefine: boolean): void {
 			this._bDefineByZero = isDefine;
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			if (this._isShaderOutput()) {
 				return "";
 			}
 			var sCode: string = "";
 
-			if (this.isVideoBuffer()) {
-				this._getVideoBufferHeader().lockInitializer();
+			if (this._isVideoBuffer()) {
+				this._getVideoBufferHeader()._lockInitializer();
 
-				sCode = this._getVideoBufferHeader().toFinalCode();
+				sCode = this._getVideoBufferHeader()._toFinalCode();
 				sCode += ";\n";
-				sCode += this._getVideoBufferSampler().toFinalCode();
+				sCode += this._getVideoBufferSampler()._toFinalCode();
 
-				this._getVideoBufferHeader().unlockInitializer();
+				this._getVideoBufferHeader()._unlockInitializer();
 			}
 			else {
-				sCode = this.getType().toFinalCode();
-				sCode += " " + this.getNameId().toFinalCode();
+				sCode = this._getType()._toFinalCode();
+				sCode += " " + this._getNameId()._toFinalCode();
 
-				if (this.getType().isNotBaseArray()) {
-					var iLength: uint = this.getType().getLength();
-					if (webgl.ANGLE && iLength === 1 && this.getType().isComplex()) {
+				if (this._getType()._isNotBaseArray()) {
+					var iLength: uint = this._getType()._getLength();
+					if (webgl.ANGLE && iLength === 1 && this._getType()._isComplex()) {
 						sCode += "[" + 2 + "]";
 					}
 					else {
@@ -212,11 +213,11 @@ module akra.fx.instructions {
 					}
 				}
 
-				if (this.hasInitializer() &&
-					!this.isSampler() &&
-					!this.isUniform() &&
+				if (this._hasInitializer() &&
+					!this._isSampler() &&
+					!this._isUniform() &&
 					!this._bLockInitializer) {
-					sCode += "=" + this.getInitializeExpr().toFinalCode();
+					sCode += "=" + this._getInitializeExpr()._toFinalCode();
 				}
 			}
 
@@ -224,7 +225,7 @@ module akra.fx.instructions {
 		}
 
 		_markAsVarying(bValue: boolean): void {
-			this.getNameId()._markAsVarying(bValue);
+			this._getNameId()._markAsVarying(bValue);
 		}
 
 		_markAsShaderOutput(isShaderOutput: boolean): void {
@@ -244,7 +245,7 @@ module akra.fx.instructions {
 		}
 
 		_getNameIndex(): uint {
-			return this._iNameIndex || (this._iNameIndex = VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(this.getRealName()));
+			return this._iNameIndex || (this._iNameIndex = VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(this._getRealName()));
 		}
 
 		_getFullNameExpr(): IAFXExprInstruction {
@@ -252,13 +253,13 @@ module akra.fx.instructions {
 				return this._pFullNameExpr;
 			}
 
-			if (!this.isField() ||
-				!(<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()) {
+			if (!this._isField() ||
+				!(<IAFXVariableTypeInstruction>this._getParent())._getParentVarDecl()._isVisible()) {
 				this._pFullNameExpr = new IdExprInstruction();
-				this._pFullNameExpr.push(this.getNameId(), false);
+				this._pFullNameExpr._push(this._getNameId(), false);
 			}
 			else {
-				var pMainVar: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getType()._getParentContainer();
+				var pMainVar: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._getType()._getParentContainer();
 
 				if (isNull(pMainVar)) {
 					return null;
@@ -269,39 +270,39 @@ module akra.fx.instructions {
 					return null;
 				}
 				var pFieldExpr: IAFXExprInstruction = new IdExprInstruction();
-				pFieldExpr.push(this.getNameId(), false);
+				pFieldExpr._push(this._getNameId(), false);
 
 				this._pFullNameExpr = new PostfixPointInstruction();
-				this._pFullNameExpr.push(pMainExpr, false);
-				this._pFullNameExpr.push(pFieldExpr, false);
-				this._pFullNameExpr.setType(this.getType());
+				this._pFullNameExpr._push(pMainExpr, false);
+				this._pFullNameExpr._push(pFieldExpr, false);
+				this._pFullNameExpr._setType(this._getType());
 			}
 
 			return this._pFullNameExpr;
 		}
 
 		_getFullName(): string {
-			if (this.isField() &&
-				(<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()) {
+			if (this._isField() &&
+				(<IAFXVariableTypeInstruction>this._getParent())._getParentVarDecl()._isVisible()) {
 
 				var sName: string = "";
-				var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+				var eParentType: EAFXInstructionTypes = this._getParent()._getInstructionType();
 
 				if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction) {
-					sName = (<IAFXVariableTypeInstruction>this.getParent())._getFullName();
+					sName = (<IAFXVariableTypeInstruction>this._getParent())._getFullName();
 				}
 
-				sName += "." + this.getName();
+				sName += "." + this._getName();
 
 				return sName;
 			}
 			else {
-				return this.getName();
+				return this._getName();
 			}
 		}
 
 		_getVideoBufferSampler(): IAFXVariableDeclInstruction {
-			if (!this.isVideoBuffer()) {
+			if (!this._isVideoBuffer()) {
 				return null;
 			}
 
@@ -310,19 +311,19 @@ module akra.fx.instructions {
 				var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 				var pId: IAFXIdInstruction = new IdInstruction();
 
-				pType.pushType(Effect.getSystemType("sampler2D"));
-				pType.addUsage("uniform");
-				pId.setName(this.getName() + "_sampler");
+				pType._pushType(Effect.getSystemType("sampler2D"));
+				pType._addUsage("uniform");
+				pId._setName(this._getName() + "_sampler");
 
-				this._pVideoBufferSampler.push(pType, true);
-				this._pVideoBufferSampler.push(pId, true);
+				this._pVideoBufferSampler._push(pType, true);
+				this._pVideoBufferSampler._push(pId, true);
 			}
 
 			return this._pVideoBufferSampler;
 		}
 
 		_getVideoBufferHeader(): IAFXVariableDeclInstruction {
-			if (!this.isVideoBuffer()) {
+			if (!this._isVideoBuffer()) {
 				return null;
 			}
 
@@ -332,12 +333,12 @@ module akra.fx.instructions {
 				var pId: IAFXIdInstruction = new IdInstruction();
 				var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
 
-				pType.pushType(Effect.getSystemType("video_buffer_header"));
-				pId.setName(this.getName() + "_header");
+				pType._pushType(Effect.getSystemType("video_buffer_header"));
+				pId._setName(this._getName() + "_header");
 
-				this._pVideoBufferHeader.push(pType, true);
-				this._pVideoBufferHeader.push(pId, true);
-				this._pVideoBufferHeader.push(pExtarctExpr, true);
+				this._pVideoBufferHeader._push(pType, true);
+				this._pVideoBufferHeader._push(pId, true);
+				this._pVideoBufferHeader._push(pExtarctExpr, true);
 
 				pExtarctExpr.initExtractExpr(pType, null, this, "", null);
 			}
@@ -346,27 +347,27 @@ module akra.fx.instructions {
 		}
 
 		_getVideoBufferInitExpr(): IAFXInitExprInstruction {
-			if (!this.isVideoBuffer()) {
+			if (!this._isVideoBuffer()) {
 				return null;
 			}
 
-			return this._getVideoBufferHeader().getInitializeExpr();
+			return this._getVideoBufferHeader()._getInitializeExpr();
 		}
 
 		_setCollapsed(bValue: boolean): void {
-			this.getType()._setCollapsed(bValue);
+			this._getType()._setCollapsed(bValue);
 		}
 
 		_isCollapsed(): boolean {
-			return this.getType()._isCollapsed();
+			return this._getType()._isCollapsed();
 		}
 
-		clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {
-			return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
+		_clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {
+			return <IAFXVariableDeclInstruction>super._clone(pRelationMap);
 		}
 
-		blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction {
-			var pBlendType: IAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
+		_blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction {
+			var pBlendType: IAFXVariableTypeInstruction = this._getType()._blend(pVariableDecl._getType(), eMode);
 
 			if (isNull(pBlendType)) {
 				return null;
@@ -375,12 +376,12 @@ module akra.fx.instructions {
 			var pBlendVar: IAFXVariableDeclInstruction = new VariableDeclInstruction();
 			var pId: IAFXIdInstruction = new IdInstruction();
 
-			pId.setName(this.getNameId().getName());
-			pId.setRealName(this.getNameId().getRealName());
+			pId._setName(this._getNameId()._getName());
+			pId._setRealName(this._getNameId()._getRealName());
 
-			pBlendVar.setSemantic(this.getSemantic());
-			pBlendVar.push(pBlendType, true);
-			pBlendVar.push(pId, true);
+			pBlendVar._setSemantic(this._getSemantic());
+			pBlendVar._push(pBlendType, true);
+			pBlendVar._push(pId, true);
 
 			return pBlendVar;
 		}

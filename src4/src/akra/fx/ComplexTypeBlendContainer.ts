@@ -26,14 +26,14 @@ module akra.fx {
 		addComplexType(pComplexType: IAFXTypeInstruction): boolean {
 			var pFieldList: IAFXVariableDeclInstruction[] = (<instructions.ComplexTypeInstruction>pComplexType)._getFieldDeclList();
 			for (var i: uint = 0; i < pFieldList.length; i++) {
-				if (pFieldList[i].getType().isComplex()) {
-					if (!this.addComplexType(pFieldList[i].getType().getBaseType())) {
+				if (pFieldList[i]._getType()._isComplex()) {
+					if (!this.addComplexType(pFieldList[i]._getType()._getBaseType())) {
 						return false;
 					}
 				}
 			}
 
-			var sName: string = pComplexType.getRealName();
+			var sName: string = pComplexType._getRealName();
 
 			if (!isDef(this._pTypeListMap[sName])) {
 				this._pTypeListMap[sName] = pComplexType;
@@ -42,7 +42,7 @@ module akra.fx {
 				return true;
 			}
 
-			var pBlendType: IAFXTypeInstruction = this._pTypeListMap[sName].blend(pComplexType, EAFXBlendMode.k_TypeDecl);
+			var pBlendType: IAFXTypeInstruction = this._pTypeListMap[sName]._blend(pComplexType, EAFXBlendMode.k_TypeDecl);
 			if (isNull(pBlendType)) {
 				logger.error("Could not blend type declaration '" + sName + "'");
 				return false;
@@ -61,9 +61,9 @@ module akra.fx {
 			var pVarInfoList: IAFXVariableBlendInfo[] = pContainer.getVarsInfo();
 
 			for (var i: uint = 0; i < pVarInfoList.length; i++) {
-				var pType: IAFXTypeInstruction = pContainer.getBlendType(i).getBaseType();
+				var pType: IAFXTypeInstruction = pContainer.getBlendType(i)._getBaseType();
 
-				if (pType.isComplex()) {
+				if (pType._isComplex()) {
 					if (!this.addComplexType(pType)) {
 						return false;
 					}

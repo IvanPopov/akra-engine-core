@@ -7,7 +7,7 @@ interface String {
 	replaceAt(n: int, s: string);
 }
 
-interface Array {
+interface Array<T> {
 	last: any;
 	first: any;
 	el(i: int): any;

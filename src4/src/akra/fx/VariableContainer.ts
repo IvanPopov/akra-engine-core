@@ -32,8 +32,8 @@ module akra.fx {
 			}
 
 			var iIndex: uint = pVar._getNameIndex();
-			var sName: string = pVar.getName();
-			var sRealName: string = pVar.getRealName();
+			var sName: string = pVar._getName();
+			var sRealName: string = pVar._getRealName();
 
 			this._pNameToIndexMap[sName] = iIndex;
 			this._pRealNameToIndexMap[sRealName] = iIndex;
@@ -42,7 +42,7 @@ module akra.fx {
 				type: VariableContainer.getVariableType(pVar),
 				name: sName,
 				realName: sRealName,
-				isArray: pVar.getType().isNotBaseArray(),
+				isArray: pVar._getType()._isNotBaseArray(),
 			};
 		}
 
@@ -126,7 +126,7 @@ module akra.fx {
 		}
 
 		static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType {
-			var sBaseType: string = pVar.getType().getBaseType().getName();
+			var sBaseType: string = pVar._getType()._getBaseType()._getName();
 
 			switch (sBaseType) {
 				case "texture":
@@ -174,7 +174,7 @@ module akra.fx {
 					return EAFXShaderVariableType.k_SamplerCUBE;
 
 				default:
-					if (pVar.getType().isComplex()) {
+					if (pVar._getType()._isComplex()) {
 						return EAFXShaderVariableType.k_Complex;
 					}
 					else {

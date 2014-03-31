@@ -37,7 +37,7 @@ module akra.data {
 			return false;
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

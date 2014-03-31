@@ -56,8 +56,8 @@ module akra.fx {
 				if (iTexcoord !== i && pAttrConatiner.hasTexcoord(i)) {
 					var pAttr = pAttrConatiner.getTexcoordVar(i);
 
-					this._pTexToTmp[i] = pAttr.getType().getBaseType().getRealName() + " " +
-					"T" + i.toString() + "=" + pAttr.getRealName() + ";";
+					this._pTexToTmp[i] = pAttr._getType()._getBaseType()._getRealName() + " " +
+					"T" + i.toString() + "=" + pAttr._getRealName() + ";";
 
 					this._sTexToTmpCode += this._pTexToTmp[i] + "\n";
 				}
@@ -75,11 +75,11 @@ module akra.fx {
 					var pAttr = pAttrConatiner.getTexcoordVar(i);
 
 					if (this._pTexToTmp[pTexcoords[i]] !== "") {
-						this._pTmpToTex[i] = pAttr.getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
+						this._pTmpToTex[i] = pAttr._getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
 					}
 					else {
-						this._pTmpToTex[i] = pAttr.getRealName() + "=" +
-						pAttrConatiner.getTexcoordVar(pTexcoords[i]).getRealName() + ";";
+						this._pTmpToTex[i] = pAttr._getRealName() + "=" +
+						pAttrConatiner.getTexcoordVar(pTexcoords[i])._getRealName() + ";";
 					}
 
 					this._sTmpToTexCode += this._pTmpToTex[i] + "\n";

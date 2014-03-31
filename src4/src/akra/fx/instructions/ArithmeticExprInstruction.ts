@@ -13,22 +13,22 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_ArithmeticExprInstruction;
         }
 
-        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
             eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-            super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+            super._addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
 
-        evaluate(): boolean {
-            var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
-            var pValL: any = pOperands[0].evaluate() ? pOperands[0].getEvalValue() : null;
-            var pValR: any = pOperands[1].evaluate() ? pOperands[1].getEvalValue() : null;
+        _evaluate(): boolean {
+            var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this._getInstructions();
+            var pValL: any = pOperands[0]._evaluate() ? pOperands[0]._getEvalValue() : null;
+            var pValR: any = pOperands[1]._evaluate() ? pOperands[1]._getEvalValue() : null;
 
             if (isNull(pValL) || isNull(pValR)) {
                 return false;
             }
 
             try {
-                switch (this.getOperator()) {
+                switch (this._getOperator()) {
                     case "+":
                         this._pLastEvalResult = pValL + pValR;
                         break;
@@ -52,17 +52,17 @@ module akra.fx.instructions {
             }
         }
 
-        toFinalCode(): string {
+        _toFinalCode(): string {
             var sCode: string = "";
-            sCode += this.getInstructions()[0].toFinalCode();
-            sCode += this.getOperator();
-            sCode += this.getInstructions()[1].toFinalCode();
+            sCode += this._getInstructions()[0]._toFinalCode();
+            sCode += this._getOperator();
+            sCode += this._getInstructions()[1]._toFinalCode();
             return sCode;
         }
 
-        isConst(): boolean {
-            var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
-            return pOperands[0].isConst() && pOperands[1].isConst();
+        _isConst(): boolean {
+            var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this._getInstructions();
+            return pOperands[0]._isConst() && pOperands[1]._isConst();
         }
     }
 

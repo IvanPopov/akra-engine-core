@@ -10,7 +10,7 @@ module akra.ui {
 
 		constructor (parent, pElement?: HTMLElement, eType?: EUILayouts);
 		constructor (parent, pElement?: JQuery, eType?: EUILayouts);
-		constructor (parent, element = $("<div class=\"layout\"/>"), eType: EUILayouts = EUILayouts.UNKNOWN) {
+		constructor (parent, element: any = $("<div class=\"layout\"/>"), eType: EUILayouts = EUILayouts.UNKNOWN) {
 			super(parent, element, EUINodeTypes.LAYOUT);
 			this._eLayoutType = eType;
 		}

@@ -30,6 +30,24 @@ module akra.parser {
 			this._isOptimizeMode = isOptimize;
 		}
 
+		addToken(pToken: IToken): void {
+			var pNode: IParseNode = {
+				name: pToken.name,
+				value: pToken.value,
+
+				start: pToken.start,
+				end: pToken.end,
+				line: pToken.line,
+
+				children: null,
+				parent: null,
+				isAnalyzed: false,
+				position: this._pNodes.length
+			};
+
+			this.addNode(pNode);
+		}
+
 		addNode(pNode: IParseNode): void {
 			this._pNodes.push(pNode);
 			this._pNodesCountStack.push(1);

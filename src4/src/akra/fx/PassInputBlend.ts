@@ -14,7 +14,7 @@ module akra.fx {
 		[index: uint]: EAFXShaderVariableType;
 	}
 
-	export class PassInputBlend implements IAFXPassInputBlend {
+	final export class PassInputBlend implements IAFXPassInputBlend {
 		guid: uint = guid();
 
 		protected _pCreator: IAFXComponentPassInputBlend = null;
@@ -326,11 +326,11 @@ module akra.fx {
 				var pMaterial: IMaterial = pSurfaceMaterial.getMaterial();
 				var pMatContainer: any = this._pMaterialContainer;
 
-				pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
-				pMatContainer.AMBIENT.set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
-				pMatContainer.SPECULAR.set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
-				pMatContainer.EMISSIVE.set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
-				pMatContainer.SHININESS = pMaterial.shininess;
+				pMatContainer["DIFFUSE"].set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
+				pMatContainer["AMBIENT"].set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
+				pMatContainer["SPECULAR"].set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
+				pMatContainer["EMISSIVE"].set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
+				pMatContainer["SHININESS"] = pMaterial.shininess;
 
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
@@ -377,7 +377,7 @@ module akra.fx {
 		}
 
 		_getUniformLength(iNameIndex: uint): uint {
-			return this._pCreator.getUniforms().getVarByIndex(iNameIndex).getType().getLength();
+			return this._pCreator.getUniforms().getVarByIndex(iNameIndex)._getType()._getLength();
 		}
 
 		_getUniformType(iNameIndex: uint): EAFXShaderVariableType {
@@ -410,7 +410,7 @@ module akra.fx {
 		_release(): void {
 			for (var i: uint = 0; i < this.uniformKeys.length; i++) {
 				var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(this.uniformKeys[i]);
-				var pDefaultValue: any = pInfo.variable.getDefaultValue();
+				var pDefaultValue: any = pInfo.variable._getDefaultValue();
 
 				this.uniforms[this.uniformKeys[i]] = pDefaultValue;
 			}
@@ -425,7 +425,7 @@ module akra.fx {
 
 			for (var i: uint = 0; i < this.samplerKeys.length; i++) {
 				var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(this.samplerKeys[i]);
-				var pDefaultState: IAFXSamplerState = pInfo.variable.getDefaultValue();
+				var pDefaultState: IAFXSamplerState = pInfo.variable._getDefaultValue();
 				var pSamplerState: IAFXSamplerState = this.samplers[this.samplerKeys[i]];
 
 				this.clearSamplerState(pSamplerState);
@@ -441,7 +441,7 @@ module akra.fx {
 
 			for (var i: uint = 0; i < this.samplerArrayKeys.length; i++) {
 				var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(this.samplerArrayKeys[i]);
-				var pDefaultStateList: IAFXSamplerState[] = pInfo.variable.getDefaultValue();
+				var pDefaultStateList: IAFXSamplerState[] = pInfo.variable._getDefaultValue();
 				var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
 
 				for (var j: uint = 0; j < pStateList.length; j++) {
@@ -578,7 +578,7 @@ module akra.fx {
 			for (var i: uint = 0; i < pUniformKeys.length; i++) {
 				var iIndex: uint = pUniformKeys[i];
 				var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(iIndex);
-				var pDefaultValue: any = pInfo.variable.getDefaultValue();
+				var pDefaultValue: any = pInfo.variable._getDefaultValue();
 
 				if (pInfo.type === EAFXShaderVariableType.k_Sampler2D ||
 					pInfo.type === EAFXShaderVariableType.k_SamplerCUBE) {
@@ -670,7 +670,7 @@ module akra.fx {
 		}
 
 		private isVarArray(pVar: IAFXVariableDeclInstruction): boolean {
-			return pVar.getType().isNotBaseArray();
+			return pVar._getType()._isNotBaseArray();
 		}
 
 		private clearSamplerState(pState: IAFXSamplerState): void {

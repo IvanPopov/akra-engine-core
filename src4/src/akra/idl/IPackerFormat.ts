@@ -17,8 +17,9 @@ module akra {
 	}
 	
 	export interface IPackerFormat {
-		[type: string]: string;
-		[type: string]: IPackerCodec;
+		//[type: string]: string;
+		//[type: string]: IPackerCodec;
+		[type: string]: any;
 	}
 	
 	//вспомогательный класс, для разрешения форматов, при упаковке данных

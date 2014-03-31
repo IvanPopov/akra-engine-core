@@ -84,8 +84,8 @@ module  akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.active = this.active || new Signal(<any>this);
-			this.inactive = this.inactive || new Signal(<any>this);
+			this.active = this.active || new Signal(this);
+			this.inactive = this.inactive || new Signal(this);
 
 			this.active.setForerunner(this._activated);
 			this.inactive.setForerunner(this._inactivated);
@@ -95,7 +95,7 @@ module  akra.render {
 			return ERenderers.UNKNOWN;
 		}
 
-		getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 

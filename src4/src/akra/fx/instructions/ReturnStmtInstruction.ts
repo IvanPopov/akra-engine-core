@@ -19,14 +19,14 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_ReturnStmtInstruction;
 		}
 
-		prepareFor(eUsedMode: EFunctionType): void {
-			var pReturn: IAFXTypedInstruction = <IAFXTypedInstruction>this.getInstructions()[0];
+		_prepareFor(eUsedMode: EFunctionType): void {
+			var pReturn: IAFXTypedInstruction = <IAFXTypedInstruction>this._getInstructions()[0];
 			if (isNull(pReturn)) {
 				return;
 			}
 
 			if (eUsedMode === EFunctionType.k_Vertex) {
-				if (pReturn.getType().isBase()) {
+				if (pReturn._getType()._isBase()) {
 					this._isPositionReturn = true;
 				}
 				else {
@@ -38,24 +38,24 @@ module akra.fx.instructions {
 			}
 
 			for (var i: uint = 0; i < this._nInstructions; i++) {
-				this._pInstructionList[i].prepareFor(eUsedMode);
+				this._pInstructionList[i]._prepareFor(eUsedMode);
 			}
 		}
 
-		toFinalCode(): string {
+		_toFinalCode(): string {
 			if (this._isPositionReturn) {
-				return "Out.POSITION=" + this._pInstructionList[0].toFinalCode() + "; return;";
+				return "Out.POSITION=" + this._pInstructionList[0]._toFinalCode() + "; return;";
 			}
 			if (this._isColorReturn) {
-				//return "gl_FragColor=" + this._pInstructionList[0].toFinalCode() + "; return;";
-				return "resultAFXColor=" + this._pInstructionList[0].toFinalCode() + "; return;";
+				//return "gl_FragColor=" + this._pInstructionList[0]._toFinalCode() + "; return;";
+				return "resultAFXColor=" + this._pInstructionList[0]._toFinalCode() + "; return;";
 			}
 			if (this._isOnlyReturn) {
 				return "return;"
 			}
 
 			if (this._nInstructions > 0) {
-				return "return " + this._pInstructionList[0].toFinalCode() + ";";
+				return "return " + this._pInstructionList[0]._toFinalCode() + ";";
 			}
 			else {
 				return "return;";

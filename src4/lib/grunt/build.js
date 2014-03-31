@@ -12,7 +12,7 @@ var domain = require('domain');
 var Zip = require('node-native-zip');
 var jade = require('jade');
 
-var TYPESCRIPT = "typescript-0.9.5";
+var TYPESCRIPT = "typescript-1.0RC";
 
 module.exports = function (grunt) {
 
@@ -211,14 +211,14 @@ module.exports = function (grunt) {
 
 	function prepareSystemVariables(str) {
 		return str.replace(/(\$\(([\w\d\_\.\-]+)\))/g, function (str, expr, variable) {
-			
+
 			var v = variable.split(".");
 			var e = cfg(v[0]);
 
 			if (e === undefined) {
 				e = null;
 			}
-			
+
 			if (e) {
 				for (var i = 1; i < v.length; ++i) {
 					e = e[v[i]];
@@ -266,6 +266,10 @@ module.exports = function (grunt) {
 			config.find("//TypeScriptCompile").forEach(function (typescriptCompile) {
 				argv.push(path.join(configDir, typescriptCompile.getAttribute("Include")));
 			});
+
+			if (compilerOptions || grunt.option("tscc")) {
+				argv.push("--strip-types", "akra.debug");
+			}
 
 
 			if (config.get("//TypeScriptTarget")) {
@@ -353,7 +357,7 @@ module.exports = function (grunt) {
 						minimize(config, function (ok) {
 							info.destinationFile = path.resolve(config.getAttribute("OutFile"));
 							cb(ok, modulesInfo);
-						}, forceRebuild);
+						}, forceRebuild, modulesInfo);
 					} else {
 						cb(true, modulesInfo);
 					}
@@ -431,9 +435,10 @@ module.exports = function (grunt) {
 		return dest;
 	}
 
-	function minimize(config, cb, forceRebuild) {
+	function minimize(config, cb, forceRebuild, modulesInfo) {
 		forceRebuild = forceRebuild === undefined ? true : forceRebuild;
 
+		var name = config.getAttribute('Name');
 		var configDir = config.getAttribute("Path");
 		var compilerOptions = config.get("//ClosureCompiler");
 		var externsPath = null;
@@ -465,8 +470,22 @@ module.exports = function (grunt) {
 			"-jar", closureJar,
 			"--compilation_level", compilationLevel,
 			"--js", src,
-			"--js_output_file", dest
+			"--js_output_file", dest,
+			"--strip_types", "akra.debug",
+			 "--use_types_for_optimization",
+			"--externs", src + ".tmp.externs",
+			"--output_wrapper", "(function(){%output%})();",
+			"--externs", "lib/grunt/zip.js.externs"
 		];
+
+		for (var moduleName in modulesInfo) {
+			var module = modulesInfo[moduleName];
+			
+			if (moduleName !== name) {
+				argv.push("--externs", module.destinationFile.replace(/\.min\.js$/ig, ".js.externs"));
+			}
+		}
+
 
 		if (compilerOptions.get("//CreateSourceMap")) {
 			if (compilerOptions.get("//CreateSourceMap").textContent === "True") {
@@ -537,11 +556,11 @@ module.exports = function (grunt) {
 
 		function next(i) {
 			var module = modules[i];
-			
+
 			if (!module) {
 				return cb(true, modulesInfo);
 			}
-			
+
 			if (modulesInfo[module.getAttribute("Name")]) {
 				return next(i + 1);
 			}
@@ -554,7 +573,7 @@ module.exports = function (grunt) {
 				for (var name in subInfo) {
 					modulesInfo[name] = subInfo[name];
 				}
-				
+
 				next(i + 1);
 			});
 		}
@@ -578,7 +597,7 @@ module.exports = function (grunt) {
 		config.find("//PropertyGroup/Variable").forEach(function (variable) {
 			var name = variable.getAttribute("Name");
 			var value = computeExpression(variable.textContent);
-			
+
 			if (typeof value === 'string') {
 				value = JSON.stringify(value);
 			}
@@ -588,7 +607,7 @@ module.exports = function (grunt) {
 			debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
 		});
 
-		
+
 
 		config.find("//PropertyGroup/Resource").forEach(function (resource) {
 			var resourceName = resource.getAttribute("Name");

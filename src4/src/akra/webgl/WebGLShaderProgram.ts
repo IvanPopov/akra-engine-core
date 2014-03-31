@@ -11,7 +11,7 @@ module akra.webgl {
 		[index: string]: WebGLUniformLocation;
 	}
 
-	export class WebGLShaderProgram extends pool.ResourcePoolItem implements IShaderProgram {
+	final export class WebGLShaderProgram extends pool.ResourcePoolItem implements IShaderProgram {
 		protected _pWebGLRenderer: WebGLRenderer;
 		protected _pWebGLContext: WebGLRenderingContext;
 		protected _pWebGLProgram: WebGLProgram;
@@ -77,6 +77,10 @@ module akra.webgl {
 							pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs) +
 							"\ntranslated(from GLSL) PS shader: \n" +
 							pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLFs));
+					}
+					else {
+						logger.log("translated(from GLSL) VS shader: \n" + csVertex +
+							"\ntranslated(from GLSL) PS shader: \n" + csPixel);
 					}
 				}
 

@@ -55,6 +55,7 @@ module akra.config {
 	 */
 	export var PROFILE_TESSEALLATION: boolean = false;
 
+
 	/**
 	 * Distance in meters, after which the shadow of the object will not be rendered.
 	 */
@@ -70,9 +71,9 @@ module akra.config {
 
 	/** Unknown constants. */
 	export var unknown = {
-		code: 0,
-		message: "Unknown code.",
-		name: "unknown"
+		"code": 0,
+		"message": "Unknown code.",
+		"name": "unknown"
 	}
 
 
@@ -88,23 +89,23 @@ module akra.config {
 
 	/** Ajax default parameters. */
 	export var ajax = {
-		async: false,
-		statusCode: {},
-		success: null,
-		error: null,
-		beforeSend: null,
-		data: null,
-		cache: false,
-		contentType: "application/x-www-form-urlencoded",
-		dataType: "text",
-		type: "get",
-		timeout: 0
+		"async": false,
+		"statusCode": {},
+		"success": null,
+		"error": null,
+		"beforeSend": null,
+		"data": null,
+		"cache": false,
+		"contentType": "application/x-www-form-urlencoded",
+		"dataType": "text",
+		"type": "get",
+		"timeout": 0
 	};
 
 	export var threading = {
-		min: 0, //the minimum number of threads created on startup
-		max: 4,  //the maximum number of threads created on startup
-		idleTime: 30, //maximum IDLE time (sec)
+		"min": 0, //the minimum number of threads created on startup
+		"max": 4,  //the maximum number of threads created on startup
+		"idleTime": 30, //maximum IDLE time (sec)
 	};
 
 	//akra.config.ajax = {}
@@ -114,51 +115,51 @@ module akra.config {
 	
 	export var io = {
 		//thread file config
-		tfile: {
-			iface: AE_THREAD_FILEINTERFACE,
-			local: AE_THREAD_LOCALFILE,
-			remote: AE_THREAD_REMOTEFILE
+		"tfile": {
+			"iface": AE_THREAD_FILEINTERFACE,
+			"local": AE_THREAD_LOCALFILE,
+			"remote": AE_THREAD_REMOTEFILE
 		},
 		//local file config
-		local: {
-			filesystemLimit: 32 * 1024 * 1024 //32 mb
+		"local": {
+			"filesystemLimit": 32 * 1024 * 1024 //32 mb
 		}
 	}
 
 	// URL.createObjectURL(new Blob([], { type: "application/javascript" }))
 
 	export var deps = {
-		archiveIndex: ".map",
-		etag: {
-			file: ".etag",
-			forceCheck: false
+		"archiveIndex": ".map",
+		"etag": {
+			"file": ".etag",
+			"forceCheck": false
 		}
 	}
 
 
 	export var net = {
-		port: 1337 //websocket port
+		"port": 1337 //websocket port
 	}
 
 
 	export var rpc = {
-		deferredCallsLimit: 20000,
-		reconnectTimeout: 2500,
-		systemRoutineInterval: 10000,
-		callbackLifetime: 60000,
-		maxCallbacksCount: -1,
-		procListName: "proc_list",
-		callsFrequency: -1
+		"deferredCallsLimit": 20000,
+		"reconnectTimeout": 2500,
+		"systemRoutineInterval": 10000,
+		"callbackLifetime": 60000,
+		"maxCallbacksCount": -1,
+		"procListName": "proc_list",
+		"callsFrequency": -1
 	}
 
 	export var material = {
-		name: defaultName,
+		"name": defaultName,
 		default: {
-			diffuse: .5, //any color view can be used, like "#888888" or {r: .5, g: .5, b: .5}
-			ambient: .5,
-			specular: .5,
-			emissive: .5,
-			shininess: 50.
+			"diffuse": .5, //any color view can be used, like "#888888" or {r: .5, g: .5, b: .5}
+			"ambient": .5,
+			"specular": .5,
+			"emissive": .5,
+			"shininess": 50.
 		}
 	}
 
@@ -167,17 +168,17 @@ module akra.config {
 	}
 
 	export var terrain = {
-		useMegaTexture: true,
-		roam: {
-			tessellationThread: AE_THREAD_TESSELATION
+		"useMegaTexture": true,
+		"roam": {
+			"tessellationThread": AE_THREAD_TESSELATION
 		}
 	}
 
 	export var webgl = {
-		preparedFramebuffersNum: 32,
-		indexbufferMinSize: 1024,
-		vertexbufferMinSize: 1024,
-		vertexTextureMinSize: 32
+		"preparedFramebuffersNum": 32,
+		"indexbufferMinSize": 1024,
+		"vertexbufferMinSize": 1024,
+		"vertexTextureMinSize": 32
 	}
 
 	export var addons = {

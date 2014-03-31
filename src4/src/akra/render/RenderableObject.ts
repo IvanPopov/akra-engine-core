@@ -19,7 +19,8 @@ module akra.render {
 		guid: uint = guid();
 
 		shadowed: ISignal<{ (pRenderable: IRenderableObject, bValue: boolean): void; }>;
-		beforeRender: ISignal<{ (pRenderable: IRenderableObject, pViewport, pMethod): void; }>;
+
+		beforeRender: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pMethod: IRenderMethod): void; }>;
 
 		click: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		mousemove: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
@@ -48,18 +49,18 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.shadowed = this.shadowed || new Signal(<any>this);
-			this.beforeRender = this.beforeRender || new Signal(<any>this);
+			this.shadowed = this.shadowed || new Signal(this);
+			this.beforeRender = this.beforeRender || new Signal(this);
 
-			this.click = this.click || new Signal(<any>this);
-			this.mousemove = this.mousemove || new Signal(<any>this);
-			this.mousedown = this.mousedown || new Signal(<any>this);
-			this.mouseup = this.mouseup || new Signal(<any>this);
-			this.mouseover = this.mouseover || new Signal(<any>this);
-			this.mouseout = this.mouseout || new Signal(<any>this);
-			this.dragstart = this.dragstart || new Signal(<any>this);
-			this.dragstop = this.dragstop || new Signal(<any>this);
-			this.dragging = this.dragging || new Signal(<any>this);
+			this.click = this.click || new Signal(this);
+			this.mousemove = this.mousemove || new Signal(this);
+			this.mousedown = this.mousedown || new Signal(this);
+			this.mouseup = this.mouseup || new Signal(this);
+			this.mouseover = this.mouseover || new Signal(this);
+			this.mouseout = this.mouseout || new Signal(this);
+			this.dragstart = this.dragstart || new Signal(this);
+			this.dragstop = this.dragstop || new Signal(this);
+			this.dragging = this.dragging || new Signal(this);
 		}
 
 		getType(): ERenderableTypes {
@@ -279,7 +280,7 @@ module akra.render {
 
 				this.getData().index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
 			}
-
+			
 			this._bWireframeOverlay = bOverlay;
 
 			pDefaultRm.getEffect().addComponent("akra.system.wireframe", 0, 0);

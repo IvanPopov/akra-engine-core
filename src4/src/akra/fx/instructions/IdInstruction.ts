@@ -8,8 +8,8 @@ module akra.fx.instructions {
         private _sRealName: string;
         private _isForVarying: boolean = false;
 
-        isVisible(): boolean {
-            return this.getParent().isVisible();
+        _isVisible(): boolean {
+            return this._getParent()._isVisible();
         }
         /**
          * EMPTY_OPERATOR EMPTY_ARGUMENTS
@@ -21,11 +21,11 @@ module akra.fx.instructions {
             this._eInstructionType = EAFXInstructionTypes.k_IdInstruction;
         }
 
-        getName(): string {
+        _getName(): string {
             return this._sName;
         }
 
-        getRealName(): string {
+        _getRealName(): string {
             if (this._isForVarying) {
                 return "V_" + this._sRealName;
             }
@@ -34,12 +34,12 @@ module akra.fx.instructions {
             }
         }
 
-        setName(sName: string): void {
+        _setName(sName: string): void {
             this._sName = sName;
             this._sRealName = sName;
         }
 
-        setRealName(sRealName: string): void {
+        _setRealName(sRealName: string): void {
             this._sRealName = sRealName;
         }
 
@@ -51,14 +51,14 @@ module akra.fx.instructions {
             return this._sRealName;
         }
 
-        toFinalCode(): string {
-            return this.getRealName();
+        _toFinalCode(): string {
+            return this._getRealName();
         }
 
-        clone(pRelationMap?: IAFXInstructionMap): IdInstruction {
-            var pClonedInstruction: IdInstruction = <IdInstruction>(super.clone(pRelationMap));
-            pClonedInstruction.setName(this._sName);
-            pClonedInstruction.setRealName(this._sRealName);
+        _clone(pRelationMap?: IAFXInstructionMap): IdInstruction {
+            var pClonedInstruction: IdInstruction = <IdInstruction>(super._clone(pRelationMap));
+            pClonedInstruction._setName(this._sName);
+            pClonedInstruction._setRealName(this._sRealName);
             return pClonedInstruction;
         }
     }

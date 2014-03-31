@@ -19,4 +19,10 @@
       </Attachment>
     </Dependencies>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ClosureCompiler>
+      <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
+      <CreateSourceMap>False</CreateSourceMap>
+    </ClosureCompiler>
+  </PropertyGroup>
 </Project>

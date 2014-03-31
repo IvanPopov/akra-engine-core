@@ -60,8 +60,8 @@ module akra.fx {
 			for (var i: uint = 0; i < this._nActiveSlots; i++) {
 				for (var j: uint = 0; j < this._pSlotList[i].getLength(); j++) {
 					var pSampler: IAFXVariableDeclInstruction = this._pSlotList[i].value(j);
-					pSampler.setRealName(pSampler.getSemantic() || pSampler.getName());
-					pSampler.defineByZero(false);
+					pSampler._setRealName(pSampler._getSemantic() || pSampler._getName());
+					pSampler._defineByZero(false);
 				}
 			}
 		}

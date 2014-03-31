@@ -9,11 +9,7 @@
 /// <reference path="../fx/fx.ts" />
 
 module akra.render {
-	import ALL_PASSES = fx.ALL_PASSES;
-	import ANY_PASS = fx.ANY_PASS;
-	import ANY_SHIFT = fx.ANY_SHIFT;
-
-	export class RenderTechnique implements IRenderTechnique {
+	final export class RenderTechnique implements IRenderTechnique {
 		guid: uint = guid();
 
 		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>;
@@ -50,7 +46,7 @@ module akra.render {
 		}
 
 		protected setupSignals(): void {
-			this.render = this.render || new Signal(<any>this);
+			this.render = this.render || new Signal(this);
 		}
 
 		getModified(): uint {
@@ -123,7 +119,7 @@ module akra.render {
 		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
 		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
 		addComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
-		addComponent(pComponent: any, iShift: int = 0, iPass: uint = ALL_PASSES): boolean {
+		addComponent(pComponent: any, iShift: int = 0, iPass: uint = fx.ALL_PASSES): boolean {
 			if (isNull(this._pComposer)) {
 				return false;
 			}
@@ -155,7 +151,7 @@ module akra.render {
 		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
-		delComponent(pComponent: any, iShift: int = 0, iPass: uint = ALL_PASSES): boolean {
+		delComponent(pComponent: any, iShift: int = 0, iPass: uint = fx.ALL_PASSES): boolean {
 			if (isNull(this._pComposer)) {
 				return false;
 			}
@@ -184,11 +180,11 @@ module akra.render {
 			return true;
 		}
 
-		hasComponent(sComponent: string, iShift: int = ANY_SHIFT, iPass: uint = ANY_PASS): boolean {
+		hasComponent(sComponent: string, iShift: int = fx.ANY_SHIFT, iPass: uint = fx.ANY_PASS): boolean {
 			return this._pMethod.getEffect().hasComponent(sComponent, iShift, iPass) || this.hasOwnComponent(sComponent, iShift, iPass);
 		}
 
-		hasOwnComponent(sComponent: string, iShift: int = ANY_SHIFT, iPass: uint = ANY_PASS): boolean {
+		hasOwnComponent(sComponent: string, iShift: int = fx.ANY_SHIFT, iPass: uint = fx.ANY_PASS): boolean {
 			if (isNull(this._pComposer)) {
 				return false;
 			}

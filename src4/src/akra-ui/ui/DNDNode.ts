@@ -24,10 +24,10 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.dragStart = this.dragStart || new Signal(<any>this);
-			this.dragStop = this.dragStop || new Signal(<any>this);
-			this.move = this.move || new Signal(<any>this);
-			this.drop = this.drop || new Signal(<any>this);
+			this.dragStart = this.dragStart || new Signal(this);
+			this.dragStop = this.dragStop || new Signal(this);
+			this.move = this.move || new Signal(this);
+			this.drop = this.drop || new Signal(this);
 
 			super.setupSignals();
 		}

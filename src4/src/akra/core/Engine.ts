@@ -102,11 +102,11 @@ module akra.core {
 		}
 
 		protected setupSignals(): void {
-			this.frameStarted = this.frameStarted || new Signal(<any>this);
-			this.frameEnded = this.frameEnded || new Signal(<any>this);
-			this.depsLoaded = this.depsLoaded || new Signal(<any>this);
-			this.inactive = this.inactive || new Signal(<any>this);
-			this.active = this.active || new Signal(<any>this);
+			this.frameStarted = this.frameStarted || new Signal(this);
+			this.frameEnded = this.frameEnded || new Signal(this);
+			this.depsLoaded = this.depsLoaded || new Signal(this);
+			this.inactive = this.inactive || new Signal(this);
+			this.active = this.active || new Signal(this);
 
 			this.inactive.setForerunner(this._inactivate);
 			this.active.setForerunner(this._activate);
@@ -120,7 +120,6 @@ module akra.core {
 		getElapsedTime(): float {
 			return this._fElapsedAppTime;
 		}
-
 
 		enableGamepads(): boolean {
 			if (!isNull(this._pGamepads)) {

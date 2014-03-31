@@ -2,15 +2,15 @@
 /// <reference path="Button.ts" />
 
 module akra.ui {
-	class MouseleaveSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class MouseleaveSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			super.emit(e);
 			(<Menu>this.getSender()).getLayout().hide();
 		}
 	}
 
-	class MouseenterSignal extends Signal<{ (pNode: IUIComponent, e: IUIEvent): void; }, IUIComponent> {
-		emit(e?: IUIEvent): void {
+	class MouseenterSignal extends Signal<IUIComponent> {
+		emit(e: IUIEvent): void {
 			super.emit(e);
 			(<Menu>this.getSender()).getLayout().show();
 		}

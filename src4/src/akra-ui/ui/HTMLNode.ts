@@ -4,7 +4,7 @@
 
 module akra.ui {
 
-	class RenderedSignal extends Signal<{ (pNode: IUIHTMLNode): void; }, IUIHTMLNode> {
+	class RenderedSignal extends Signal<IUIHTMLNode> {
 		emit(pNode: IUIHTMLNode = null): void {
 			super.emit(pNode);
 			(<HTMLNode>this.getSender()).finalizeRender(pNode);
@@ -67,28 +67,28 @@ module akra.ui {
 		}
 
 		protected setupSignals(): void {
-			this.click = this.click || new Signal(<any>this);
-			this.dblclick = this.dblclick || new Signal(<any>this);
+			this.click = this.click || new Signal(this);
+			this.dblclick = this.dblclick || new Signal(this);
 
-			this.mousemove = this.mousemove || new Signal(<any>this);
-			this.mouseup = this.mouseup || new Signal(<any>this);
-			this.mousedown = this.mousedown || new Signal(<any>this);
-			this.mouseover = this.mouseover || new Signal(<any>this);
-			this.mouseout = this.mouseout || new Signal(<any>this);
-			this.mouseenter = this.mouseenter || new Signal(<any>this);
-			this.mouseleave = this.mouseleave || new Signal(<any>this);
+			this.mousemove = this.mousemove || new Signal(this);
+			this.mouseup = this.mouseup || new Signal(this);
+			this.mousedown = this.mousedown || new Signal(this);
+			this.mouseover = this.mouseover || new Signal(this);
+			this.mouseout = this.mouseout || new Signal(this);
+			this.mouseenter = this.mouseenter || new Signal(this);
+			this.mouseleave = this.mouseleave || new Signal(this);
 
-			this.focusin = this.focusin || new Signal(<any>this);
-			this.focusout = this.focusout || new Signal(<any>this);
+			this.focusin = this.focusin || new Signal(this);
+			this.focusout = this.focusout || new Signal(this);
 
-			this.blur = this.blur || new Signal(<any>this);
-			this.change = this.change || new Signal(<any>this);
+			this.blur = this.blur || new Signal(this);
+			this.change = this.change || new Signal(this);
 
-			this.keydown = this.keydown || new Signal(<any>this);
-			this.keyup = this.keyup || new Signal(<any>this);
+			this.keydown = this.keydown || new Signal(this);
+			this.keyup = this.keyup || new Signal(this);
 
-			this.resize = this.resize || new Signal(<any>this);
-			this.beforeRender = this.beforeRender || new Signal(<any>this);
+			this.resize = this.resize || new Signal(this);
+			this.beforeRender = this.beforeRender || new Signal(this);
 			this.rendered = this.rendered || new RenderedSignal(this);
 
 			super.setupSignals();

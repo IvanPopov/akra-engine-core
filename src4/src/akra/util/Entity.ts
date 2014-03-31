@@ -101,10 +101,10 @@ module akra.util {
 		}
 
 		protected setupSignals(): void {
-			this.attached = this.attached || new Signal(<any>this);
-			this.detached = this.detached || new Signal(<any>this);
-			this.childAdded = this.childAdded || new Signal(<any>this);
-			this.childRemoved = this.childRemoved || new Signal(<any>this);
+			this.attached = this.attached || new Signal(this);
+			this.detached = this.detached || new Signal(this);
+			this.childAdded = this.childAdded || new Signal(this);
+			this.childRemoved = this.childRemoved || new Signal(this);
 		}
 
 		getRoot(): IEntity {

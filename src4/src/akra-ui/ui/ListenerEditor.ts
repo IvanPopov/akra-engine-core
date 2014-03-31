@@ -35,7 +35,7 @@ if (self.keymap.isMousePress() && self.keymap.isMouseMoved()) {\n\
 		}
 
 		protected setupSignals(): void {
-			this.bindEvent = this.bindEvent || new Signal(<any>this);
+			this.bindEvent = this.bindEvent || new Signal(this);
 
 			super.setupSignals();
 		}

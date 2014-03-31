@@ -112,19 +112,19 @@ module akra.fx {
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
-		private _pComposerState: any = {
-			mesh: {
-				isSkinned: false,
-				isOptimizedSkinned: false
+		private _pComposerState = {
+			"mesh": {
+				"isSkinned": false,
+				"isOptimizedSkinned": false
 			},
-			object: {
-				isBillboard: false
+			"object": {
+				"isBillboard": false
 			},
-			terrain: {
-				isROAM: false
+			"terrain": {
+				"isROAM": false
 			},
-			renderable: {
-				isAdvancedIndex: false
+			"renderable": {
+				"isAdvancedIndex": false
 			}
 		};
 
@@ -179,7 +179,7 @@ module akra.fx {
 			return <IAFXComponent>this._pEngine.getResourceManager().getComponentPool().findResource(sComponentName);
 		}
 
-		/**  */ getEngine(): IEngine {
+		final getEngine(): IEngine {
 			return this._pEngine;
 		}
 
@@ -523,27 +523,27 @@ module akra.fx {
 			return true;
 		}
 
-		/**  */ _setCurrentSceneObject(pSceneObject: ISceneObject): void {
+		_setCurrentSceneObject(pSceneObject: ISceneObject): void {
 			this._pCurrentSceneObject = pSceneObject;
 		}
 
-		/**  */ _setCurrentViewport(pViewport: IViewport): void {
+		_setCurrentViewport(pViewport: IViewport): void {
 			this._pCurrentViewport = pViewport;
 		}
 
-		/**  */ _setCurrentRenderableObject(pRenderable: IRenderableObject): void {
+		_setCurrentRenderableObject(pRenderable: IRenderableObject): void {
 			this._pCurrentRenderable = pRenderable;
 		}
 
-		/**  */ _getCurrentSceneObject(): ISceneObject {
+		_getCurrentSceneObject(): ISceneObject {
 			return this._pCurrentSceneObject;
 		}
 
-		/**  */ _getCurrentViewport(): IViewport {
+		_getCurrentViewport(): IViewport {
 			return this._pCurrentViewport;
 		}
 
-		/**  */ _getCurrentRenderableObject(): IRenderableObject {
+		_getCurrentRenderableObject(): IRenderableObject {
 			return this._pCurrentRenderable;
 		}
 
@@ -635,7 +635,7 @@ module akra.fx {
 					for (var i: uint = 0; i < pTechniqueList.length; i++) {
 						isOk = this.initComponent(pTechniqueList[i]);
 						if (!isOk) {
-							logger.warn("Cannot initialize fx-component from technique '" + pTechniqueList[i].getName() + "'.");
+							logger.warn("Cannot initialize fx-component from technique '" + pTechniqueList[i]._getName() + "'.");
 							return false;
 						}
 					}
@@ -656,7 +656,7 @@ module akra.fx {
 		}
 
 		private initComponent(pTechnique: IAFXTechniqueInstruction): boolean {
-			var sTechniqueName: string = pTechnique.getName();
+			var sTechniqueName: string = pTechnique._getName();
 			var pComponentPool: IResourcePool<IAFXComponent> = this._pEngine.getResourceManager().getComponentPool();
 
 			if (!isNull(pComponentPool.findResource(sTechniqueName))) {
@@ -666,7 +666,7 @@ module akra.fx {
 			var pComponent: IAFXComponent = <IAFXComponent>pComponentPool.createResource(sTechniqueName);
 			pComponent.setTechnique(pTechnique);
 
-			pTechnique.finalize(this);
+			pTechnique._finalize(this);
 
 			return true;
 		}
@@ -753,13 +753,13 @@ module akra.fx {
 			return iRid;
 		}
 
-		/**  */ _getRenderableByRid(iRid: int): IRenderableObject {
+		_getRenderableByRid(iRid: int): IRenderableObject {
 			var pRidPair: IRIDPair = this._pRidMap[iRid];
 			var pRenderable: IRenderableObject = isDefAndNotNull(pRidPair) ? pRidPair.renderable : null;
 			return isNull(pRenderable) || pRenderable.isFrozen() ? null : pRenderable;
 		}
 
-		/**  */ _getObjectByRid(iRid: int): ISceneObject {
+		_getObjectByRid(iRid: int): ISceneObject {
 			var pRidPair: IRIDPair = this._pRidMap[iRid];
 			var pSceneObject: ISceneObject = isDefAndNotNull(pRidPair) ? pRidPair.object : null;
 			return isNull(pSceneObject) || pSceneObject.isFrozen() ? null : pSceneObject;
