@@ -6,6 +6,7 @@ var akra;
     var pDeps = {
         root: "../../../src2/data/",
         files: [
+            { path: "textures/lensflare_cookies.png", name: "LENSFLARE_COOKIES_TEXTURE" },
             { path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP" },
             { path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP" },
             { path: "textures/skyboxes/desert-3.dds", name: "SKYBOX" },
@@ -30,6 +31,10 @@ var akra;
     akra.animateTimeOfDay = function () {
         akra.pSky.setTime(new Date().getTime() % 24000 / 500 - 24);
         requestAnimationFrame(akra.animateTimeOfDay);
+    };
+    akra.animateBlurRadius = function () {
+        akra.pBlurData.BLUR_RADIUS = (akra.math.sin(new Date().getTime() * 0.0002 % 1 * 2 * Math.PI) + 1) * 30;
+        requestAnimationFrame(akra.animateBlurRadius);
     };
 
     var data = "../../../src2/data/";
@@ -147,6 +152,7 @@ var akra;
         var counter = 0;
         pViewport.getEffect().addComponent("akra.system.sunshaft");
         pViewport.getEffect().addComponent("akra.system.blur");
+        pViewport.getEffect().addComponent("akra.system.lensflare");
 
         akra.pSunshaftData = {
             LIGHT_MODEL_MATRIX: null,
@@ -160,22 +166,50 @@ var akra;
         };
 
         akra.pLensflareData = {
-            LENSFLARE_SAMPLES: 5,
-            LENSFLARE_BLUR_SIZE: 0.02,
-            LENSFLARE_ANGLES: 4,
-            LENSFLARE_ROTATE_ANGLE: 0,
-            LENSFLARE_INTENSITY: 0.2,
-            LENSFLARE_DECAY: 1
+            LENSFLARE_COOKIES_TEXTURE: akra.pEngine.getResourceManager().createTexture("LENSFLARE_COOKIES_TEXTURE"),
+            LENSFLARE_TEXTURE_LOCATIONS: {
+                COOKIE1: new akra.math.Vec4(.0, .25, .25, .0),
+                COOKIE2: new akra.math.Vec4(.25, .25, .5, .0),
+                COOKIE3: new akra.math.Vec4(.0, .5, .25, .25),
+                COOKIE4: new akra.math.Vec4(.25, .5, .5, .25),
+                COOKIE5: new akra.math.Vec4(.5, .5, 1., .0),
+                COOKIE6: new akra.math.Vec4(.0, 1., .5, .5),
+                COOKIE7: new akra.math.Vec4(.5, 1., 1., .5)
+            },
+            LENSFLARE_COOKIE_PARAMS: null,
+            LENSFLARE_ROTATE_INFLUENCE: 0.,
+            LENSFLARE_LIGHT_POSITION: null,
+            LENSFLARE_LIGHT_ANGLE: null,
+            LENSFLARE_DECAY: 16.,
+            LENSFLARE_ABERRATION_SCALE: 0.06,
+            LENSFLARE_ABERRATION_SAMPLES: 10,
+            LENSFLARE_ABERRATION_FACTOR: 2.7
         };
+
+        akra.pLensflareData.LENSFLARE_COOKIE_PARAMS = [
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE6, PROPERTIES: new akra.math.Vec4(1500., 100., 0.9, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE5, PROPERTIES: new akra.math.Vec4(200., 200., 0.45, 0.5) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE5, PROPERTIES: new akra.math.Vec4(128., 128., 0.2, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE4, PROPERTIES: new akra.math.Vec4(128., 128., 0.05, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE4, PROPERTIES: new akra.math.Vec4(128., 128., -0.15, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE5, PROPERTIES: new akra.math.Vec4(200., 200., -0.35, 0.5) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new akra.math.Vec4(128., 128., -0.45, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE7, PROPERTIES: new akra.math.Vec4(200., 200., -0.65, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., -0.85, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new akra.math.Vec4(128., 128., -1.1, 0.6) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE4, PROPERTIES: new akra.math.Vec4(128., 128., -1.3, 0.6) }
+        ];
 
         akra.pBlurData = {
             BLUR_SAMPLES: 25,
-            BLUR_RADIUS: 50
+            BLUR_RADIUS: 0
         };
+
+        console.log(akra.pLensflareData.LENSFLARE_COOKIES_TEXTURE.loadImage(akra.pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 
         //var iCounter: int = 0;
         pViewport.render.connect(function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
-            var pDefferedTexture = pViewport.getColorTextures()[0];
+            var pDeferredTexture = pViewport.getColorTextures()[0];
             var pDepthTexture = pViewport.getDepthTexture();
             var pPass = pTechnique.getPass(iPass);
 
@@ -187,7 +221,9 @@ var akra;
             pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
             pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
-            pPass.setTexture('SUNSHAFT_INFO', pDefferedTexture);
+            akra.pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
+            akra.pLensflareData.LENSFLARE_LIGHT_ANGLE = akra.pSunshaftData.SUNSHAFT_ANGLE;
+
             pPass.setUniform('SUNSHAFT_ANGLE', akra.pSunshaftData.SUNSHAFT_ANGLE);
             pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
             pPass.setUniform('SUNSHAFT_SAMPLES', akra.pSunshaftData.SUNSHAFT_SAMPLES);
@@ -199,12 +235,18 @@ var akra;
             pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
             pPass.setUniform('SUNSHAFT_SUN_SIZE', akra.pSunshaftData.SUNSHAFT_SUN_SIZE / pViewport.getActualHeight());
 
-            pPass.setUniform('LENSFLARE_SAMPLES', akra.pLensflareData.LENSFLARE_SAMPLES);
-            pPass.setUniform('LENSFLARE_BLUR_SIZE', akra.pLensflareData.LENSFLARE_BLUR_SIZE);
-            pPass.setUniform('LENSFLARE_ANGLES', akra.pLensflareData.LENSFLARE_ANGLES);
-            pPass.setUniform('LENSFLARE_ROTATE_ANGLE', akra.pLensflareData.LENSFLARE_ROTATE_ANGLE);
-            pPass.setUniform('LENSFLARE_INTENSITY', akra.pLensflareData.LENSFLARE_INTENSITY);
+            pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
+            pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', akra.pLensflareData.LENSFLARE_COOKIES_TEXTURE);
+            pPass.setUniform('LENSFLARE_COOKIE_PARAMS', akra.pLensflareData.LENSFLARE_COOKIE_PARAMS);
+            pPass.setForeign('LENSFLARE_COOKIES_TOTAL', akra.pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
+            pPass.setUniform('LENSFLARE_ROTATE_INFLUENCE', akra.pLensflareData.LENSFLARE_ROTATE_INFLUENCE);
+            pPass.setUniform('LENSFLARE_LIGHT_POSITION', akra.pLensflareData.LENSFLARE_LIGHT_POSITION);
+            pPass.setUniform('LENSFLARE_LIGHT_ANGLE', akra.pLensflareData.LENSFLARE_LIGHT_ANGLE);
             pPass.setUniform('LENSFLARE_DECAY', akra.pLensflareData.LENSFLARE_DECAY);
+            pPass.setUniform('LENSFLARE_SKYDOME_ID', akra.pEngine.getComposer()._calcRenderID(akra.pSky.skyDome, akra.pSky.skyDome.getRenderable()));
+            pPass.setUniform('LENSFLARE_ABERRATION_SCALE', akra.pLensflareData.LENSFLARE_ABERRATION_SCALE);
+            pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', akra.pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
+            pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', akra.pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
             pPass.setUniform('BLUR_SAMPLES', akra.pBlurData.BLUR_SAMPLES);
             pPass.setUniform('BLUR_RADIUS', akra.pBlurData.BLUR_RADIUS / pViewport.getActualHeight());
@@ -400,7 +442,8 @@ var akra;
 
         //pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
         //loadHero();
-        //loadManyModels(400, data + "models/cube.dae");
+        loadManyModels(400, data + "models/cube.dae");
+
         //loadManyModels(100, data + "models/box/opened_box.dae");
         var pSceneQuad = akra.addons.createQuad(akra.pScene, 100.);
         pSceneQuad.attachToParent(akra.pScene.getRootNode());
@@ -415,6 +458,7 @@ var akra;
         pEngine.exec();
         //pEngine.renderFrame();
         //animateTimeOfDay();
+        //animateBlurRadius();
     }
 
     akra.pEngine.depsLoaded.connect(main);
