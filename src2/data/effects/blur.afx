@@ -1,6 +1,7 @@
 provide akra.system;
 
 float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 screenTextureSize : INPUT_TEXTURE_SIZE;
 float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
 texture tex0 : INPUT_TEXTURE;
 
@@ -30,9 +31,14 @@ int samples : BLUR_SAMPLES = 5;
 float blurRadius : BLUR_RADIUS = 0.1;
 
 float4 fs_blur_shading1(VS_OUT IN) : COLOR {
-	float2 imageCenter = float2(0.5) * screenTextureRatio;
+	int samp = int(max(min(float(samples), 50.),1.));
 
-	int samp = int(max(min(float(samples), 50.),0.));
+	if(blurRadius < 0.002) {
+		return tex2D(screenSampler, IN.textureCoords);
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
 	float blurStep = 1./float(samp);
 
 	float4 blur_result = float4(0.);
@@ -43,15 +49,20 @@ float4 fs_blur_shading1(VS_OUT IN) : COLOR {
 		}
 		else {
 			float dr = blurRadius*(-0.5+(float(i)+0.5)*blurStep);
-			blur_result += tex2D(screenSampler, IN.textureCoords + float2(0.,dr)/aspectRatio)*blurStep*exp(-dr*dr/blurRadius/blurRadius);
+			blur_result += tex2D(screenSampler, clamp(IN.textureCoords + float2(dr,0.)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*blurStep*exp(-dr*dr/blurRadius/blurRadius);
 		}
 	}
-	return blur_result;
+	return blur_result*1.05;
 };	
 float4 fs_blur_shading2(VS_OUT IN) : COLOR {
-	float2 imageCenter = float2(0.5) * screenTextureRatio;
+	int samp = int(max(min(float(samples), 50.),1.));
 
-	int samp = int(max(min(float(samples), 50.),0.));
+	if(blurRadius < 0.002) {
+		return tex2D(screenSampler, IN.textureCoords);
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
 	float blurStep = 1./float(samp);
 
 	float4 blur_result = float4(0.);
@@ -62,10 +73,34 @@ float4 fs_blur_shading2(VS_OUT IN) : COLOR {
 		}
 		else {
 			float dr = blurRadius*(-0.5+(float(i)+0.5)*blurStep);
-			blur_result += tex2D(screenSampler, IN.textureCoords + float2(dr,0.)/aspectRatio)*blurStep*exp(-dr*dr/blurRadius/blurRadius);
+			blur_result += tex2D(screenSampler, clamp(IN.textureCoords + float2(0.5*dr,0.87*dr)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*blurStep*exp(-dr*dr/blurRadius/blurRadius);
 		}
 	}
-	return blur_result;
+	return blur_result*1.05;
+};	
+float4 fs_blur_shading3(VS_OUT IN) : COLOR {
+	int samp = int(max(min(float(samples), 50.),1.));
+
+	if(blurRadius < 0.002) {
+		return tex2D(screenSampler, IN.textureCoords);
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
+	float blurStep = 1./float(samp);
+
+	float4 blur_result = float4(0.);
+
+	for(int i=0;i<50;i++) {
+		if(i>samp) {
+			break;
+		}
+		else {
+			float dr = blurRadius*(-0.5+(float(i)+0.5)*blurStep);
+			blur_result += tex2D(screenSampler, clamp(IN.textureCoords + float2(-0.5*dr,0.87*dr)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*blurStep*exp(-dr*dr/blurRadius/blurRadius);
+		}
+	}
+	return blur_result*1.05;
 };	
 
 technique blur : POST_EFFECT {
@@ -76,6 +111,10 @@ technique blur : POST_EFFECT {
 	pass pass2{
 		VertexShader = compile vs_blur_shading();
 		PixelShader = compile fs_blur_shading2();
+	};
+	pass pass3{
+		VertexShader = compile vs_blur_shading();
+		PixelShader = compile fs_blur_shading3();
 	};
 };
 
