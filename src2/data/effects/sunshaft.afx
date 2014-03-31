@@ -3,7 +3,7 @@ provide akra.system;
 float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
 float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
 texture tex0 : INPUT_TEXTURE;
-texture tex1 : SUNSHAFT_INFO;
+//texture tex1 : DEFERRED_TEXTURE;
 texture tex2 : DEPTH_TEXTURE;
 
 sampler screenSampler : INPUT_SAMPLER = sampler_state
@@ -11,10 +11,10 @@ sampler screenSampler : INPUT_SAMPLER = sampler_state
 	Texture = <tex0>;
 };
 
-sampler sunshaftInfoSampler : SUNSHAFT_SAMPLER = sampler_state
-{
-	Texture = <tex1>;
-};
+//sampler sunshaftInfoSampler : SUNSHAFT_SAMPLER = sampler_state
+//{
+//	Texture = <tex1>;
+//};
 
 sampler depthSampler : DEPTH_TEXTURE = sampler_state
 {
