@@ -20,6 +20,8 @@
     <Content Include="demos\css\metro-bootstrap.css" />
     <Content Include="demos\fonts\fontawesome-webfont.svg" />
     <Content Include="demos\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="demos\miner\demo.xml" />
+    <Content Include="demos\miner\grid.jpg" />
     <Content Include="demos\miner\textures\light_icon.png" />
     <Content Include="demos\performance\demo.xml" />
     <Content Include="demos\performance\index.html" />

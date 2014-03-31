@@ -50,7 +50,9 @@
     <TypeScriptCompile Include="akra-addons\idl\3d-party\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="akra-addons\idl\IFileDropArea.ts" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="akra-addons\addons\base3dObjects\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
