@@ -52,6 +52,7 @@ float lensflareAngleInfluence : LENSFLARE_ROTATE_INFLUENCE = 0.;
 float2 lightPos : LENSFLARE_LIGHT_POSITION = float2(0.5,0.5);
 
 float lensflareAngle : LENSFLARE_LIGHT_ANGLE = 1.;
+float lensflareIntensity : LENSFLARE_INTENSITY = 0.8;
 float lensflareDecay : LENSFLARE_DECAY = 3.;
 float lensflareSkydomeId : LENSFLARE_SKYDOME_ID = 0.;
 float lensflareAberrationScale : LENSFLARE_ABERRATION_SCALE = 0.05;
@@ -61,6 +62,8 @@ float lensflareAberrationFactor: LENSFLARE_ABERRATION_FACTOR = 1.;
 float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 	float2 lightPosInTexture = lightPos * screenTextureRatio;
 	float2 imageCenter = float2(0.5) * screenTextureRatio;
+
+	float2 aspectRatioNormalized = aspectRatio/max(aspectRatio.x,aspectRatio.y);
 
 	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
 
@@ -107,7 +110,7 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.2*(lightPos-float2(0.5)))*float4(1.0,0.2,0.0,0.5);
 				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.1*(lightPos-float2(0.5)))*float4(0.5,0.25,0.1,0.2);
 				newLF += tex2D(lensflareCookiesSampler, clamp(
-					cookieReadPos + (cookieTopRight-cookieBotLeft)*(-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale*sign(lightPos-float2(0.5))*pow(2.*(lightPos-float2(0.5)),float2(lensflareAberrationFactor)),
+					cookieReadPos + (cookieTopRight-cookieBotLeft)*(-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale*sign(lightPos-float2(0.5))*pow(2.*(lightPos-float2(0.5))*aspectRatioNormalized,float2(lensflareAberrationFactor)),
 					cookieTopLeft,
 					cookieBotRight) )*float4(
 					smoothstep(1.,0.,clamp(2.*j/ABERRATION_SAMPLES_LENGTH,0.,1.)),
@@ -119,12 +122,12 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 			}
 
 			newLF.a *= lensflareCookieParams[i].props.w;
-			lensflare_result = lensflare_result*(1.-newLF.a) + newLF*newLF.a;
+			//lensflare_result = lensflare_result*(1.-newLF.a) + newLF*newLF.a;
 			//lensflare_result += tex2D(lensflareCookiesSampler, cookieReadPos);
-			//lensflare_result = newLF;
+			lensflare_result += newLF*newLF.a;
 		}
 
-		lensflare_result.a *= pow(lensflareAngle,lensflareDecay);
+		lensflare_result.a = lensflareIntensity*pow(lensflareAngle,lensflareDecay);
 		//return baseImage * (1.-lensflare_result.a) + lensflare_result * lensflare_result.a;
 		return baseImage + lensflare_result * lensflare_result.a;
 	}
