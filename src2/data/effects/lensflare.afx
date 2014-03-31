@@ -1,12 +1,25 @@
 provide akra.system;
 
 float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 screenTextureSize : INPUT_TEXTURE_SIZE;
 float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
 texture tex0 : INPUT_TEXTURE;
+texture tex1 : LENSFLARE_COOKIES_TEXTURE;
+texture tex2 : DEFERRED_TEXTURE;
 
 sampler screenSampler : INPUT_SAMPLER = sampler_state
 {
 	Texture = <tex0>;
+};
+
+sampler lensflareCookiesSampler : LENSFLARE_SAMPLER = sampler_state
+{
+	Texture = <tex1>;
+};
+
+sampler deferredSampler : DEFERRED_SAMPLER = sampler_state
+{
+	Texture = <tex2>;
 };
 
 struct VS_OUT{
@@ -26,44 +39,101 @@ VS_OUT vs_lensflare_shading(float2 pos: POSITION){
 	return Out;
 };
 
-int samples : LENSFLARE_SAMPLES = 5;
-float lensflareBlurSize : LENSFLARE_BLUR_SIZE = 0.1;
-int lensflareAngles : LENSFLARE_ANGLES = 4;
-float lensflareRotateAngle : LENSFLARE_ROTATE_ANGLE = 0.;
+struct LENSFLARE_COOKIE_PARAM
+{
+	float4 location: TEXTURE_LOCATION;
+	float4 props: PROPERTIES;
+};
 
-float lensflareIntensity : LENSFLARE_INTENSITY = 0.3;
+foreign int LENSFLARE_COOKIES_TOTAL;
+LENSFLARE_COOKIE_PARAM lensflareCookieParams[LENSFLARE_COOKIES_TOTAL] : LENSFLARE_COOKIE_PARAMS;
+float lensflareAngleInfluence : LENSFLARE_ROTATE_INFLUENCE = 0.;
+
+float2 lightPos : LENSFLARE_LIGHT_POSITION = float2(0.5,0.5);
+
+float lensflareAngle : LENSFLARE_LIGHT_ANGLE = 1.;
 float lensflareDecay : LENSFLARE_DECAY = 3.;
-float2 lensflarePos : LENSFLARE_POSITION = float2(0.5,0.5);
+float lensflareSkydomeId : LENSFLARE_SKYDOME_ID = 0.;
+float lensflareAberrationScale : LENSFLARE_ABERRATION_SCALE = 0.05;
+float lensflareAberrationSamples: LENSFLARE_ABERRATION_SAMPLES = 5.;
+float lensflareAberrationFactor: LENSFLARE_ABERRATION_FACTOR = 1.;
 
-float4 fs_lensflare_shading1(VS_OUT IN) : COLOR {
-	float2 lensFlarePosInTexture = lensflarePos * screenTextureRatio;
+float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
+	float2 lightPosInTexture = lightPos * screenTextureRatio;
 	float2 imageCenter = float2(0.5) * screenTextureRatio;
 
 	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
 
-	int samp = int(max(min(float(samples), 50.),0.));
-	float lensflareStep = 1./float(samp);
+	float2 _clamped_lightPosInTexture = clamp(lightPosInTexture,float2(0.),screenTextureRatio-float2(1.)/screenTextureSize);
 
-	float4 lensflare_result = float4(0.);
+	float objId = tex2D(deferredSampler,_clamped_lightPosInTexture).w;
 
-	for(int i=0;i<50;i++) {
-		if(i>samp) {
-			break;
-		}
-		else {
-			float dr = lensflareBlurSize*(-0.5+(float(i)+0.5)*lensflareStep);
-			lensflare_result += tex2D(screenSampler, IN.textureCoords + float2(0.,dr))*lensflareStep*exp(-dr*dr/lensflareBlurSize/lensflareBlurSize);
-		}
+	if(lensflareAngle <= 0.
+		|| _clamped_lightPosInTexture != lightPosInTexture
+			|| (objId != 0. && objId != lensflareSkydomeId)) {
+		return baseImage;
 	}
+	else {
+		float4 lensflare_result = float4(0.);
 
-	lensflare_result = pow(lensflare_result, float4(lensflareDecay)) * lensflareIntensity;
-	return baseImage * (1.-lensflareIntensity) + lensflare_result;
+		for(int i=0;i<LENSFLARE_COOKIES_TOTAL;i++) {
+			float2 cookieCenterPos = imageCenter + (lightPosInTexture-imageCenter)*lensflareCookieParams[i].props.z;
+			float2 cookieSizeInTexture = float2(lensflareCookieParams[i].props.x,lensflareCookieParams[i].props.y)/screenTextureSize;
+
+			if(IN.textureCoords.x < (cookieCenterPos-cookieSizeInTexture*0.5).x || IN.textureCoords.y < (cookieCenterPos-cookieSizeInTexture*0.5).y || IN.textureCoords.x > (cookieCenterPos+cookieSizeInTexture*0.5).x || IN.textureCoords.y > (cookieCenterPos+cookieSizeInTexture*0.5).y ) {
+				continue;
+			}
+
+			float2 cookieTopRight = float2(lensflareCookieParams[i].location.z, lensflareCookieParams[i].location.w);
+			float2 cookieBotLeft = float2(lensflareCookieParams[i].location.x, lensflareCookieParams[i].location.y);
+
+			float2 cookieTopLeft = float2(lensflareCookieParams[i].location.x, lensflareCookieParams[i].location.w);
+			float2 cookieBotRight = float2(lensflareCookieParams[i].location.z, lensflareCookieParams[i].location.y);
+			//float2 cookieCenterPosInCookieTex = (cookieTopRight+cookieBotLeft)*0.5;
+
+			float2 cookieReadPos = (cookieTopRight - cookieBotLeft)
+					* ((IN.textureCoords-cookieCenterPos)/cookieSizeInTexture + float2(.5))
+						+ cookieBotLeft;
+			//float2 cookieReadPos = (cookieTopRight - cookieBotLeft)* ((IN.textureCoords-cookieCenterPos)/cookieSizeInTexture);
+
+			float4 newLF;
+
+			float ABERRATION_SAMPLES = clamp(lensflareAberrationSamples,0.,20.);
+			float ABERRATION_SAMPLES_LENGTH = ABERRATION_SAMPLES-1.;
+			for(float j=0.; j<20.; j+=1.) {
+				if(j>ABERRATION_SAMPLES) {
+					break;
+				}
+				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.2*(lightPos-float2(0.5)))*float4(1.0,0.2,0.0,0.5);
+				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.1*(lightPos-float2(0.5)))*float4(0.5,0.25,0.1,0.2);
+				newLF += tex2D(lensflareCookiesSampler, clamp(
+					cookieReadPos + (cookieTopRight-cookieBotLeft)*(-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale*sign(lightPos-float2(0.5))*pow(2.*(lightPos-float2(0.5)),float2(lensflareAberrationFactor)),
+					cookieTopLeft,
+					cookieBotRight) )*float4(
+					smoothstep(1.,0.,clamp(2.*j/ABERRATION_SAMPLES_LENGTH,0.,1.)),
+					smoothstep(1.,0.,clamp(abs(2.6*(0.5-j/ABERRATION_SAMPLES_LENGTH)),0.,1.)),
+					smoothstep(1.,0.,clamp(2.*(1.-j/ABERRATION_SAMPLES_LENGTH),0.,1.)),
+					1.0/ABERRATION_SAMPLES);
+				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*0.1*(lightPos-float2(0.5)))*float4(0.1,0.25,0.5,0.2);
+				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*0.2*(lightPos-float2(0.5)))*float4(0.0,0.2,1.0,0.5);
+			}
+
+			newLF.a *= lensflareCookieParams[i].props.w;
+			lensflare_result = lensflare_result*(1.-newLF.a) + newLF*newLF.a;
+			//lensflare_result += tex2D(lensflareCookiesSampler, cookieReadPos);
+			//lensflare_result = newLF;
+		}
+
+		lensflare_result.a *= pow(lensflareAngle,lensflareDecay);
+		//return baseImage * (1.-lensflare_result.a) + lensflare_result * lensflare_result.a;
+		return baseImage + lensflare_result * lensflare_result.a;
+	}
 };
 
 technique lensflare : POST_EFFECT {
 	pass pass1{
 		VertexShader = compile vs_lensflare_shading();
-		PixelShader = compile fs_lensflare_shading1();
+		PixelShader = compile fs_lensflare_shading();
 	};
 };
 
