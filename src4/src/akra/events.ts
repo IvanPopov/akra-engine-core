@@ -1060,9 +1060,7 @@ module akra {
 	}
 
 
-	//export class MuteSignal<T extends Function, S> extends Signal<T, S> {
-	//	emit(): void {
-
-	//	}
-	//}
+	export class MuteSignal<S> extends Signal<S> {
+		emit(): void {}
+	}
 }

@@ -64,11 +64,10 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		pViewport = new render.DSViewport(pCamera);
-
-		pViewport.click.connect(() => { debug.log("click to viewport!"); });
+		pViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 0);
 
 		pCanvas.addViewport(pViewport);
+		//pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
@@ -85,7 +84,7 @@ module akra {
 
 
 		for (var i = 0; i < 10; ++i) {
-			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
+			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, i == 0, 512);
 			pLightOmni.attachToParent(pScene.getRootNode());
 			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
 			var pSprite = pScene.createSprite();
