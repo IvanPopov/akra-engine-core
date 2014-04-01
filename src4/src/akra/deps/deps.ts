@@ -185,6 +185,24 @@ module akra.deps {
 
 		each(pDeps, (pDep: IDep): void => {
 			pAll.push(new Promise<uint>((fnResolve: (iSize: uint) => void, fnReject: (e: Error) => void) => {
+				var fnSuccess = (iSize: uint) => {
+					var pStats: IDepStats = {
+						status: EDependenceStatuses.PENDING,
+						byteLength: iSize,
+						bytesLoaded: 0,
+						unpacked: 0.
+					};
+
+					pDep.stats = pStats;
+
+					fnResolve(pStats.byteLength);
+				};
+
+				if (uri.parse(pDep.path).getScheme() === "data:") {
+					setTimeout(fnSuccess, 1, uri.parseDataURI(pDep.path).data.length);
+					return;
+				}
+
 				io.fopen(pDep.path).open((e: Error, pMeta: IFileMeta) => {
 					if (e) {
 						return fnReject(e);
@@ -194,16 +212,7 @@ module akra.deps {
 						return fnReject(new Error("could not determ byte length of " + pDep.path));
 					}
 
-					var pStats: IDepStats = {
-						status: EDependenceStatuses.PENDING,
-						byteLength: pMeta.size,
-						bytesLoaded: 0,
-						unpacked: 0.
-					};
-
-					pDep.stats = pStats;
-
-					fnResolve(pStats.byteLength);
+					fnSuccess(pMeta.size);
 				});
 			}));
 		});
@@ -603,6 +612,7 @@ module akra.deps {
 				});
 			}
 			else {
+				cb(pArchiveDep, EDependenceStatuses.DOWNLOADING, { loaded: sBase64Data.length, total: sBase64Data.length });
 				fnDataURIReaded(sBase64Data);
 			}
 		}

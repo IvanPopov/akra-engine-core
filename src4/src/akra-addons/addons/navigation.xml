@@ -36,7 +36,7 @@
     </ClosureCompiler>
     <Resource Name="AE_NAVIGATION_DEPENDENCIES">
       <Archive>True</Archive>
-      <UseInlining>False</UseInlining>
+      <UseInlining>True</UseInlining>
       <Data>
         <Folder Path="navigation">
           <Exclude Path="cubemap.psd" />

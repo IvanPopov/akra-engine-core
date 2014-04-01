@@ -64,7 +64,7 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		pViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 0);
+		pViewport = new render.DSViewport(pCamera);
 
 		pCanvas.addViewport(pViewport);
 		//pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
@@ -110,7 +110,7 @@ module akra {
 				pSprite.click.connect(() => {
 					pLightOmni.setEnabled(!pLightOmni.isEnabled());
 					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
-					debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
+					//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
 				});
 			})(pSprite, pLightOmni);
 

@@ -97,13 +97,7 @@ module.exports = function (grunt) {
 		}
 
 
-		compileTypescript(config, function (ok, modulesInfpo) {
-			if (!ok) {
-				return cb(false, null);
-			}
-
-			buildProject(config, cb, modulesInfpo);
-		}, forceRebuild, modulesInfo);
+		compileTypescript(config, cb, forceRebuild, modulesInfo);
 	}
 
 	function loadConfig(file) {
@@ -354,12 +348,18 @@ module.exports = function (grunt) {
 					}
 
 					if (compilerOptions) {
-						minimize(config, function (ok) {
-							info.destinationFile = path.resolve(config.getAttribute("OutFile"));
-							cb(ok, modulesInfo);
-						}, forceRebuild, modulesInfo);
+						buildProject(config, function (ok, modulesInfo) {
+							if (!ok) {
+								return cb(false, null);
+							}
+
+							minimize(config, function (ok) {
+								info.destinationFile = path.resolve(config.getAttribute("OutFile"));
+								cb(ok, modulesInfo);
+							}, forceRebuild, modulesInfo);
+						}, modulesInfo);
 					} else {
-						cb(true, modulesInfo);
+						buildProject(config, cb, modulesInfo);
 					}
 				}
 				else {
@@ -463,9 +463,12 @@ module.exports = function (grunt) {
 			return null;
 		}
 
+		var tmpExternsFile = src + ".tmp.externs";
+
 		var closureJar = path.join(__dirname, '/closure/compiler.jar');
 		var compilationLevel = compilerOptions.get("//CompilationLevel").textContent;
 		var cmd = "java";
+		
 		var argv = [
 			"-jar", closureJar,
 			"--compilation_level", compilationLevel,
@@ -473,7 +476,7 @@ module.exports = function (grunt) {
 			"--js_output_file", dest,
 			"--strip_types", "akra.debug",
 			 "--use_types_for_optimization",
-			"--externs", src + ".tmp.externs",
+			"--externs", tmpExternsFile,
 			"--output_wrapper", "(function(){%output%})();",
 			"--externs", "lib/grunt/zip.js.externs"
 		];
@@ -507,6 +510,7 @@ module.exports = function (grunt) {
 			stopAnimation(anim);
 			if (argv.indexOf("--externs") != -1) {
 				rm(externsPath);
+				rm(tmpExternsFile);
 			}
 			if (code === 0) {
 				config.setAttribute("OutFile", dest);
@@ -850,8 +854,10 @@ module.exports = function (grunt) {
 			if (excludes) {
 				for (var f = 0; f < files.length; ++f) {
 					for (var n = 0; n < excludes.length; ++n) {
+						//console.log("exclude:", path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path'))));
+						//console.log("file:", path.resolve(files[f]));
 						if (path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path'))) ==
-							path.resolve(path.join(currentFolder, files[f]))) {
+							path.resolve(files[f])) {
 							//Removing Exclude from files.
 							debug("@EXCLUDE", excludes[n].getAttribute('Path'));
 							files.splice(f, 1);

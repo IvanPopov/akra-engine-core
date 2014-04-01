@@ -1,6 +1,5 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 
-//declare var AE_BASE3DOBJECTS_DEPENDENCIES: akra.IDep;
 
 module akra.addons {
 	import VE = data.VertexElement;
@@ -354,13 +353,4 @@ module akra.addons {
 
 		return pSceneModel;
 	}
-
-	//export function getBase3DObjectsDependences(sPath?: string): IDependens {
-	//	var pDep: IDep = AE_BASE3DOBJECTS_DEPENDENCIES;
-
-	//	return deps.createDependenceByPath(
-	//		pDep.path,
-	//		pDep.type,
-	//		sPath || <string>addons['base3dObjects'].path);
-	//}
 }

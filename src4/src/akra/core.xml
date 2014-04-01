@@ -119,7 +119,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Resource Name="AE_CORE_DEPENDENCIES">
       <Archive>True</Archive>
-      <UseInlining>False</UseInlining>
+      <UseInlining>True</UseInlining>
       <Data>
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
@@ -130,12 +130,12 @@
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx"/>
+            <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+              <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+            </ResourceFile>
           </ResourceFile>
           <ResourceFile Path="resources/fx/prepare_shadows.afx"/>
           <ResourceFile Path="resources/fx/terrain.afx"/>
-          <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
-             <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
-          </ResourceFile>
           <ResourceFile Path="resources/fx/prepareDeferredShading.afx">
             <ResourceFile Path="resources/fx/apply_lights_and_shadows.afx"/>
             <ResourceFile Path="resources/fx/deferredShading.afx">
