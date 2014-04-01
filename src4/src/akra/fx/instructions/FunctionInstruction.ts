@@ -644,6 +644,8 @@ module akra.fx.instructions {
 		private generatesVertexAttrubutes(): void {
 			var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
 			var isComplexInput: boolean = this._pFunctionDefenition.isComplexShaderInput();
+			var isNeedAddTexcoord0Attribute: boolean = undefined;
+			var pTexcoordAttr: IAFXVariableDeclInstruction = null;
 
 			this._pAttributeVariableMap = <IAFXVariableDeclMap>{};
 
@@ -662,6 +664,14 @@ module akra.fx.instructions {
 
 					this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
 					this.generateExtractBlockForAttribute(pAttr);
+
+					if (pAttr._getSemantic() === data.Usages.TEXCOORD + "0") {
+						isNeedAddTexcoord0Attribute = false;
+					}
+					else if (isNeedAddTexcoord0Attribute === undefined && pAttr._getSemantic().search(data.Usages.TEXCOORD) !== -1) {
+						isNeedAddTexcoord0Attribute = true;
+						pTexcoordAttr = pAttr;
+					}
 				}
 			}
 			else {
@@ -674,7 +684,27 @@ module akra.fx.instructions {
 
 					this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
 					this.generateExtractBlockForAttribute(pAttr);
+
+					if (pAttr._getSemantic() === data.Usages.TEXCOORD + "0") {
+						isNeedAddTexcoord0Attribute = false;
+					}
+					else if (isNeedAddTexcoord0Attribute === undefined && pAttr._getSemantic().search(data.Usages.TEXCOORD) !== -1) {
+						isNeedAddTexcoord0Attribute = true;
+						pTexcoordAttr = pAttr;
+					}
 				}
+			}
+
+			if (isNeedAddTexcoord0Attribute) {
+				var pTexcoord0Attr: IAFXVariableDeclInstruction = pTexcoordAttr._clone();
+				pTexcoord0Attr._setSemantic("TEXCOORD0");
+				pTexcoord0Attr._setRealName("TEXCOORD0");
+				//pTexcoord0Attr._setName("$$_texcoord0_$$");
+				pTexcoord0Attr._getType()._initializePointers();
+				pTexcoord0Attr._getType()._setVideoBufferInDepth();
+
+				this._pAttributeVariableMap[pTexcoord0Attr._getInstructionID()] = pTexcoord0Attr;
+				this.generateExtractBlockForAttribute(pTexcoord0Attr);
 			}
 
 			this._pAttributeVariableKeys = this._getAttributeVariableKeys();
@@ -1006,6 +1036,7 @@ module akra.fx.instructions {
 			iDepth: uint,
 			pCollector: IAFXInstruction): void {
 			var pPointerType: IAFXVariableTypeInstruction = pPointer._getType();
+			pPointerType._getPointer();
 			var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
 			var pWhatExtractedType: IAFXVariableTypeInstruction = null;
 

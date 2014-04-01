@@ -35,7 +35,7 @@ module akra.fx {
 
 		//need for accelerate setSurfaceMaterial
 		private _nLastSufraceMaterialTextureUpdates: uint = 0;
-		private _nLastSamplerUpdates: uint = 0;
+		private _nLastSamplerUpdates: int = -1;
 		private _pLastSurfaceMaterial: ISurfaceMaterial = null;
 
 		private _isFirstSetSurfaceNaterial: boolean = true;
