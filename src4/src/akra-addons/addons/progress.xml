@@ -15,7 +15,6 @@
       <Attachment>
         <Folder Path="progress/css"/>
         <Format>Enclosure</Format>
-        <OutDir>progress</OutDir>
       </Attachment>
     </Dependencies>
   </PropertyGroup>

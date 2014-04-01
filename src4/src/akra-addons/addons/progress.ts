@@ -7,7 +7,7 @@ module akra.addons {
 	import addons = config.addons;
 
 	addons['progress'] = addons['progress'] || { "css": null };
-	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + "/progress/progress.css");
+	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + "/progress/css/progress.css");
 
 	debug.log("config['addons']['progress'] = ", JSON.stringify(addons['progress']));
 
@@ -23,73 +23,48 @@ module akra.addons {
 		document.getElementsByTagName("head")[0].appendChild(pLink);
 	}
 
-	/*
-	<div class="ae-preloader">
-		<div class="ae-title">
-			LOADING
-		</div>
-		<div class='ae-circle'>
-			<div id='' class='circle_1 circle'></div>
-			<div id='' class='circle_2 circle'></div>
-			<div id='' class='circle_3 circle'></div>
-			<div id='' class='circle_4 circle'></div>
-			<div id='' class='circle_5 circle'></div>
-			<div id='' class='circle_6 circle'></div>
-			<div id='' class='circle_7 circle'></div>
-			<div class='clearfix'></div>
-		</div>
-		<div class="ae-progress" style="margin-bottom: 20px;">
-			<span class="ae-string">{{process}}</span>
-			<span class="ae-string ae-tip">{{tip}}</span>
-			<div class="ae-bar">
-				<div class="ae-complete">
-				</div>
-
-			</div>
-		</div>
-		<div class="ae-progress" style="margin-bottom: 20px;">
-			<span class="ae-string">{{process}}</span>
-			<span class="ae-string ae-tip">{{tip}}</span>
-			<div class="ae-bar">
-				<div class="ae-complete">
-				</div>
-
-			</div>
-		</div>
-	</div>*/
-
-	var code = 
-	"<div class='ae-preloader'>" +
-	"<div class='ae-title'>" +
-	"LOADING" +
-	"</div>" +
-	"<div class='ae-circle'>" +
-	"<div id='' class='circle_1 circle'></div>" +
-	"<div id='' class='circle_2 circle'></div>" +
-	"<div id='' class='circle_3 circle'></div>" +
-	"<div id='' class='circle_4 circle'></div>" +
-	"<div id='' class='circle_5 circle'></div>" +
-	"<div id='' class='circle_6 circle'></div>" +
-	"<div id='' class='circle_7 circle'></div>" +
-	"<div class='clearfix'></div>" +
-	"</div>" +
-	"<div class='ae-progress' style='margin-bottom: 20px;'>" +
-	"<span class='ae-string'>Acquiring&nbsp;</span>" +
-	"<span class='ae-string ae-tip'></span>" +
-	"<div class='ae-bar'>" +
-	"<div class='ae-complete'>" +
-	"</div>" +
-	"</div>" +
-	"</div>" +
-	"<div class='ae-progress' style='margin-bottom: 20px;'>" +
-	"<span class='ae-string'>Applying&nbsp;</span>" +
-	"<span class='ae-string ae-tip'></span>" +
-	"<div class='ae-bar'>" +
-	"<div class='ae-complete'>" +
-	"</div>" +
-	"</div>" +
-	"</div>" +
-	"</div>";
+	var code = config.DEBUG ?
+		"<div class='ae-preloader'>" +
+			"<div class='ae-title'>" +
+				"LOADING" +
+			"</div>" +
+			"<div class='ae-circle'>" +
+				"<div id='' class='circle_1 circle'></div>" +
+				"<div id='' class='circle_2 circle'></div>" +
+				"<div id='' class='circle_3 circle'></div>" +
+				"<div id='' class='circle_4 circle'></div>" +
+				"<div id='' class='circle_5 circle'></div>" +
+				"<div id='' class='circle_6 circle'></div>" +
+				"<div id='' class='circle_7 circle'></div>" +
+				"<div class='clearfix'></div>" +
+			"</div>" +
+			"<div class='ae-progress' style='margin-bottom: 20px;'>" +
+				"<span class='ae-string'>Acquiring&nbsp;</span>" +
+				"<span class='ae-string ae-tip'></span>" +
+				"<div class='ae-bar'>" +
+					"<div class='ae-complete'>" +
+					"</div>" +
+				"</div>" +
+			"</div>" +
+			"<div class='ae-progress' style='margin-bottom: 20px;'>" +
+				"<span class='ae-string'>Applying&nbsp;</span>" +
+				"<span class='ae-string ae-tip'></span>" +
+				"<div class='ae-bar'>" +
+					"<div class='ae-complete'>" +
+					"</div>" +
+				"</div>" +
+			"</div>" +
+		"</div>" :
+		"<div class='ae-preloader'>" +
+			"<div class='ae-progress' style='margin-bottom: 20px;'>" +
+				"<span class='ae-string'>Applying&nbsp;</span>" +
+				"<span class='ae-string ae-tip'></span>" +
+				"<div class='ae-bar'>" +
+					"<div class='ae-complete'>" +
+					"</div>" +
+				"</div>" +
+			"</div>" +
+		"</div>"
 
 
 	export class Progress {
@@ -115,8 +90,8 @@ module akra.addons {
 			else {
 				this.element.appendChild(el);
 			}
-			
-			
+
+
 			var pBars: HTMLDivElement[] = <HTMLDivElement[]><any>document.getElementsByClassName('ae-complete');
 			var pTips: HTMLSpanElement[] = <HTMLSpanElement[]><any>document.getElementsByClassName('ae-tip');
 
@@ -137,15 +112,17 @@ module akra.addons {
 		getListener(): (e: IDepEvent) => void {
 			return (e: IDepEvent): void => {
 
-				this.setAcquiring(e.bytesLoaded / e.bytesTotal);
-				this.setAcquiringTip((e.bytesLoaded / 1000).toFixed(0) + ' / ' + (e.bytesTotal / 1000).toFixed(0) + ' kb');
+				if (config.DEBUG) {
+					this.setAcquiring(e.bytesLoaded / e.bytesTotal);
+					this.setAcquiringTip((e.bytesLoaded / 1000).toFixed(0) + ' / ' + (e.bytesTotal / 1000).toFixed(0) + ' kb');
+				}
 
 				this.setApplying(e.unpacked);
 				this.setApplyingTip(e.loaded + ' / ' + e.total);
 
-				if (e.loaded === e.total) {
+				// if (e.loaded === e.total) {
 					//this.destroy();
-				}
+				// }
 			}
 		}
 

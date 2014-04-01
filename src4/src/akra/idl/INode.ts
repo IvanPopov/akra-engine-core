@@ -22,16 +22,16 @@ module akra {
 	
 	export interface INode extends IEntity {
 		getLocalOrientation(): IQuat4;
-		setLocalOrientation(qOrient: IQuat4): void;
+		setLocalOrientation(qOrient: IQuat4): INode;
 
 		getLocalPosition(): IVec3;
-		setLocalPosition(v3fPosition: IVec3): void;
+		setLocalPosition(v3fPosition: IVec3): INode;
 
 		getLocalScale(): IVec3;
-		setLocalScale(v3fScale: IVec3): void;
+		setLocalScale(v3fScale: IVec3): INode;
 
 		getLocalMatrix(): IMat4;
-		setLocalMatrix(m4fLocal: IMat4): void;
+		setLocalMatrix(m4fLocal: IMat4): INode;
 		
 		getWorldMatrix(): IMat4;
 		getWorldPosition(): IVec3;
@@ -49,47 +49,55 @@ module akra {
 		isWorldMatrixNew(): boolean;
 		isLocalMatrixNew(): boolean;
 	
-		setWorldPosition(v3fPosition: IVec3): void;
-		setWorldPosition(fX: float, fY: float, fZ: float): void;
+		setWorldPosition(v3fPosition: IVec3): INode;
+		setWorldPosition(fX: float, fY: float, fZ: float): INode;
 	
-		setPosition(v3fPosition: IVec3): void;
-		setPosition(fX: float, fY: float, fZ: float): void;
+		setPosition(v3fPosition: IVec3): INode;
+		setPosition(fX: float, fY: float, fZ: float): INode;
 	
-		setRelPosition(v3fPosition: IVec3): void;
-		setRelPosition(fX: float, fY: float, fZ: float): void;
+		setRelPosition(v3fPosition: IVec3): INode;
+		setRelPosition(fX: float, fY: float, fZ: float): INode;
 	
-		addPosition(v3fPosition: IVec3): void;
-		addPosition(fX: float, fY: float, fZ: float): void;
-		addRelPosition(v3fPosition: IVec3): void;
-		addRelPosition(fX: float, fY: float, fZ: float): void;
+		addPosition(v3fPosition: IVec3): INode;
+		addPosition(fX: float, fY: float, fZ: float): INode;
+		addRelPosition(v3fPosition: IVec3): INode;
+		addRelPosition(fX: float, fY: float, fZ: float): INode;
 	
-		setRotationByMatrix(m3fRotation: IMat3): void;
-		setRotationByMatrix(m4fRotation: IMat4): void;
-		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void;
-		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
-		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void;
-		setRotationByXYZAxis(fX: float, fY: float, fZ: float): void;
-		setRotation(q4fRotation: IQuat4): void;
+		setRotationByMatrix(m3fRotation: IMat3): INode;
+		setRotationByMatrix(m4fRotation: IMat4): INode;
+		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode;
+		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
+		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
+		setRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
+		setRotation(q4fRotation: IQuat4): INode;
 	
-		addRelRotationByMatrix(m4fRotation: IMat4): void;
-		addRelRotationByMatrix(m3fRotation: IMat3): void;
-		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void;
-		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
-		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void;
-		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void;
-		addRelRotation(q4fRotation: IQuat4): void;
+		addRelRotationByMatrix(m4fRotation: IMat4): INode;
+		addRelRotationByMatrix(m3fRotation: IMat3): INode;
+		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode;
+		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
+		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
+		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
+		addRelRotation(q4fRotation: IQuat4): INode;
 	
-		addRotationByMatrix(m4fRotation: IMat4): void;
-		addRotationByMatrix(m3fRotation: IMat3): void;
-		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void;
-		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
-		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void;
-		addRotationByXYZAxis(fX: float, fY: float, fZ: float): void;
-		addRotation(q4fRotation: IQuat4): void;
+		addRotationByMatrix(m4fRotation: IMat4): INode;
+		addRotationByMatrix(m3fRotation: IMat3): INode;
+		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode;
+		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
+		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
+		addRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
+        addRotation(q4fRotation: IQuat4): INode;
+
+        addOrbitRotationByMatrix(m4fRotation: IMat4): INode;
+        addOrbitRotationByMatrix(m3fRotation: IMat3): INode;
+        addOrbitRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode;
+        addOrbitRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
+        addOrbitRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
+        addOrbitRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
+        addOrbitRotation(q4fRotation: IQuat4): INode;
 	
-		scale(fScale: float): void;
-		scale(v3fScale: IVec3): void;
-		scale(fX: float, fY: float, fZ: float): void;
+		scale(fScale: float): INode;
+		scale(v3fScale: IVec3): INode;
+		scale(fX: float, fY: float, fZ: float): INode;
 	
 		lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
 		lookAt(v3fCenter: IVec3, v3fUp?: IVec3);

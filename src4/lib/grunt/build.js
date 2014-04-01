@@ -190,6 +190,10 @@ module.exports = function (grunt) {
 			config.setAttribute("OutDir", path.dirname(prepareSystemVariables(config.get("//TypeScriptOutFile").textContent)));
 		}
 
+		if (config.get("//DestFolder")) {
+			config.setAttribute("OutDir", prepareSystemVariables(config.get("//DestFolder").textContent));
+		}
+
 		return config;
 	}
 
@@ -311,8 +315,10 @@ module.exports = function (grunt) {
 				dest = dest.replace(/\.min\.js$/, ".js");
 			}
 			else {
-				error("TypeScript out file must be specified.");
-				return cb(false, null);
+				warn("TypeScript out file must be specified.");
+				info.forceRebuild = forceRebuild;
+				info.destinationFile = path.resolve(path.join(configDir, config.getAttribute("OutDir"), "unknown"));
+				return buildProject(config, cb, modulesInfo);
 			}
 
 			argv.push("--out", dest);
@@ -871,7 +877,7 @@ module.exports = function (grunt) {
 				result.push(path.relative(srcDir, file));
 			});
 		}
-
+		
 		return result;
 	}
 
@@ -1058,8 +1064,8 @@ module.exports = function (grunt) {
 		if (format === "Enclosure") {
 			var data = [];
 			files.forEach(function (file) {
-				var dest = path.join(buildDir, outDir, path.basename(file));
-
+				var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
+				
 				if (info.forceRebuild) {
 					copy(file, dest);
 					debug("@COPY", file, "->", path.join(buildDir, outDir, path.basename(file)));
@@ -1114,8 +1120,10 @@ module.exports = function (grunt) {
 		compile(config, function (ok, modulesInfo) {
 			if (!ok) return cb(false);
 
+			var configDir = config.getAttribute("Path");
+
 			var destJs = config.getAttribute("OutFile");
-			var destFolder = path.dirname(destJs);
+			var destFolder = path.join(configDir, config.getAttribute("OutDir"));//path.dirname(destJs);
 			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
 
 			debug("Dest. folder: ", destFolder);
@@ -1148,7 +1156,7 @@ module.exports = function (grunt) {
 				}
 			}
 
-
+			//console.log(scripts);
 			//scripts = scripts.concat(
 			//	moduleScripts.map(function (script) {
 			//		//console.log(destFolder, script);
@@ -1198,7 +1206,13 @@ module.exports = function (grunt) {
 		var demo = this.args[0];
 
 		if (!demo) {
-			grunt.fail.fatal(new Error("Could not determ demo name."));
+			grunt.file.expand({ filter: 'isDirectory' }, path.join(cfg('DemosSourceDir'), "*")).forEach(function (dir) {
+				if (exists(path.join(dir, "demo.xml"))) {
+					console.log(dir);
+				}
+			});
+			return done(true);
+			//grunt.fail.fatal(new Error("Could not determ demo name."));
 		}
 
 		debug("Current demo: ", demo);

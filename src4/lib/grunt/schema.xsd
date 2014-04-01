@@ -43,6 +43,16 @@
         <xs:element name="PropertyGroup">
           <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="DestFolder" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                  <xs:documentation>Destination folder.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:anyURI"/>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
               <xs:element ref="Resource" minOccurs="0" maxOccurs="unbounded"/>
               <xs:element ref="Dependencies" maxOccurs="1"/>
               <xs:element ref="TypeScriptTarget" maxOccurs="1"/>
