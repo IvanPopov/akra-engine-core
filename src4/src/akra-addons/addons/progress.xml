@@ -12,13 +12,24 @@
     <TypeScriptDeclarationDir>../../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
     <Dependencies>
       <Module Name="core" />
+    </Dependencies>
+    <!--<Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>-->
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Dependencies>
       <Attachment>
-        <Folder Path="progress/css"/>
+        <Folder Path="progress/debug" />
         <Format>Enclosure</Format>
       </Attachment>
     </Dependencies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Dependencies>
+      <Attachment>
+        <Folder Path="progress/release" />
+        <Format>Enclosure</Format>
+      </Attachment>
+    </Dependencies>
     <ClosureCompiler>
       <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
       <CreateSourceMap>False</CreateSourceMap>

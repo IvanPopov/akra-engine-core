@@ -495,6 +495,7 @@ module.exports = function (grunt) {
 			}
 		}
 
+		//argv.push("--define=\"akra.config.DEBUG=" + (cfg('Configuration') === 'Debug' ? 'true' : 'false') + "\"");
 
 		if (compilerOptions.get("//CreateSourceMap")) {
 			if (compilerOptions.get("//CreateSourceMap").textContent === "True") {
@@ -604,6 +605,15 @@ module.exports = function (grunt) {
 		console.time("Build project " + config.getAttribute("Name"));
 
 
+		//fetch variables from dep. modules
+		for (var moduleName in modulesInfo) {
+			var module = modulesInfo[moduleName];
+			for (var i in module.variables) {
+				debug("@VARIABLE(PARENT)", i);
+				variables[i] = module.variables[i];
+			}
+		}
+
 		config.find("//PropertyGroup/Variable").forEach(function (variable) {
 			var name = variable.getAttribute("Name");
 			var value = computeExpression(variable.textContent);
@@ -616,8 +626,6 @@ module.exports = function (grunt) {
 
 			debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
 		});
-
-
 
 		config.find("//PropertyGroup/Resource").forEach(function (resource) {
 			var resourceName = resource.getAttribute("Name");
@@ -646,7 +654,7 @@ module.exports = function (grunt) {
 				}
 			}
 		});
-
+		
 		if (Object.keys(variables).length === 0 || !info.forceRebuild) {
 			return cb(true, modulesInfo);
 		}
@@ -655,6 +663,7 @@ module.exports = function (grunt) {
 		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g) || [];
 
 		var i = 0;
+
 		do {
 			var name = list[i++];
 			var value = variables[name];
@@ -665,7 +674,7 @@ module.exports = function (grunt) {
 			}
 
 		} while (i < list.length);
-
+		
 		write(outFile, data);
 		console.timeEnd("Build project " + config.getAttribute("Name"));
 
@@ -1206,13 +1215,18 @@ module.exports = function (grunt) {
 		var demo = this.args[0];
 
 		if (!demo) {
+			log("\nAvailable demos:");
+
+			var i = 0;
 			grunt.file.expand({ filter: 'isDirectory' }, path.join(cfg('DemosSourceDir'), "*")).forEach(function (dir) {
-				if (exists(path.join(dir, "demo.xml"))) {
-					console.log(dir);
+				var configFile = path.join(dir, "demo.xml");
+				if (exists(configFile)) {
+					var config = loadConfig(configFile);
+					log("\t" + (i++) + ". " + config.getAttribute("Name") + "\t\t'" + "grunt demo:" + path.basename(dir) + "' " + "\t\t" + config.get("Description").textContent)
 				}
 			});
+
 			return done(true);
-			//grunt.fail.fatal(new Error("Could not determ demo name."));
 		}
 
 		debug("Current demo: ", demo);

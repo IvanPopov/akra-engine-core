@@ -7,7 +7,7 @@ module akra.addons {
 	import addons = config.addons;
 
 	addons['progress'] = addons['progress'] || { "css": null };
-	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + "/progress/css/progress.css");
+	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + "/progress/" + (AE_DEBUG? "debug": "release") + "/progress.css");
 
 	debug.log("config['addons']['progress'] = ", JSON.stringify(addons['progress']));
 
@@ -23,7 +23,7 @@ module akra.addons {
 		document.getElementsByTagName("head")[0].appendChild(pLink);
 	}
 
-	var code = config.DEBUG ?
+	var code = AE_DEBUG ?
 		"<div class='ae-preloader'>" +
 			"<div class='ae-title'>" +
 				"LOADING" +
@@ -56,9 +56,7 @@ module akra.addons {
 			"</div>" +
 		"</div>" :
 		"<div class='ae-preloader'>" +
-			"<div class='ae-progress' style='margin-bottom: 20px;'>" +
-				"<span class='ae-string'>Applying&nbsp;</span>" +
-				"<span class='ae-string ae-tip'></span>" +
+			"<div class='ae-progress'>" +
 				"<div class='ae-bar'>" +
 					"<div class='ae-complete'>" +
 					"</div>" +
@@ -95,30 +93,41 @@ module akra.addons {
 			var pBars: HTMLDivElement[] = <HTMLDivElement[]><any>document.getElementsByClassName('ae-complete');
 			var pTips: HTMLSpanElement[] = <HTMLSpanElement[]><any>document.getElementsByClassName('ae-tip');
 
-			this.acquiring = pBars[0];
-			this.acquiringTip = pTips[0];
+			if (AE_DEBUG) {
+				this.acquiring = pBars[0];
+				this.acquiringTip = pTips[0];
 
-			this.applying = pBars[1];
-			this.applyingTip = pTips[1];
+
+				this.applying = pBars[1];
+				this.applyingTip = pTips[1];
+			}
+			else {
+				this.applying = pBars[0];
+			}
 		}
 
 		destroy(): void {
-			this.element.className += " bounceOutRight";
-			setTimeout(() => {
+			if (AE_DEBUG) {
+				this.element.className += " bounceOutRight";
+				setTimeout(() => {
+					this.element.parentNode.removeChild(this.element);
+				}, 2000);
+			}
+			else {
 				this.element.parentNode.removeChild(this.element);
-			}, 2000);
+			}
 		}
 
 		getListener(): (e: IDepEvent) => void {
 			return (e: IDepEvent): void => {
 
-				if (config.DEBUG) {
+				if (AE_DEBUG) {
 					this.setAcquiring(e.bytesLoaded / e.bytesTotal);
 					this.setAcquiringTip((e.bytesLoaded / 1000).toFixed(0) + ' / ' + (e.bytesTotal / 1000).toFixed(0) + ' kb');
+					this.setApplyingTip(e.loaded + ' / ' + e.total);
 				}
 
 				this.setApplying(e.unpacked);
-				this.setApplyingTip(e.loaded + ' / ' + e.total);
 
 				// if (e.loaded === e.total) {
 					//this.destroy();
