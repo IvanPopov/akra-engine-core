@@ -77,7 +77,6 @@ module akra.webgl {
 		if (isDef((<any>window).WebGLDebugUtils)) {
 			pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext,
 				(err: int, funcName: string, args: IArguments): void => {
-					//debug.log(__CALLSTACK__);
 					throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
 				},
 				(funcName: string, args: IArguments): void => {
@@ -96,7 +95,10 @@ module akra.webgl {
 			logger.warn("Extension " + sExtName + " unsupported for this platform.");
 			return false;
 		}
-		if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
+
+		pWebGLExtension = pWebGLContext.getExtension(sExtName);
+
+		if (pWebGLExtension) {
 
 			if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
 				// debug.log("Extension " + sExtName + " already loaded for this context.");
@@ -212,7 +214,7 @@ module akra.webgl {
 		}
 
 		if (isDefAndNotNull(pWebGLContext)) {
-			if (config.WEBGL_DEBUG) {
+			if (window["WebGLDebugUtils"] && config.WEBGL_DEBUG) {
 				return makeDebugContext(setupContext(pWebGLContext));
 			}
 			else {

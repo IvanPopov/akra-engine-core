@@ -14,7 +14,7 @@ module akra.threading {
 		k_WorkerFree
 	}
 
-	interface AIThreadStats {
+	interface IThreadStats {
 		status: AEThreadStatuses;
 		creationTime: uint;
 		releaseTime: uint;
@@ -26,7 +26,7 @@ module akra.threading {
 
 		private _sDefaultScript: string;
 		private _pWorkerList: IThread[] = [];
-		private _pStatsList: AIThreadStats[] = [];
+		private _pStatsList: IThreadStats[] = [];
 		private _pWaiters: Function[] = [];
 		private _iSysRoutine: int = -1;
 
@@ -50,10 +50,8 @@ module akra.threading {
 				return;
 			}
 
-			logger.log("start routine", this._sDefaultScript);
-
 			this._iSysRoutine = setInterval((): void => {
-				var pStats: AIThreadStats;
+				var pStats: IThreadStats;
 				var iNow: uint = time();
 
 				for (var i: int = 0, n: int = this._pStatsList.length; i < n; ++i) {
@@ -61,31 +59,33 @@ module akra.threading {
 
 					if (pStats.releaseTime > 0 && iNow - pStats.releaseTime > config.threading.idleTime * 1000) {
 						if (this.terminateThread(i)) {
-							logger.log("thread with id - " + i + " terminated. (" + i + "/" + n + ")");
+							debug.log("Thread " + i + " terminated. (" + i + "/" + n + ")");
 							i--, n--;
 							continue;
 						}
 
-						logger.warn("thread must be removed: " + i);
+						logger.warn("Thread must be removed: " + i);
 					}
 				};
 			}, 5000);
+
+			debug.log("Routine " + path.parse(this._sDefaultScript).getFileName() + " started.");
 		}
 
 		private stopSystemRoutine(): void {
-			logger.log("stop routine", this._sDefaultScript);
 			clearInterval(this._iSysRoutine);
+			debug.log("Routine " + path.parse(this._sDefaultScript).getFileName() + " stoped.");
 		}
 
 		createThread(): boolean {
 			//console.log((new Error).stack)
 			if (this._pWorkerList.length === config.threading.max) {
-				logger.warn("Reached limit the number of threads");
+				debug.log("Reached limit the number of threads.");
 				return false;
 			}
 
 			if (!info.api.getWebWorker()) {
-				logger.error("WebWorkers unsupprted..");
+				logger.critical("WebWorker unsupported.");
 				return false;
 			}
 
@@ -109,7 +109,7 @@ module akra.threading {
 		}
 
 		occupyThread(): IThread {
-			var pStats: AIThreadStats;
+			var pStats: IThreadStats;
 			for (var i: int = 0, n: int = this._pWorkerList.length; i < n; ++i) {
 				pStats = this._pStatsList[i];
 				if (pStats.status == AEThreadStatuses.k_WorkerFree) {
@@ -123,13 +123,12 @@ module akra.threading {
 				return this.occupyThread();
 			}
 			else {
-				logger.warn("cannot occupy thread");
 				return null;
 			}
 		}
 
 		terminateThread(iThread: int): boolean {
-			var pStats: AIThreadStats = this._pStatsList[iThread];
+			var pStats: IThreadStats = this._pStatsList[iThread];
 			var pWorker: IThread = this._pWorkerList[iThread];
 
 			if (!isDefAndNotNull(pWorker) && pStats.status != AEThreadStatuses.k_WorkerFree) {
@@ -169,7 +168,7 @@ module akra.threading {
 
 		// private countUnreleasedThreds(): uint {
 		// 	var t = 0;
-		// 	var pStats: AIThreadStats;
+		// 	var pStats: IThreadStats;
 		// 	for (var i: int = 0, n: int = this._pWorkerList.length; i < n; ++i) {
 		// 		pStats = this._pStatsList[i];
 		//		 if (pStats.status != AEThreadStatuses.k_WorkerFree) {
@@ -196,7 +195,7 @@ module akra.threading {
 		releaseThread(iThread: int): boolean;
 		releaseThread(pThread: any): boolean {
 			var iThread: int;
-			var pStats: AIThreadStats;
+			var pStats: IThreadStats;
 
 			if (!isInt(pThread)) {
 				iThread = pThread.id;

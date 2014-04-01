@@ -12,7 +12,7 @@ module akra.webgl {
 		e.preventDefault && e.preventDefault();
 		e.stopPropagation && e.stopPropagation();
 		e.cancelBubble = true;
-		e.returnValue = false;
+		e.preventDefault ? e.preventDefault() : e.returnValue = false;
 	}
 
 	export class WebGLCanvas extends render.Canvas3d implements IClickable {
@@ -135,20 +135,21 @@ module akra.webgl {
 		enableSupportFor3DEvent(iType: int): int {
 
 			var iActivated: int = super.enableSupportFor3DEvent(iType);
-
+			var pEl: HTMLCanvasElement = this.getElement();
 			if (iActivated & E3DEventTypes.CLICK) {
-				debug.log("WebGLCanvas activate <CLICK> event handing");
-				this.getElement().addEventListener("click", (e: MouseEvent): boolean => {
+				debug.log("WebGLCanvas activate <CLICK> event handing.");
+				pEl.addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					//0 --> 149, 149/150 --> 0
+					//debug.log(e.offsetX, e.offsetY);
 					this.click.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEMOVE) {
-				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing");
-				this.getElement().addEventListener("mousemove", (e: MouseEvent): boolean => {
+				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing.");
+				pEl.addEventListener("mousemove", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mousemove.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -156,8 +157,8 @@ module akra.webgl {
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEDOWN) {
-				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing");
-				this.getElement().addEventListener("mousedown", (e: MouseEvent): boolean => {
+				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing.");
+				pEl.addEventListener("mousedown", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mousedown.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -165,8 +166,8 @@ module akra.webgl {
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEUP) {
-				debug.log("WebGLCanvas activate <MOUSEUP> event handing");
-				this.getElement().addEventListener("mouseup", (e: MouseEvent): boolean => {
+				debug.log("WebGLCanvas activate <MOUSEUP> event handing.");
+				pEl.addEventListener("mouseup", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mouseup.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -174,8 +175,8 @@ module akra.webgl {
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEOVER) {
-				debug.log("WebGLCanvas activate <MOUSEOVER> event handing");
-				this.getElement().addEventListener("mouseover", (e: MouseEvent): boolean => {
+				debug.log("WebGLCanvas activate <MOUSEOVER> event handing.");
+				pEl.addEventListener("mouseover", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mouseover.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -183,8 +184,8 @@ module akra.webgl {
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEOUT) {
-				debug.log("WebGLCanvas activate <MOUSEOUT> event handing");
-				this.getElement().addEventListener("mouseout", (e: MouseEvent): boolean => {
+				debug.log("WebGLCanvas activate <MOUSEOUT> event handing.");
+				pEl.addEventListener("mouseout", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mouseout.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -192,8 +193,8 @@ module akra.webgl {
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEWHEEL) {
-				debug.log("WebGLCanvas activate <MOUSEWHEEL> event handing");
-				this.getElement().addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
+				debug.log("WebGLCanvas activate <MOUSEWHEEL> event handing.");
+				pEl.addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
 					absorbEvent(e);
 
 					//FIXME: skipping middle button click

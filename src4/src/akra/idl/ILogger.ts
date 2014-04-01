@@ -54,6 +54,12 @@ module akra {
 
 		// Print messages methods
 
+		time(sLabel: string): void;
+		timeEnd(sLabel: string): void;
+
+		group(...pArgs: any[]): void;
+		groupEnd(): void;
+
 		log(...pArgs: any[]);
 
 		info(pEntity: ILoggerEntity): void;
@@ -75,9 +81,5 @@ module akra {
 		assert(bCondition: boolean, pEntity: ILoggerEntity): void;
 		assert(bCondition: boolean, eCode: uint, ...pArgs: any[]): void;
 		assert(bCondition: boolean, ...pArgs: any[]): void;
-
-		presume(bCond: boolean, pEntity: ILoggerEntity): void;
-		presume(bCond: boolean, eCode: uint, ...pArgs: any[]);
-		presume(bCond: boolean, ...pArgs: any[]);
 	}
 }

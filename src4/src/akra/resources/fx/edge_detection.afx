@@ -1,0 +1,109 @@
+provide akra.system;
+
+
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 screenSize : INPUT_TEXTURE_SIZE;
+texture tex0 : INPUT_TEXTURE;
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};;
+
+
+
+VS_OUT vs_edge_detection(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+    Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+    Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float lineWidth: EDGE_DETECTION_LINEWIDTH = 2.;
+float4 outlineColor = float4(0., 0., 0., 1.);
+float threshold: EDGE_DETECTION_THRESHOLD = 0.5;
+
+float4 fs_edge_detection(VS_OUT IN) : COLOR 
+{
+  float2 texCoord = IN.textureCoords;
+
+  float4 c = tex2D(screenSampler, texCoord);
+  float4 c1, c2, c3, c4;
+  float grad1, grad2, grad3, grad4;
+  float wi = 0.0, wj;
+  float flag = 0.0;
+  float lw = floor(lineWidth / 2.);
+
+  float2 texelSize = float2(1. / screenSize.x, 1. / screenSize.y);
+  float stepx = texelSize.x;
+  float stepy = texelSize.y;
+
+  for (int i = 1; i > -1; i ++) {
+    wj = 0.0;
+    for (int j = 1; j > -1; j ++) {
+      c1 = tex2D(screenSampler, float2(texCoord.x + wi * stepx, texCoord.y + wj * stepy));
+      c2 = tex2D(screenSampler, float2(texCoord.x - wi * stepx, texCoord.y + wj * stepy));
+      c3 = tex2D(screenSampler, float2(texCoord.x - wi * stepx, texCoord.y - wj * stepy));
+      c4 = tex2D(screenSampler, float2(texCoord.x + wi * stepx, texCoord.y - wj * stepy));
+
+      grad1 = distance(c.xyz, c1.xyz);
+      grad2 = distance(c.xyz, c2.xyz);
+      grad3 = distance(c.xyz, c3.xyz);
+      grad4 = distance(c.xyz, c4.xyz);
+
+      if(grad1 > threshold || grad2 > threshold || grad3 > threshold || grad4 > threshold)
+      {
+          flag=1.0;
+          break;
+      }
+
+      if(sqrt(wj * wj + wi * wi) >= lw) 
+      {
+          break;
+      }
+
+      wj += 1.0;
+      
+    }
+      
+    if(wi >= lw || flag==1.0){
+        break;
+    }
+
+    wi+=1.0;
+  }
+
+  if (mod(lineWidth, 2.0) != 0.0) {
+      c1 = tex2D(screenSampler, float2(texCoord.x + (lw + 1.) * stepx, texCoord.y));
+      c2 = tex2D(screenSampler, float2(texCoord.x, texCoord.y + (lw + 1.) * stepy));
+      grad1 = distance(c.xyz,c1.xyz);
+      grad2 = distance(c.xyz,c2.xyz);
+
+      if(grad1 > threshold || grad2 > threshold){
+          flag=1.0;
+      }  
+  }
+
+  if(flag == 1.0){
+      return outlineColor;
+  }
+
+  return c;
+}
+
+technique edgeDetection {
+  pass {
+    VertexShader = compile vs_edge_detection();
+    PixelShader = compile fs_edge_detection();
+  };
+};

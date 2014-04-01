@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{D9011CDD-1918-4A34-AADA-109E4F9670E1}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>0.9</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="demos\css\metro-bootstrap.css" />
+    <Content Include="demos\fonts\fontawesome-webfont.svg" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="demos\miner\demo.xml" />
+    <Content Include="demos\miner\grid.jpg" />
+    <Content Include="demos\miner\textures\light_icon.png" />
+    <Content Include="demos\performance\demo.xml" />
+    <Content Include="demos\performance\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="demos\arteries\arteries.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\codemirror.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\dat.gui.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\jquery.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\jqueryui.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\raphael.d.ts" />
+    <TypeScriptCompile Include="demos\idl\3d-party\swig.d.ts" />
+    <TypeScriptCompile Include="demos\miner\miner.ts" />
+    <TypeScriptCompile Include="demos\performance\performance.ts" />
+    <TypeScriptCompile Include="demos\std\std.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\arteries\dat.gui\dat.gui.js" />
+    <Content Include="demos\arteries\data\AG\001.jpg" />
+    <Content Include="demos\arteries\data\AG\002.jpg" />
+    <Content Include="demos\arteries\data\AG\003.jpg" />
+    <Content Include="demos\arteries\data\AG\004.jpg" />
+    <Content Include="demos\arteries\data\AG\005.jpg" />
+    <Content Include="demos\arteries\data\AG\006.jpg" />
+    <Content Include="demos\arteries\data\AG\007.jpg" />
+    <Content Include="demos\arteries\data\AG\008.jpg" />
+    <Content Include="demos\arteries\data\AG\009.jpg" />
+    <Content Include="demos\arteries\data\AG\010.jpg" />
+    <Content Include="demos\arteries\data\AG\011.jpg" />
+    <Content Include="demos\arteries\data\AG\012.jpg" />
+    <Content Include="demos\arteries\data\AG\013.jpg" />
+    <Content Include="demos\arteries\data\AG\014.jpg" />
+    <Content Include="demos\arteries\data\AG\015.jpg" />
+    <Content Include="demos\arteries\data\AG\016.jpg" />
+    <Content Include="demos\arteries\data\AG\017.jpg" />
+    <Content Include="demos\arteries\data\AG\018.jpg" />
+    <Content Include="demos\arteries\data\AG\019.jpg" />
+    <Content Include="demos\arteries\data\AG\020.jpg" />
+    <Content Include="demos\arteries\data\AG\021.jpg" />
+    <Content Include="demos\arteries\data\AG\022.jpg" />
+    <Content Include="demos\arteries\data\AG\023.jpg" />
+    <Content Include="demos\arteries\data\AG\024.jpg" />
+    <Content Include="demos\arteries\data\AG\025.jpg" />
+    <Content Include="demos\arteries\data\AG\026.jpg" />
+    <Content Include="demos\arteries\data\AG\027.jpg" />
+    <Content Include="demos\arteries\data\AG\028.jpg" />
+    <Content Include="demos\arteries\data\AG\029.jpg" />
+    <Content Include="demos\arteries\data\AG\030.jpg" />
+    <Content Include="demos\arteries\data\AG\031.jpg" />
+    <Content Include="demos\arteries\data\AG\032.jpg" />
+    <Content Include="demos\arteries\data\AG\033.jpg" />
+    <Content Include="demos\arteries\data\AG\034.jpg" />
+    <Content Include="demos\arteries\data\AG\035.jpg" />
+    <Content Include="demos\arteries\data\AG\036.jpg" />
+    <Content Include="demos\arteries\data\AG\037.jpg" />
+    <Content Include="demos\arteries\data\AG\038.jpg" />
+    <Content Include="demos\arteries\data\AG\039.jpg" />
+    <Content Include="demos\arteries\data\AG\040.jpg" />
+    <Content Include="demos\arteries\data\AG\041.jpg" />
+    <Content Include="demos\arteries\data\coords\coord4.txt" />
+    <Content Include="demos\arteries\data\coords\coord_real_ag.txt" />
+    <Content Include="demos\arteries\demo.xml" />
+    <Content Include="demos\cube.dae" />
+    <Content Include="demos\arteries\data\AG\all.map" />
+    <Content Include="demos\arteries\data\fx\arteries.afx" />
+    <Content Include="demos\arteries\data\fx\arteries2.afx" />
+    <Content Include="demos\arteries\data\models\arteries_hp.obj" />
+    <Content Include="demos\arteries\data\models\caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline.2n_poyda.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline_smoothed.2n.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2.obj" />
+    <Content Include="demos\fonts\fontawesome-webfont.eot" />
+    <Content Include="demos\fonts\fontawesome-webfont.ttf" />
+    <Content Include="demos\fonts\fontawesome-webfont.woff" />
+    <Content Include="demos\fonts\FontAwesome.otf" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="demos\miner\miner.map" />
+    <Content Include="demos\miner\models\cube.DAE" />
+    <Content Include="demos\miner\models\miner\idle0.DAE" />
+    <Content Include="demos\miner\models\miner\idle1.DAE" />
+    <Content Include="demos\miner\models\miner\idle2.DAE" />
+    <Content Include="demos\miner\models\miner\images\gun_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\gun_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\gun_specular.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_specular.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_specular.dds" />
+    <Content Include="demos\miner\models\miner\miner.DAE" />
+    <Content Include="demos\miner\models\miner\walk1.DAE" />
+    <Content Include="demos\miner\models\miner\walk2.DAE" />
+    <Content Include="demos\miner\models\miner\walk3.DAE" />
+    <Content Include="demos\miner\models\miner\work_gun.DAE" />
+    <Content Include="demos\miner\models\miner\work_hammer.DAE" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>demos</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>7849</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:7849/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>none</TypeScriptModuleKind>
+    <Optimize>true</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
+</Project>

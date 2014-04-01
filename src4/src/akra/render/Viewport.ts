@@ -100,13 +100,12 @@ module akra.render {
 
 			pViewport._keepLastMousePosition(x, y);
 			super.emit(x, y);
-
+			
 			if (!pViewport.is3DEventSupported(E3DEventTypes.CLICK)) {
 				return;
 			}
 
 			var p = pViewport.pick(x, y);
-
 
 			p.object && p.object.click.emit(pViewport, p.renderable, x, y);
 			p.renderable && p.renderable.click.emit(pViewport, p.object, x, y);

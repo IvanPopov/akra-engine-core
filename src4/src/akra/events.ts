@@ -91,6 +91,7 @@ module akra {
 			}
 			else {
 				if (this.indexOfBroadcastListener(pListener.reciever, pListener.callback) >= 0) {
+					debug.warn("Listener already exists: ", "listener:", pListener, "sender:", this.getSender());
 					this.clearListener(pListener);
 					return false;
 				}
@@ -1059,9 +1060,7 @@ module akra {
 	}
 
 
-	//export class MuteSignal<T extends Function, S> extends Signal<T, S> {
-	//	emit(): void {
-
-	//	}
-	//}
+	export class MuteSignal<S> extends Signal<S> {
+		emit(): void {}
+	}
 }

@@ -5,8 +5,6 @@
 
 module akra {
 	export interface IAFXComponent extends IResourcePoolItem {
-		create(): void;
-	
 		getTechnique(): IAFXTechniqueInstruction;
 		setTechnique(pTechnique: IAFXTechniqueInstruction): void;
 	

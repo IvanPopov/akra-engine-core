@@ -222,9 +222,9 @@ module akra.pixelUtil {
 		/// Static method to startup and register the DDS codec
 		static startup(): void {
 			if (!isDefAndNotNull(this._pInstance)) {
-				logger.log("DDS codec registering ...");
 				this._pInstance = new DDSCodec();
 				Codec.registerCodec(this._pInstance);
+				debug.log("DDS coded registred.");
 			}
 		}
 		/// Static method to shutdown and unregister the DDS codec

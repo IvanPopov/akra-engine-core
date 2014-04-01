@@ -66,36 +66,40 @@ module akra.scene {
 			return this._qRotation;
 		}
 
-		setLocalOrientation(qOrient: IQuat4): void {
+		setLocalOrientation(qOrient: IQuat4): INode {
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			this._qRotation.set(qOrient);
+			return this;
 		}
 
 		getLocalPosition(): IVec3 {
 			return this._v3fTranslation;
 		}
 
-		setLocalPosition(v3fPosition: IVec3): void {
+		setLocalPosition(v3fPosition: IVec3): INode {
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			this._v3fTranslation.set(v3fPosition);
+			return this;
 		}
 
 		getLocalScale(): IVec3 {
 			return this._v3fScale;
 		}
 
-		setLocalScale(v3fScale: IVec3): void {
+		setLocalScale(v3fScale: IVec3): INode {
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			this._v3fScale.set(v3fScale);
+			return this;
 		}
 
 		getLocalMatrix(): IMat4 {
 			return this._m4fLocalMatrix;
 		}
 
-		setLocalMatrix(m4fLocalMatrix: IMat4): void {
+		setLocalMatrix(m4fLocalMatrix: IMat4): INode {
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 			this._m4fLocalMatrix.set(m4fLocalMatrix);
+			return this;
 		}
 
 
@@ -289,9 +293,9 @@ module akra.scene {
 		}
 
 
-		setWorldPosition(v3fPosition: IVec3): void;
-		setWorldPosition(fX: float, fY: float, fZ: float): void;
-		setWorldPosition(fX?: any, fY?: any, fZ?: any): void {
+		setWorldPosition(v3fPosition: IVec3): INode;
+		setWorldPosition(fX: float, fY: float, fZ: float): INode;
+		setWorldPosition(fX?: any, fY?: any, fZ?: any): INode {
 			var pPos: IVec3 = arguments.length === 1 ? arguments[0] : Vec3.temp(fX, fY, fZ);
 
 			//target world matrix
@@ -333,23 +337,25 @@ module akra.scene {
 			this._m4fLocalMatrix.setTranslation(Mlc.getTranslation());
 
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
+			return this;
 		}
 
 
-		setPosition(v3fPosition: IVec3): void;
-		setPosition(fX: float, fY: float, fZ: float): void;
-		setPosition(fX?: any, fY?: any, fZ?: any): void {
+		setPosition(v3fPosition: IVec3): INode;
+		setPosition(fX: float, fY: float, fZ: float): INode;
+		setPosition(fX?: any, fY?: any, fZ?: any): INode {
 			var pPos: IVec3 = arguments.length === 1 ? arguments[0] : Vec3.temp(fX, fY, fZ);
 			var v3fTranslation: IVec3 = this._v3fTranslation;
 
 			v3fTranslation.set(pPos);
 
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRelPosition(v3fPosition: IVec3): void;
-		setRelPosition(fX: float, fY: float, fZ: float): void;
-		setRelPosition(fX?: any, fY?: any, fZ?: any): void {
+		setRelPosition(v3fPosition: IVec3): INode;
+		setRelPosition(fX: float, fY: float, fZ: float): INode;
+		setRelPosition(fX?: any, fY?: any, fZ?: any): INode {
 			var pPos: IVec3 = arguments.length === 1 ? arguments[0] : Vec3.temp(fX, fY, fZ);
 			var v3fTranslation: IVec3 = this._v3fTranslation;
 
@@ -357,22 +363,24 @@ module akra.scene {
 			v3fTranslation.set(pPos);
 
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		addPosition(v3fPosition: IVec3): void;
-		addPosition(fX: float, fY: float, fZ: float): void;
-		addPosition(fX?: any, fY?: any, fZ?: any): void {
+		addPosition(v3fPosition: IVec3): INode;
+		addPosition(fX: float, fY: float, fZ: float): INode;
+		addPosition(fX?: any, fY?: any, fZ?: any): INode {
 			var pPos: IVec3 = arguments.length === 1 ? arguments[0] : Vec3.temp(fX, fY, fZ);
 			var v3fTranslation: IVec3 = this._v3fTranslation;
 
 			v3fTranslation.add(pPos);
 
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		addRelPosition(v3fPosition: IVec3): void;
-		addRelPosition(fX: float, fY: float, fZ: float): void;
-		addRelPosition(fX?: any, fY?: any, fZ?: any): void {
+		addRelPosition(v3fPosition: IVec3): INode;
+		addRelPosition(fX: float, fY: float, fZ: float): INode;
+		addRelPosition(fX?: any, fY?: any, fZ?: any): INode {
 			var pPos: IVec3 = arguments.length === 1 ? arguments[0] : Vec3.temp(fX, fY, fZ);
 			var v3fTranslation: IVec3 = this._v3fTranslation;
 
@@ -380,111 +388,164 @@ module akra.scene {
 			v3fTranslation.add(pPos);
 
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRotationByMatrix(m3fRotation: IMat3): void;
-		setRotationByMatrix(m4fRotation: IMat4): void;
-		setRotationByMatrix(matrix: any): void {
+		setRotationByMatrix(m3fRotation: IMat3): INode;
+		setRotationByMatrix(m4fRotation: IMat4): INode;
+		setRotationByMatrix(matrix: any): INode {
 			matrix.toQuat4(this._qRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode {
 			Quat4.fromAxisAngle(v3fAxis, fAngle, this._qRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode {
 			Quat4.fromForwardUp(v3fForward, v3fUp, this._qRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode {
 			Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, this._qRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+		setRotationByXYZAxis(fX: float, fY: float, fZ: float): INode {
 			Quat4.fromYawPitchRoll(fY, fX, fZ, this._qRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		setRotation(q4fRotation: IQuat4): void {
+		setRotation(q4fRotation: IQuat4): INode {
 			this._qRotation.set(q4fRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		addRelRotationByMatrix(m3fRotation: IMat3): void;
-		addRelRotationByMatrix(m4fRotation: IMat4): void;
-		addRelRotationByMatrix(matrix: any): void {
+		addRelRotationByMatrix(m3fRotation: IMat3): INode;
+		addRelRotationByMatrix(m4fRotation: IMat4): INode;
+		addRelRotationByMatrix(matrix: any): INode {
 			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp1));
+			return this;
 		}
 
-		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode {
 			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));
+			return this;
 		}
 
-		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode {
 			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
+			return this;
 		}
 
-		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode {
 			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
+			return this;
 		}
 
-		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): INode {
 			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
+			return this;
 		}
 
-		addRelRotation(q4fRotation: IQuat4): void {
+		addRelRotation(q4fRotation: IQuat4): INode {
 			this._qRotation.multiply(q4fRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
+        }
+
+        addRotationByMatrix(m3fRotation: IMat3): INode;
+        addRotationByMatrix(m4fRotation: IMat4): INode;
+        addRotationByMatrix(matrix: any): INode {
+            this.addRotation(arguments[0].toQuat4(Node._q4fTemp1));
+            return this;
+        }
+
+        addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode {
+            this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));
+            return this;
+        }
+
+        addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode {
+            this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
+            return this;
+        }
+
+        addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode {
+            this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
+            return this;
+        }
+
+        addRotationByXYZAxis(fX: float, fY: float, fZ: float): INode {
+            this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
+            return this;
+        }
+
+        addRotation(q4fRotation: IQuat4): INode {
+            q4fRotation.multiply(this._qRotation, this._qRotation);
+            this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+            return this;
+        }
+
+		addOrbitRotationByMatrix(m3fRotation: IMat3): INode;
+		addOrbitRotationByMatrix(m4fRotation: IMat4): INode;
+		addOrbitRotationByMatrix(matrix: any): INode {
+			this.addOrbitRotation(arguments[0].toQuat4(Node._q4fTemp1));
+			return this;
 		}
 
-		addRotationByMatrix(m3fRotation: IMat3): void;
-		addRotationByMatrix(m4fRotation: IMat4): void;
-		addRotationByMatrix(matrix: any): void {
-			this.addRotation(arguments[0].toQuat4(Node._q4fTemp1));
+		addOrbitRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode {
+			this.addOrbitRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));
+			return this;
 		}
 
-		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
-			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));
+		addOrbitRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode {
+			this.addOrbitRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
+			return this;
 		}
 
-		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
-			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
+		addOrbitRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode {
+			this.addOrbitRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
+			return this;
 		}
 
-		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
-			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
+		addOrbitRotationByXYZAxis(fX: float, fY: float, fZ: float): INode {
+			this.addOrbitRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
+			return this;
 		}
 
-		addRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
-			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
-		}
-
-		addRotation(q4fRotation: IQuat4): void {
+		addOrbitRotation(q4fRotation: IQuat4): INode {
 			q4fRotation.multiplyVec3(this._v3fTranslation);
 			q4fRotation.multiply(this._qRotation, this._qRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
 
-		scale(fScale: float): void;
-		scale(v3fScale: IVec3): void;
-		scale(fX: float, fY: float, fZ: float): void;
-		scale(fX: any, fY?: any, fZ?: any): void {
+		scale(fScale: float): INode;
+		scale(v3fScale: IVec3): INode;
+		scale(fX: float, fY: float, fZ: float): INode;
+		scale(fX: any, fY?: any, fZ?: any): INode {
 			var pScale: IVec3 = arguments.length === 1 ? (isNumber(arguments[0]) ? Vec3.temp(fX) : arguments[0]) : Vec3.temp(fX, fY, fZ);
 			var v3fScale: IVec3 = this._v3fScale;
 
 			v3fScale.scale(pScale);
 
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
 		}
 
-		lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3): void;
-		lookAt(v3fCenter: IVec3, v3fUp?: IVec3): void;
-		lookAt(v3f?): void {
+		lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3): INode;
+		lookAt(v3fCenter: IVec3, v3fUp?: IVec3): INode;
+		lookAt(v3f?): INode {
 			var v3fFrom: IVec3, v3fCenter: IVec3, v3fUp: IVec3;
 
 			this.update();
@@ -527,6 +588,7 @@ module akra.scene {
 			}
 
 			this.update();
+			return this;
 		}
 
 

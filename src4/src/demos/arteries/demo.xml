@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Arteries" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Caroid artery viewer.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="arteries.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/arteries/arteries.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <!--<Module Name="core" />-->
+      <Module Name="addon-progress" />
+      <Module Name="addon-navigation" />
+      <Module Name="addon-filedrop" />
+      <Module Name="addon-base3dObjects" />
+
+      <Attachment>
+        <File Path="dat.gui/dat.gui.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+      </Attachment>
+
+      <Attachment>
+        <File Path="../css/metro-bootstrap.css"/>
+        <Format>Enclosure</Format>
+        <OutDir>../css</OutDir>
+        <Type>css</Type>
+      </Attachment>
+
+      <Attachment>
+        <Folder Path="../fonts"/>
+        <Format>Enclosure</Format>
+        <OutDir>../fonts</OutDir>
+      </Attachment>
+     
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>arteries</Filename>
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <ResourceFile Path="data/fx/arteries2.afx"/>
+        <ResourceFile Path="data/AG/all.map"/>
+        <Folder Path="data/AG">
+          <Exclude Path="data/AG/all.map" />
+        </Folder>
+
+        <ResourceFile Path="data/models/arteries_hp.obj" Name="ARTERIES_HP.OBJ"/>
+        <ResourceFile Path="data/models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" Name="CAROID_ARTERY_FOR_DEFORMATION_STEP0.1-TAN.SPLINE.2N.FITTED.OBJ"/>
+        <ResourceFile Path="data/models/tof_multislab_tra_2-tan.spline.2n_poyda.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE.2N_POYDA.OBJ"/>
+        <ResourceFile Path="data/models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj" Name="TOF_MULTISLAB_TRA_2-TAN.SPLINE_SMOOTHED.2N.OBJ"/>
+        <ResourceFile Path="data/models/tof_multislab_tra_2.obj" Name="TOF_MULTISLAB_TRA_2.OBJ"/>
+      </Data>
+    </Resource>
+    <Resource Name="AE_COORDS">
+      <Archive>False</Archive>
+      <Data>
+        <File Path="data/coords/coord_real_ag.txt" />
+        <File Path="data/coords/coord4.txt" />
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

@@ -113,7 +113,7 @@ module akra.render {
 		}
 
 		isReady(): boolean {
-			return this._pMethod.isResourceLoaded() && !this._pMethod.isResourceDisabled();
+			return this._pMethod.isReady();
 		}
 
 		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
@@ -378,6 +378,10 @@ module akra.render {
 			}
 		}
 
+		/** 
+		 * Copy input data from render method to render technique. 
+		 * It's nessasery for adding ability.......
+		 */
 		private takePassInputsFromRenderMethod(): void {
 			if (isNull(this._pMethod)) {
 				return;

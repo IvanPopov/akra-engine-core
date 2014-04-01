@@ -1,121 +1,165 @@
 ﻿/// <reference path="../idl/IAjaxParams.ts" />
 /// <reference path="../idl/IRenderer.ts" />
 
+/// <reference path="../uri/uri.ts" />
+
+declare var AE_DEBUG: boolean;
+declare var AE_VERSION: string;
+declare var AE_THREAD_FILEINTERFACE: { content: any; format: string};
+declare var AE_THREAD_LOCALFILE: { content: any; format: string };
+declare var AE_THREAD_REMOTEFILE: { content: any; format: string };
+declare var AE_THREAD_TESSELATION: { content: any; format: string };
+declare var AE_WEBGL_DEBUG: boolean;
+
 module akra.config {
-	//unknown constants
-	export var unknown = {
-		code: 0,
-		message: "Unknown code.",
-		name: "unknown"
-	}
 
-	//global
-	export const DEBUG: boolean = true;
-	export const WEBGL: boolean = true;
-	export const UI: boolean = false;
+	export var DEBUG: boolean = AE_DEBUG;
+	export var VERSION: string = AE_VERSION;
+	export var WEBGL: boolean = true;
 
-	//temporary 
-	export const DEBUG_PARSER: boolean = false;
-	export const SKY: boolean = true;
-	export const SKY_GPU: boolean = false;
-	export const AFX_ENABLE_TEXT_EFFECTS: boolean = true;
-	export const __VIEW_INTERNALS__: boolean = false;
-	export const DETAILED_LOG: boolean = false;
-	export const LOGGER_API: boolean = true;
-	export const CRYPTO_API: boolean = false;
-	export const FILEDROP_API: boolean = false;
-	export const WEBGL_DEBUG: boolean = false;
-	export const PROFILE_MAKER: boolean = false;
-	export const PROFILE_TESSEALLATION: boolean = false;
-	//////////////////////
+	/**
+	 * Will be TRUE if ui extension presented.
+	 */
+	export var UI: boolean = false;
 
+	/** 
+	 * Display debugging information while parsing effects. 
+	 */
+	export var AFX_DEBUG_PARSER: boolean = false;
+
+	/**
+	 * If there is support for loading effects in text form, is TRUE.
+	 */
+	export var AFX_ENABLE_TEXT_EFFECTS: boolean = true;
+
+	/**
+	 * Use GPU for pre-calculation of atmospheric scattering.
+	 */  
+	export var USE_ATMOSPHERIC_SCATTERING_GPU_MODE: boolean = false;
+
+	/**
+	 * Do not use this, if you dont know what it.
+	 * @debug
+	 */
+	export var __VIEW_INTERNALS__: boolean = false;
+
+	/**
+	 * If [WebGLDebugUtils](https://www.khronos.org/registry/webgl/sdk/debug/webgl-debug.js) presented,
+	 * they will use to create a context.
+	 */
+	export var WEBGL_DEBUG: boolean = AE_WEBGL_DEBUG;
+
+	/**
+	 * Calculate profile information for terrain tesselation
+	 * @debug
+	 */
+	export var PROFILE_TESSEALLATION: boolean = false;
+
+
+	/**
+	 * Distance in meters, after which the shadow of the object will not be rendered.
+	 */
 	export var SHADOW_DISCARD_DISTANCE: float = 70.;
 
-	///render targets
-
-	///end of render targets
-
 	//path to data folder
-	export var data = "";
+	export var data = config['data'] || uri.currentPath();
 
-	//current version
-	export var version = "0.4.1";
+	//required deps for Akra Engine
+	export var coreDeps: IDependens = {
+		files: [AE_CORE_DEPENDENCIES]
+	};
 
-	//default <any> name
+	/** Unknown constants. */
+	export var unknown = {
+		"code": 0,
+		"message": "Unknown code.",
+		"name": "unknown"
+	}
+
+
+	/** Default <any> name */
 	export var defaultName: string = "default";
 
+	/** Type of used renderer. Default to ERenderers::WEBGL. */
 	export var renderer = ERenderers.UNKNOWN;
 
 	if (WEBGL) {
 		renderer = ERenderers.WEBGL;
 	}
 
-	//default ajax parameters
+	/** Ajax default parameters. */
 	export var ajax = {
-		async: false,
-		statusCode: {},
-		success: null,
-		error: null,
-		beforeSend: null,
-		data: null,
-		cache: false,
-		contentType: "application/x-www-form-urlencoded",
-		dataType: "text",
-		type: "get",
-		timeout: 0
+		"async": false,
+		"statusCode": {},
+		"success": null,
+		"error": null,
+		"beforeSend": null,
+		"data": null,
+		"cache": false,
+		"contentType": "application/x-www-form-urlencoded",
+		"dataType": "text",
+		"type": "get",
+		"timeout": 0
 	};
 
 	export var threading = {
-		min: 0, //the minimum number of threads created on startup
-		max: 4,  //the maximum number of threads created on startup
-		idleTime: 30, //maximum IDLE time (sec)
+		"min": 0, //the minimum number of threads created on startup
+		"max": 4,  //the maximum number of threads created on startup
+		"idleTime": 30, //maximum IDLE time (sec)
 	};
 
+	//akra.config.ajax = {}
+	//akra.config.some = '';
+
+	//config.data + "../src/akra..."
+	
 	export var io = {
 		//thread file config
-		tfile: {
-			interface: "FileInterface.t.js",
-			local: "../../../src2/data/js/LocalFile.t.js",
-			remote: "../../../src2/data/js/RemoteFile.t.js"
+		"tfile": {
+			"iface": AE_THREAD_FILEINTERFACE,
+			"local": AE_THREAD_LOCALFILE,
+			"remote": AE_THREAD_REMOTEFILE
 		},
 		//local file config
-		local: {
-			filesystemLimit: 32 * 1024 * 1024 //32 mb
+		"local": {
+			"filesystemLimit": 32 * 1024 * 1024 //32 mb
 		}
 	}
 
+	// URL.createObjectURL(new Blob([], { type: "application/javascript" }))
+
 	export var deps = {
-		archiveIndex: ".map",
-		etag: {
-			file: ".etag",
-			forceCheck: false
+		"archiveIndex": ".map",
+		"etag": {
+			"file": ".etag",
+			"forceCheck": false
 		}
 	}
 
 
 	export var net = {
-		port: 1337 //websocket port
+		"port": 1337 //websocket port
 	}
 
 
 	export var rpc = {
-		deferredCallsLimit: 20000,
-		reconnectTimeout: 2500,
-		systemRoutineInterval: 10000,
-		callbackLifetime: 60000,
-		maxCallbacksCount: -1,
-		procListName: "proc_list",
-		callsFrequency: -1
+		"deferredCallsLimit": 20000,
+		"reconnectTimeout": 2500,
+		"systemRoutineInterval": 10000,
+		"callbackLifetime": 60000,
+		"maxCallbacksCount": -1,
+		"procListName": "proc_list",
+		"callsFrequency": -1
 	}
 
 	export var material = {
-		name: defaultName,
+		"name": defaultName,
 		default: {
-			diffuse: .5, //any color view can be used, like "#888888" or {r: .5, g: .5, b: .5}
-			ambient: .5,
-			specular: .5,
-			emissive: .5,
-			shininess: 50.
+			"diffuse": .5, //any color view can be used, like "#888888" or {r: .5, g: .5, b: .5}
+			"ambient": .5,
+			"specular": .5,
+			"emissive": .5,
+			"shininess": 50.
 		}
 	}
 
@@ -124,17 +168,17 @@ module akra.config {
 	}
 
 	export var terrain = {
-		useMegaTexture: true,
-		roam: {
-			tessellationThread: "TessellationThread.t.js"
+		"useMegaTexture": true,
+		"roam": {
+			"tessellationThread": AE_THREAD_TESSELATION
 		}
 	}
 
 	export var webgl = {
-		preparedFramebuffersNum: 32,
-		indexbufferMinSize: 1024,
-		vertexbufferMinSize: 1024,
-		vertexTextureMinSize: 32
+		"preparedFramebuffersNum": 32,
+		"indexbufferMinSize": 1024,
+		"vertexbufferMinSize": 1024,
+		"vertexTextureMinSize": 32
 	}
 
 	export var addons = {

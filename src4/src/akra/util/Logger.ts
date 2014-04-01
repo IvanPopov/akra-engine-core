@@ -25,7 +25,7 @@ module akra.util {
 		[familyName: string]: IMap<ILogRoutineFunc>;
 	}
 
-	final export class Logger extends util.Singleton<Logger> implements ILogger {
+	final export class Logger implements ILogger {
 		private _eLogLevel: ELogLevel;
 		private _pGeneralRoutineMap: IMap<ILogRoutineFunc>;
 
@@ -46,8 +46,6 @@ module akra.util {
 		private _sUnknownMessage: string;
 
 		constructor() {
-			super();
-
 			this._eUnknownCode = 0;
 			this._sUnknownMessage = "Unknown code";
 
@@ -90,6 +88,7 @@ module akra.util {
 
 		registerCode(eCode: uint, sMessage: string = this._sUnknownMessage): boolean {
 			if (this.isUsedCode(eCode)) {
+				//debug.error("Error code " + String(eCode) + " already in use.");
 				return false;
 			}
 
@@ -245,6 +244,22 @@ module akra.util {
 			this._pCurrentSourceLocation.line = iLine;
 		}
 
+		time(sLabel: string): void {
+			console.time(sLabel);
+		}
+
+		timeEnd(sLabel: string): void {
+			console.timeEnd(sLabel);
+		}
+
+		group(...pArgs: any[]): void {
+			console.group.apply(console, arguments);
+		}
+
+		groupEnd(): void {
+			console.groupEnd();
+		}
+
 		log(...pArgs: any[]): void {
 			if (!bf.testAll(this._eLogLevel, ELogLevel.LOG)) {
 				return;
@@ -378,12 +393,6 @@ module akra.util {
 					throw new Error(sSystemMessage);
 				}
 			}
-		}
-
-		presume(bCondition: boolean, pEntity: ILoggerEntity): void;
-		presume(bCondition: boolean, eCode: uint, ...pArgs: any[]): void;
-		presume(bCondition: boolean, ...pArgs: any[]): void;
-		presume(): void {
 		}
 
 		private generateFamilyName(): string {

@@ -1,0 +1,89 @@
+provide akra.system;
+use strict;
+
+struct VS_IN{
+    float  index: INDEX;
+    float  offset: SHIFT;
+    float4 value: VALUE;
+};
+struct VS_OUT{
+    float4 col: VARCOLOR;
+    float4 pos: POSITION;
+};
+
+texture tex0:TEXTURE0;
+texture tex1:TEXTURE1;
+
+sampler sourceSampler0:SOURCE0 = sampler_state {
+    Texture = <tex0>;
+};
+
+
+float2 size;
+
+VS_OUT vs_main_video_buffer(VS_IN data){
+    VS_OUT Out;
+    int offset = int(data.offset);
+    if (offset != 0) {
+        Out.col = tex2D(sourceSampler0,
+                        float2((mod(data.index, size.x) +.5 ) / size.x, (floor(data.index / size.x) + .5) / size.y));
+        if (offset == 1) {
+            Out.col = float4(Out.col.r, data.value.gba);
+        }
+        else if (offset == 2) {
+            Out.col = float4(Out.col.rg, data.value.ba);
+        }
+        else if (offset == 3) {
+            Out.col = float4(Out.col.rgb, data.value.a);
+        }
+        else if (offset == -1) {
+            Out.col = float4(data.value.r, Out.col.gba);
+        }
+        else if (offset == -2) {
+            Out.col = float4(data.value.rg, Out.col.ba);
+        }
+        else {
+            Out.col = float4(data.value.rgb, Out.col.a);
+        }
+    }
+    else {
+        Out.col = data.value;
+    }
+    Out.pos = float4(2. * (mod(data.index, size.x) + .5) / size.x - 1.,
+                    2. * (floor(data.index / size.x)  + .5) / size.y - 1., 0., 1.);
+    return Out;
+}
+
+
+float2 sourceTextureSize;
+float2 destinationTextureSize;
+
+VS_OUT vs_main_texture_repack(float serialNumber:SERIALNUMBER){
+    VS_OUT Out;
+    Out.col = tex2D(sourceSampler0,
+                    float2((mod(serialNumber,sourceTextureSize.x) + .5)/sourceTextureSize.x,
+                           (floor(serialNumber/sourceTextureSize.x) + .5)/sourceTextureSize.y));
+    Out.pos = float4(2. * (mod(serialNumber,destinationTextureSize.x) + .5)/destinationTextureSize.x - 1.,
+                     2. * (floor(serialNumber/destinationTextureSize.x) + .5)/destinationTextureSize.y - 1.,
+                     0., 1.);
+    return Out;
+}
+
+float4 fs_main(VS_OUT data): COLOR{
+    return data.col;
+}
+
+
+technique update_video_buffer{
+    pass p0 {
+        VertexShader = compile vs_main_video_buffer();
+        PixelShader = compile fs_main();
+    }
+}
+
+technique repack_texture{
+    pass P0{
+        VertexShader = compile vs_main_texture_repack();
+        PixelShader = compile fs_main();
+    }
+}

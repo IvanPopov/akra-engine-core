@@ -6,6 +6,7 @@
 module akra.webgl {
 	import Vec2 = math.Vec2;
 	export function calculateSkin(pMeshSubset: IMeshSubset): boolean {
+		return false;
 		var pRenderData: IRenderData = pMeshSubset.getData();
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");
@@ -23,7 +24,7 @@ module akra.webgl {
 		var pWebGLTexture: WebGLTexture = pWebGLVertexTexture.getWebGLTexture();
 
 		/*update skinned position program*/
-
+		
 		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().findResource(".WEBGL_skinning_update");
 		if (isNull(pWebGLProgram)) {
 			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().createResource(".WEBGL_skinning_update");

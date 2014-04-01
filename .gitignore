@@ -2,7 +2,6 @@
 src/.idea/
 
 # Additional
-demos/
 docreator/
 preprocessor/
 analyzer/

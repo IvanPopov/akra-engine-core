@@ -2,7 +2,6 @@
 /// <reference path="../idl/IFile.ts" />
 
 /// <reference path="TFile.ts" />
-/// <reference path="LocalFile.ts" />
 /// <reference path="StorageFile.ts" />
 
 /// <reference path="Packer.ts" />
@@ -115,19 +114,20 @@ module akra.io {
 		}
 	}
 
+	if (config.DEBUG && !info.api.getFileSystem()) {
+		debug.warn("Local file system not supported.");
+	}
 
 	export function fopen(sUri: string, pMode: any = EIO.IN): IFile {
 		sUri = uri.resolve(sUri);
 
-		if (info.api.getWebWorker()) {
-			return new TFile(<string>sUri, pMode);
-		}
-		else if (info.api.getFileSystem()) {
-			return new LocalFile(<string>sUri, pMode);
-		}
-		else {
+		logger.assert(info.api.getWebWorker(), "WebWorker API must have. :(");
+		
+		if (!info.api.getFileSystem() && uri.parse(sUri).getScheme() === "filesystem:") {
 			return new StorageFile(<string>sUri, pMode);
 		}
+
+		return new TFile(<string>sUri, pMode);
 	}
 
 
