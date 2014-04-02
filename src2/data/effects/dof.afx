@@ -1,0 +1,163 @@
+provide akra.system;
+
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 screenTextureSize : INPUT_TEXTURE_SIZE;
+float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
+float4x4 viewMat : VIEW_MATRIX;
+float4x4 projMat : PROJ_MATRIX;
+texture tex0 : INPUT_TEXTURE;
+texture tex1 : DEPTH_TEXTURE;
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+sampler depthSampler : DEPTH_SAMPLER = sampler_state
+{
+	Texture = <tex1>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};
+/*
+float3 unproj(float4x4 projMat,float3 screenCoords){
+	float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
+	float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
+	float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
+
+	return float3(x,y,z);
+};
+*/
+float unprojZ(float4x4 projMat, float screenZ){
+    return -projMat[3][2]/(projMat[2][2] + screenZ);
+};
+
+VS_OUT vs_dof_shading(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float dofRadius : DOF_RADIUS = 2.;
+float dofPower : DOF_POWER = 1.;
+float dofFocusDistance: DOF_FOCUS_DISTANCE = 10.;
+
+float4 fs_dof_shading1(VS_OUT IN) : COLOR {
+	float sceneDepth = tex2D(depthSampler,IN.textureCoords).x;
+	float depth = sceneDepth*2.-1.;
+	float pointPosition = unprojZ(projMat, depth);
+
+	//float dofEffectiveRadius = pow(abs(-pointPosition - dofFocusDistance) * dofRadius, dofPower);
+	float dofEffectiveRadius = dofRadius*(1.-exp(-abs(-pointPosition - dofFocusDistance)/10.));
+	float dofRadiusInTexture = dofEffectiveRadius / max(screenTextureSize.x,screenTextureSize.y);
+	int samp = int(max(float(ceil(pow(dofEffectiveRadius,0.7))),50.));// int(max(min(float(samples), 50.),1.));
+
+	if(dofRadiusInTexture < 2. / max(screenTextureSize.x,screenTextureSize.y)) {
+		return tex2D(screenSampler, IN.textureCoords);
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
+	float dofStep = 1./float(samp);
+
+	float4 dof_result = float4(0.);
+
+	for(int i=0;i<50;i++) {
+		if(i>samp) {
+			break;
+		}
+		else {
+			float dr = dofRadiusInTexture*(-0.5+(float(i)+0.5)*dofStep);
+			dof_result += tex2D(screenSampler, clamp(IN.textureCoords + float2(dr,0.)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*dofStep*exp(-dr*dr/dofRadius/dofRadius);
+		}
+	}
+	return dof_result;
+};	
+float4 fs_dof_shading2(VS_OUT IN) : COLOR {
+	float sceneDepth = tex2D(depthSampler,IN.textureCoords).x;
+	float depth = sceneDepth*2.-1.;
+	float pointPosition =  unprojZ(projMat, depth);
+
+	//float dofEffectiveRadius = pow(abs(-pointPosition - dofFocusDistance) * dofRadius, dofPower);
+	float dofEffectiveRadius = dofRadius*(1.-exp(-abs(-pointPosition - dofFocusDistance)/10.));
+	float dofRadiusInTexture = dofEffectiveRadius / max(screenTextureSize.x,screenTextureSize.y);
+	int samp = int(max(float(ceil(pow(dofEffectiveRadius,0.7))),50.));// int(max(min(float(samples), 50.),1.));
+
+	if(dofRadiusInTexture < 2. / max(screenTextureSize.x,screenTextureSize.y)) {
+		return tex2D(screenSampler, IN.textureCoords);
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
+	float dofStep = 1./float(samp);
+
+	float4 dof_result = float4(0.);
+
+	for(int i=0;i<50;i++) {
+		if(i>samp) {
+			break;
+		}
+		else {
+			float dr = dofRadiusInTexture*(-0.5+(float(i)+0.5)*dofStep);
+			dof_result += tex2D(screenSampler, clamp(IN.textureCoords + float2(0.5*dr,0.87*dr)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*dofStep*exp(-dr*dr/dofRadius/dofRadius);
+		}
+	}
+	return dof_result;
+};	
+float4 fs_dof_shading3(VS_OUT IN) : COLOR {
+	float sceneDepth = tex2D(depthSampler,IN.textureCoords).x;
+	float depth = sceneDepth*2.-1.;
+	float pointPosition =  unprojZ(projMat, depth);
+
+	//float dofEffectiveRadius = pow(abs(-pointPosition - dofFocusDistance) * dofRadius, dofPower);
+	float dofEffectiveRadius = dofRadius*(1.-exp(-abs(-pointPosition - dofFocusDistance)/10.));
+	float dofRadiusInTexture = dofEffectiveRadius / max(screenTextureSize.x,screenTextureSize.y);
+	int samp = int(max(float(ceil(pow(dofEffectiveRadius,0.7))),50.));// int(max(min(float(samples), 50.),1.));
+
+	if(dofRadiusInTexture < 2. / max(screenTextureSize.x,screenTextureSize.y)) {
+		return tex2D(screenSampler, IN.textureCoords);
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
+	float dofStep = 1./float(samp);
+
+	float4 dof_result = float4(0.);
+
+	for(int i=0;i<50;i++) {
+		if(i>samp) {
+			break;
+		}
+		else {
+			float dr = dofRadiusInTexture*(-0.5+(float(i)+0.5)*dofStep);
+			dof_result += tex2D(screenSampler, clamp(IN.textureCoords + float2(-0.5*dr,0.87*dr)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*dofStep*exp(-dr*dr/dofRadius/dofRadius);
+		}
+	}
+	return dof_result;
+};	
+
+technique dof : POST_EFFECT {
+	pass pass1{
+		VertexShader = compile vs_dof_shading();
+		PixelShader = compile fs_dof_shading1();
+	};
+	pass pass2{
+		VertexShader = compile vs_dof_shading();
+		PixelShader = compile fs_dof_shading2();
+	};
+	pass pass3{
+		VertexShader = compile vs_dof_shading();
+		PixelShader = compile fs_dof_shading3();
+	};
+};
+
+
