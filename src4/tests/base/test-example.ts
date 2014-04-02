@@ -13,7 +13,8 @@ module akra {
 			{ path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" },
             { path: "effects/sunshaft.afx" },
             { path: "effects/lensflare.afx" },
-            { path: "effects/blur.afx" }
+            { path: "effects/blur.afx" },
+            { path: "effects/dof.afx" },
 		]
 	};
 
@@ -28,6 +29,7 @@ module akra {
     export var pSunshaftData = null;
     export var pLensflareData = null;
     export var pBlurData = null;
+    export var pDofData = null;
     export var animateTimeOfDay = function () { akra.pSky.setTime(new Date().getTime() % 24000 / 500 - 24); requestAnimationFrame(animateTimeOfDay); }
     export var animateBlurRadius = function () { akra.pBlurData.BLUR_RADIUS = (math.sin(new Date().getTime() * 0.0002 % 1 * 2 * Math.PI) + 1) * 30; requestAnimationFrame(animateBlurRadius); }
 
@@ -145,6 +147,7 @@ module akra {
 		var counter = 0;
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.blur");
+        (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.dof");
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.lensflare");
 
         pSunshaftData = {
@@ -201,6 +204,12 @@ module akra {
             BLUR_RADIUS: 0,
         };
 
+        pDofData = {
+            DOF_RADIUS: 2,
+            DOF_FOCUS_DISTANCE: 10,
+            DOF_POWER: 1,
+        };
+
         console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
         //var iCounter: int = 0;
 
@@ -246,6 +255,10 @@ module akra {
             pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
             pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
+
+            pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
+            pPass.setUniform('DOF_FOCUS_DISTANCE', pDofData.DOF_FOCUS_DISTANCE);
+            pPass.setUniform('DOF_POWER', pDofData.DOF_POWER);
 
             //if (iCounter++%240 === 0) {
                 //console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());

@@ -13,7 +13,8 @@ var akra;
             { path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL" },
             { path: "effects/sunshaft.afx" },
             { path: "effects/lensflare.afx" },
-            { path: "effects/blur.afx" }
+            { path: "effects/blur.afx" },
+            { path: "effects/dof.afx" }
         ]
     };
 
@@ -28,6 +29,7 @@ var akra;
     akra.pSunshaftData = null;
     akra.pLensflareData = null;
     akra.pBlurData = null;
+    akra.pDofData = null;
     akra.animateTimeOfDay = function () {
         akra.pSky.setTime(new Date().getTime() % 24000 / 500 - 24);
         requestAnimationFrame(akra.animateTimeOfDay);
@@ -152,6 +154,7 @@ var akra;
         var counter = 0;
         pViewport.getEffect().addComponent("akra.system.sunshaft");
         pViewport.getEffect().addComponent("akra.system.blur");
+        pViewport.getEffect().addComponent("akra.system.dof");
         pViewport.getEffect().addComponent("akra.system.lensflare");
 
         akra.pSunshaftData = {
@@ -201,8 +204,13 @@ var akra;
         ];
 
         akra.pBlurData = {
-            BLUR_SAMPLES: 25,
             BLUR_RADIUS: 0
+        };
+
+        akra.pDofData = {
+            DOF_RADIUS: 2,
+            DOF_FOCUS_DISTANCE: 10,
+            DOF_POWER: 1
         };
 
         console.log(akra.pLensflareData.LENSFLARE_COOKIES_TEXTURE.loadImage(akra.pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
@@ -247,8 +255,11 @@ var akra;
             pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', akra.pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
             pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', akra.pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
-            pPass.setUniform('BLUR_SAMPLES', akra.pBlurData.BLUR_SAMPLES);
             pPass.setUniform('BLUR_RADIUS', akra.pBlurData.BLUR_RADIUS);
+
+            pPass.setUniform('DOF_RADIUS', akra.pDofData.DOF_RADIUS);
+            pPass.setUniform('DOF_FOCUS_DISTANCE', akra.pDofData.DOF_FOCUS_DISTANCE);
+            pPass.setUniform('DOF_POWER', akra.pDofData.DOF_POWER);
 
             //if (iCounter++%240 === 0) {
             //console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
