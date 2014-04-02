@@ -176,11 +176,11 @@ var akra;
             LENSFLARE_ROTATE_INFLUENCE: 0.,
             LENSFLARE_LIGHT_POSITION: null,
             LENSFLARE_LIGHT_ANGLE: null,
-            LENSFLARE_DECAY: 10.,
-            LENSFLARE_INTENSITY: 0.13,
+            LENSFLARE_DECAY: 16.,
+            LENSFLARE_INTENSITY: 0.17,
             LENSFLARE_ABERRATION_SCALE: 0.07,
             LENSFLARE_ABERRATION_SAMPLES: 5,
-            LENSFLARE_ABERRATION_FACTOR: 2.4
+            LENSFLARE_ABERRATION_FACTOR: 1.6
         };
 
         akra.pLensflareData.LENSFLARE_COOKIE_PARAMS = [
