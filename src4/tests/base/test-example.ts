@@ -198,7 +198,6 @@ module akra {
         ];
 
         pBlurData = {
-            BLUR_SAMPLES: 25,
             BLUR_RADIUS: 0,
         };
 
@@ -246,8 +245,7 @@ module akra {
             pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
             pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
-            pPass.setUniform('BLUR_SAMPLES', pBlurData.BLUR_SAMPLES);
-            pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS / pViewport.getActualHeight());
+            pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
 
             //if (iCounter++%240 === 0) {
                 //console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());

@@ -248,7 +248,7 @@ var akra;
             pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', akra.pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
             pPass.setUniform('BLUR_SAMPLES', akra.pBlurData.BLUR_SAMPLES);
-            pPass.setUniform('BLUR_RADIUS', akra.pBlurData.BLUR_RADIUS / pViewport.getActualHeight());
+            pPass.setUniform('BLUR_RADIUS', akra.pBlurData.BLUR_RADIUS);
 
             //if (iCounter++%240 === 0) {
             //console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
