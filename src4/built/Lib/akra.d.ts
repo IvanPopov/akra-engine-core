@@ -15242,8 +15242,11 @@ declare module akra {
 declare module akra.render {
     class LPPViewport extends Viewport implements ILPPViewport {
         private _pNormalBufferTexture;
-        private _pNormalDepthTexture;
-        private _pLightMapTexture;
+        private _pDepthBufferTexture;
+        /** Diffuse and specular */
+        private _pLightBufferTextureA;
+        /** Ambient and shadow */
+        private _pLightBufferTextureB;
         private _pViewScreen;
         private _pLightPoints;
         private _v2fTExtureRatio;

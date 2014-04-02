@@ -11,11 +11,19 @@ struct base_material{
 shared float3 Normal;
 shared base_material Fragment_material;
 
-texture tex0:LPP_LIGHT_MAP_BUFFER;
+texture tex0:LPP_LIGHT_BUFFER_A;
+texture tex1:LPP_LIGHT_BUFFER_B;
 
-sampler sampler_lpp_lights:LPP_LIGHT_MAP_SAMPLER  = sampler_state
+sampler sampler_lpp_dif_spec:LPP_LIGHT_SAMPLER_A  = sampler_state
 {
     Texture = <tex0>;
+    MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+sampler sampler_lpp_amb_shad:LPP_LIGHT_SAMPLER_B  = sampler_state
+{
+    Texture = <tex1>;
     MinFilter = NEAREST;
 	MagFilter = NEAREST;
 };
@@ -25,15 +33,14 @@ float2 screenSize: SCREEN_SIZE;
 
 float4 fs_apply_lpp_shading() : COLOR {
 	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
-	float4 lightsData = tex2D(sampler_lpp_lights, texcoords);
+	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
+	float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
 
 	float4 color = Fragment_material.emissive;
 
-	//float4 dif = Fragment_material.diffuse;
-	//color = float4(dif.xyz, 1.);
-	//color += float4(dif.x * lightsData.x, dif.y * lightsData.y, dif.z * lightsData.z, dif.w);
-	color += Fragment_material.diffuse * float4(lightsData.xyz, 1.);
-	color += Fragment_material.specular * float4(lightsData.www, 1.);
+	color += Fragment_material.ambient * float4(lightsDataB.xyz, 1.);
+	color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
+	color += Fragment_material.specular * float4(lightsDataA.www, 1.);
 
 	return color;
 }

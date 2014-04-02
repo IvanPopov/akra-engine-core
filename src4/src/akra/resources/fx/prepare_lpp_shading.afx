@@ -144,21 +144,27 @@ struct pixel_data {
 shared pixel_data pixelData;
 shared float4 result_color = float4(0.);
 
+foreign bool useOnlyPosition;
+
 float4 fs_prepare_lpp_lights_base(VS_OUT_2 IN): COLOR {
 	float2 textureCoords = IN.textureCoords;
-	float4 bufferData = tex2D(normalBuffer, textureCoords);
-	float3 normal = bufferData.xyz;
-    float shininess = bufferData.w;
-	float depth = tex2D(depthBuffer,textureCoords).x * 2. - 1.;
+    
+    float depth = tex2D(depthBuffer,textureCoords).x * 2. - 1.;
+    float3 pixelPos = unproj(projMat, float3(IN.screenPosition.xy,depth));
+    pixelData.depth = depth;
+    pixelData.position = pixelPos;
 
-	float3 pixelPos = unproj(projMat, float3(IN.screenPosition.xy,depth));
+    if(!bool(useOnlyPosition)){ 
+        float4 bufferData = tex2D(normalBuffer, textureCoords);
+        float3 normal = bufferData.xyz;
+        float shininess = bufferData.w;
 
-	pixelData.depth = depth;
-	pixelData.normal = normal;
-	pixelData.position = pixelPos;
+        pixelData.normal = normal;  
+    }
 
     return result_color;
 }
+
 
 float4 prepare_lpp_lights_omni() : COLOR {
 	for(int i = 0; i < nOmni; i++){
@@ -168,18 +174,24 @@ float4 prepare_lpp_lights_omni() : COLOR {
     return result_color;
 }
 
+float4 prepare_lpp_lights_omni_ambient() : COLOR {
+    for(int i = 0; i < nOmni; i++){
+        result_color += calculateAbmientLight(pixelData, points_omni[i].lightData);
+    }
+
+    result_color.w = 1.;
+
+    return result_color;
+}
+
 float4 calculateLight(pixel_data pixelData, light_data lightData){
 	float3 light_dir = lightData.position - pixelData.position;
-    float light_dir_length = length(light_dir);
-    light_dir = normalize(light_dir);
+    float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
 
-    float attenuation = 1.0 / (lightData.attenuation.x +
-                               lightData.attenuation.y * light_dir_length + 
-                               lightData.attenuation.z * light_dir_length * light_dir_length);
-    
+    light_dir = normalize(light_dir);
     float light_distancedotVpow = 0.;
 
-    if(pixelData.shininess){
+    if(pixelData.shininess != 0.){
         float3 view_dir = normalize(-pixelData.position);
         float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
 
@@ -193,11 +205,21 @@ float4 calculateLight(pixel_data pixelData, light_data lightData){
     return float4(lightData.diffuse.xyz * diffuseMultiplier, specular);
 }
 
+float calcAttenuation(float light_dir_length, float3 attenuation) {
+    return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
+}
+
+float4 calculateAbmientLight(pixel_data pixelData, light_data lightData){
+    float3 light_dir = lightData.position - pixelData.position;
+    float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
+
+    return float4(lightData.ambient.xyz * attenuation, 0.);
+}
 
 technique prepare_lpp_lights_base {
 	pass p1{
 		VertexShader = compile vs_prepare_lpp_lights_base();
-		PixelShader = compile fs_prepare_lpp_lights_base();
+        PixelShader = compile fs_prepare_lpp_lights_base();
 	}
 }
 
@@ -205,6 +227,14 @@ technique prepare_lpp_lights_omni{
     pass p1{
         if(nOmni > 0){
             PixelShader = compile prepare_lpp_lights_omni();
+        }
+    }
+}
+
+technique prepare_lpp_lights_omni_ambient{
+    pass p1{
+        if(nOmni > 0){
+            PixelShader = compile prepare_lpp_lights_omni_ambient();
         }
     };
 };
