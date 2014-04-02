@@ -148,14 +148,12 @@ module akra {
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.lensflare");
 
         pSunshaftData = {
-            LIGHT_MODEL_MATRIX: null,
             SUNSHAFT_ANGLE: null,
             SUNSHAFT_SAMPLES: 70,
             SUNSHAFT_COLOR: new math.Vec3(1., 0.96, 0.9),
             SUNSHAFT_INTENSITY: 0.14,
             SUNSHAFT_DECAY: 1.2,
             SUNSHAFT_SHARPNESS: 2,
-            SUNSHAFT_SUN_SIZE: 60.,
         };
 
         pLensflareData = {
@@ -170,7 +168,6 @@ module akra {
                 //COOKIE7: new math.Vec4(.5, 1., 1., .5),
             },
             LENSFLARE_COOKIE_PARAMS: null,
-            LENSFLARE_ROTATE_INFLUENCE: 0.,
             LENSFLARE_LIGHT_POSITION: null,
             LENSFLARE_LIGHT_ANGLE: null,
             LENSFLARE_DECAY: 16.,
@@ -235,13 +232,11 @@ module akra {
             pPass.setUniform('SUNSHAFT_DECAY', pSunshaftData.SUNSHAFT_DECAY);
             pPass.setUniform('SUNSHAFT_SHARPNESS', pSunshaftData.SUNSHAFT_SHARPNESS);
             pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
-            pPass.setUniform('SUNSHAFT_SUN_SIZE', pSunshaftData.SUNSHAFT_SUN_SIZE / pViewport.getActualHeight());
 
             pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
             pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
             pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
             pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
-            pPass.setUniform('LENSFLARE_ROTATE_INFLUENCE', pLensflareData.LENSFLARE_ROTATE_INFLUENCE);
             pPass.setUniform('LENSFLARE_LIGHT_POSITION', pLensflareData.LENSFLARE_LIGHT_POSITION);
             pPass.setUniform('LENSFLARE_LIGHT_ANGLE', pLensflareData.LENSFLARE_LIGHT_ANGLE);
             pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
