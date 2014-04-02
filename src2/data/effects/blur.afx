@@ -27,7 +27,6 @@ VS_OUT vs_blur_shading(float2 pos: POSITION){
 	return Out;
 };
 
-int samples : BLUR_SAMPLES = 5;
 float blurRadius : BLUR_RADIUS = 0.1;
 
 float4 fs_blur_shading1(VS_OUT IN) : COLOR {
