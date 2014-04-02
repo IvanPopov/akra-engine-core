@@ -177,24 +177,30 @@ var akra;
             LENSFLARE_LIGHT_POSITION: null,
             LENSFLARE_LIGHT_ANGLE: null,
             LENSFLARE_DECAY: 10.,
-            LENSFLARE_INTENSITY: 0.1,
+            LENSFLARE_INTENSITY: 0.13,
             LENSFLARE_ABERRATION_SCALE: 0.07,
-            LENSFLARE_ABERRATION_SAMPLES: 10,
+            LENSFLARE_ABERRATION_SAMPLES: 5,
             LENSFLARE_ABERRATION_FACTOR: 2.4
         };
 
         akra.pLensflareData.LENSFLARE_COOKIE_PARAMS = [
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(140., 140., 2.3, 0.2) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(180., 180., 1.9, 0.2) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., 1.65, 0.3) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(64., 64., 1., 0.4) },
             { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new akra.math.Vec4(2048., 64., 1., 1.0) },
             //{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(200., 200., 0.45, 0.5) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., 0.2, 0.4) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., 0.05, 0.4) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(64., 64., -0.15, 0.4) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(200., 200., -0.35, 0.3) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., -0.45, 0.4) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(200., 200., -0.65, 0.4) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., -0.85, 0.2) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(64., 64., -1.1, 0.3) },
-            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(64., 64., -1.3, 0.4) }
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(100., 100., 0.5, 0.4) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., 0.2, 0.3) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(200., 200., 0.05, 0.2) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., -0.1, 0.3) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(100., 100., -0.3, 0.4) },
+            //{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., -0.35, 0.3) },
+            //{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.45, 0.4) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(240., 240., -0.65, 0.2) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(128., 128., -0.85, 0.35) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(180., 180., -1.1, 0.2) },
+            { TEXTURE_LOCATION: akra.pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new akra.math.Vec4(100., 100., -1.7, 0.4) }
         ];
 
         akra.pBlurData = {
