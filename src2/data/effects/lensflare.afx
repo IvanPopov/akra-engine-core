@@ -76,7 +76,7 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 	if(lensflareAngle <= 0.
 		|| _clamped_lightPosInTexture != lightPosInTexture
 			|| (objId != 0. && objId != lensflareSkydomeId)) {
-		return baseImage;
+		return baseImage; // return just image if light source overlapped or we're looking avay from it
 	}
 	else {
 		float4 lensflare_result = float4(0.);
@@ -89,17 +89,15 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 				continue;
 			}
 
-			float2 cookieTopRight = float2(lensflareCookieParams[i].location.z, lensflareCookieParams[i].location.w);
+			float2 cookieTopRight = float2(lensflareCookieParams[i].location.z, lensflareCookieParams[i].location.w); // define the cookie borders in it's texture
 			float2 cookieBotLeft = float2(lensflareCookieParams[i].location.x, lensflareCookieParams[i].location.y);
 
 			float2 cookieTopLeft = float2(lensflareCookieParams[i].location.x, lensflareCookieParams[i].location.w);
 			float2 cookieBotRight = float2(lensflareCookieParams[i].location.z, lensflareCookieParams[i].location.y);
-			//float2 cookieCenterPosInCookieTex = (cookieTopRight+cookieBotLeft)*0.5;
 
 			float2 cookieReadPos = (cookieTopRight - cookieBotLeft)
 					* ((IN.textureCoords-cookieCenterPos)/cookieSizeInTexture + float2(.5))
-						+ cookieBotLeft;
-			//float2 cookieReadPos = (cookieTopRight - cookieBotLeft)* ((IN.textureCoords-cookieCenterPos)/cookieSizeInTexture);
+						+ cookieBotLeft; // base cookie read position
 
 			float4 newLF;
 
@@ -109,30 +107,25 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 				if(j>ABERRATION_SAMPLES) {
 					break;
 				}
-				float aberrationScale = (-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale;
-				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.2*(lightPos-float2(0.5)))*float4(1.0,0.2,0.0,0.5);
-				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.1*(lightPos-float2(0.5)))*float4(0.5,0.25,0.1,0.2);
+				float aberrationScale = -(-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale; // iterative aberration scale
 				newLF += tex2D(lensflareCookiesSampler, clamp(
-					cookieReadPos + (cookieTopRight-cookieBotLeft)*aberrationScale*sign(-screenPositionClamped)*pow((screenPositionClamped)*aspectRatioNormalized,float2(lensflareAberrationFactor)),
+					cookieReadPos + (cookieTopRight-cookieBotLeft)*aberrationScale*sign(screenPositionClamped)*pow((screenPositionClamped)*aspectRatioNormalized,float2(lensflareAberrationFactor)),
 					cookieTopLeft,
-					cookieBotRight) )*float4(
+					cookieBotRight) ) * float4(
 					smoothstep(1.,0.,clamp(2.*j/ABERRATION_SAMPLES_LENGTH,0.,1.)),
-					smoothstep(1.,0.,clamp(abs(2.4*(0.5-j/ABERRATION_SAMPLES_LENGTH)),0.,1.)),
-					smoothstep(1.,0.,clamp(2.4*(1.-j/ABERRATION_SAMPLES_LENGTH),0.,1.)),
-					1.0/ABERRATION_SAMPLES);
-				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*0.1*(lightPos-float2(0.5)))*float4(0.1,0.25,0.5,0.2);
-				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*0.2*(lightPos-float2(0.5)))*float4(0.0,0.2,1.0,0.5);
+					smoothstep(1.,0.,clamp(abs(2.*(0.5-j/ABERRATION_SAMPLES_LENGTH)),0.,1.)),
+					smoothstep(1.,0.,clamp(2.*(1.-j/ABERRATION_SAMPLES_LENGTH),0.,1.)),
+					1.0/ABERRATION_SAMPLES); // read shifted and color corrected cookie data
 			}
 
-			newLF.a *= lensflareCookieParams[i].props.w;
-			//lensflare_result = lensflare_result*(1.-newLF.a) + newLF*newLF.a;
-			//lensflare_result += tex2D(lensflareCookiesSampler, cookieReadPos);
-			lensflare_result += newLF*newLF.a;
+			newLF.a *= lensflareCookieParams[i].props.w; // correct custom cookie opacity
+			lensflare_result += newLF*newLF.a; // Additive blend new cookie texture to the previous
 		}
+		lensflare_result *= float4(lensflareIntensity*pow(lensflareAngle,lensflareDecay)); // Correct lensflare with angle of view and total intensity
+		lensflare_result = min(lensflare_result, float4(1.)); // Clamp whatever the result we've got
 
-		lensflare_result.a = lensflareIntensity*pow(lensflareAngle,lensflareDecay);
-		//return baseImage * (1.-lensflare_result.a) + lensflare_result * lensflare_result.a;
-		return baseImage + lensflare_result * lensflare_result.a;
+		baseImage = clamp(baseImage + lensflare_result, float4(0.), float4(1.)); // Additive blending and clamp result
+		return baseImage;
 	}
 };
 
