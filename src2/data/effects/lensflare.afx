@@ -64,6 +64,8 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 	float2 imageCenter = float2(0.5) * screenTextureRatio;
 
 	float2 aspectRatioNormalized = aspectRatio/max(aspectRatio.x,aspectRatio.y);
+	float2 screenPositionNormalized = IN.screenPosition * float2(min(screenTextureSize.x,screenTextureSize.y)/max(screenTextureSize.x,screenTextureSize.y));
+	float2 screenPositionClamped = clamp(IN.screenPosition, float2(-1.), float2(1.));
 
 	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
 
@@ -107,15 +109,16 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 				if(j>ABERRATION_SAMPLES) {
 					break;
 				}
+				float aberrationScale = (-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale;
 				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.2*(lightPos-float2(0.5)))*float4(1.0,0.2,0.0,0.5);
 				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*-0.1*(lightPos-float2(0.5)))*float4(0.5,0.25,0.1,0.2);
 				newLF += tex2D(lensflareCookiesSampler, clamp(
-					cookieReadPos + (cookieTopRight-cookieBotLeft)*(-ABERRATION_SAMPLES_LENGTH*0.5+j)*lensflareAberrationScale*sign(lightPos-float2(0.5))*pow(2.*(lightPos-float2(0.5))*aspectRatioNormalized,float2(lensflareAberrationFactor)),
+					cookieReadPos + (cookieTopRight-cookieBotLeft)*aberrationScale*sign(-screenPositionClamped)*pow((screenPositionClamped)*aspectRatioNormalized,float2(lensflareAberrationFactor)),
 					cookieTopLeft,
 					cookieBotRight) )*float4(
 					smoothstep(1.,0.,clamp(2.*j/ABERRATION_SAMPLES_LENGTH,0.,1.)),
-					smoothstep(1.,0.,clamp(abs(2.6*(0.5-j/ABERRATION_SAMPLES_LENGTH)),0.,1.)),
-					smoothstep(1.,0.,clamp(2.*(1.-j/ABERRATION_SAMPLES_LENGTH),0.,1.)),
+					smoothstep(1.,0.,clamp(abs(2.4*(0.5-j/ABERRATION_SAMPLES_LENGTH)),0.,1.)),
+					smoothstep(1.,0.,clamp(2.4*(1.-j/ABERRATION_SAMPLES_LENGTH),0.,1.)),
 					1.0/ABERRATION_SAMPLES);
 				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*0.1*(lightPos-float2(0.5)))*float4(0.1,0.25,0.5,0.2);
 				//newLF += tex2D(lensflareCookiesSampler, cookieReadPos + (cookieTopRight-cookieBotLeft)*0.2*(lightPos-float2(0.5)))*float4(0.0,0.2,1.0,0.5);
