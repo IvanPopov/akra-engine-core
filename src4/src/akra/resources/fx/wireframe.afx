@@ -28,6 +28,8 @@ VS_OUT vs_wireframe(VS_IN IN)
     {
         Out.edgeTest = float3(0.,0.,1.);
     }
+
+    return Out;
 }
 
 struct base_material
@@ -38,8 +40,7 @@ struct base_material
 
 shared base_material Fragment_material;
 
-float4 fs_wireframe(VS_OUT IN): COLOR
-{
+void fs_wireframe(VS_OUT IN){
 	float3 vBC = IN.edgeTest;
     float3 d = fwidth(vBC);
     float3 a3 = smoothstep(float3(0.0), float3(d * 0.95), vBC);

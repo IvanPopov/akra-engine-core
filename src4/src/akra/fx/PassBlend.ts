@@ -936,13 +936,18 @@ module akra.fx {
 				var iNameIndex: uint = pKeys[i];
 				var pVarList: IAFXVariableDeclInstruction[] = null;
 				var iVarBlendIndex: int = 0;
+				var pValue: any = pForeignValues[iNameIndex];
+
+				if (pValue === 0) {
+					pValue = 1;
+				}
 
 				iVarBlendIndex = pForeignsV.getKeyIndexByNameIndex(iNameIndex);
 				if (iVarBlendIndex !== -1) {
 					pVarList = pForeignsV.getVarList(iVarBlendIndex);
 
 					for (var j: uint = 0; j < pVarList.length; j++) {
-						pVarList[j]._setValue(pForeignValues[iNameIndex] || 1);
+						pVarList[j]._setValue(pValue);
 					}
 				}
 
@@ -951,7 +956,7 @@ module akra.fx {
 					pVarList = pForeignsP.getVarList(iVarBlendIndex);
 
 					for (var j: uint = 0; j < pVarList.length; j++) {
-						pVarList[j]._setValue(pForeignValues[iNameIndex] || 1);
+						pVarList[j]._setValue(pValue);
 					}
 				}
 			}

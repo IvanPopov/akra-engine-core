@@ -3166,6 +3166,7 @@ declare module akra {
         _getFullTextureMap(): IAFXVariableDeclMap;
         _getVertexShader(): IAFXFunctionDeclInstruction;
         _getPixelShader(): IAFXFunctionDeclInstruction;
+        _addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
         _addShader(pShader: IAFXFunctionDeclInstruction): void;
         _setState(eType: ERenderStates, eValue: ERenderStateValues): void;
         _finalizePass(): void;
@@ -10106,6 +10107,7 @@ declare module akra {
         BAD_USE_OF_ENGINE_VARIABLE = 2276,
         BAD_IMPORTED_COMPONENT_NOT_EXIST = 2277,
         CANNOT_ADD_SHARED_VARIABLE = 2278,
+        BAD_FUNCTION_DONT_HAVE_RETURN_STMT = 2279,
     }
     enum EEffectTempErrors {
         BAD_ARRAY_OF_POINTERS = 2300,
@@ -11043,6 +11045,7 @@ declare module akra.fx.instructions {
         private _pFullUniformVariableMap;
         private _pFullForeignVariableMap;
         private _pFullTextureVariableMap;
+        private _pOwnUsedForeignVariableMap;
         private _pComplexPassEvaluateOutput;
         constructor();
         public _addFoundFunction(pNode: parser.IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
@@ -11070,6 +11073,7 @@ declare module akra.fx.instructions {
         public _isComplexPass(): boolean;
         public _getVertexShader(): IAFXFunctionDeclInstruction;
         public _getPixelShader(): IAFXFunctionDeclInstruction;
+        public _addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
         public _addShader(pShader: IAFXFunctionDeclInstruction): void;
         public _setState(eType: ERenderStates, eValue: ERenderStateValues): void;
         public _finalizePass(): void;
@@ -11472,6 +11476,8 @@ declare module akra.fx {
         private _pEffectScope;
         private _pCurrentInstruction;
         private _pCurrentFunction;
+        private _pCurrentPass;
+        private _bHaveCurrentFunctionReturnOccur;
         private _pStatistics;
         private _sAnalyzedFileName;
         private _pSystemMacros;
@@ -11551,7 +11557,9 @@ declare module akra.fx {
         private endScope();
         private getScopeType();
         private setCurrentAnalyzedFunction(pFunction);
+        private setCurrentAnalyzedPass(pPass);
         private getCurrentAnalyzedFunction();
+        private getCurrentAnalyzedPass();
         private isAnalzeInPass();
         private setAnalyzeInPass(isInPass);
         private setOperator(sOperator);

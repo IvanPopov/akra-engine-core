@@ -13,7 +13,7 @@ VS_OUT_1 vs_prepare_lpp_geometry(float3 tex_coord4: TEXCOORD4) {
 
     Out.tc_normal = tex_coord4;
 
-	return Out;
+    return Out;
 }
 
 sampler sampler_normal:S_NORMAL;
@@ -24,7 +24,7 @@ struct Material {
 Material defaultMaterial:MATERIAL;
 
 float4 fs_prepare_lpp_geometry(VS_OUT_1 IN) : COLOR {
-	float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
+    float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
     float4 norm;
 
     if(texNormal == float3(0.) || !useNormal){
@@ -33,7 +33,7 @@ float4 fs_prepare_lpp_geometry(VS_OUT_1 IN) : COLOR {
     else {
         
         float3 normal = normalize(IN.norm.xyz);
-       	float3 tangent = float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), 0.);
+        float3 tangent = float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), 0.);
         tangent.z = -dot(tangent.xy,normal.xy)/normal.z;
         tangent = normalize(tangent);
 
@@ -52,15 +52,15 @@ float4 fs_prepare_lpp_geometry(VS_OUT_1 IN) : COLOR {
 
     float3 resultNormal = normalize(norm.xyz);
 
-	return float4(float3(resultNormal), defaultMaterial.shininess);
+    return float4(float3(resultNormal), defaultMaterial.shininess);
 }
 
 technique prepare_lpp_geometry {
-	import akra.system.mesh_geometry;
-	pass p1{
-		VertexShader = compile vs_prepare_lpp_geometry();
-		PixelShader = compile fs_prepare_lpp_geometry();
-	};
+    import akra.system.mesh_geometry;
+    pass p1{
+        VertexShader = compile vs_prepare_lpp_geometry();
+        PixelShader = compile fs_prepare_lpp_geometry();
+    };
 }
 
 
@@ -68,24 +68,24 @@ technique prepare_lpp_geometry {
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 
 struct VS_OUT_2{
-	float4 position : POSITION;
-	float2 screenPosition : SCREEN_POSITION;
-	float2 textureCoords : TEXCOORD0;
+    float4 position : POSITION;
+    float2 screenPosition : SCREEN_POSITION;
+    float2 textureCoords : TEXCOORD0;
 };
 
-VS_OUT_2 vs_prepare_lpp_lights_base(float2 position : POSITION){
-	VS_OUT_2 Out;
+VS_OUT_2 vs_prepare_lpp_data_base(float2 position : POSITION){
+    VS_OUT_2 Out;
 
-	//float texCoodrX = (IN.position.x + 1.)/2. * screenTextureRatio.x;
-	//float texCoordY = 1. - (1. - (IN.position.y + 1.)/2.) * screenTextureRatio.y;
-	//float texCoordY = (IN.position.y + 1.)/2. * screenTextureRatio.y;
+    //float texCoodrX = (IN.position.x + 1.)/2. * screenTextureRatio.x;
+    //float texCoordY = 1. - (1. - (IN.position.y + 1.)/2.) * screenTextureRatio.y;
+    //float texCoordY = (IN.position.y + 1.)/2. * screenTextureRatio.y;
 
-	Out.position = float4(position,0.,1.);
-	Out.screenPosition = position;
-	//Out.textureCoords = float2(texCoodrX,texCoordY);
+    Out.position = float4(position,0.,1.);
+    Out.screenPosition = position;
+    //Out.textureCoords = float2(texCoodrX,texCoordY);
     Out.textureCoords = (position + 1.)/2. * screenTextureRatio;
-	
-	return Out;
+    
+    return Out;
 }
 
 struct light_data {
@@ -109,23 +109,23 @@ texture tex1 : LPP_DEPTH_BUFFER_TEXTURE;
 
 sampler normalBuffer : SAMPLER_NORMAL_BUFFER = sampler_state
 {
-	Texture = <tex0>;
-	MinFilter = NEAREST;
-	MagFilter = NEAREST;
+    Texture = <tex0>;
+    MinFilter = NEAREST;
+    MagFilter = NEAREST;
 };
 
 sampler depthBuffer : SAMPLER_DEPTH_BUFFER = sampler_state
 {
-	Texture = <tex1>;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
+    Texture = <tex1>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
 
 float4x4 projMat : PROJ_MATRIX;
 float3 unproj(float4x4 projMat, float3 screenCoords){
-	
-	//mat4[i] - i-й столбец матрицы 
-	//не строка, а именно столбец
+    
+    //mat4[i] - i-й столбец матрицы 
+    //не строка, а именно столбец
   
     float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
     float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
@@ -144,17 +144,17 @@ struct pixel_data {
 shared pixel_data pixelData;
 shared float4 result_color = float4(0.);
 
+/*
 foreign bool useOnlyPosition;
-
 float4 fs_prepare_lpp_lights_base(VS_OUT_2 IN): COLOR {
-	float2 textureCoords = IN.textureCoords;
+    float2 textureCoords = IN.textureCoords;
     
     float depth = tex2D(depthBuffer,textureCoords).x * 2. - 1.;
     float3 pixelPos = unproj(projMat, float3(IN.screenPosition.xy,depth));
     pixelData.depth = depth;
     pixelData.position = pixelPos;
 
-    if(!bool(useOnlyPosition)){ 
+    if(!useOnlyPosition){ 
         float4 bufferData = tex2D(normalBuffer, textureCoords);
         float3 normal = bufferData.xyz;
         float shininess = bufferData.w;
@@ -163,11 +163,27 @@ float4 fs_prepare_lpp_lights_base(VS_OUT_2 IN): COLOR {
     }
 
     return result_color;
+}*/
+
+void fs_prepare_lpp_data_base(float2 texCoords: TEXCOORD0, float2 screenPosition : SCREEN_POSITION) {
+    fs_prepare_lpp_data_positionOnly(texCoords, screenPosition);
+    float4 bufferData = tex2D(normalBuffer, texCoords);
+    float3 normal = bufferData.xyz;
+    float shininess = bufferData.w;
+
+    pixelData.normal = normal;
+}
+
+void fs_prepare_lpp_data_positionOnly(float2 texCoords: TEXCOORD0, float2 screenPosition : SCREEN_POSITION) {
+    float depth = tex2D(depthBuffer, texCoords).x * 2. - 1.;
+    float3 pixelPos = unproj(projMat, float3(screenPosition.xy,depth));
+    pixelData.depth = depth;
+    pixelData.position = pixelPos;
 }
 
 
 float4 prepare_lpp_lights_omni() : COLOR {
-	for(int i = 0; i < nOmni; i++){
+    for(int i = 0; i < nOmni; i++){
         result_color += calculateLight(pixelData, points_omni[i].lightData);
     }
 
@@ -185,7 +201,7 @@ float4 prepare_lpp_lights_omni_ambient() : COLOR {
 }
 
 float4 calculateLight(pixel_data pixelData, light_data lightData){
-	float3 light_dir = lightData.position - pixelData.position;
+    float3 light_dir = lightData.position - pixelData.position;
     float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
 
     light_dir = normalize(light_dir);
@@ -216,11 +232,17 @@ float4 calculateAbmientLight(pixel_data pixelData, light_data lightData){
     return float4(lightData.ambient.xyz * attenuation, 0.);
 }
 
+foreign bool prepareOnlyPosition;
 technique prepare_lpp_lights_base {
-	pass p1{
-		VertexShader = compile vs_prepare_lpp_lights_base();
-        PixelShader = compile fs_prepare_lpp_lights_base();
-	}
+    pass p1{
+        VertexShader = compile vs_prepare_lpp_data_base();
+        if(prepareOnlyPosition) {
+            PixelShader = compile fs_prepare_lpp_data_positionOnly();            
+        }
+        else {
+            PixelShader = compile fs_prepare_lpp_data_base();
+        }
+    }
 }
 
 technique prepare_lpp_lights_omni{

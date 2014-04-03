@@ -85,6 +85,8 @@ module akra.fx {
 		private _pEffectScope: ProgramScope = null;
 		private _pCurrentInstruction: IAFXInstruction = null;
 		private _pCurrentFunction: IAFXFunctionDeclInstruction = null;
+		private _pCurrentPass: IAFXPassInstruction = null;
+		private _bHaveCurrentFunctionReturnOccur = false;
 
 		private _pStatistics: IAFXEffectStats = null;
 
@@ -1297,10 +1299,19 @@ module akra.fx {
 
 		private setCurrentAnalyzedFunction(pFunction: IAFXFunctionDeclInstruction): void {
 			this._pCurrentFunction = pFunction;
+			this._bHaveCurrentFunctionReturnOccur = false;
+		}
+
+		private setCurrentAnalyzedPass(pPass: IAFXPassInstruction): void {
+			this._pCurrentPass = pPass;
 		}
 
 		private getCurrentAnalyzedFunction(): IAFXFunctionDeclInstruction {
 			return this._pCurrentFunction;
+		}
+
+		private getCurrentAnalyzedPass(): IAFXPassInstruction {
+			return this._pCurrentPass;
 		}
 
 		private isAnalzeInPass(): boolean {
@@ -1693,6 +1704,11 @@ module akra.fx {
 				}
 				if (pFunctionList[i]._isUsedAsPixel()) {
 					pShader = pFunctionList[i]._convertToPixelShader();
+				}
+
+				if (pFunctionList[i]._isErrorOccured()) {
+					this._errorFromInstruction(pFunctionList[i]._getLastError());
+					pFunctionList[i]._clearError();
 				}
 			}
 		}
@@ -2909,6 +2925,10 @@ module akra.fx {
 				}
 			}
 
+			if (!isNull(this.getCurrentAnalyzedPass()) && pVariable._getType()._isForeign()) {
+				this.getCurrentAnalyzedPass()._addOwnUsedForignVariable(pVariable);
+			}
+
 			var pVarId: instructions.IdExprInstruction = new instructions.IdExprInstruction();
 			pVarId._push(pVariable._getNameId(), false);
 
@@ -3210,10 +3230,12 @@ module akra.fx {
 
 			this.setCurrentAnalyzedFunction(pFunction);
 
-			// LOG("-----Analyze function '" + pFunction._getName() + "'------");
-
 			pStmtBlock = <instructions.StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
 			pFunction._setImplementation(<IAFXStmtInstruction>pStmtBlock);
+
+			if (!pFunction._getReturnType()._isEqual(Effect.getSystemType("void")) && !this._bHaveCurrentFunctionReturnOccur) {
+				this._error(EEffectErrors.BAD_FUNCTION_DONT_HAVE_RETURN_STMT, { funcName: pFunction._getNameId().toString() })
+			}
 
 			this.setCurrentAnalyzedFunction(null);
 
@@ -3404,6 +3426,8 @@ module akra.fx {
 			var pReturnStmtInstruction: instructions.ReturnStmtInstruction = new instructions.ReturnStmtInstruction();
 
 			var pFunctionReturnType: IAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction()._getReturnType();
+
+			this._bHaveCurrentFunctionReturnOccur = true;
 
 			if (pFunctionReturnType._isEqual(Effect.getSystemType("void")) && pChildren.length === 3) {
 				this._error(EEffectErrors.BAD_RETURN_STMT_VOID);
@@ -3912,9 +3936,11 @@ module akra.fx {
 
 			var pChildren: parser.IParseNode[] = pNode.children;
 
+			this.setCurrentAnalyzedPass(pPass);
 			this.setAnalyzeInPass(true);
 			this.analyzePassStateBlock(pChildren[0], pPass);
 			this.setAnalyzeInPass(false);
+			this.setCurrentAnalyzedPass(null);
 
 			pPass._finalizePass();
 		}
