@@ -18,16 +18,19 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Dependencies>
       <Attachment>
-        <Folder Path="progress/debug" />
+        <Folder Path="progress/full" />
         <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
       </Attachment>
     </Dependencies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Dependencies>
       <Attachment>
-        <Folder Path="progress/release" />
+        <Folder Path="progress/min" />
         <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
       </Attachment>
     </Dependencies>
     <ClosureCompiler>

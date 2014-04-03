@@ -105,7 +105,7 @@ interface IGameHeroParameters {
         gunDirection: float;
 
         //animation mar for quick access
-        anim: akra.IMap<akra.IAnimation>;
+        anim: akra.IMap<akra.IAnimationBase>;
 
         //current hero position 
         position: akra.IVec3;

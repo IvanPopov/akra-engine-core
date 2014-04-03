@@ -11,6 +11,7 @@
     <Dependencies>
       <Module Name="core" />
       <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
     </Dependencies>
     <Resource Name="AE_RESOURCES">
       <Filename>perfomance</Filename>
