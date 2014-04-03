@@ -116,13 +116,13 @@ module.exports = function (grunt) {
 	grunt.registerTask("lint", ["tslint"]);
 	grunt.registerTask("default", ["all"]);
 	grunt.registerTask("all", [
-		"decl:core",
-		"decl:parser",
-		"decl:addon-navigation",
-		"decl:addon-filedrop",
-		"decl:addon-base3dObjects",
-		"decl:addon-progress",
-		"decl:ui"
+		"build:core",
+		"build:parser",
+		"build:addon-navigation",
+		"build:addon-filedrop",
+		"build:addon-base3dObjects",
+		"build:addon-progress",
+		"build:ui"
 	]);
 
 

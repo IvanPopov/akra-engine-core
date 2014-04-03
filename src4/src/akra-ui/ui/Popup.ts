@@ -89,7 +89,7 @@ module akra.ui {
 			this.setTitle($comp.attr("title"));
 		}
 
-		static MoveSignal = MoveSignal;
+		static MoveSignal: typeof Signal = MoveSignal;
 	}
 
 	register("Popup", Popup);

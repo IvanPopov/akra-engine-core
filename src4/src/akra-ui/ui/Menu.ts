@@ -54,8 +54,8 @@ module akra.ui {
 		}
 
 
-		static MouseleaveSignal = MouseleaveSignal;
-		static MouseenterSignal = MouseenterSignal;
+		static MouseleaveSignal: typeof Signal = MouseleaveSignal;
+		static MouseenterSignal: typeof Signal = MouseenterSignal;
 	}
 
 	register("Menu", Menu);

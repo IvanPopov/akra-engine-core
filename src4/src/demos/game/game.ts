@@ -2,8 +2,7 @@
 /// <reference path="../../../built/Lib/akra-ui.d.ts"/>
 /// <reference path="../../../built/Lib/progress.addon.d.ts"/>
 
-/// <reference path="../idl/3d-party/jquery.d.ts" />
-
+/// <reference path="../../../built/Lib/akra-ui.d.ts"/>
 
 /// <reference path="idl/IGameTrigger.ts" />
 /// <reference path="idl/IGameTimeParameters.ts" />
@@ -30,6 +29,7 @@
 /// <reference path="lib/updateCamera.ts" />
 /// <reference path="lib/virtualGamepad.ts" />
 
+declare var AE_GAME_RESOURCES: akra.IDep;
 
 module akra {
 
@@ -43,10 +43,10 @@ module akra {
 
 
 
-	var pProgress = new addons.Progress();
+	var pProgress = new addons.Progress(document.getElementById("progress"));
 	var pGameDeps: IDependens = {
-		root: "../",
-		files: [{ path: "game.ara", name: "DEMO_DATA_ARCHIVE" }]
+		root: "./",
+		files: [AE_GAME_RESOURCES]
 	};
 
 	var pRenderOpts: IRendererOptions = {
@@ -57,9 +57,19 @@ module akra {
 		alpha: true,
 	};
 
+	var pListener = pProgress.getListener();
+	var pControllerData: IDocument = null;
+
+
 	var pOptions: IEngineOptions = {
 		renderer: pRenderOpts,
-		progress: pProgress.getListener(),
+		progress: (e: IDepEvent) => {
+			if (e.source.name == "HERO_CONTROLLER" && e.source.stats.status == EDependenceStatuses.LOADED) {
+				pControllerData = e.source.content;
+			}
+
+			pListener.apply(null, arguments);
+		},
 		deps: pGameDeps
 	};
 
@@ -230,7 +240,7 @@ module akra {
 		}
 	}
 
-	pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).el);
+	pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).getElement());
 	pKeymap.captureKeyboard(document);
 
 
@@ -497,7 +507,7 @@ module akra {
 			fPitchRotation = fY * pStat.cameraPitchSpeed * fTimeDelta;
 
 			var pCameraWorldData: Float32Array = pCamera.getWorldMatrix().data;
-			var v3fCameraDir: IVec3 = Vec3.temp(-pCameraWorldData[__13], 0, -pCameraWorldData[__33]).normalize();
+			var v3fCameraDir: IVec3 = Vec3.temp(-pCameraWorldData[math.__13], 0, -pCameraWorldData[math.__33]).normalize();
 			var v3fCameraOrtho: IVec3 = Vec3.temp(v3fCameraDir.z, 0, -v3fCameraDir.x);
 			qPitchRot = Quat4.fromAxisAngle(v3fCameraOrtho, fPitchRotation, Quat4.temp());
 
@@ -1326,14 +1336,14 @@ module akra {
 		//camera data
 		pCamera = self.hero.camera;
 		pCameraWorldData = pCamera.getWorldMatrix().data;
-
+		
 		//camera view direction projection to XZ axis
-		v3fCameraDir = Vec3.temp(-pCameraWorldData[__13], 0., -pCameraWorldData[__33]).normalize();
+		v3fCameraDir = Vec3.temp(-pCameraWorldData[math.__13], 0., -pCameraWorldData[math.__33]).normalize();
 		//v3fCameraOrtho  = Vec3(v3fCameraDir.z, 0., -v3fCameraDir.x);
 
 		//hero directiob proj to XZ axis
 		pHeroWorldData = pHero.getWorldMatrix().data;
-		v3fHeroDir = Vec3.temp(pHeroWorldData[__13], 0., pHeroWorldData[__33]).normalize();
+		v3fHeroDir = Vec3.temp(pHeroWorldData[math.__13], 0., pHeroWorldData[math.__33]).normalize();
 
 		//stick data
 		v2fStick = Vec2.temp(fDirectX, fDirectY);
@@ -1697,7 +1707,7 @@ module akra {
 	}
 
 	function createModels(): void {
-		var pImporter = new io.Importer(pEngine);
+		var pImporter = new exchange.Importer(pEngine);
 		pImporter.loadDocument(pControllerData);
 		pMovementController = pImporter.getController();
 
@@ -1731,14 +1741,16 @@ module akra {
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
 		pTubeBetweenRocks.setPosition(new Vec3(-55., -12.15, -82.00));
 
-		pTubeBetweenRocks.explore((pEntity: IEntity): boolean => {
-			if (scene.isModel(pEntity)) {
-				(<ISceneModel>pEntity).mesh.shadow = false;
+		pTubeBetweenRocks.explore((pEntity: IEntity) => {
+			if (scene.SceneModel.isModel(pEntity)) {
+				(<ISceneModel>pEntity).getMesh().setShadow(false);
 			}
+
+			return true;
 		});
 
 
-		pScene.bind("beforeUpdate", update);
+		pScene.beforeUpdate.connect(update);
 
 		self.cameras = fetchAllCameras(pScene);
 		self.activeCamera = self.cameras.indexOf(self.camera);
@@ -1783,9 +1795,9 @@ module akra {
 		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
 
 		pProject.attachToParent(pScene.getRootNode());
-		pProject.enabled = false;
+		pProject.setEnabled(false);
 
-		var pParams = <any>pProject.params;
+		var pParams = <any>pProject.getParams();
 
 		pParams.ambient.set(0.0, 0.0, 0.0, 1);
 		pParams.diffuse.set(1.);
@@ -1796,7 +1808,7 @@ module akra {
 		pProject.setPosition(new Vec3(-300, 300, -300));
 		pProject.lookAt(new Vec3(0., .0, 0.));
 
-		pProject.lightingDistance = 10000.;
+		pProject.setLightingDistance(10000.);
 
 		pKeymap.bind("equalsign", () => {
 			self.activeCamera++;
@@ -1815,8 +1827,8 @@ module akra {
 		});
 
 		pKeymap.bind("N", () => {
-			if (pTerrain.megaTexture)
-				pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
+			if (pTerrain.getMegaTexture())
+				pTerrain.getMegaTexture()["_bColored"] = !pTerrain.getMegaTexture()["_bColored"];
 		});
 
 		pKeymap.bind("SPACE", () => {
@@ -1827,14 +1839,14 @@ module akra {
 		// motionBlur(<IDSViewport>pViewport);
 
 		createSceneEnvironment(pScene, true, true);
-#if DEBUG_TERRAIN == 1
-		pEngine.getComposer()["bShowTriangles"] = true;
-		if (pTerrain.megaTexture)
-			pTerrain.megaTexture["_bColored"] = true;
-#endif
+//#if DEBUG_TERRAIN == 1
+//		pEngine.getComposer()["bShowTriangles"] = true;
+//		if (pTerrain.megaTexture)
+//			pTerrain.megaTexture["_bColored"] = true;
+//#endif
 		pEngine.exec();
 	}
 
-	pEngine.bind("depsLoaded", main);	
+	pEngine.ready(main);
 }
 

@@ -160,9 +160,9 @@ module akra.ui.graph {
 
 		static UIGRAPH_INVALID_CONNECTION = -1;
 
-		static ConnectedSignal = ConnectedSignal;
-		static MousedownSignal = MousedownSignal;
-		static MouseupSignal = MouseupSignal;
+		static ConnectedSignal: typeof Signal = ConnectedSignal;
+		static MousedownSignal: typeof Signal = MousedownSignal;
+		static MouseupSignal: typeof Signal = MouseupSignal;
 	}
 
 	register("GraphConnector", Connector);

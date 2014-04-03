@@ -4125,7 +4125,7 @@ var akra;
 (function (akra) {
     (function (config) {
         config.DEBUG = true;
-        config.VERSION = "0.4.1-rc.2-build.local+sha.202d5e2";
+        config.VERSION = "0.4.1-rc.2-build.local+sha.f5e3668";
         config.WEBGL = true;
 
         /**

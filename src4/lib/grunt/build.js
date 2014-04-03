@@ -337,7 +337,7 @@ module.exports = function (grunt) {
 			if (forceRebuild) {
 				log(cmd + " " + argv.join(" "));
 			}
-
+			
 			function spawnCallback(code) {
 				if (forceRebuild)
 					stopAnimation(anim);
@@ -759,13 +759,14 @@ module.exports = function (grunt) {
 		if (mapFile) {
 			map = JSON.parse(read(mapFile));
 
-			var mapFolder = path.dirname(mapFile);
+			var mapFolder = path.dirname(path.relative(configPath, mapFile));
 
 			var p = map;
 			while (p) {
 				if (p.files) {
 					for (i = 0; i < p.files.length; i++) {
-						p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
+						p.files[i].path = path.normalize(path.join(mapFolder, p.files[i].path)).replace(/\\/ig, "/");
+						//console.log(p.files[i].path);
 					}
 				}
 
@@ -776,9 +777,10 @@ module.exports = function (grunt) {
 			map = { files: [] };
 		}
 
+		var additionalFiles = [];
+		
 		if (resource.get("Data")) {
 			var data = resource.get("Data");
-			var additionalFiles = [];
 
 			if (data.get("Folder")) {
 				additionalFiles = readFolders(data.find("Folder"), config);

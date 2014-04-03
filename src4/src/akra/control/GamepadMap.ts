@@ -15,6 +15,8 @@ module akra.control {
 
 	import ObjectArray = util.ObjectArray;
 
+	navigator.getGamepads = <any>(navigator.getGamepads || navigator.webkitGetGamepads);
+
 	export class GamepadMap implements IGamepadMap {
 
 		connected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }>;

@@ -2,7 +2,7 @@
 /// <reference path="../../../../built/Lib/akra-ui.d.ts"/>
 
 module akra {
-	function setup(pCanvas: ICanvas3d, pUI: IUI = null): IUIIDE {
+	export function setup(pCanvas: ICanvas3d, pUI: IUI = null): IUIIDE {
 		var pIDE: IUIIDE = null;
 
 		if (!isNull(pUI)) {
