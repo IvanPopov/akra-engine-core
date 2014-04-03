@@ -33,6 +33,7 @@ module akra {
 	export var pSunshaftData = null;
 	export var pLensflareData = null;
 	export var pBlurData = null;
+	export var pDofData = null;
 
 	var pState = {
 		animate: true,
@@ -105,9 +106,10 @@ module akra {
 		// (<render.DSViewport>pViewport).setFXAA(false);
 		var counter = 0;
 		var pEffect = (<render.DSViewport>pViewport).getEffect();
-		pEffect.addComponent("akra.system.sunshaft");
+        pEffect.addComponent("akra.system.sunshaft");
+        pEffect.addComponent("akra.system.dof");
 		pEffect.addComponent("akra.system.blur");
-		pEffect.addComponent("akra.system.lensflare");
+        pEffect.addComponent("akra.system.lensflare");
 
 		pSunshaftData = {
 			SUNSHAFT_ANGLE: null,
@@ -181,7 +183,7 @@ module akra {
 			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(140., 140., 2.3, 0.2) },
 			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., 1.9, 0.2) },
 			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 1.65, 0.3) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(64., 64., 1., 0.4) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(64., 64., 1.4, 0.4) },
 			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new math.Vec4(2048., 64., 1., 1.0) },
 			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(200., 200., 0.45, 0.5) },
 			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., 0.5, 0.4) },
@@ -199,10 +201,21 @@ module akra {
 
 		pBlurData = {
 			BLUR_RADIUS: 0,
-		};
+        };
+
+        pDofData = {
+            DOF_RADIUS: 0,
+            DOF_FOCAL_PLANE: 10.,
+            DOF_FOCUS_DISTANCE: 0.05,
+        };
 
 		var pBlurFolder = pGUI.addFolder("blur");
-		(<dat.NumberControllerSlider>pBlurFolder.add(pBlurData, 'BLUR_RADIUS')).min(0.).name("radius");
+        (<dat.NumberControllerSlider>pBlurFolder.add(pBlurData, 'BLUR_RADIUS')).min(0.).max(250.).name("radius");
+
+        var pDofFolder = pGUI.addFolder("dof");
+        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
+        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_DISTANCE')).min(0.01).max(.5).name("focus distance");
+        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
@@ -248,7 +261,11 @@ module akra {
 			pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
 			pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
-			pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
+            pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
+
+            pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
+            pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
+            pPass.setUniform('DOF_FOCUS_DISTANCE', pDofData.DOF_FOCUS_DISTANCE);
 
 			//if (iCounter++%240 === 0) {
 			//console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
@@ -357,7 +374,11 @@ module akra {
 		//loadModel("ROCK.DAE", null, 'Rock-02').addPosition(2, 1, -4);
 		//loadModel("ROCK.DAE", null, 'Rock-03').addPosition(2, 5, -4);
 		//loadModel("ROCK.DAE", null, 'Rock-04', pCamera).scale(0.2).setPosition(0.4, -0.2, -2);
-		var pTorus: ISceneNode = loadModel("TORUSKNOT.DAE", null, 'Rock-04', pScene.getRootNode());
+        var pTorus: ISceneNode = loadModel("TORUSKNOT.DAE", null, 'TorusKnot-01', pScene.getRootNode());
+        var pRock1: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-01', pScene.getRootNode());
+        pRock1.setPosition(-3., 0., 10.);
+        var pRock2: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-02', pScene.getRootNode());
+        pRock2.setPosition(5., 0., -10.);
 
 		var x = 0;
 
