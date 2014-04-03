@@ -29,7 +29,7 @@ module akra {
 	
 	export interface IRenderData extends IReferenceCounter {
 		getBuffer(): IRenderDataCollection;
-	
+
 		/**
 		 * Allocate data for rendering.
 		 */
@@ -37,22 +37,22 @@ module akra {
 		allocateData(pDataDecl: IVertexElementInterface[], pData: ArrayBufferView, hasIndex?: boolean): int;
 		allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex?: boolean): int;
 		allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex?: boolean): int;
-	
+
 		/**
 		 * Remove data from this render data.
 		 */
 		releaseData(iDataLocation: int): void;
-		
+
 		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
 		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
 		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
 		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
-		
+
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
 		allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
 		allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
-		
+
 		addIndexSet(usePreviousDataSet?: boolean, ePrimType?: EPrimitiveTypes, sName?: string): int;
 		getNumIndexSet(): int;
 		getIndexSetName(iSet: int): string;
@@ -60,7 +60,7 @@ module akra {
 		selectIndexSet(sName: string): boolean;
 		getIndexSet(): int;
 		findIndexSet(sName: string): int;
-	
+
 		/**
 		 * Specifies uses advanced index.
 		 */
@@ -68,17 +68,17 @@ module akra {
 		useAdvancedIndex(): boolean;
 		useSingleIndex(): boolean;
 		useMultiIndex(): boolean;
-		
+
 		/** mark index set as renderable */
 		setRenderable(iIndexSet: int, bValue: boolean): void;
 		isRenderable(iIndexSet: int): boolean;
-		
+
 		/** Mark this RenderData as renderable. */
 		isRenderable(): boolean;
 		setRenderable(bValue: boolean): void;
-	
+
 		hasSemantics(sSemantics: string, bSearchComplete?: boolean): boolean;
-		
+
 		getDataLocation(iDataLocation: int): int;
 		getDataLocation(sSemantics: string): int;
 		getIndexFor(sSemantics: string): ArrayBufferView;
@@ -87,30 +87,32 @@ module akra {
 		getPrimitiveCount(): uint;
 		getPrimitiveType(): EPrimitiveTypes;
 		getAdvancedIndexData(sSemantics: string): IVertexData;
-		
+
 		index(sData: string, sSemantics: string, useSame?: boolean, iBeginWith?: int, bForceUsage?: boolean): boolean;
 		index(iData: int, sSemantics: string, useSame?: boolean, iBeginWith?: int, bForceUsage?: boolean): boolean;
-	
-		
+
+
 		toString(): string;
-	
+
 		//applyMe(): boolean;
-	
-		_draw(pTechnique: IRenderTechnique, pViewport: IViewport, 
-			  pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		
+
+		_draw(pTechnique: IRenderTechnique, pViewport: IViewport,
+			pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+
 		_getFlow(iDataLocation: int): IDataFlow;
 		_getFlow(sSemantics: string, bSearchComplete?: boolean): IDataFlow;
-	
+
 		_getData(iDataLocation: int, bSearchOnlyInCurrentMap?: boolean): IVertexData;
 		_getData(sSemanticsn: string, bSearchOnlyInCurrentMap?: boolean): IVertexData;
-	
+
 		_addData(pVertexData: IVertexData, iFlow?: int, eType?: ERenderDataTypes): int;
-	
+
 		_setup(pCollection: IRenderDataCollection, iId: int, ePrimType?: EPrimitiveTypes, eOptions?: int): boolean;
-	
+
 		//FIXME: hack for terrain, for force limitin drawing index length
 		_setIndexLength(iLength: uint);
+
+		_getComposer(): IAFXComposer;
 	}
 	
 }

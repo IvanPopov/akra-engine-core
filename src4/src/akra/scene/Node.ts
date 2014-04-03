@@ -460,40 +460,40 @@ module akra.scene {
 			this._qRotation.multiply(q4fRotation);
 			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			return this;
-        }
+		}
 
-        addRotationByMatrix(m3fRotation: IMat3): INode;
-        addRotationByMatrix(m4fRotation: IMat4): INode;
-        addRotationByMatrix(matrix: any): INode {
-            this.addRotation(arguments[0].toQuat4(Node._q4fTemp1));
-            return this;
-        }
+		addRotationByMatrix(m3fRotation: IMat3): INode;
+		addRotationByMatrix(m4fRotation: IMat4): INode;
+		addRotationByMatrix(matrix: any): INode {
+			this.addRotation(arguments[0].toQuat4(Node._q4fTemp1));
+			return this;
+		}
 
-        addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode {
-            this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));
-            return this;
-        }
+		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode {
+			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));
+			return this;
+		}
 
-        addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode {
-            this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
-            return this;
-        }
+		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode {
+			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
+			return this;
+		}
 
-        addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode {
-            this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
-            return this;
-        }
+		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode {
+			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
+			return this;
+		}
 
-        addRotationByXYZAxis(fX: float, fY: float, fZ: float): INode {
-            this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
-            return this;
-        }
+		addRotationByXYZAxis(fX: float, fY: float, fZ: float): INode {
+			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
+			return this;
+		}
 
-        addRotation(q4fRotation: IQuat4): INode {
-            q4fRotation.multiply(this._qRotation, this._qRotation);
-            this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
-            return this;
-        }
+		addRotation(q4fRotation: IQuat4): INode {
+			q4fRotation.multiply(this._qRotation, this._qRotation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			return this;
+		}
 
 		addOrbitRotationByMatrix(m3fRotation: IMat3): INode;
 		addOrbitRotationByMatrix(m4fRotation: IMat4): INode;

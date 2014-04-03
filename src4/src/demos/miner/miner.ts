@@ -65,12 +65,15 @@ module akra {
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
 		pViewport = new render.DSViewport(pCamera);
+		
 
 		pCanvas.addViewport(pViewport);
 		//pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
+		pViewport.setClearEveryFrame(true);
+		pViewport.setBackgroundColor(color.BLACK);
 
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);

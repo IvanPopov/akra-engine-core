@@ -537,6 +537,10 @@ module akra.data {
 				this._pMap.flow(iFlow, pVertexData));
 		}
 
+		_getComposer(): IAFXComposer {
+			return null;
+		}
+
 		/**
 		 * Register data in this render.
 		 * Necessary for index to index mode, when data realy

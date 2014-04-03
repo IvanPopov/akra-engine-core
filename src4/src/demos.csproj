@@ -27,16 +27,16 @@
     <Content Include="demos\performance\index.html" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="demos\arteries\arteries.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\codemirror.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\dat.gui.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\jquery.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\jqueryui.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\raphael.d.ts" />
-    <TypeScriptCompile Include="demos\idl\3d-party\swig.d.ts" />
-    <TypeScriptCompile Include="demos\miner\miner.ts" />
-    <TypeScriptCompile Include="demos\performance\performance.ts" />
-    <TypeScriptCompile Include="demos\std\std.ts" />
+    <Content Include="demos\arteries\arteries.ts" />
+    <Content Include="demos\idl\3d-party\codemirror.d.ts" />
+    <Content Include="demos\idl\3d-party\dat.gui.d.ts" />
+    <Content Include="demos\idl\3d-party\jquery.d.ts" />
+    <Content Include="demos\idl\3d-party\jqueryui.d.ts" />
+    <Content Include="demos\idl\3d-party\raphael.d.ts" />
+    <Content Include="demos\idl\3d-party\swig.d.ts" />
+    <Content Include="demos\miner\miner.ts" />
+    <Content Include="demos\performance\performance.ts" />
+    <Content Include="demos\std\std.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="demos\arteries\dat.gui\dat.gui.js" />
@@ -170,7 +170,7 @@
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
-    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptModuleKind>none</TypeScriptModuleKind>
     <TypeScriptOutDir>./build</TypeScriptOutDir>
     <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
   </PropertyGroup>

@@ -4310,6 +4310,7 @@ declare module akra {
     _addData(pVertexData: IVertexData, iFlow?: number, eType?: ERenderDataTypes): number;
     _setup(pCollection: IRenderDataCollection, iId: number, ePrimType?: EPrimitiveTypes, eOptions?: number): boolean;
     _setIndexLength(iLength: number): any;
+    _getComposer(): IAFXComposer;
   }
 }
 declare module akra {
@@ -4607,6 +4608,7 @@ declare module akra {
     getRenderer(): IRenderer;
     getTechnique(sName?: string): IRenderTechnique;
     getTechniqueDefault(): IRenderTechnique;
+    getRenderID(pObject: ISceneObject): number;
     destroy(): void;
     setVisible(bVisible?: boolean): void;
     isVisible(): boolean;
@@ -4652,6 +4654,13 @@ declare module akra {
     isBillboard(): boolean;
     getRenderable(i?: number): IRenderableObject;
     getObjectFlags(): number;
+    getRenderID(): number;
+    /**
+    * Get unique render id.
+    * Render ID used to identify the object in each pixel of viewport/screen.
+    * @param iRenderable Number of renderable object.
+    */
+    getRenderID(iRenderable: number): number;
     isWorldBoundsNew(): boolean;
     prepareForRender(pViewport: IViewport): void;
     worldBoundsUpdated: ISignal<(pObject: ISceneObject) => void>;
@@ -12725,6 +12734,7 @@ declare module akra.render {
     public getMaterial(): IMaterial;
     public getData(): IRenderData;
     public getRenderMethod(): IRenderMethod;
+    public getRenderID(pObject?: ISceneObject): number;
     public setRenderMethod(pMethod: IRenderMethod): void;
     public getShadow(): boolean;
     public setShadow(bShadow: boolean): void;
@@ -13892,6 +13902,13 @@ declare module akra.scene {
     public setBillboard(bValue: boolean): void;
     public getBillboard(): boolean;
     public getRenderable(i?: number): IRenderableObject;
+    public getRenderID(): number;
+    /**
+    * Get unique render id.
+    * Render ID used to identify the object in each pixel of viewport/screen.
+    * @param iRenderable Number of renderable object.
+    */
+    public getRenderID(iRenderable: number): number;
     public isWorldBoundsNew(): boolean;
     public destroy(): void;
     public prepareForUpdate(): void;
@@ -14436,6 +14453,7 @@ declare module akra.data {
     * Add vertex data to this render data.
     */
     public _addData(pVertexData: IVertexData, iFlow?: number, eType?: ERenderDataTypes): number;
+    public _getComposer(): IAFXComposer;
     /**
     * Register data in this render.
     * Necessary for index to index mode, when data realy
@@ -17160,6 +17178,7 @@ declare module akra.model {
     constructor(_pEngine: IEngine, nCols: number, nRows: number, fR: number);
     public setupSignals(): void;
     public getEngine(): IEngine;
+    public getSunDirection(): IVec3;
     public scale(fCos: number): number;
     public expv(v: IVec3): IVec3;
     private _init();

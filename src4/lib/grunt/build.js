@@ -1019,6 +1019,11 @@ module.exports = function (grunt) {
 		var srcDir = config.getAttribute("Path");
 		var buildDir = path.join(config.getAttribute("Path"), config.getAttribute("OutDir"));
 		var type = null;
+		var collapsePath = false;
+
+		if (attachment.get("CollapsePath")) {
+			collapsePath = attachment.get("CollapsePath").textContent === "True";
+		}
 
 		if (attachment.hasAttribute("Name")) {
 			name = attachment.getAttribute("Name");
@@ -1073,7 +1078,13 @@ module.exports = function (grunt) {
 		if (format === "Enclosure") {
 			var data = [];
 			files.forEach(function (file) {
-				var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
+				
+				if (collapsePath) {
+					var dest = path.join(buildDir, outDir, path.basename(file));
+				}
+				else {
+					var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
+				}
 				
 				if (info.forceRebuild) {
 					copy(file, dest);
