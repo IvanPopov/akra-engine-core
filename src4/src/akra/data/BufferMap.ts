@@ -159,8 +159,8 @@ module akra.data {
 			if (config.WEBGL) {
 				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
 					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-					this._pIndex.getPrimitiveCount(),
-					webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
+					this._pIndex.getLength(),
+					webgl.getWebglElementType(this._pIndex.getType()),
 					this._pIndex.getByteOffset() / 4);
 				//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
 			}
@@ -292,7 +292,6 @@ module akra.data {
 				//this.startIndex = pVertexData.getStartIndex();
 				isOk = this.checkData(pVertexData);
 				debug.assert(isOk, "You can use several unmappable data flows from one buffer.");
-
 				this.trackData(pVertexData);
 			}
 			else {
@@ -418,10 +417,15 @@ module akra.data {
 		}
 
 		private trackData(pData: IVertexData): void {
-			//only one vertex data may be used in one veetex buffer
-			//случаи, когда выделяются 2 vertex data'ы в одной области памяти не рассматриваются
-			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
+			var iHandle: int = pData.getBufferHandle();
 
+			if (isDefAndNotNull(this._pBuffersCompatibleMap[iHandle])) {
+				return;
+			}
+
+			//only one vertex data may be used in one veretex buffer
+			//случаи, когда выделяются 2 vertex data'ы в одной области памяти не рассматриваются
+			this._pBuffersCompatibleMap[iHandle] = pData;
 			pData.declarationChanged.connect(this.modified);
 		}
 

@@ -1,5 +1,8 @@
 ﻿
 module akra {
-    export var time = (): uint => Date.now();
+	/**
+	 * Alias for Date.now();
+	 */
+	export var time = (): uint => Date.now();
 }
 

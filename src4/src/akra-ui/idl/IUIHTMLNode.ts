@@ -1,4 +1,4 @@
-/// <reference path="../../../build/akra.d.ts" />
+/// <reference path="../../../built/Lib/akra.d.ts" />
 
 /// <reference path="3d-party/jquery.d.ts" />
 

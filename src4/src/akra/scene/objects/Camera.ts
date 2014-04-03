@@ -227,8 +227,8 @@ module akra.scene.objects {
 					Mat4.orthogonalProjectionAsymmetric(this._fMinX, this._fMaxX,
 						this._fMinY, this._fMaxY, this._fNearPlane, this._fFarPlane, this._m4fProj);
 					break;
-            }
-            this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+			}
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 
 			this._iUpdateProjectionFlags = bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}

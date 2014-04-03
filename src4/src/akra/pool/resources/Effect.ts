@@ -19,17 +19,13 @@ module akra.pool.resources {
 			return this._nTotalPasses;
 		}
 
-		constructor() {
-			super();
-		}
-
 		isEqual(pEffect: IEffect): boolean { return false; }
 		isReplicated(): boolean { return false; }
 		isMixid(): boolean { return false; }
 		isParameterUsed(pParam: any, iPass?: uint): boolean { return false; }
 
 		createResource(): boolean {
-			this.notifyLoaded();
+			this.notifyCreated();
 			return true;
 		}
 

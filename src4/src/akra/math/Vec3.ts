@@ -27,7 +27,7 @@ module akra.math {
 	var pBuffer: IVec3[];
 	var iElement: uint;
 
-	export class Vec3 {
+	export class Vec3 implements IVec3 {
 		x: float;
 		y: float;
 		z: float;

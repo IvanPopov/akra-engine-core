@@ -14,6 +14,11 @@ module akra.pool.resources {
 		private _pFile: IFile = null;
 		private _pSyntaxTree: parser.IParseTree = null;
 
+		createResource(): boolean {
+			this.notifyCreated();
+			return true;
+		}
+
 		getByteLength(): uint {
 			return this._pFile? this._pFile.getByteLength(): 0;
 		}
@@ -88,6 +93,7 @@ module akra.pool.resources {
 		}
 
 		_initFromBinaryData(pData: Uint8Array, sFileName: string): void {
+			debug.error("todo: not implemented.");
 			// var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
 			// pComposer._loadEffectFromBinary(this._pSyntaxTree, sFileName);
 		}

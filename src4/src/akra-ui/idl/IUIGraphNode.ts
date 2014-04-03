@@ -1,12 +1,11 @@
-
 /// <reference path="IUIComponent.ts" />
-
 
 /// <reference path="IUIGraph.ts" />
 /// <reference path="IUIGraphRoute.ts" />
 /// <reference path="IUIGraphConnectionArea.ts" />
 
 module akra {
+	
 	export enum EUIGraphNodes {
 		UNKNOWN,
 		

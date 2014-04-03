@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../lib/grunt/schema.xsd">
+  <ItemGroup>
+    <TypeScriptCompile Include="akra.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../$(BuiltDir)/$(Configuration)/akra.js</TypeScriptOutFile>
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
+    <TypeScriptDeclarationDir>../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
+    <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
+    <Variable Name="AE_VERSION">'$(Version.full)'</Variable>
+    <Variable Name="AE_WEBGL_DEBUG">$(WebGLDebug)</Variable>
+    <Dependencies>
+      <Attachment>
+        <File Path="resources/js/zip.js/zip.js"/>
+        <File Path="resources/js/zip.js/zip-ext.js"/>
+        <File Path="resources/js/zip.js/mime-types.js"/>
+        <File Path="resources/js/zip.js/inflate.js"/>
+        <CollapsePath>True</CollapsePath>
+        <Format>Enclosure</Format>
+        <OutDir>zip.js</OutDir>
+        <Type>javascript</Type>
+      </Attachment>
+    </Dependencies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ClosureCompiler>
+      <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
+      <CreateSourceMap>False</CreateSourceMap>
+    </ClosureCompiler>
+    <Dependencies>
+      <Attachment Name="AE_THREAD_FILEINTERFACE">
+        <File Path="io/FileInterface.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+      <Attachment Name="AE_THREAD_REMOTEFILE">
+        <File Path="io/RemoteFile.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+      <Attachment Name="AE_THREAD_LOCALFILE">
+        <File Path="io/LocalFile.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+      <Attachment Name="AE_THREAD_TESSELATION">
+        <File Path="terrain/TessellationThread.t.js"/>
+        <Format>String</Format>
+      </Attachment>
+    </Dependencies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Dependencies>
+      <Attachment Name="AE_THREAD_FILEINTERFACE">
+        <File Path="io/FileInterface.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_FILEINTERFACE">
+        <File Path="resources/js/webgl-debug.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+      </Attachment>
+      <Attachment Name="AE_THREAD_REMOTEFILE">
+        <File Path="io/RemoteFile.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_LOCALFILE">
+        <File Path="io/LocalFile.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+      <Attachment Name="AE_THREAD_TESSELATION">
+        <File Path="terrain/TessellationThread.t.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+      </Attachment>
+    </Dependencies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Resource Name="AE_CORE_DEPENDENCIES">
+      <Filename>akra</Filename>
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <File Path="resources/fx/floatSpecialFunctions.afx"/>
+        <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/SystemEffects.afx"/>
+          <ResourceFile Path="resources/fx/Plane.afx"/>
+          <ResourceFile Path="resources/fx/fxaa.afx"/>
+          <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
+          <ResourceFile Path="resources/fx/mesh_geometry.afx">
+            <ResourceFile Path="resources/fx/mesh_texture.afx"/>
+            <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+              <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+            </ResourceFile>
+          </ResourceFile>
+          <ResourceFile Path="resources/fx/prepare_shadows.afx"/>
+          <ResourceFile Path="resources/fx/terrain.afx"/>
+          <ResourceFile Path="resources/fx/prepareDeferredShading.afx">
+            <ResourceFile Path="resources/fx/apply_lights_and_shadows.afx"/>
+            <ResourceFile Path="resources/fx/deferredShading.afx">
+              <ResourceFile Path="resources/fx/color_maps.afx"/>
+            </ResourceFile>
+          </ResourceFile>
+          <ResourceFile Path="resources/fx/generate_normal_map.afx"/>
+          <ResourceFile Path="resources/fx/sky.afx"/>
+          <ResourceFile Path="resources/fx/motion_blur.afx"/>
+          <ResourceFile Path="resources/fx/edge_detection.afx"/>
+          <ResourceFile Path="resources/fx/wireframe.afx"/>
+          <ResourceFile Path="resources/fx/sprite.afx"/>
+        </ResourceFile>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Resource Name="AE_CORE_DEPENDENCIES">
+      <Archive>True</Archive>
+      <UseInlining>True</UseInlining>
+      <Data>
+        <File Path="resources/fx/floatSpecialFunctions.afx"/>
+        <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/SystemEffects.afx"/>
+          <ResourceFile Path="resources/fx/Plane.afx"/>
+          <ResourceFile Path="resources/fx/fxaa.afx"/>
+          <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
+          <ResourceFile Path="resources/fx/mesh_geometry.afx">
+            <ResourceFile Path="resources/fx/mesh_texture.afx"/>
+            <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+              <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+            </ResourceFile>
+          </ResourceFile>
+          <ResourceFile Path="resources/fx/prepare_shadows.afx"/>
+          <ResourceFile Path="resources/fx/terrain.afx"/>
+          <ResourceFile Path="resources/fx/prepareDeferredShading.afx">
+            <ResourceFile Path="resources/fx/apply_lights_and_shadows.afx"/>
+            <ResourceFile Path="resources/fx/deferredShading.afx">
+              <ResourceFile Path="resources/fx/color_maps.afx"/>
+            </ResourceFile>
+          </ResourceFile>
+          <ResourceFile Path="resources/fx/generate_normal_map.afx"/>
+          <ResourceFile Path="resources/fx/sky.afx"/>
+          <ResourceFile Path="resources/fx/motion_blur.afx"/>
+          <ResourceFile Path="resources/fx/edge_detection.afx"/>
+          <ResourceFile Path="resources/fx/wireframe.afx"/>
+          <ResourceFile Path="resources/fx/sprite.afx"/>
+        </ResourceFile>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Project>

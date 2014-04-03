@@ -120,7 +120,7 @@ module akra.io {
                 return true;
             }
 
-            logger.presume(isDefAndNotNull(pProperties), "unknown object <" + sType + "> type cannot be writed");
+            debug.assert(isDefAndNotNull(pProperties), "unknown object <" + sType + "> type cannot be writed");
             return true;
         }
 

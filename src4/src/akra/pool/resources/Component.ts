@@ -9,13 +9,10 @@ module akra.pool.resources {
 		private _pTechnique: IAFXTechniqueInstruction = null;
 		private _pComposer: IAFXComposer = null;
 
-		constructor() {
-			super();
-		}
-
 		create(): void {
 			this._pComposer = this.getManager().getEngine().getComposer();
 		}
+
 
 		getTechnique(): IAFXTechniqueInstruction {
 			return this._pTechnique;
@@ -23,6 +20,7 @@ module akra.pool.resources {
 
 		setTechnique(pTechnique: IAFXTechniqueInstruction): void {
 			this._pTechnique = pTechnique;
+			this.notifyLoaded();
 		}
 
 		isPostEffect(): boolean {

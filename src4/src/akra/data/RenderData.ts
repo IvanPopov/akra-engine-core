@@ -162,7 +162,9 @@ module akra.data {
 		allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
 		allocateIndex(pDecl: any, pData: any): boolean {
-			var pAttrDecl: IVertexDeclaration = VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
+			var pAttrDecl: IVertexDeclaration =
+				VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
+
 
 			if (this.useAdvancedIndex()) {
 				return this._allocateAdvancedIndex(pAttrDecl, pData);
@@ -535,6 +537,10 @@ module akra.data {
 				this._pMap.flow(iFlow, pVertexData));
 		}
 
+		_getComposer(): IAFXComposer {
+			return null;
+		}
+
 		/**
 		 * Register data in this render.
 		 * Necessary for index to index mode, when data realy
@@ -609,7 +615,7 @@ module akra.data {
 					this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength), <int>EHardwareBufferFlags.BACKUP_COPY);
 				}
 				else {
-					//TODO: add support for sinle indexed mesh.
+					//TODO: add support for single indexed mesh.
 				}
 			}
 
@@ -628,7 +634,9 @@ module akra.data {
 		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
 		private _allocateIndex(pDecl: any, pData: any): boolean {
 			'use strict';
-			var pAttrDecl: IVertexDeclaration = VertexDeclaration.normalize(<IVertexElementInterface[]> pDecl);
+
+			var pAttrDecl: IVertexDeclaration =
+				VertexDeclaration.normalize(<IVertexElementInterface[]> pDecl);
 
 			var pIndexData: IBufferData = this._pIndexData;
 			var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;

@@ -15,133 +15,133 @@
 
 module akra.io {
 
-    export class StorageFile extends TFile implements IFile {
+	export class StorageFile extends TFile implements IFile {
 
-        constructor(sFilename?: string, sMode?: string, fnCallback?: Function);
-        constructor(sFilename?: string, iMode?: int, fnCallback?: Function);
-        constructor(sFilename?: string, sMode?: any, fnCallback: Function = TFile.defaultCallback) {
-            super(sFilename, sMode, fnCallback);
-        }
+		constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
+		constructor(sFilename?: string, iMode?: int, cb?: (e: Error, pMeta: IFileMeta) => void);
+		constructor(sFilename?: string, sMode?: any, cb?: (e: Error, pMeta: IFileMeta) => void) {
+			super(sFilename, sMode, cb);
+		}
 
-        clear(fnCallback: Function = TFile.defaultCallback): void {
-            if (this.checkIfNotOpen(this.clear, fnCallback)) {
-                return;
-            }
+		clear(cb: Function = TFile.defaultCallback): void {
+			if (this.checkIfNotOpen(this.clear, cb)) {
+				return;
+			}
 
-            localStorage.setItem(this.getPath(), "");
-            this._pFileMeta.size = 0;
+			localStorage.setItem(this.getPath(), "");
+			this._pFileMeta.size = 0;
 
-            fnCallback(null, this);
-        }
+			cb(null, this);
+		}
 
-        read(fnCallback: Function = TFile.defaultCallback): void {
-            if (this.checkIfNotOpen(this.read, fnCallback)) {
-                return;
-            }
+		read(cb: Function = TFile.defaultCallback): void {
+			if (this.checkIfNotOpen(this.read, cb, arguments)) {
+				return;
+			}
 
-            logger.assert(io.canCreate(this._iMode), "The file is not readable.");
+			//logger.assert(io.canCreate(this._iMode), "The file is not readable.");
 
-            var pData: any = this.readData();
-            var nPos: uint = this._nCursorPosition;
+			var pData: any = this.readData();
+			var nPos: uint = this._nCursorPosition;
 
-            if (nPos > 0) {
-                if (io.isBinary(this._iMode)) {
-                    pData = (new Uint8Array((new Uint8Array(pData)).subarray(nPos))).buffer;
-                }
-                else {
-                    pData = pData.substr(nPos);
-                }
-            }
+			if (nPos > 0) {
+				if (io.isBinary(this._iMode)) {
+					pData = (new Uint8Array((new Uint8Array(pData)).subarray(nPos))).buffer;
+				}
+				else {
+					pData = pData.substr(nPos);
+				}
+			}
 
-            this.atEnd();
+			this.atEnd();
 
-            if (fnCallback) {
-                fnCallback.call(this, null, pData);
-            }
-        }
+			if (cb) {
+				cb.call(this, null, pData);
+			}
+		}
 
-        write(sData: string, fnCallback?: Function, sContentType?: string): void;
-        write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
-        write(pData: any, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void {
-            if (this.checkIfNotOpen(this.write, fnCallback)) {
-                return;
-            }
+		write(sData: string, cb?: Function, sContentType?: string): void;
+		write(pData: ArrayBuffer, cb?: Function, sContentType?: string): void;
+		write(pData: any, cb: Function = TFile.defaultCallback, sContentType?: string): void {
+			if (this.checkIfNotOpen(this.write, cb, arguments)) {
+				return;
+			}
 
-            var iMode: int = this._iMode;
-            var nSeek: uint;
-            var pCurrentData: any;
+			var iMode: int = this._iMode;
+			var nSeek: uint;
+			var pCurrentData: any;
 
-            logger.assert(io.canWrite(iMode), "The file is not writable.");
+			logger.assert(io.canWrite(iMode), "The file is not writable.");
 
-            sContentType = sContentType || (io.isBinary(iMode) ? "application/octet-stream" : "text/plain");
+			sContentType = sContentType || (io.isBinary(iMode) ? "application/octet-stream" : "text/plain");
 
-            pCurrentData = this.readData();
+			pCurrentData = this.readData();
 
-            if (!isString(pCurrentData)) {
-                pCurrentData = conv.abtos(pCurrentData);
-            }
+			if (!isString(pCurrentData)) {
+				pCurrentData = conv.abtos(pCurrentData);
+			}
 
-            nSeek = (isString(pData) ? pData.length : pData.byteLength);
+			nSeek = (isString(pData) ? pData.length : pData.byteLength);
 
-            if (!isString(pData)) {
-                pData = conv.abtos(pData);
-            }
+			if (!isString(pData)) {
+				pData = conv.abtos(pData);
+			}
 
-            pData = (<string>pCurrentData).substr(0, this._nCursorPosition) + (<string>pData) +
-            (<string>pCurrentData).substr(this._nCursorPosition + (<string>pData).length);
+			pData = (<string>pCurrentData).substr(0, this._nCursorPosition) + (<string>pData) +
+			(<string>pCurrentData).substr(this._nCursorPosition + (<string>pData).length);
 
-            try {
-                localStorage.setItem(this.getPath(), pData);
-            }
-            catch (e) {
-                fnCallback(e);
-            }
+			try {
+				localStorage.setItem(this.getPath(), pData);
+			}
+			catch (e) {
+				cb(e);
+			}
 
-            this._pFileMeta.size = pData.length;
-            this._nCursorPosition += nSeek;
+			this._pFileMeta.size = pData.length;
+			this._nCursorPosition += nSeek;
 
-            fnCallback(null);
-        }
+			cb(null);
+		}
 
-        isExists(fnCallback: Function = TFile.defaultCallback): void {
-            fnCallback.call(this, null, localStorage.getItem(this.getPath()) == null);
-        }
+		isExists(cb: Function = TFile.defaultCallback): void {
+			cb.call(this, null, localStorage.getItem(this.getPath()) != null);
+		}
 
-        remove(fnCallback: Function = TFile.defaultCallback): void {
-            localStorage.removeItem(this.getPath());
-            fnCallback.call(this, null);
-        }
+		remove(cb: Function = TFile.defaultCallback): void {
+			localStorage.removeItem(this.getPath());
+			cb.call(this, null);
+		}
 
-        private readData(): any {
-            var pFileMeta: IFileMeta = this._pFileMeta;
-            var pData: string = localStorage.getItem(this.getPath());
-            var pDataBin: ArrayBuffer;
+		private readData(): any {
+			var pFileMeta: IFileMeta = this._pFileMeta;
+			var pData: string = localStorage.getItem(this.getPath());
+			var pDataBin: ArrayBuffer;
 
-            if (pData == null) {
-                pData = "";
-                if (io.canCreate(this._iMode)) {
-                    localStorage.setItem(this.getPath(), pData);
-                }
-            }
+			if (pData == null) {
+				pData = "";
+				if (io.canCreate(this._iMode)) {
+					localStorage.setItem(this.getPath(), pData);
+				}
+			}
 
 
-            if (io.isBinary(this._iMode)) {
-                pDataBin = conv.stoab(pData);
-                pFileMeta.size = pDataBin.byteLength;
-                return pDataBin;
-            }
-            else {
-                pFileMeta.size = pData.length;
-                return pData;
-            }
+			if (io.isBinary(this._iMode)) {
+				pDataBin = conv.stoab(pData);
+				pFileMeta.size = pDataBin.byteLength;
+				return pDataBin;
+			}
+			else {
+				pFileMeta.size = pData.length;
+				return pData;
+			}
 
-            //return null;
-        }
+			//return null;
+		}
 
-        protected update(fnCallback?: Function): void {
-            this._pFileMeta = null;
-            this.readData();
-            fnCallback.call(this, null);
-        }
-    }
+		protected update(cb?: Function): void {
+			this._pFileMeta = {size: 0, lastModifiedDate: null};
+			this.readData();
+			cb.call(this, null);
+		}
+	}
 }

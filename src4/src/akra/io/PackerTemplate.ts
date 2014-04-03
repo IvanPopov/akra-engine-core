@@ -17,12 +17,12 @@ module akra.io {
         }
 
         getType(iType: int): string {
-            logger.presume(isDef(this._pNum2Tpl[iType]), "unknown type detected: " + iType);
+            debug.assert(isDef(this._pNum2Tpl[iType]), "unknown type detected: " + iType);
             return this._pNum2Tpl[iType];
         }
 
         getTypeId(sType: string): int {
-            logger.presume(isDef(this._pTpl2Num[sType]), "unknown type detected: " + sType);
+            debug.assert(isDef(this._pTpl2Num[sType]), "unknown type detected: " + sType);
             return this._pTpl2Num[sType];
         }
 
@@ -53,7 +53,7 @@ module akra.io {
                 sType = sProperties;
             }
 
-            logger.presume(!isString(sProperties), "cannot resolve type: " + sType);
+            debug.assert(!isString(sProperties), "cannot resolve type: " + sType);
 
             return sType;
         }

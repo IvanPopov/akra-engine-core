@@ -1,5 +1,3 @@
-
-
 /// <reference path="ISceneManager.ts" />
 /// <reference path="IParticleManager.ts" />
 /// <reference path="IResourcePoolManager.ts" />
@@ -18,14 +16,36 @@
    
 module akra {
 	export interface IEngineOptions {
-		depsRoot?: string;
+		/** 
+		 * Path to load the root dependencies.
+		 * The default path is #config.data .
+		 * @see config.data
+		 */
+		path?: string;
+		
+		/**
+		 * Additional engine dependencies, like: textures, models, effects etc...
+		 * @sa deps
+		 */
 		deps?: IDependens;
+
+		/**
+		 * Enable gamepad support. Similar to IEngine::enableGamepads()
+		 * @see IEngine::enableGamepads(), IEngine::getGamepads(), IGamepadMap
+		 */
 		gamepads?: boolean;
+
+		/**
+		 * Additional renderer options.
+		 * # External resources
+		 * [WebGL / Context creation parameters](http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2)
+		 */
 		renderer?: IRendererOptions;
-		//loader?: {
-		//	loaded?: (manager: AIDepsManager, pDeps: IDependens) => void;
-		//	changed?: (manager: AIDepsManager, pFile: IDep, pInfo: any) => void;
-		//};
+
+		/**
+		 * Loading progress callback.
+		 */
+		progress: (e: IDepEvent) => void;
 	}
 	
 	export interface IEngine extends IEventProvider {
@@ -56,6 +76,7 @@ module akra {
 		isActive(): boolean;
 		isDepsLoaded(): boolean;
 	
+		ready(cb?: (pEngine: IEngine) => void): boolean;
 	
 		getTimer(): IUtilTimer;
 	

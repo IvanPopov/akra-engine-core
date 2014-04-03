@@ -17,8 +17,12 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="akra-addons\addons\base3dObjects.xml" />
+    <Content Include="akra-addons\addons\filedrop.xml" />
+    <Content Include="akra-addons\addons\navigation.xml" />
     <Content Include="akra-addons\addons\navigation\cubemap.png" />
-    <Content Include="akra-addons\addons\resources.xml" />
+    <Content Include="akra-addons\addons\progress.xml" />
+    <Content Include="akra-addons\addons\progress\css\progress.css" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -35,7 +39,19 @@
     <TypeScriptCompile Include="akra-addons\addons\base3dObjects.ts" />
     <TypeScriptCompile Include="akra-addons\addons\navigation.ts" />
     <TypeScriptCompile Include="akra-addons\addons\filedrop\filedrop.ts" />
+    <TypeScriptCompile Include="akra-addons\addons\progress.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-cookies.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-mocks.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-resource.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-route.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-sanitize.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular-scenario.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\angular\angular.d.ts" />
+    <TypeScriptCompile Include="akra-addons\idl\3d-party\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="akra-addons\idl\IFileDropArea.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="akra-addons\addons\base3dObjects\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

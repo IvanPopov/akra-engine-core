@@ -23,7 +23,7 @@ module akra.scene.light {
 			return this._eLightType;
 		}
 
-		getPptimizedCameraFrustum(): IFrustum {
+		getOptimizedCameraFrustum(): IFrustum {
 			return this._pOptimizedCameraFrustum;
 		}
 

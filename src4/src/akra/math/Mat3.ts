@@ -37,7 +37,7 @@ module akra.math {
 	var pBuffer: IMat3[];
 	var iElement: uint;
 
-	export class Mat3 {
+	export class Mat3 implements IMat3 {
 		data: Float32Array;
 
 		constructor();
@@ -229,7 +229,6 @@ module akra.math {
 					pData[__a33] = arguments[2];
 				}
 				else {
-					var pData1, pData2, pData3;
 					if (arguments[0] instanceof Vec3) {
 
 						var v3fVec1: IVec3 = arguments[0];
@@ -459,7 +458,7 @@ module akra.math {
 
 			var pData: Float32Array = this.data;
 			var pDataDestination: Float32Array = m3fDestination.data;
-
+			
 			var a11: float = pData[__a11], a12: float = pData[__a12], a13: float = pData[__a13];
 			var a21: float = pData[__a21], a22: float = pData[__a22], a23: float = pData[__a23];
 			var a31: float = pData[__a31], a32: float = pData[__a32], a33: float = pData[__a33];
@@ -561,6 +560,7 @@ module akra.math {
 			return true;
 		}
 
+		
 		toMat4(m4fDestination?: IMat4): IMat4 {
 			if (!isDef(m4fDestination)) {
 				m4fDestination = new Mat4();
@@ -664,7 +664,8 @@ module akra.math {
 			var isRotScale: boolean = true;
 
 			//понадобятся если порядок умножения был другим
-			var m3fScaleRot: IMat3 = null, m3fScaleRotTransposed: IMat3 = null;
+			var m3fScaleRot: IMat3 = null;
+			var m3fScaleRotTransposed: IMat3;
 
 			//было отражение или нет
 			var scaleSign: int = (m3fRotScale.determinant() >= 0.) ? 1 : -1;

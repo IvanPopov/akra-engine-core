@@ -169,11 +169,12 @@ module akra.color {
 							s = s.substr(1);
 						}
 
-						if (s.substr(0, 2) !== "0x") {
-							s = "0x" + s;
-						}
+						logger.assert(s.length == 6, "Incorrect color string.");
+						var R: int = parseInt('0x' + s.substr(0, 2));
+						var G: int = parseInt('0x' + s.substr(2, 2));
+						var B: int = parseInt('0x' + s.substr(4, 2));
 
-						this.setRgba(parseInt(s));
+						this.set(R / 255., G / 255., B / 255.);
 					}
 					else {
 						var v: IColorValue = <IColorValue>arguments[0];

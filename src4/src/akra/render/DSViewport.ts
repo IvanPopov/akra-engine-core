@@ -277,8 +277,7 @@ module akra.render {
 						}
 					}
 				}
-			};
-	
+			}	
 		}
 
 		getSkybox(): ITexture { return this._pDeferredSkyTexture; }

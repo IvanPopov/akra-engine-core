@@ -9,6 +9,9 @@ module akra.info {
 
 	import Singleton = util.Singleton;
 
+	window["requestFileSystem"] =
+	window["requestFileSystem"] || window["webkitRequestFileSystem"];
+
 	export class ApiInfo extends Singleton<ApiInfo> implements IApiInfo {
 		private _bWebAudio: boolean = false;
 		private _bFile: boolean = false;
@@ -18,6 +21,7 @@ module akra.info {
 		private _bLocalStorage: boolean = false;
 		private _bWebSocket: boolean = false;
 		private _bGamepad: boolean = false;
+		private _bPromise: boolean = false;
 
 		getWebGL(): boolean {
 			return webgl.isEnabled();
@@ -63,10 +67,12 @@ module akra.info {
 			return isDefAndNotNull(window["zip"]);
 		}
 
+		getPromise(): boolean {
+			return this._bPromise;
+		}
+
 		constructor() {
 			super();
-
-			var pApi = {};
 
 			this._bWebAudio = (window["AudioContext"] && window["webkitAudioContext"] ? true : false);
 			this._bFile = (window["File"] && window["FileReader"] && window["FileList"] && window["Blob"] ? true : false);
@@ -75,6 +81,7 @@ module akra.info {
 			this._bLocalStorage = isDef(window["localStorage"]);
 			this._bWebSocket = isDef(window["WebSocket"]);
 			this._bGamepad = !!navigator["webkitGetGamepads"] || !!navigator["webkitGamepads"] || (navigator.userAgent.indexOf('Firefox/') != -1);
+			this._bPromise = isDefAndNotNull(window["Promise"]);
 		}
 
 		private chechTransferableObjects(): boolean {

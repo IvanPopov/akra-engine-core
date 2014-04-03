@@ -79,10 +79,12 @@ onmessage = function (pEvent) {
     var pCommand = pEvent.data;
     var pFile;
 
+   
+
     pFile = file(pCommand);
 
     if (pFile == null) {
-        if (pCommand.act == File.EXISTS) {
+    	if (pCommand.act == File.EXISTS) {
             postMessage(false);
             return;
         } else {
@@ -100,7 +102,7 @@ onmessage = function (pEvent) {
             postMessage(meta(pFile));
             break;
 
-        case File.READ:
+        case File.READ:  
             read(pFile, function (pData) {
                 if (pCommand.transfer === TRANSFER.FAST && pData instanceof ArrayBuffer) {
                     try  {

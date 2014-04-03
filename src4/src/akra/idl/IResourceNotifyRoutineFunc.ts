@@ -1,6 +1,6 @@
 module akra {
 	export interface IResourceNotifyRoutineFunc {
-		(iFlagBit?: int, iResourceFlags?: int, isSet?: boolean): void;
-		(eEvent?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean): void;
+		(pSender: IResourcePoolItem, iFlagBit?: int, iResourceFlags?: int, isSet?: boolean): void;
+		(pSender: IResourcePoolItem, eEvent?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean): void;
 	}
 }

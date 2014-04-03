@@ -1,4 +1,6 @@
-/// <reference path="../../../build/akra.d.ts" />
+/// <reference path="../../../built/Lib/akra.d.ts" />
+
+declare var AE_NAVIGATION_DEPENDENCIES: { path: string; type: string; };
 
 module akra.addons {
 	import Vec3 = math.Vec3;
@@ -6,7 +8,9 @@ module akra.addons {
 	import addons = config.addons;
 
 	addons['navigation'] = addons['navigation'] || { path: null };
-	addons['navigation'].path = addons['navigation'].path || document.currentScript.src
+	addons['navigation'].path = addons['navigation'].path || uri.currentPath();
+
+	debug.log("config['addons']['navigation'] = ", JSON.stringify(addons['navigation']));
 
 	export interface INavigationsParameters {
 		//path to resources
@@ -375,6 +379,15 @@ module akra.addons {
 		pCallback(null);
 	}
 
+	export function getNavigationDependences(sPath?: string): IDependens {
+		var pDep: IDep = AE_NAVIGATION_DEPENDENCIES;
+
+		return deps.createDependenceByPath(
+			pDep.path,
+			pDep.type,
+			sPath || <string>addons['navigation'].path);
+	}
+
 	/**
 	 * @param pGeneralViewport Target viewport.
 	 * @param pParameters Parameters.
@@ -390,17 +403,28 @@ module akra.addons {
 			pParameters = {};
 		}
 
-		if (isNull(pCallback)) {
-			pCallback = (e: Error) => {
-				//throw e;
-			}
+
+		pCallback = pCallback || ((e: Error) => {
+			if (e) throw e;
+		});
+
+
+		if (pGeneralViewport
+			.getTarget()
+			.getRenderer()
+			.getEngine()
+			.getResourceManager()
+			.getModelPoolByFormat(EModelFormats.COLLADA)
+			.findResource("akra.navigation.ORIENTATION_CUBE")) {
+			return _navigation(pGeneralViewport, pParameters, pCallback);
+
 		}
 
 		deps.load(
 			pGeneralViewport.getTarget().getRenderer().getEngine(),
-			deps.createDependenceByPath("{ %orientation_cube% }"),
-			pParameters.path || <string>addons['navigation'].path,
-			(e: Error, pDep: IDependens): void => {
+			getNavigationDependences(pParameters.path),
+			null,
+			(e: Error): void => {
 				if (!isNull(e)) {
 					pCallback(new Error("Could not load resources for akra.addon.navigation"));
 				}

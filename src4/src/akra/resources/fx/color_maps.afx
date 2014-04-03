@@ -1,0 +1,48 @@
+provide akra.system;
+import akra.system.deferredShading;
+
+
+
+struct VS_IN{
+	float2 position : POSITION;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+};
+
+VS_OUT vs_color_maps(VS_IN IN){
+	VS_OUT Out;
+
+	
+	return Out;
+};
+
+float4 fs_color_maps(VS_OUT IN) : COLOR {
+	
+	return  float4(float3(pixelData.depth), 1.0);//float4(float3(pixelData.id) / 1000., 1.0);
+};	
+
+
+float4 fs_fog(VS_OUT IN) : COLOR {
+
+	const float LOG2 = 1.442695;
+	const float fogDensity = 0.0005;
+	const float4 fogColor = float4(242./255., 206./255., 170./255., .85);
+
+	float depth = pixelData.position.z;//(pixelData.depth + 1.) * .5;
+	float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );
+	fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );
+
+	return  mix( resultAFXColor, fogColor, fogFactor );
+};	
+
+
+technique color_maps {
+	pass color_maps {
+		VertexShader = compile vs_color_maps();
+		PixelShader = compile fs_fog();
+	};
+};
+
+

@@ -1,5 +1,5 @@
-/// <reference path="../../../build/addons/navigation.addon.d.ts" />
-/// <reference path="../../../build/addons/filedrop.addon.d.ts" />
+/// <reference path="../../../built/Lib/navigation.addon.d.ts" />
+/// <reference path="../../../built/Lib/filedrop.addon.d.ts" />
 
 /// <reference path="../idl/IUILabel.ts" />
 /// <reference path="../idl/IUIButton.ts" />

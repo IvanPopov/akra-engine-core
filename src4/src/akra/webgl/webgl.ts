@@ -77,7 +77,6 @@ module akra.webgl {
 		if (isDef((<any>window).WebGLDebugUtils)) {
 			pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext,
 				(err: int, funcName: string, args: IArguments): void => {
-					//debug.log(__CALLSTACK__);
 					throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
 				},
 				(funcName: string, args: IArguments): void => {
@@ -96,7 +95,10 @@ module akra.webgl {
 			logger.warn("Extension " + sExtName + " unsupported for this platform.");
 			return false;
 		}
-		if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
+
+		pWebGLExtension = pWebGLContext.getExtension(sExtName);
+
+		if (pWebGLExtension) {
 
 			if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
 				// debug.log("Extension " + sExtName + " already loaded for this context.");
@@ -212,7 +214,7 @@ module akra.webgl {
 		}
 
 		if (isDefAndNotNull(pWebGLContext)) {
-			if (config.WEBGL_DEBUG) {
+			if (window["WebGLDebugUtils"] && config.WEBGL_DEBUG) {
 				return makeDebugContext(setupContext(pWebGLContext));
 			}
 			else {
@@ -433,6 +435,27 @@ module akra.webgl {
 		return false;
 	}
 
+	export function getWebglElementType(eType: EDataTypes): int {
+		switch (eType) {
+			case EDataTypes.BYTE:
+				return gl.BYTE;
+			case EDataTypes.UNSIGNED_BYTE:
+				return gl.UNSIGNED_BYTE;
+			case EDataTypes.SHORT:
+				return gl.SHORT;
+			case EDataTypes.UNSIGNED_SHORT:
+				return gl.UNSIGNED_SHORT;
+			case EDataTypes.INT:
+				return gl.INT;
+			case EDataTypes.UNSIGNED_INT:
+				return gl.UNSIGNED_INT;
+			case EDataTypes.FLOAT:
+				return gl.FLOAT;
+			default:
+				logger.critical("getWebglElementType unknown data type");
+				return 0;
+		}
+	}
 
 	export function getWebGLDataType(eFormat: EPixelFormats): int {
 		switch (eFormat) {

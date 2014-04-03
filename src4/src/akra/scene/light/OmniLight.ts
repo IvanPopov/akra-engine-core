@@ -210,7 +210,7 @@ module akra.scene.light {
 
 				var m4fTmp: IMat4 = Mat4.perspective(fFov, fAspect, -pDepthRange.min, -pDepthRange.max, Mat4.temp());
 
-				this.getPptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
+				this.getOptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
 				/*************************************************************/
 
 				var haveInfluence: boolean = false;
@@ -237,7 +237,7 @@ module akra.scene.light {
 
 		protected _defineLightingInfluence(pCamera: ICamera, iFace: int): IObjectArray<ISceneObject> {
 			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
-			var pCameraFrustum: IFrustum = this.getPptimizedCameraFrustum();
+			var pCameraFrustum: IFrustum = this.getOptimizedCameraFrustum();
 			// var pCameraFrustum: IFrustum = pCamera.frustum;
 
 			var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
@@ -264,7 +264,7 @@ module akra.scene.light {
 
 		protected _defineShadowInfluence(pCamera: ICamera, iFace: int): IObjectArray<ISceneObject> {
 			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
-			var pCameraFrustum: IFrustum = this.getPptimizedCameraFrustum();
+			var pCameraFrustum: IFrustum = this.getOptimizedCameraFrustum();
 
 			var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
 			pResult.clear();

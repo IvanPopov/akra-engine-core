@@ -6,6 +6,7 @@
 /// <reference path="Viewport.ts" />
 /// <reference path="TextureViewport.ts" />
 /// <reference path="DSViewport.ts" />
+/// <reference path="LPPViewport.ts" />
 /// <reference path="ColorViewport.ts" />
 /// <reference path="ShadowViewport.ts" />
 
@@ -238,15 +239,11 @@ module akra.render {
 		}
 
 		_updateAutoUpdatedViewports(bUpdateStatistics: boolean = true): void {
-			var pViewport: IViewport;
-
-			for (var i in this._pViewportList) {
-				pViewport = this._pViewportList[i];
-
+			this._pViewportList.forEach((pViewport: IViewport, i) => {
 				if (pViewport.isAutoUpdated()) {
 					this._updateViewport(pViewport, bUpdateStatistics);
 				}
-			}
+			});
 		}
 
 		_endUpdate(): void {

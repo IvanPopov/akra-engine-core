@@ -21,7 +21,7 @@ module akra.fx {
 			parser.EParseMode.k_Negate |
 			parser.EParseMode.k_Optimize;
 
-		if (config.DEBUG_PARSER) {
+		if (config.AFX_DEBUG_PARSER) {
 			iMode |= parser.EParseMode.k_DebugMode;
 		}
 		

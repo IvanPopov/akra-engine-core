@@ -1,4 +1,4 @@
-/// <reference path="../../../build/akra.d.ts" />
+/// <reference path="../../../built/lib/akra.d.ts" />
 
 /// <reference path="../idl/IUINode.ts" />
 /// <reference path="../idl/IUILayout.ts" />

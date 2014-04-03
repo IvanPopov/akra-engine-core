@@ -19,6 +19,7 @@ module akra.render {
 		guid: uint = guid();
 
 		shadowed: ISignal<{ (pRenderable: IRenderableObject, bValue: boolean): void; }>;
+
 		beforeRender: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pMethod: IRenderMethod): void; }>;
 
 		click: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
@@ -84,6 +85,11 @@ module akra.render {
 
 		getRenderMethod(): IRenderMethod {
 			return this._pTechnique.getMethod();
+		}
+
+		getRenderID(pObject: ISceneObject = null): int {
+			var pComposer: IAFXComposer = this._pRenderData._getComposer();
+			return pComposer._calcRenderID(pObject, this);
 		}
 
 		setRenderMethod(pMethod: IRenderMethod): void {
@@ -230,7 +236,7 @@ module akra.render {
 			for (var i in this._pTechniqueMap) {
 				var pMethod: IRenderMethod = this._pTechniqueMap[i].getMethod();
 
-				if (!isDefAndNotNull(pMethod) || !pMethod.isResourceLoaded()) {
+				if (!isDefAndNotNull(pMethod) || pMethod.isReady()) {
 					return false;
 				}
 			}
@@ -279,7 +285,7 @@ module akra.render {
 
 				this.getData().index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
 			}
-
+			
 			this._bWireframeOverlay = bOverlay;
 
 			pDefaultRm.getEffect().addComponent("akra.system.wireframe", 0, 0);
