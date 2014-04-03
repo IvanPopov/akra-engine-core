@@ -5,20 +5,20 @@
 	"deps": {
 		"files": [
 			{"path": "effects/SystemEffects.afx"},
-		    {"path": "effects/Plane.afx"},
-		    {"path": "effects/fxaa.afx"},
-		    {"path": "effects/skybox.afx"}, 
-		    {"path": "effects/TextureToScreen.afx"},
-		    {"path": "effects/mesh_geometry.afx"},
-		    {"path": "effects/prepare_shadows.afx"},						    
-		    {"path": "effects/terrain.afx"},
-		    {"path": "effects/prepareDeferredShading.afx"},
-		    {"path": "effects/generate_normal_map.afx"},
-		    {"path": "effects/sky.afx"},
-		    {"path": "effects/motion_blur.afx"},
-		    {"path": "effects/edge_detection.afx"},
-		    {"path": "effects/wireframe.afx"},
-		    {"path": "effects/sprite.afx"}
+			{"path": "effects/Plane.afx"},
+			{"path": "effects/fxaa.afx"},
+			{"path": "effects/skybox.afx"}, 
+			{"path": "effects/TextureToScreen.afx"},
+			{"path": "effects/mesh_geometry.afx"},
+			{"path": "effects/prepare_shadows.afx"},						    
+			{"path": "effects/terrain.afx"},
+			{"path": "effects/prepareDeferredShading.afx"},
+			{"path": "effects/generate_normal_map.afx"},
+			{"path": "effects/sky.afx"},
+			{"path": "effects/motion_blur.afx"},
+			{"path": "effects/edge_detection.afx"},
+			{"path": "effects/wireframe.afx"},
+			{"path": "effects/sprite.afx"}
 		],
 		"deps": {
 			"files": [
