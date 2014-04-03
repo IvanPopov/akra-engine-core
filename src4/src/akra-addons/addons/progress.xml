@@ -5,11 +5,11 @@
     <TypeScriptCompile Include="progress.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/addons/progress.addon.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/addons/progress.addon.js</TypeScriptOutFile>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-    <TypeScriptDeclarationDir>../../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
+    <TypeScriptDeclarationDir>../../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
     <Dependencies>
       <Module Name="core" />
     </Dependencies>
@@ -17,8 +17,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Dependencies>
-      <Attachment>
-        <Folder Path="progress/full" />
+      <Attachment Name="AE_PROGRESS_CSS">
+        <File Path="progress/full/progress.css" />
+        <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
+      </Attachment>
+     <Attachment>
+        <File Path="progress/full/bg.png" />
         <Format>Enclosure</Format>
         <CollapsePath>True</CollapsePath>
         <OutDir>progress</OutDir>
@@ -27,10 +33,17 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Dependencies>
-      <Attachment>
-        <Folder Path="progress/min" />
+      <Attachment Name="AE_PROGRESS_CSS">
+        <File Path="progress/min/progress.css" />
         <Format>Enclosure</Format>
         <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
+      </Attachment>
+     <Attachment>
+        <File Path="progress/min/bg.png" />
+        <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
       </Attachment>
     </Dependencies>
     <ClosureCompiler>

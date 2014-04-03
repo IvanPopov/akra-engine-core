@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Performance</title>
+    <meta name="description" content="~800 draw calls per frame">
+    <style>
+      body {
+        padding: 0; 
+        margin: 0;
+        background: white;
+      }
+      #progress {
+        position: absolute; 
+        left: 50%; 
+        top: 50%; 
+        z-index: 9999;
+      }
+    </style>
+    <script src="../../akra.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/zip.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/zip-ext.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/mime-types.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/inflate.js"></script>
+    <script src="../../../../src/akra/resources/js/webgl-debug.js"></script>
+    <script src="../../addons/progress.addon.js"></script>
+    <script src="../../addons/base3dObjects.addon.js"></script>
+  </head>
+  <body>
+    <div id="progress"></div>
+    <script src="performance.js"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+{
+	"files": [
+		{
+			"path": "../../../../src/demos/light-shafts/data/textures/lensflare_cookies_new.png",
+			"name": "LENSFLARE_COOKIES_TEXTURE"
+		},
+		{
+			"path": "../../../../src/demos/light-shafts/data/effects/lensflare.afx"
+		},
+		{
+			"path": "../../../../src/demos/light-shafts/data/effects/sunshaft.afx"
+		},
+		{
+			"path": "../../../../src/demos/light-shafts/data/effects/blur.afx"
+		},
+		{
+			"path": "../../../../src/demos/light-shafts/data/models/WoodSoldier/WoodSoldier.dae",
+			"name": "WOOD_SOLDIER.DAE"
+		},
+		{
+			"path": "../../../../src/demos/light-shafts/data/models/rock/rock-1-low-p.DAE",
+			"name": "ROCK.DAE"
+		},
+		{
+			"path": "../../../../src/demos/light-shafts/data/models/torusknot.DAE",
+			"name": "TORUSKNOT.DAE"
+		}
+	]
+}

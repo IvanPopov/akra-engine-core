@@ -5,11 +5,11 @@
     <TypeScriptCompile Include="akra.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../$(BuiltDir)/$(Configuration)/akra.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../$(BuiltDir)/akra.js</TypeScriptOutFile>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-    <TypeScriptDeclarationDir>../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
+    <TypeScriptDeclarationDir>../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
     <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
     <Variable Name="AE_VERSION">'$(Version.full)'</Variable>
     <Variable Name="AE_WEBGL_DEBUG">$(WebGLDebug)</Variable>

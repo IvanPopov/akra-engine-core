@@ -6,7 +6,7 @@
     <TypeScriptCompile Include="arteries.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/arteries/arteries.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/arteries/arteries.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
       <!--<Module Name="core" />-->

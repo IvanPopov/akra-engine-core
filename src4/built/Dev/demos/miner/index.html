@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Miner</title>
+    <meta name="description" content="Miner animation demo">
+    <style>
+      body {
+        padding: 0; 
+        margin: 0;
+        background: white;
+      }
+      #progress {
+        position: absolute; 
+        left: 50%; 
+        top: 50%; 
+        z-index: 9999;
+      }
+    </style>
+    <script src="../../akra.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/zip.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/zip-ext.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/mime-types.js"></script>
+    <script src="../../../../src/akra/resources/js/zip.js/inflate.js"></script>
+    <script src="../../../../src/akra/resources/js/webgl-debug.js"></script>
+    <script src="../../addons/progress.addon.js"></script>
+    <script src="../../addons/navigation.addon.js"></script>
+    <script src="../../addons/base3dObjects.addon.js"></script>
+    <script src="../../../../src/demos/miner/dat.gui/dat.gui.js"></script>
+  </head>
+  <body>
+    <div id="progress"></div>
+    <script src="miner.js"></script>
+  </body>
+</html>

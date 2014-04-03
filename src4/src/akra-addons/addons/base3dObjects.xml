@@ -5,11 +5,11 @@
     <TypeScriptCompile Include="base3dObjects.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/addons/base3dObjects.addon.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/addons/base3dObjects.addon.js</TypeScriptOutFile>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-    <TypeScriptDeclarationDir>../../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
+    <TypeScriptDeclarationDir>../../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
     <Dependencies>
       <Module Name="core" />
     </Dependencies>
