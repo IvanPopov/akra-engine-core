@@ -71,6 +71,8 @@ module akra {
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
+		pViewport.setClearEveryFrame(true);
+		pViewport.setBackgroundColor(color.BLACK);
 
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);

@@ -222,7 +222,7 @@ module akra.ui {
 			"resize"
 		];
 
-		static RenderedSignal = RenderedSignal;
+		static RenderedSignal: typeof Signal = RenderedSignal;
 	}
 }
 

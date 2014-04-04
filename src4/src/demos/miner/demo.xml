@@ -6,7 +6,7 @@
     <TypeScriptCompile Include="miner.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/miner/miner.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/miner/miner.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
       <Attachment>

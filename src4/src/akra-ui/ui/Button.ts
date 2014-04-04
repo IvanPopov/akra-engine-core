@@ -43,7 +43,7 @@ module akra.ui {
 			this.setText(pOptions.text || "push");
 		}
 
-		static ClickSignal = ClickSignal;
+		static ClickSignal: typeof Signal = ClickSignal;
 	}
 
 	register("Button", Button);

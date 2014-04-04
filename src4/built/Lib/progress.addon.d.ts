@@ -1,8 +1,5 @@
 ﻿/// <reference path="akra.d.ts" />
-declare var AE_PROGRESS_DEPENDENCIES: {
-    path: string;
-    type: string;
-};
+declare var AE_PROGRESS_CSS: any;
 declare module akra.addons {
     class Progress {
         private element;

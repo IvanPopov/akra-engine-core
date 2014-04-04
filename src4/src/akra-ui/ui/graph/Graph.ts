@@ -167,10 +167,10 @@ module akra.ui.graph {
 		connectionEnd: ISignal<{ (pGraph: IUIGraph): void; }>;
 
 
-		static KeydownSignal = KeydownSignal;
-		static MousemoveSignal = MousemoveSignal;
-		static MouseupSignal = MouseupSignal;
-		static ClickSignal = ClickSignal;
+		static KeydownSignal: typeof Signal = KeydownSignal;
+		static MousemoveSignal: typeof Signal = MousemoveSignal;
+		static MouseupSignal: typeof Signal = MouseupSignal;
+		static ClickSignal: typeof Signal = ClickSignal;
 
 		static event(eType: EUIGraphEvents): IUIGraphEvent {
 			return {

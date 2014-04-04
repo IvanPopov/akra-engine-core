@@ -68,9 +68,9 @@ module akra.ui.scene {
 		protected _iUpdateTimer: int = -1;
 		protected _pIDE: IUIIDE = null;
 
-		constructor (parent, options?) {
-			super(parent, options);
-		}
+		//constructor (parent, options?) {
+		//	super(parent, options);
+		//}
 
 		fromScene(pScene: IScene3d): void {
 			this._pScene = pScene;
@@ -132,7 +132,7 @@ module akra.ui.scene {
 		}
 	}
 
-	export var Tree = SceneTree;
+	//export var Tree = SceneTree;
 
 	register("SceneTree", SceneTree);
 }

@@ -121,9 +121,9 @@ module akra.ui {
 		}
 
 
-		static ClickSignal = ClickSignal;
-		static FocusoutSignal = FocusoutSignal;
-		static KeydownSignal = KeydownSignal;
+		static ClickSignal: typeof Signal = ClickSignal;
+		static FocusoutSignal: typeof Signal = FocusoutSignal;
+		static KeydownSignal: typeof Signal = KeydownSignal;
 	}
 
 	register("Label", Label);

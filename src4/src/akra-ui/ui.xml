@@ -7,8 +7,8 @@
     <TypeScriptCompile Include="ui/IDE.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../$(BuiltDir)/$(Configuration)/akra-ui.js</TypeScriptOutFile>
-    <TypeScriptDeclarationDir>../../$(BuiltDir)/Lib</TypeScriptDeclarationDir>
+    <TypeScriptOutFile>../../$(BuiltDir)/akra-ui.js</TypeScriptOutFile>
+    <TypeScriptDeclarationDir>../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>

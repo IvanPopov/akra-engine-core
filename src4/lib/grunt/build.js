@@ -14,7 +14,12 @@ var jade = require('jade');
 
 var TYPESCRIPT = "typescript-1.0RC";
 
+
 module.exports = function (grunt) {
+
+	function isDev() {
+		return cfg('BuildType') == "Dev";
+	}
 
 	function mv(from, to) {
 		copy(from, to);
@@ -332,7 +337,7 @@ module.exports = function (grunt) {
 			if (forceRebuild) {
 				log(cmd + " " + argv.join(" "));
 			}
-
+			
 			function spawnCallback(code) {
 				if (forceRebuild)
 					stopAnimation(anim);
@@ -495,6 +500,7 @@ module.exports = function (grunt) {
 			}
 		}
 
+		//argv.push("--define=\"akra.config.DEBUG=" + (cfg('Configuration') === 'Debug' ? 'true' : 'false') + "\"");
 
 		if (compilerOptions.get("//CreateSourceMap")) {
 			if (compilerOptions.get("//CreateSourceMap").textContent === "True") {
@@ -604,6 +610,15 @@ module.exports = function (grunt) {
 		console.time("Build project " + config.getAttribute("Name"));
 
 
+		//fetch variables from dep. modules
+		for (var moduleName in modulesInfo) {
+			var module = modulesInfo[moduleName];
+			for (var i in module.variables) {
+				debug("@VARIABLE(PARENT)", i);
+				variables[i] = module.variables[i];
+			}
+		}
+
 		config.find("//PropertyGroup/Variable").forEach(function (variable) {
 			var name = variable.getAttribute("Name");
 			var value = computeExpression(variable.textContent);
@@ -616,8 +631,6 @@ module.exports = function (grunt) {
 
 			debug("@VARIABLE " + name + "=" + (typeof value == 'string' ? value.substr(0, 48) : value));
 		});
-
-
 
 		config.find("//PropertyGroup/Resource").forEach(function (resource) {
 			var resourceName = resource.getAttribute("Name");
@@ -638,7 +651,7 @@ module.exports = function (grunt) {
 				variables[attachmentName] = JSON.stringify(result, null, '\t');
 				variables[attachmentName + ".format"] = JSON.stringify(result.format);
 
-				if (result.format !== null && result.format !== "String") {
+				if (result.format !== null && result.format !== "String" && result.format !== "Enclosure") {
 					variables[attachmentName + ".content"] = result.content;
 				}
 				else {
@@ -646,7 +659,7 @@ module.exports = function (grunt) {
 				}
 			}
 		});
-
+		
 		if (Object.keys(variables).length === 0 || !info.forceRebuild) {
 			return cb(true, modulesInfo);
 		}
@@ -655,6 +668,7 @@ module.exports = function (grunt) {
 		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g) || [];
 
 		var i = 0;
+
 		do {
 			var name = list[i++];
 			var value = variables[name];
@@ -665,7 +679,7 @@ module.exports = function (grunt) {
 			}
 
 		} while (i < list.length);
-
+		
 		write(outFile, data);
 		console.timeEnd("Build project " + config.getAttribute("Name"));
 
@@ -736,17 +750,23 @@ module.exports = function (grunt) {
 			}
 		}
 
+		if (isDev()) {
+			isArchive = false;
+			useInlining = false;
+		}
+
 		var i;
 		if (mapFile) {
 			map = JSON.parse(read(mapFile));
 
-			var mapFolder = path.dirname(mapFile);
+			var mapFolder = path.dirname(path.relative(configPath, mapFile));
 
 			var p = map;
 			while (p) {
 				if (p.files) {
 					for (i = 0; i < p.files.length; i++) {
-						p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
+						p.files[i].path = path.normalize(path.join(mapFolder, p.files[i].path)).replace(/\\/ig, "/");
+						//console.log(p.files[i].path);
 					}
 				}
 
@@ -757,9 +777,10 @@ module.exports = function (grunt) {
 			map = { files: [] };
 		}
 
+		var additionalFiles = [];
+		
 		if (resource.get("Data")) {
 			var data = resource.get("Data");
-			var additionalFiles = [];
 
 			if (data.get("Folder")) {
 				additionalFiles = readFolders(data.find("Folder"), config);
@@ -778,6 +799,19 @@ module.exports = function (grunt) {
 
 				for (i = 0; i < resourceFiles.length; ++i) {
 					loadResource(resourceFiles[i], lowLevel);
+				}
+			}
+
+			if (isDev()) {
+				var p = map;
+				while (p) {
+					if (p.files) {
+						for (i = 0; i < p.files.length; i++) {
+							p.files[i].path = path.relative(path.join(buildDir, outDir), path.join(configPath, p.files[i].path)).replace(/\\/ig, "/");
+						}
+					}
+
+					p = p.deps;
 				}
 			}
 		}
@@ -831,7 +865,9 @@ module.exports = function (grunt) {
 			var dstFile = path.join(outputDir, srcFiles[i]);
 			var srcFile = path.resolve(path.join(configPath, srcFiles[i]));
 
-			copy(srcFile, dstFile);           //записываем файл в destFolder
+			if (!isDev()) {
+				copy(srcFile, dstFile);           //записываем файл в destFolder
+			}
 		}
 
 		mapFile = path.join(outputDir, resourceName + ".map");
@@ -1010,6 +1046,11 @@ module.exports = function (grunt) {
 		var srcDir = config.getAttribute("Path");
 		var buildDir = path.join(config.getAttribute("Path"), config.getAttribute("OutDir"));
 		var type = null;
+		var collapsePath = false;
+
+		if (attachment.get("CollapsePath")) {
+			collapsePath = attachment.get("CollapsePath").textContent === "True";
+		}
 
 		if (attachment.hasAttribute("Name")) {
 			name = attachment.getAttribute("Name");
@@ -1064,11 +1105,22 @@ module.exports = function (grunt) {
 		if (format === "Enclosure") {
 			var data = [];
 			files.forEach(function (file) {
-				var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
 				
-				if (info.forceRebuild) {
-					copy(file, dest);
-					debug("@COPY", file, "->", path.join(buildDir, outDir, path.basename(file)));
+				if (collapsePath) {
+					var dest = path.join(buildDir, outDir, path.basename(file));
+				}
+				else {
+					var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
+				}
+				
+				if (isDev()) {
+					dest = file;
+				}
+				else {
+					if (info.forceRebuild) {
+						copy(file, dest);
+						debug("@COPY", file, "->", path.join(buildDir, outDir, path.basename(file)));
+					}
 				}
 
 				data.push(path.relative(buildDir, dest).replace(/\\/g, '/'));
@@ -1206,13 +1258,13 @@ module.exports = function (grunt) {
 		var demo = this.args[0];
 
 		if (!demo) {
-			//view list of demos
+			log("\nAvailable demos:");
 			var i = 0;
 			grunt.file.expand({ filter: 'isDirectory' }, path.join(cfg('DemosSourceDir'), "*")).forEach(function (dir) {
 				var configFile = path.join(dir, "demo.xml");
 				if (exists(configFile)) {
 					var config = loadConfig(configFile);
-					log((i++) + ".", config.getAttribute("Name") + "\t\t'" + "grunt demo:" + path.basename(dir) + "'", "\t\t", config.get("Description").textContent)
+					log("\t" + (i++) + ". " + config.getAttribute("Name") + "\t\t'" + "grunt demo:" + path.basename(dir) + "' " + "\t\t" + config.get("Description").textContent)
 				}
 			});
 

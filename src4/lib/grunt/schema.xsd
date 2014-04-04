@@ -164,6 +164,18 @@
         <xs:element ref="Type" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="Format" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="OutDir" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="CollapsePath">
+          <xs:annotation>
+            <xs:documentation>
+             Collapse path. (Remove original file structure).
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="Boolean"/>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
       </xs:choice>
       <xs:attribute name="Name" type="variableName" use="optional">
         <xs:annotation>

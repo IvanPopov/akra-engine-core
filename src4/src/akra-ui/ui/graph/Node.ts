@@ -291,11 +291,11 @@ module akra.ui.graph {
 		selected: ISignal<{ (pNode: IUIGraphNode, bModified: boolean): void; }>;
 
 
-		static MouseenterSignal = MouseenterSignal;
-		static MouseleaveSignal = MouseleaveSignal;
-		static ClickSignal = ClickSignal;
-		static MoveSignal = MoveSignal
-		static DbclickSignal = DbclickSignal;
+		static MouseenterSignal: typeof Signal = MouseenterSignal;
+		static MouseleaveSignal: typeof Signal = MouseleaveSignal;
+		static ClickSignal: typeof Signal = ClickSignal;
+		static MoveSignal: typeof Signal = MoveSignal
+		static DbclickSignal: typeof Signal = DbclickSignal;
 	}
 
 	register("graph.Node", <any>Node);

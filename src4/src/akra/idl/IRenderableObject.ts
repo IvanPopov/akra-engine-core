@@ -31,6 +31,7 @@ module akra {
 		getRenderer(): IRenderer;
 		getTechnique(sName?: string): IRenderTechnique;
 		getTechniqueDefault(): IRenderTechnique;
+		getRenderID(pObject: ISceneObject): int;
 
 		destroy(): void;
 		setVisible(bVisible?: boolean): void;

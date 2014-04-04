@@ -101,7 +101,7 @@ module akra.ui {
 			return super.toString(isRecursive, iDepth);
 		}
 
-		static ClickSignal = ClickSignal;
+		static ClickSignal: typeof Signal = ClickSignal;
 	}
 
 	export function isCheckbox(pEntity: IEntity): boolean {

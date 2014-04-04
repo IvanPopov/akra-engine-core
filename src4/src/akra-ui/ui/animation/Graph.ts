@@ -333,7 +333,7 @@ module akra.ui.animation {
 			this.getElement().addClass("component-animationgraph");
 		}
 
-		static DropSignal = DropSignal;
+		static DropSignal: typeof Signal = DropSignal;
 	}
 
 	register("animation.Graph", <any>Graph);

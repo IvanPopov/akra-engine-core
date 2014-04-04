@@ -27,6 +27,13 @@ module akra {
 		getRenderable(i?: uint): IRenderableObject;
 		getObjectFlags(): int;
 
+		getRenderID(): int;
+		/**
+		 * Get unique render id.
+		 * Render ID used to identify the object in each pixel of viewport/screen.
+		 * @param iRenderable Number of renderable object.
+		 */
+		getRenderID(iRenderable: int): int;
 		
 		isWorldBoundsNew(): boolean;
 

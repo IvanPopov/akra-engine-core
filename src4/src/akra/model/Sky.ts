@@ -109,6 +109,10 @@ module akra.model {
 			return this._pEngine;
 		}
 
+		getSunDirection(): IVec3 {
+			return this._v3fSunDir;
+		}
+
 		scale(fCos: float): float {
 			var x: float = 1.0 - fCos;
 			return this._fRayleighScaleDepth * math.exp(-0.00287 + x * (0.459 + x * (3.83 + x * (-6.80 + x * 5.25))));

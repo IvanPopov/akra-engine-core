@@ -5,7 +5,7 @@
   <Main>index.jade</Main>
  
   <PropertyGroup>
-    <DestFolder>../../../$(BuiltDir)/$(Configuration)/demos/parser-sandbox/</DestFolder>
+    <DestFolder>../../../$(BuiltDir)/demos/parser-sandbox/</DestFolder>
     <Dependencies>
       <Module Name="parser" />
       <Attachment>
@@ -25,14 +25,17 @@
       <Attachment>
         <File Path="CodeMirror-2.23/lib/codemirror.js"/>
         <Type>javascript</Type>
+        <Format>Enclosure</Format>
       </Attachment>
       <Attachment>
         <File Path="CodeMirror-2.23/mode/clike/clike.js"/>
         <Type>javascript</Type>
+        <Format>Enclosure</Format>
       </Attachment>
       <Attachment>
         <File Path="CodeMirror-2.23/lib/codemirror.css"/>
         <Type>css</Type>
+        <Format>Enclosure</Format>
       </Attachment>
     </Dependencies>
   </PropertyGroup>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Light-shafts" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Light shafts demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="light-shafts.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/light-shafts/light-shafts.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+      
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Folder Path="Data"/>
+        <ResourceFile Path="data/textures/lensflare_cookies_new.png" Name="LENSFLARE_COOKIES_TEXTURE"/>
+        
+        <ResourceFile Path="data/effects/lensflare.afx"/>
+        <ResourceFile Path="data/effects/sunshaft.afx"/>
+        <ResourceFile Path="data/effects/blur.afx"/>
+
+        <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.dae" Name="WOOD_SOLDIER.DAE"/>
+        <ResourceFile Path="data/models/rock/rock-1-low-p.DAE" Name="ROCK.DAE"/>
+        <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

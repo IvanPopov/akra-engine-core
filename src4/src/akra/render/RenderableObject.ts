@@ -87,6 +87,11 @@ module akra.render {
 			return this._pTechnique.getMethod();
 		}
 
+		getRenderID(pObject: ISceneObject = null): int {
+			var pComposer: IAFXComposer = this._pRenderData._getComposer();
+			return pComposer._calcRenderID(pObject, this);
+		}
+
 		setRenderMethod(pMethod: IRenderMethod): void {
 			this.switchRenderMethod(pMethod);
 		}

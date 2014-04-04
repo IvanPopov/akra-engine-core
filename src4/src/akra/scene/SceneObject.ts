@@ -110,6 +110,24 @@ module akra.scene {
 			return null;
 		}
 
+
+		getRenderID(): int;
+		/**
+		 * Get unique render id.
+		 * Render ID used to identify the object in each pixel of viewport/screen.
+		 * @param iRenderable Number of renderable object.
+		 */
+		getRenderID(iRenderable: int): int;
+		getRenderID(i?): int {
+			var pComposer: IAFXComposer = this.getScene().getManager().getEngine().getComposer();
+
+			if (isDef(i)) {
+				return pComposer._calcRenderID(this, this.getRenderable(i));
+			}
+
+			return pComposer._calcRenderID(this, null);
+		}
+
 		isWorldBoundsNew(): boolean {
 			return bf.testBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds);
 		}
