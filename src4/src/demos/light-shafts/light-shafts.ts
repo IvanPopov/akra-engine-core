@@ -207,6 +207,7 @@ module akra {
             DOF_RADIUS: 0,
             DOF_FOCAL_PLANE: 10.,
             DOF_FOCUS_POWER: 0.6,
+            DOF_QUALITY: 0.7,
         };
 
 		var pBlurFolder = pGUI.addFolder("blur");
@@ -216,6 +217,7 @@ module akra {
         (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
         (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_POWER')).min(0.1).max(1.2).name("focus power");
         (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
+        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
@@ -236,7 +238,9 @@ module akra {
 			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
 			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
-			pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
+            pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
+
+            pDofData.DOF_FOCAL_PLANE = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth()/2., pViewport.getActualHeight()/2., 1.)).subtract(pCamera.getWorldPosition()).z;
 
 			pPass.setUniform('SUNSHAFT_ANGLE', pSunshaftData.SUNSHAFT_ANGLE);
 			pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
@@ -266,6 +270,7 @@ module akra {
             pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
             pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
             pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
+            pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
 
 			//if (iCounter++%240 === 0) {
 			//console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
