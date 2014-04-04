@@ -132,7 +132,7 @@ module akra.render {
 				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
 				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_omni");
 
-				this._pViewScreen.getRenderMethodByName("passA").setForeign("useOnlyPosition", false);
+				this._pViewScreen.getRenderMethodByName("passA").setForeign("prepareOnlyPosition", false);
 			}
 			else {
 				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_diffuse_specular' pass)");
@@ -143,7 +143,7 @@ module akra.render {
 				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
 				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_omni_ambient");
 
-				this._pViewScreen.getRenderMethodByName("passB").setForeign("useOnlyPosition", true);
+				this._pViewScreen.getRenderMethodByName("passB").setForeign("prepareOnlyPosition", true);
 			}
 			else {
 				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_ambient_shadow' pass)");

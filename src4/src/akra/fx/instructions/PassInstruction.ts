@@ -179,7 +179,6 @@ module akra.fx.instructions {
 			return this._pFullTextureVariableMap;
 		}
 
-
 		_isComplexPass(): boolean {
 			return this._bIsComlexPass;
 		}

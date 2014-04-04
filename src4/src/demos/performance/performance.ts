@@ -90,13 +90,24 @@ module akra {
 		pViewport.setClearEveryFrame(true);
 
 		std.createKeymap(pViewport);
-
+		std.createSceneEnvironment(pScene, true, false);
 		
 
 		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
-		pLight.setShadowCaster(false);
+		pLight.setShadowCaster(true);
 
-		loadManyModels(400, "CUBE.DAE");
+		var pDepthTextures: ITexture[] = (<IOmniLight>pLight).getDepthTextureCube();
+		var pShowedDepthRange: IVec2 = new Vec2(0.9, 1.);
+		for(var i: uint = 0; i < pDepthTextures.length; i++){
+			var pTextureViewport = new render.TextureViewport(pDepthTextures[i], 0.01, 0.01 + i*0.16, 0.15, 0.15, 1. + i);
+			pCanvas.addViewport(pTextureViewport);
+			pTextureViewport.getEffect().addComponent("akra.system.display_depth");
+			pTextureViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint)=>{
+				pTechnique.getPass(iPass).setUniform("depthRange", pShowedDepthRange);
+			});
+		}
+
+		loadManyModels(1, "CUBE.DAE");
 		pProgress.destroy();
 		pEngine.exec();
 	}
