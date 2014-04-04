@@ -17,6 +17,7 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="akra-ui\ui.xml" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>

@@ -1,13 +1,13 @@
 ﻿/// <reference path="../../../built/Lib/akra.d.ts" />
 
-declare var AE_PROGRESS_DEPENDENCIES: { path: string; type: string; };
+declare var AE_PROGRESS_CSS: any;
 
 module akra.addons {
 
 	import addons = config.addons;
 
 	addons['progress'] = addons['progress'] || { "css": null };
-	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + "/progress/" + (AE_DEBUG? "debug": "release") + "/progress.css");
+	addons['progress']["css"] = addons['progress']["css"] || (uri.currentPath() + AE_PROGRESS_CSS.content);
 
 	debug.log("config['addons']['progress'] = ", JSON.stringify(addons['progress']));
 

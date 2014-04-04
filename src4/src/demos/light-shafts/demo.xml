@@ -6,7 +6,7 @@
     <TypeScriptCompile Include="light-shafts.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/light-shafts/light-shafts.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/light-shafts/light-shafts.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
       <Attachment>

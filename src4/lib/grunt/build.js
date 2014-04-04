@@ -14,7 +14,12 @@ var jade = require('jade');
 
 var TYPESCRIPT = "typescript-1.0RC";
 
+
 module.exports = function (grunt) {
+
+	function isDev() {
+		return cfg('BuildType') == "Dev";
+	}
 
 	function mv(from, to) {
 		copy(from, to);
@@ -332,7 +337,7 @@ module.exports = function (grunt) {
 			if (forceRebuild) {
 				log(cmd + " " + argv.join(" "));
 			}
-
+			
 			function spawnCallback(code) {
 				if (forceRebuild)
 					stopAnimation(anim);
@@ -646,7 +651,7 @@ module.exports = function (grunt) {
 				variables[attachmentName] = JSON.stringify(result, null, '\t');
 				variables[attachmentName + ".format"] = JSON.stringify(result.format);
 
-				if (result.format !== null && result.format !== "String") {
+				if (result.format !== null && result.format !== "String" && result.format !== "Enclosure") {
 					variables[attachmentName + ".content"] = result.content;
 				}
 				else {
@@ -745,17 +750,23 @@ module.exports = function (grunt) {
 			}
 		}
 
+		if (isDev()) {
+			isArchive = false;
+			useInlining = false;
+		}
+
 		var i;
 		if (mapFile) {
 			map = JSON.parse(read(mapFile));
 
-			var mapFolder = path.dirname(mapFile);
+			var mapFolder = path.dirname(path.relative(configPath, mapFile));
 
 			var p = map;
 			while (p) {
 				if (p.files) {
 					for (i = 0; i < p.files.length; i++) {
-						p.files[i].path = path.normalize(mapFolder + "/" + p.files[i].path).replace(/\\/ig, "/");
+						p.files[i].path = path.normalize(path.join(mapFolder, p.files[i].path)).replace(/\\/ig, "/");
+						//console.log(p.files[i].path);
 					}
 				}
 
@@ -766,9 +777,10 @@ module.exports = function (grunt) {
 			map = { files: [] };
 		}
 
+		var additionalFiles = [];
+		
 		if (resource.get("Data")) {
 			var data = resource.get("Data");
-			var additionalFiles = [];
 
 			if (data.get("Folder")) {
 				additionalFiles = readFolders(data.find("Folder"), config);
@@ -787,6 +799,19 @@ module.exports = function (grunt) {
 
 				for (i = 0; i < resourceFiles.length; ++i) {
 					loadResource(resourceFiles[i], lowLevel);
+				}
+			}
+
+			if (isDev()) {
+				var p = map;
+				while (p) {
+					if (p.files) {
+						for (i = 0; i < p.files.length; i++) {
+							p.files[i].path = path.relative(path.join(buildDir, outDir), path.join(configPath, p.files[i].path)).replace(/\\/ig, "/");
+						}
+					}
+
+					p = p.deps;
 				}
 			}
 		}
@@ -840,7 +865,9 @@ module.exports = function (grunt) {
 			var dstFile = path.join(outputDir, srcFiles[i]);
 			var srcFile = path.resolve(path.join(configPath, srcFiles[i]));
 
-			copy(srcFile, dstFile);           //записываем файл в destFolder
+			if (!isDev()) {
+				copy(srcFile, dstFile);           //записываем файл в destFolder
+			}
 		}
 
 		mapFile = path.join(outputDir, resourceName + ".map");
@@ -1086,9 +1113,14 @@ module.exports = function (grunt) {
 					var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
 				}
 				
-				if (info.forceRebuild) {
-					copy(file, dest);
-					debug("@COPY", file, "->", path.join(buildDir, outDir, path.basename(file)));
+				if (isDev()) {
+					dest = file;
+				}
+				else {
+					if (info.forceRebuild) {
+						copy(file, dest);
+						debug("@COPY", file, "->", path.join(buildDir, outDir, path.basename(file)));
+					}
 				}
 
 				data.push(path.relative(buildDir, dest).replace(/\\/g, '/'));

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>                           					
+    <head>                               			
+        <title></title>   	
+        <script type="text/javascript" src="../../../../bin/RELEASE/akra.js.min" data="../data" ></script>
+        <script type="text/javascript" src="../../../../data/js/Progress.js"></script>
+        
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+        <link rel="stylesheet" href="http://talkslab.com/metro-bootstrap/css/metro-bootstrap.css">
+        <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+
+        <script type="text/javascript" src="pnotify/jquery.pnotify.min.js"></script>
+        <link href="pnotify/jquery.pnotify.default.css" media="all" rel="stylesheet" type="text/css" />
+        <!-- Include this file if you are using Pines Icons. -->
+        <link href="pnotify/jquery.pnotify.default.icons.css" media="all" rel="stylesheet" type="text/css" />
+
+        <style type="text/css">
+            body {
+              margin: 0;
+              padding: 0;
+              background-color: black;
+            }
+        </style>
+    </head>                              			
+    <body>
+        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#cfg" style="position: fixed; bottom: 25px; right: 25px; z-index: 100;">
+            <span class="glyphicon glyphicon-cog"></span>
+        </button>
+
+        <div class="modal fade" id="cfg" tabindex="-1" role="dialog" aria-labelledby="CfgLabel" aria-hidden="true">
+          <div class="modal-dialog" style="width: 800px;">
+            <div class="modal-content"  style="width: 800px;">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="CfgLabel">Config</h4>
+              </div>
+              <div class="modal-body">
+              <div class="alert alert-danger" id="gamepad-info">Gamepad not founded.</div>
+                <ul class="nav nav-tabs">
+                  <li><a href="#main" data-toggle="tab">Main</a></li>
+                  <li><a href="#keyboard" data-toggle="tab">Keyboard layout</a></li>
+                  <li><a href="#gamepad" data-toggle="tab">Gamepad layout</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="main">
+                      <form class="form-horizontal" role="form">
+                      <div class="form-group">
+                        <label class="col-sm-4 control-label">Use mega-texture streaming:</label>
+                        <div class="col-sm-8">
+                            <div class="checkbox">
+                              <label>
+                                <input type="checkbox" id="useMegaTexture">
+                              </label>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="col-sm-4 control-label">Terrain display mode:</label>
+                        <div class="col-sm-8">
+                             <select class="form-control" id="terrainDisplayMode">
+                              <option value="n">Normal</option>
+                              <option value="c">Texture LOD</option>
+                              <option value="t">Geometry LOD</option>
+                              <option value="tc">Texture LOD & Geometry LOD</option>
+                              <option value="tn">Normal with Geometry LOD's</option>
+                            </select>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="col-sm-4 control-label">Day time</label>
+                        <div class="col-sm-8">
+                          <input type="range" id="daytime" min="0" max="17" step="0.1" value="14" class="form-control">
+                       </div>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="tab-pane fade" id="keyboard">
+                      <img src="assets/Keyboard-2.svg" style="width: 100%; height: 100%;">
+                  </div>
+                  <div class="tab-pane fade" id="gamepad">
+                      <img src="assets/Gamepad-2.svg" style="width: 100%; height: 100%;">
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="screenshot">Screenshot</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    	<script type="text/javascript" src="game.js"></script>
+      <script type="text/javascript">
+        $('#useMegaTexture').change(function(){
+            akra.self.terrain.megaTexture.enableStreaming(this.checked);
+        });
+
+        $('#terrainDisplayMode').on('change', function() {
+          var mode = this.value;
+          
+          var T = mode.indexOf("t") != -1;
+          var C = mode.indexOf("c") != -1;
+          var N = mode.indexOf("n") != -1;
+          var pEngine = akra.self.engine;
+          var pTerrain = akra.self.terrain;
+
+          pEngine.getComposer().bShowTriangles = T;
+          pTerrain.megaTexture._bColored = C;
+          pTerrain.showMegaTexture = N || C;
+
+        });
+
+        $('#cfg').on('show.bs.modal', function (e) {
+          $('#terrainDisplayMode').val("");
+        });
+
+        function showGamepadNotification(gamepad) {
+          var msg = "Gamepad '" + gamepad.id + "' connected.";
+          $("#gamepad-info").removeClass("alert-danger").addClass("alert-success").text(msg);
+          $.pnotify({
+              title: 'Gamepad conected.',
+              text: gamepad.id,
+              type: 'success',
+              hide: true
+          });
+        }
+
+        akra.self.engine.bind("depsLoaded", function() {
+          var g0 = akra.self.gamepads.find(0);
+          if (g0) {
+            showGamepadNotification(g0);
+            $.pnotify({
+                title: 'Hint',
+                text: 'Press "START" to start the game.<br />Press "RIGHT_SHOULDER" to switch to the character camera.',
+                type: 'info'
+            });
+          }
+          else {
+             $.pnotify({
+                title: 'Hint',
+                text: 'Press "G" to start the game.<br />Press "1" to switch to the character camera.',
+                type: 'info'
+            });
+          }
+        });
+
+        akra.self.engine.bind("inactive", function() {
+          $.pnotify({
+              title: 'Game paused',
+              type: 'info',
+              opacity: .8
+          });
+        });
+        akra.self.engine.bind("active", function() {
+          $.pnotify({
+              title: 'Game unpaused',
+              type: 'info',
+              opacity: .8
+          });
+        });
+
+        akra.self.gamepads.bind("updated", function(map, gamepad){
+          showGamepadNotification(gamepad);
+        });
+
+        $("#screenshot").click(function(){
+          saveAs(akra.util.dataURItoBlob(akra.self.engine.getRenderer().getDefaultCanvas().el.toDataURL("image/png")), "screen.png");
+        });
+
+        $("#daytime").change(function() {
+          console.log(parseFloat($(this).val()));
+          akra.self.sky.setTime(parseFloat($(this).val()));
+        });
+
+      </script>
+    </body>
+</html>

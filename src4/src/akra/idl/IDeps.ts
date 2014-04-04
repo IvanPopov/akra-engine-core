@@ -46,7 +46,7 @@ module akra {
 
 		loaded: uint;					///< Files loaded.
 		total: uint;					///< Total files to be loaded.
-
+		
 		bytesLoaded: uint;				///< Bytes loaded.
 		bytesTotal: uint;				///< Bytes total.
 

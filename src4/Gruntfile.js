@@ -21,12 +21,13 @@ module.exports = function (grunt) {
 
 	grunt.initConfig({
 		//configuration
-		Configuration: 'Debug',
+		Configuration: 'Debug',//Release
 		Version: util.getVersion(),
 		DemosSourceDir: "src/demos",
 		BuiltDir: "built",
 		Pkg: grunt.file.readJSON("package.json"),
 		WebGLDebug: false,
+		BuildType: "Production",
 
 
 
@@ -72,22 +73,56 @@ module.exports = function (grunt) {
 	});
 
 
-	grunt.config("Configuration", grunt.option('configuration') || 'Debug');
+	if (grunt.option('Release') || grunt.option('release')) {
+		grunt.config("Configuration", 'Release');
+	}
+
+	if (grunt.option('Debug') || grunt.option('debug')) {
+		grunt.config("Configuration", 'Debug');
+	}
+
+	if (grunt.option('configuration')) {
+		grunt.config("Configuration", grunt.option('configuration'));
+
+		switch (grunt.config("Configuration")) {
+			case "Release":
+			case "Debug":
+				break;
+			default:
+				grunt.fail.fatal("Unknown configuration used: " + grunt.config("Configuration"));
+		}
+	}
+
+	if (grunt.option('Dev') || grunt.option('dev')) {
+		grunt.config("BuildType", 'Dev');
+		grunt.config("Configuration", 'Debug');
+		grunt.config("BuiltDir", path.join(grunt.config("BuiltDir"), "Dev"));
+	}
+	else {
+		grunt.config("BuiltDir", path.join(grunt.config("BuiltDir"), grunt.config("Configuration")));
+	}
+
+	
+
 	grunt.log.writeln("Configuration: " + grunt.config.get("Configuration"));
+	grunt.log.writeln("Build type: " + grunt.config.get("BuildType"));
+	grunt.log.writeln("Built directory: " + grunt.config.get("BuiltDir"));
 
 	grunt.config("WebGLDebug", grunt.option('webgl-debug') || false);
 	grunt.log.writeln("WebGL debug: " + (grunt.option('webgl-debug') || false));
 
+
+
 	grunt.registerTask("lint", ["tslint"]);
 	grunt.registerTask("default", ["all"]);
 	grunt.registerTask("all", [
-		"decl:core",
-		"decl:parser",
-		"decl:addon-navigation",
-		"decl:addon-filedrop",
-		"decl:addon-base3dObjects",
-		"decl:addon-progress",
-		"decl:ui"
+		"build:core",
+		"build:parser",
+		"build:addon-navigation",
+		"build:addon-filedrop",
+		"build:addon-base3dObjects",
+		"build:addon-progress",
+		"build:ui"
 	]);
 
 

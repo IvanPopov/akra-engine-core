@@ -5,89 +5,96 @@ var spawn = require('child_process').spawn;
 var semver = require('semver');
 var version;
 
+require('shelljs/global');
+
 module.exports = {
 
-    getVersion: function () {
-        if (version) return version;
-        var package = JSON.parse(fs.readFileSync('package.json', 'UTF-8'));
+	getVersion: function () {
+		if (!which('git')) {
+			echo('Sorry, this script requires git');
+			exit(1);
+		}
 
-        try {
-            var gitTag = getTagOfCurrentCommit();
-            var semVerVersion, codeName, fullVersion;
-            JSON.stringify(gitTag, null, '\t');
-            if (gitTag) {
-                // tagged release
-                fullVersion = semVerVersion = semver.valid(gitTag);
-                codeName = getTaggedReleaseCodeName(gitTag);
-            } else {
-                // snapshot release
-                semVerVersion = getSnapshotVersion();
-                fullVersion = semVerVersion + '-' + getSnapshotSuffix();
-                codeName = 'snapshot'
-            }
+		if (version) return version;
+		var package = JSON.parse(fs.readFileSync('package.json', 'UTF-8'));
 
-            var versionParts = semVerVersion.match(/(\d+)\.(\d+)\.(\d+)/);
+		try {
+			var gitTag = getTagOfCurrentCommit();
+			var semVerVersion, codeName, fullVersion;
+			JSON.stringify(gitTag, null, '\t');
+			if (gitTag) {
+				// tagged release
+				fullVersion = semVerVersion = semver.valid(gitTag);
+				codeName = getTaggedReleaseCodeName(gitTag);
+			} else {
+				// snapshot release
+				semVerVersion = getSnapshotVersion();
+				fullVersion = semVerVersion + '-' + getSnapshotSuffix();
+				codeName = 'snapshot'
+			}
 
-            version = {
-                full: fullVersion,
-                major: versionParts[1],
-                minor: versionParts[2],
-                dot: versionParts[3],
-                codename: codeName,
-                cdn: package.cdnVersion
-            };
+			var versionParts = semVerVersion.match(/(\d+)\.(\d+)\.(\d+)/);
 
-            return version;
+			version = {
+				full: fullVersion,
+				major: versionParts[1],
+				minor: versionParts[2],
+				dot: versionParts[3],
+				codename: codeName,
+				cdn: package.cdnVersion
+			};
 
-        } catch (e) {
-            grunt.fail.warn(e);
-        }
+			return version;
 
-        function getTagOfCurrentCommit() {
-            var gitTagResult = shell.exec('git describe --exact-match', { silent: true });
-            var gitTagOutput = gitTagResult.output.trim();
-            var branchVersionPattern = new RegExp(package.branchVersion.replace('.', '\\.').replace('*', '\\d+'));
-            if (gitTagResult.code === 0 && gitTagOutput.match(branchVersionPattern)) {
-                return gitTagOutput;
-            } else {
-                return null;
-            }
-        }
+		} catch (e) {
+			grunt.fail.warn(e);
+		}
 
-        function getTaggedReleaseCodeName(tagName) {
-            var tagMessage = shell.exec('git cat-file -p ' + tagName + ' | grep "codename"', { silent: true }).output;
-            var codeName = tagMessage && tagMessage.match(/codename\((.*)\)/)[1];
-            if (!codeName) {
-                throw new Error("Could not extract release code name. The message of tag " + tagName +
-                  " must match '*codename(some release name)*'");
-            }
-            return codeName;
-        }
+		function getTagOfCurrentCommit() {
+			var gitTagResult = shell.exec('git describe --exact-match', { silent: true });
+			var gitTagOutput = gitTagResult.output.trim();
+			var branchVersionPattern = new RegExp(package.branchVersion.replace('.', '\\.').replace('*', '\\d+'));
+			if (gitTagResult.code === 0 && gitTagOutput.match(branchVersionPattern)) {
+				return gitTagOutput;
+			} else {
+				return null;
+			}
+		}
 
-        function getSnapshotVersion() {
-            var oldTags = shell.exec('git tag -l v' + package.branchVersion, { silent: true }).output.trim().split('\n');
-            // ignore non semver versions.
-            oldTags = oldTags.filter(function (version) {
-                return version && semver.valid(version);
-            });
-            if (oldTags.length) {
-                oldTags.sort(semver.compare);
-                semVerVersion = oldTags[oldTags.length - 1];
-                if (semVerVersion.indexOf('-') !== -1) {
-                    semVerVersion = semver.inc(semVerVersion, 'prerelease');
-                } else {
-                    semVerVersion = semver.inc(semVerVersion, 'patch');
-                }
-            } else {
-                semVerVersion = semver.valid(package.branchVersion.replace(/\*/g, '0'));
-            }
-            return semVerVersion;
-        }
+		function getTaggedReleaseCodeName(tagName) {
+			var tagMessage = shell.exec('git cat-file -p ' + tagName + ' | grep "codename"', { silent: true }).output;
+			var codeName = tagMessage && tagMessage.match(/codename\((.*)\)/)[1];
+			if (!codeName) {
+				throw new Error("Could not extract release code name. The message of tag " + tagName +
+				  " must match '*codename(some release name)*'");
+			}
+			return codeName;
+		}
 
-        function getSnapshotSuffix() {
-            var jenkinsBuild = process.env.TRAVIS_BUILD_NUMBER || process.env.BUILD_NUMBER || 'local';
-            var hash = shell.exec('git rev-parse --short HEAD', { silent: true }).output.replace('\n', '');
-            return 'build.' + jenkinsBuild + '+sha.' + hash;
-        }
-    }
+		function getSnapshotVersion() {
+			var oldTags = shell.exec('git tag -l v' + package.branchVersion, { silent: true }).output.trim().split('\n');
+			// ignore non semver versions.
+			oldTags = oldTags.filter(function (version) {
+				return version && semver.valid(version);
+			});
+			if (oldTags.length) {
+				oldTags.sort(semver.compare);
+				semVerVersion = oldTags[oldTags.length - 1];
+				if (semVerVersion.indexOf('-') !== -1) {
+					semVerVersion = semver.inc(semVerVersion, 'prerelease');
+				} else {
+					semVerVersion = semver.inc(semVerVersion, 'patch');
+				}
+			} else {
+				semVerVersion = semver.valid(package.branchVersion.replace(/\*/g, '0'));
+			}
+			return semVerVersion;
+		}
+
+		function getSnapshotSuffix() {
+			var jenkinsBuild = process.env.TRAVIS_BUILD_NUMBER || process.env.BUILD_NUMBER || 'local';
+			var hash = shell.exec('git rev-parse --short HEAD', { silent: true }).output.replace('\n', '');
+			return 'build.' + jenkinsBuild + '+sha.' + hash;
+		}
+	}
 };

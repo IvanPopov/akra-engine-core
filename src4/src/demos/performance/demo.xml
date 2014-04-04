@@ -6,13 +6,12 @@
     <TypeScriptCompile Include="performance.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/$(Configuration)/demos/performance/performance.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/performance/performance.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
       <Module Name="core" />
       <Module Name="addon-progress" />
       <Module Name="addon-base3dObjects" />
-      <Module Name="addon-navigation" />
     </Dependencies>
     <Resource Name="AE_RESOURCES">
       <Filename>perfomance</Filename>

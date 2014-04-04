@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Game" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Game.</Description>
+  <Main>index.jade</Main>
+  <ItemGroup>
+    <TypeScriptCompile Include="game.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/game/game.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+
+      <Attachment>
+        <File Path="content/pnotify/jquery.pnotify.min.js"/>
+        <Format>Enclosure</Format>
+        <Type>javascript</Type>
+      </Attachment>
+      <Attachment>
+        <File Path="content/pnotify/jquery.pnotify.default.css"/>
+        <Format>Enclosure</Format>
+        <Type>css</Type>
+      </Attachment>
+      <Attachment>
+        <File Path="content/pnotify/jquery.pnotify.default.icons.css"/>
+        <Format>Enclosure</Format>
+        <Type>css</Type>
+      </Attachment>
+
+      <Attachment>
+        <Folder Path="content/assets" />
+        <Format>Enclosure</Format>
+      </Attachment>
+      
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_GAME_RESOURCES">
+      <MapFile>data/data.map</MapFile>
+      <Data>
+        <Folder Path="data" />
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>
