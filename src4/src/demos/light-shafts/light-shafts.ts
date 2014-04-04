@@ -206,7 +206,7 @@ module akra {
         pDofData = {
             DOF_RADIUS: 0,
             DOF_FOCAL_PLANE: 10.,
-            DOF_FOCUS_DISTANCE: 0.05,
+            DOF_FOCUS_POWER: 0.6,
         };
 
 		var pBlurFolder = pGUI.addFolder("blur");
@@ -214,7 +214,7 @@ module akra {
 
         var pDofFolder = pGUI.addFolder("dof");
         (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
-        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_DISTANCE')).min(0.01).max(.5).name("focus distance");
+        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_POWER')).min(0.1).max(1.2).name("focus power");
         (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
@@ -265,7 +265,7 @@ module akra {
 
             pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
             pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
-            pPass.setUniform('DOF_FOCUS_DISTANCE', pDofData.DOF_FOCUS_DISTANCE);
+            pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
 
 			//if (iCounter++%240 === 0) {
 			//console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());

@@ -73,35 +73,45 @@ VS_OUT vs_dof_shading3(float2 pos: POSITION){
 
 float dofRadius : DOF_RADIUS = 2.;
 float dofFocalPlane: DOF_FOCAL_PLANE = 10.;
-float dofFocusDistance: DOF_FOCUS_DISTANCE = 0.05;
+float dofFocusPower: DOF_FOCUS_POWER = 1.0;
 
 float4 fs_dof_shading(VS_OUT IN) : COLOR {
-	float _dofFocusDistance = clamp(dofFocusDistance, 0.01, 0.5);
+	float _dofFocusPower = clamp(dofFocusPower, 0.01, 1.2);
 	float _dofFocalPlane = clamp(dofFocalPlane, 0.1, 1000000.);
 	float _dofRadius = clamp(dofRadius, .0, 250.);
 
-	float _dofImFocalPlane = 1./(1./_dofFocusDistance - 1./_dofFocalPlane);
+	float minBlurFactor = 0.1;
+
+	//float _dofImFocalPlane = 1./(1./_dofFocusPower - 1./_dofFocalPlane);
 	
 	float sceneDepth = tex2D(depthSampler, IN.textureCoords).x;
-	float sceneDepthReal = unprojZ(projMat, sceneDepth*2.-1.);
+	float sceneDepthReal = clamp(abs(unprojZ(projMat, sceneDepth*2.-1.)), 0.1, 1000000.);
 
 	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
-	float baseImageBlurFactor = abs(1. - 2. / ( 1. + abs(sceneDepthReal) / _dofFocalPlane ));
-	//float sceneImDepthReal = 1./(1./_dofFocusDistance - 1./sceneDepthReal);
+
+	float baseImageBlurFactor = sign( 1. - 2. / ( 1. + sceneDepthReal / _dofFocalPlane )) * pow( 1. - 2. / ( 1. + sceneDepthReal / _dofFocalPlane ), 1./_dofFocusPower );
+
+	if(abs(baseImageBlurFactor) < minBlurFactor) {
+		baseImageBlurFactor = 0.;
+	}
+	//float sceneImDepthReal = 1./(1./_dofFocusPower - 1./sceneDepthReal);
 
 	float dofRadiusInTexture = _dofRadius / max(screenTextureSize.x,screenTextureSize.y);
-	int samp = int(min(float(ceil(pow(_dofRadius,0.7))),25.));
+	int samp = int(min(float(ceil(pow(_dofRadius,0.7))),20.));
 
 	float dofStep = 1./float(samp);
 	float dofStepWeight = 1./(1.+2.*float(samp));
 
 	float4 dof_result = float4(0.);
 
-	float4 prevImage = baseImage;
-
 	dof_result += baseImage*float4(dofStepWeight);
+
+	float4 newDof, frontDof, backDof;
+	float frontWeight = 0.;
+	float backWeight = 0.;
+
 	for(int j=-1;j<=1;j+=2) {
-		for(int i=1;i<=25;i++) {
+		for(int i=1;i<=20;i++) {
 			if(i>samp) {
 				break;
 			}
@@ -110,47 +120,33 @@ float4 fs_dof_shading(VS_OUT IN) : COLOR {
 				float2 readPos = clamp(IN.textureCoords + IN.blurBasis*float2(dr)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize);
 				
 				float newDepth = tex2D(depthSampler, readPos).x;
-				float newDepthReal = unprojZ(projMat, newDepth*2.-1.);
-
-				float4 newDof;
+				float newDepthReal = clamp(abs(unprojZ(projMat, newDepth*2.-1.)), 0.1, 1000000.);
 				
-				float blurFactor = 1. - 2. / ( 1. + abs(newDepthReal) / _dofFocalPlane );
+				float blurFactor = sign(1. - 2. / ( 1. + newDepthReal / _dofFocalPlane )) * pow( 1. - 2. / ( 1. + newDepthReal / _dofFocalPlane ), 1./_dofFocusPower );
 
-				/*if(blurFactor > 0.5) {
-					
+				if(abs(blurFactor) < minBlurFactor) {
+					blurFactor = 0.;
 				}
-				else if(blurFactor > 0.1) {
 
-				}
-				else if(blurFactor > -0.1) {
-
-				}
-				else if(blurFactor > -0.5) {
-
-				}
-				else if(blurFactor > -1.) {
-
-				}*/
-
-				if ( float(i)*dofStep < abs(baseImageBlurFactor) && baseImageBlurFactor > blurFactor ) {
+				if ( float(i)*dofStep < abs(baseImageBlurFactor) && abs(blurFactor) > float(i)*dofStep ) {
 					newDof = tex2D(screenSampler, readPos);
+					//sumWeight += 1. * dofStepWeight;
+					dof_result += newDof * dofStepWeight;
 				}
 				else if ( float(i)*dofStep > abs(baseImageBlurFactor) && -blurFactor > float(i)*dofStep ) {
 					newDof = tex2D(screenSampler, readPos);
-					//prevImage = newDof;
+					//sumWeight += 1. * dofStepWeight;
+					dof_result += newDof * dofStepWeight;
 				}
 				else {
-					//newDof = prevImage;
 					newDof = baseImage;
+					dof_result += newDof * dofStepWeight;
 				}
-
-				dof_result += newDof * dofStepWeight;
 			}
 		}
 	}
 
-
-	return dof_result;// + baseImage;
+	return dof_result;// / sumWeight;// + baseImage;
 };
 
 technique dof : POST_EFFECT {
