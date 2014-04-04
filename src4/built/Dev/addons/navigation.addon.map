@@ -1,9 +1,0 @@
-{
-	"files": [
-		{
-			"path": "../../../src/akra-addons/addons/navigation/cube.dae",
-			"name": "akra.navigation.ORIENTATION_CUBE",
-			"comment": "Model of orientation cube."
-		}
-	]
-}

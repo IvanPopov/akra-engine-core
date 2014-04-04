@@ -64,6 +64,7 @@ module akra {
 	var pOptions: IEngineOptions = {
 		renderer: pRenderOpts,
 		progress: (e: IDepEvent) => {
+			console.log(e.source);
 			if (e.source.name == "HERO_CONTROLLER" && e.source.stats.status == EDependenceStatuses.LOADED) {
 				pControllerData = e.source.content;
 			}
