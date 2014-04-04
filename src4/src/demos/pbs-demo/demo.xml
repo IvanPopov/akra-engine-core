@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="PBS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Physically based shading demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="pbs-demo.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/pbs-demo/pbs-demo.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+      
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Folder Path="data"/>
+        <ResourceFile Path="data/textures/lensflare_cookies_new.png" Name="LENSFLARE_COOKIES_TEXTURE"/>
+        
+        <ResourceFile Path="data/effects/lensflare.afx"/>
+        <ResourceFile Path="data/effects/blur.afx"/>
+        <ResourceFile Path="data/effects/dof.afx"/>
+
+        <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.dae" Name="WOOD_SOLDIER.DAE"/>
+        <ResourceFile Path="data/models/rock/rock-1-low-p.DAE" Name="ROCK.DAE"/>
+        <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
+        <ResourceFile Path="data/models/room-with-room.DAE" Name="ROOMWITHROOM.DAE"/>
+        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
+        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

@@ -145,7 +145,7 @@ module akra {
 
 		// (<render.DSViewport>pViewport).setFXAA(false);
 		var counter = 0;
-        (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
+        //(<render.DSViewport>pViewport).getEffect().addComponent("akra.system.sunshaft");
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.blur");
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.dof");
         (<render.DSViewport>pViewport).getEffect().addComponent("akra.system.lensflare");
@@ -462,8 +462,8 @@ module akra {
 
 		// createSceneEnvironment();
 		//createLighting();
-		//createSkyBox();
-		createSky();
+		createSkyBox();
+		//createSky();
 
 		//pTerrain = createTerrain(pScene, true, EEntityTypes.TERRAIN);
 		//loadHero();

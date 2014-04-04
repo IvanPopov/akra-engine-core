@@ -198,42 +198,100 @@ float4 apply_light_project_shadows() : COLOR{
 	return float4(result_color.xyz, 1.);
 };
 
-float4 calculateLight(pixel_data pixelData, light_data lightData){
+float dot_saturate (float3 a, float3 b) {
+	return clamp(dot(a,b),0.,1.);
+}
+
+foreign int IS_USE_PBS_SIMPLE;
+float PBS_gloss : PBS_GLOSS = 0.;
+float3 PBS_F0 : PBS_F0 = float3(0.);
+
+float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
+	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
+}
+
+// @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
+
+float4 PBS(pixel_data pixelData, light_data lightData) {
 	float3 light_dir = lightData.position - pixelData.position;
 	float light_dir_length = length(light_dir);
 	light_dir = normalize(light_dir);
 
-		// attenuation
-	float attenuation = 1.0 / (lightData.attenuation.x +
+	float attenuation = 1.0 / (1.+lightData.attenuation.x +
 							   lightData.attenuation.y * light_dir_length + 
 							   lightData.attenuation.z * light_dir_length * light_dir_length);
 
-	
-	// direction from vert to observer (ViewDir) 
-	//observer is (0,0,0) in camera space
 	float3 view_dir = normalize(-pixelData.position);
 
-	// reflect direction
-	float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
+	float alpha_p = pow(2., 10.*PBS_gloss + 1.);
 
-	float light_distancedotVpow = 0.;
+	float4 incLightColor = lightData.diffuse * attenuation;
 
-	if(pixelData.shininess != 0.){
-		light_distancedotVpow = pow(max(dot(reflect_dir, view_dir), 0.0), pixelData.shininess);
-	}
-	
-	float4 color = float4(0.);
-	//add ambient
-	color += pixelData.ambient * lightData.ambient * attenuation;//float4(float3(attenuation/40.), 1.);//pixelData.ambient * lightData.ambient * attenuation;
-	
-	//add diffuse
-	color += pixelData.diffuse * lightData.diffuse * max(dot(pixelData.normal, light_dir), .0) * attenuation;
-	
-	// add reflect lighting
-	color += pixelData.specular * lightData.specular * light_distancedotVpow * attenuation;
-	
-	//color = float4(pixelData.normal.xy/2. + 0.5, pixelData.normal.z, 1.);
+	float3 halfVector = normalize(view_dir + light_dir);
+
+	float4 lightDiff = lightData.diffuse * dot_saturate(pixelData.normal, light_dir);
+
+	float4 lightSpec = float4( func_Shlick(PBS_F0, light_dir, pixelData.normal) * (alpha_p+2.)/8.
+		* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
+
+	lightDiff *= (float4(1.) - lightSpec);
+	lightDiff.a = 1.;
+
+	float4 color = incLightColor * ( lightDiff + lightSpec );
+
 	return color;
+
+	// reflect direction
+	//float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
+
+
+	//return float4(0.5);
+}
+
+float4 calculateLight(pixel_data pixelData, light_data lightData){
+	//return float4(1.,0.,0.,1.);
+
+	if(IS_USE_PBS_SIMPLE == 2){
+		return PBS(pixelData, lightData);
+	}
+
+	else {
+		float3 light_dir = lightData.position - pixelData.position;
+		float light_dir_length = length(light_dir);
+		light_dir = normalize(light_dir);
+
+			// attenuation
+		float attenuation = 1.0 / (lightData.attenuation.x +
+								   lightData.attenuation.y * light_dir_length + 
+								   lightData.attenuation.z * light_dir_length * light_dir_length);
+
+		
+		// direction from vert to observer (ViewDir) 
+		//observer is (0,0,0) in camera space
+		float3 view_dir = normalize(-pixelData.position);
+
+		// reflect direction
+		float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
+
+		float light_distancedotVpow = 0.;
+
+		if(pixelData.shininess != 0.){
+			light_distancedotVpow = pow(max(dot(reflect_dir, view_dir), 0.0), pixelData.shininess);
+		}
+		
+		float4 color = float4(0.);
+		//add ambient
+		color += pixelData.ambient * lightData.ambient * attenuation;//float4(float3(attenuation/40.), 1.);//pixelData.ambient * lightData.ambient * attenuation;
+		
+		//add diffuse
+		color += pixelData.diffuse * lightData.diffuse * max(dot(pixelData.normal, light_dir), .0) * attenuation;
+		
+		// add reflect lighting
+		color += pixelData.specular * lightData.specular * light_distancedotVpow * attenuation;
+		
+		//color = float4(pixelData.normal.xy/2. + 0.5, pixelData.normal.z, 1.);
+		return color;
+	}
 };
 
 float unprojZ(float4x4 projMat, float screenZ){
