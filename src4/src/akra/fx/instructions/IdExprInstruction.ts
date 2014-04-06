@@ -84,6 +84,10 @@ module akra.fx.instructions {
 		}
 
 		_clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction {
+			if (this._getType()._isSampler()) {
+				//TODO: Need fix for shaders used as functions. Need use relation map.
+				return this;
+			}
 			return <IAFXIdExprInstruction>super._clone(pRelationMap);
 		}
 
