@@ -12,7 +12,7 @@ struct VS_OUT
 	float2 texCoord: TEXCOORD0;
 };
 
-texture tex0: TEXTURE0;
+texture tex0: TEXTURE_FOR_SCREEN;
 float4 viewport: VIEWPORT = float4(0., 0., 1., 1.);
 
 sampler sampler0:SAMPLER_TEXTURE0  = sampler_state

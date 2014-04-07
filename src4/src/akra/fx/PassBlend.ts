@@ -938,9 +938,9 @@ module akra.fx {
 				var iVarBlendIndex: int = 0;
 				var pValue: any = pForeignValues[iNameIndex];
 
-				if (pValue === 0) {
-					pValue = 1;
-				}
+				//if (pValue === 0) {
+				//	pValue = 1;
+				//}
 
 				iVarBlendIndex = pForeignsV.getKeyIndexByNameIndex(iNameIndex);
 				if (iVarBlendIndex !== -1) {

@@ -4130,6 +4130,7 @@ declare module akra {
 declare module akra {
     interface IRenderPass extends IUnique {
         setForeign(sName: string, fValue: number): void;
+        setForeign(sName: string, bValue: boolean): void;
         setTexture(sName: string, pTexture: ITexture): void;
         setUniform(sName: string, pValue: any): void;
         setStruct(sName: string, pValue: any): void;
@@ -12631,6 +12632,7 @@ declare module akra.render {
         private _pInput;
         private _isActive;
         constructor(pTechnique: IRenderTechnique, iPass: number);
+        public setForeign(sName: string, bValue: boolean): void;
         public setForeign(sName: string, fValue: number): void;
         public setTexture(sName: string, pTexture: ITexture): void;
         public setUniform(sName: string, pValue: any): void;
@@ -15267,12 +15269,16 @@ declare module akra {
 }
 declare module akra.render {
     class LPPViewport extends Viewport implements ILPPViewport {
+        /** Buffer with normal, shininess and objectID */
         private _pNormalBufferTexture;
+        /** Depth buffer of scene */
         private _pDepthBufferTexture;
         /** Diffuse and specular */
         private _pLightBufferTextureA;
         /** Ambient and shadow */
         private _pLightBufferTextureB;
+        /** Resyult of LPP with out posteffects */
+        private _pResultLPPTexture;
         private _pViewScreen;
         private _pLightPoints;
         private _v2fTExtureRatio;
@@ -15288,8 +15294,10 @@ declare module akra.render {
         public _updateImpl(): void;
         private prepareForLPPShading();
         public _onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public _onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public endFrame(): void;
+        public getDepth(x: number, y: number): number;
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
     }

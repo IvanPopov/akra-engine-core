@@ -59,7 +59,7 @@ module akra.render {
 		protected _onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setTexture("TEXTURE0", this._pTargetTexture);
+			pPass.setTexture("TEXTURE_FOR_SCREEN", this._pTargetTexture);
 			pPass.setUniform("VIEWPORT", this._v4fMapping);
 
 			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);

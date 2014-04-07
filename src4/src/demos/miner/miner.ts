@@ -64,10 +64,11 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		pViewport = new render.LPPViewport(pCamera);
+		pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
+		//pViewport = new render.LPPViewport(pCamera);
 
 		pCanvas.addViewport(pViewport);
-		//pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
+		pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
@@ -103,7 +104,7 @@ module akra {
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
 			pLightOmni.getParams().diffuse.set(math.random(), math.random(), math.random());
-			pLightOmni.getParams().specular.set(math.random(), math.random(), math.random());
+			pLightOmni.getParams().specular.set(math.random());
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
 			((pSprite: ISprite, pLightOmni: IOmniLight) => {

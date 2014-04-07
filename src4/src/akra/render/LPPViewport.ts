@@ -11,14 +11,21 @@ module akra.render {
 
 	import Color = color.Color;
 
+	var pDepthPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_DEPTH, new Uint8Array(4 * 1));
+	var pColor: IColor = new Color(0);
+
 	export class LPPViewport extends Viewport implements ILPPViewport {
+		/** Buffer with normal, shininess and objectID */
 		private _pNormalBufferTexture: ITexture = null;
+		/** Depth buffer of scene */
 		private _pDepthBufferTexture: ITexture = null;
 
 		/** Diffuse and specular */
 		private _pLightBufferTextureA: ITexture = null;
 		/** Ambient and shadow */
 		private _pLightBufferTextureB: ITexture = null;
+		/** Resyult of LPP with out posteffects */
+		private _pResultLPPTexture: ITexture = null;
 
 		private _pViewScreen: IRenderableObject = null;
 		private _pLightPoints: IObjectArray<ILightPoint> = null;
@@ -111,7 +118,7 @@ module akra.render {
 
 			this._pLightBufferTextureA = pLightMapTexture;
 
-			var pLightMapTexture: ITexture = pResMgr.createTexture("lpp-light-bufferB" + iGuid);
+			var pLightMapTexture: ITexture = pResMgr.createTexture("lpp-light-bufferB-" + iGuid);
 			pLightMapTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
 				ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 			pRenderTarget = pLightMapTexture.getBuffer().getRenderTarget();
@@ -123,9 +130,27 @@ module akra.render {
 
 			this._pLightBufferTextureB = pLightMapTexture;
 
+
+			this._pResultLPPTexture = pResMgr.createTexture("resultr-lpp-texture-" + iGuid);
+			this._pResultLPPTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+				ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+			pRenderTarget = this._pResultLPPTexture.getBuffer().getRenderTarget();
+			pRenderTarget.setAutoUpdated(false);
+			pRenderTarget.attachDepthTexture(this._pDepthBufferTexture);
+			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), "apply_lpp_shading",
+				0, 0, this.getActualWidth() / pLightMapTexture.getWidth(), this.getActualHeight() / pLightMapTexture.getHeight()));
+			pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+			pViewport.setDepthParams(true, false, ECompareFunction.EQUAL);
+
+			pViewport.render.connect(this, this._onObjectsRender);
+
 			this._v2fTExtureRatio = new math.Vec2(this.getActualWidth() / pNormalBufferTexture.getWidth(), this.getActualHeight() / pNormalBufferTexture.getHeight());
 
 			//creatin deferred effects
+			this._pViewScreen.switchRenderMethod(null);
+			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
+			this._pViewScreen.getEffect().addComponent("akra.system.fxaa");
+			this._pViewScreen.getRenderMethod().setTexture("TEXTURE_FOR_SCREEN", this._pResultLPPTexture);
 
 			if (this._pViewScreen.addRenderMethod(".prepare_diffuse_specular", "passA")) {
 				var pLPPEffect: IEffect = this._pViewScreen.getRenderMethodByName("passA").getEffect();
@@ -174,6 +199,10 @@ module akra.render {
 				this._pLightBufferTextureB.getBuffer().getRenderTarget().getViewport(0)
 					.setDimensions(0., 0., this.getActualWidth() / this._pLightBufferTextureB.getWidth(), this.getActualHeight() / this._pLightBufferTextureB.getHeight());
 
+				this._pResultLPPTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
+				this._pResultLPPTexture.getBuffer().getRenderTarget().getViewport(0)
+					.setDimensions(0., 0., this.getActualWidth() / this._pResultLPPTexture.getWidth(), this.getActualHeight() / this._pResultLPPTexture.getHeight());
+
 				this._v2fTExtureRatio.set(this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
 				this._v2fScreenSize.set(this.getActualWidth(), this.getActualHeight());
 
@@ -211,7 +240,11 @@ module akra.render {
 
 			this._pCamera._keepLastViewport(this);
 
-			this.renderAsNormal("apply_lpp_shading", this.getCamera());
+			this._pResultLPPTexture.getBuffer().getRenderTarget().update();
+
+			this._pViewScreen.render(this);
+			this._pCamera._keepLastViewport(this);
+			//this.renderAsNormal("apply_lpp_shading", this.getCamera());
 		}
 
 		private prepareForLPPShading(): void {
@@ -222,34 +255,36 @@ module akra.render {
 
 				for (var k: int = 0; k < pSceneObject.getTotalRenderable(); k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
+					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+
 					var sMethod: string = "lpp_normal_pass";
 					var pTechnique: IRenderTechnique = null;
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
-						if (!pRenderable.addRenderMethod(sMethod, sMethod)) {
+						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
 							logger.critical("cannot create render method for first pass of LPP");
 						}
 
 						pTechnique = pRenderable.getTechnique(sMethod);
-						//pTechnique.addComponent("akra.system.mesh_geometry");
+						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
 
-						pTechnique.getMethod().setSurfaceMaterial(pRenderable.getTechniqueDefault().getMethod().getSurfaceMaterial());
+						var iTotalPasses = pTechnique.getTotalPasses();
+						for (var i: uint = 0; i < iTotalPasses; i++) {
+							pTechnique.getPass(i).setForeign("optimizeForLPPPrepare", true);
+						}
 					}
 
 					sMethod = "apply_lpp_shading";
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
-						if (!pRenderable.addRenderMethod(sMethod, sMethod)) {
+						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
 							logger.critical("cannot create render method for first pass of LPP");
 						}
 
 						pTechnique = pRenderable.getTechnique(sMethod);
-						//pTechnique.addComponent("akra.system.mesh_geometry");
-						pTechnique.addComponent("akra.system.mesh_texture_full");
+						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.apply_lpp_shading");
-
-						pTechnique.getMethod().setSurfaceMaterial(pRenderable.getTechniqueDefault().getMethod().getSurfaceMaterial());
 					}
 				}
 			}
@@ -272,20 +307,41 @@ module akra.render {
 			pPass.setStruct("points_omni", pLightUniforms.omni);
 		}
 
-		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+		_onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTExtureRatio);
 			pPass.setTexture("LPP_LIGHT_BUFFER_A", this._pLightBufferTextureA);
 			pPass.setTexture("LPP_LIGHT_BUFFER_B", this._pLightBufferTextureB);
 			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
+		}
+
+		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			pPass.setUniform("VIEWPORT", math.Vec4.temp(0., 0., this._v2fTExtureRatio.x, this._v2fTExtureRatio.y));
 
 			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);
-
 		}
 
 		endFrame(): void {
 			this.getTarget().getRenderer().executeQueue(false);
+		}
+
+
+		getDepth(x: int, y: int): float {
+			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(), "invalid pixel: {" + x + ", " + y + "}");
+
+			var pDepthTexture: ITexture = this._pDepthBufferTexture;
+
+			y = pDepthTexture.getHeight() - y - 1;
+			pDepthPixel.left = x;
+			pDepthPixel.top = y;
+			pDepthPixel.right = x + 1;
+			pDepthPixel.bottom = y + 1;
+
+			pDepthTexture.getBuffer(0, 0).readPixels(pDepthPixel);
+
+			return pDepthPixel.getColorAt(pColor, 0, 0).r;
 		}
 
 		protected createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {

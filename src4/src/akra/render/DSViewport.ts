@@ -261,18 +261,36 @@ module akra.render {
 							pTechnique.render._syncSignal(pTechCurr.render);
 							//pTechnique._syncTable(pTechCurr);
 
-
-							if (j === 0) {
-								pTechnique._blockPass(1);
-							}
-							else {
-								pTechnique._blockPass(0);
-							}
-
-							if (pTechnique.getTotalPasses() > j) {
-								var pPass: IRenderPass = pTechnique.getPass(j);
+							var iTotalPasses = pTechnique.getTotalPasses();
+							for (var k: uint = 0; k < iTotalPasses; k++) {
+								var pPass: IRenderPass = pTechnique.getPass(k);
 								pPass.blend("akra.system.prepareForDeferredShading", j);
 							}
+
+							pTechnique.updatePasses(false);
+							
+							for (var k: uint = 0; k < iTotalPasses; k++) {
+								var pPass: IRenderPass = pTechnique.getPass(k);
+								if (j === 0) {
+									pPass.setForeign("optimeizeForDeferredPass1", true);
+								}
+								else {
+									pPass.setForeign("optimeizeForDeferredPass2", true);
+								}
+							}
+
+							//if (j === 0) {
+							//	pTechnique._blockPass(1);
+							//}
+							//else {
+							//	pTechnique._blockPass(0);
+							//}
+
+							//if (pTechnique.getTotalPasses() > j) {
+							//	var pPass: IRenderPass = pTechnique.getPass(j);
+							//	pPass.blend("akra.system.prepareForDeferredShading", j);
+							//	//pPass.setForeign();
+							//}
 
 						}
 					}
