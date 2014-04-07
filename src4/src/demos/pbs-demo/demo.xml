@@ -38,7 +38,9 @@
         <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
         <ResourceFile Path="data/models/room-with-room.DAE" Name="ROOMWITHROOM.DAE"/>
         <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
+        <ResourceFile Path="data/models/teapot.dae" Name="TEAPOT.DAE"/>
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX"/>
+        <ResourceFile Path="data/textures/skyboxes/desert-2a.png" Name="ENVMAP"/>
       </Data>
     </Resource>
   </PropertyGroup>

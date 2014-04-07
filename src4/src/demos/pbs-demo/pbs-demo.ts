@@ -34,6 +34,8 @@ module akra {
 	export var pBlurData = null;
     export var pDofData = null;
     export var pPBSData = null;
+    export var pSkyboxTexture = null;
+    export var pEnvTexture = null;
 
 	var pState = {
 		animate: true,
@@ -112,11 +114,38 @@ module akra {
 
 		var pGUI = new dat.GUI();
 
-		pGUI.add(pState, 'animate');
+        pGUI.add(pState, 'animate');
+
+        var pMaterialPresets = {
+            Gold: {
+                _F0: new math.Vec3(1.00, 0.71, 0.29),
+                _Diffuse: new math.Vec3(1.00, 0.86, 0.57),
+            },
+            Copper: {
+                _F0: new math.Vec3(0.95, 0.64, 0.54),
+                _Diffuse: new math.Vec3(0.98, 0.82, 0.76),
+            },
+            Plastic: {
+                _F0: new math.Vec3(0.03, 0.03, 0.03),
+                _Diffuse: new math.Vec3(0.21, 0.21, 0.21),
+            },
+            Iron: {
+                _F0: new math.Vec3(0.56, 0.57, 0.58),
+                _Diffuse: new math.Vec3(0.77, 0.78, 0.78),
+            },
+            Aluminium: {
+                _F0: new math.Vec3(0.91, 0.92, 0.92),
+                _Diffuse: new math.Vec3(0.96, 0.96, 0.97),
+            },
+            Silver: {
+                _F0: new math.Vec3(0.95, 0.93, 0.88),
+                _Diffuse: new math.Vec3(0.98, 0.97, 0.95),
+            }
+        };
 
         pPBSData = {
             isUsePBS: true,
-            _F0: new math.Vec3(0.),
+            _Material: pMaterialPresets.Aluminium,
             _Gloss: 0,
         }
 
@@ -193,12 +222,15 @@ module akra {
         var pPBSFolder = pGUI.addFolder("pbs");
         (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
         (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData, '_Gloss')).step(0.01).min(0).max(1).name("gloss");
-        (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData._F0, 'x')).step(0.01).min(0).max(1).name("F0 x");
-        (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData._F0, 'y')).step(0.01).min(0).max(1).name("F0 y");
-        (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData._F0, 'z')).step(0.01).min(0).max(1).name("F0 z");
+        (<dat.OptionController>pPBSFolder.add({Material:"Plastic"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
+            pPBSData._Material = pMaterialPresets[sKey];
+        });
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
-		//var iCounter: int = 0;
+        //var iCounter: int = 0;
+
+        pEnvTexture = pRmgr.createTexture(".env-texture-01");
+        (<ITexture>pEnvTexture).loadResource("ENVMAP");
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -214,7 +246,9 @@ module akra {
             if (iPass == 0) {
                 pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
                 pPass.setUniform('PBS_GLOSS', pPBSData._Gloss );
-                pPass.setUniform('PBS_F0', pPBSData._F0 );
+                pPass.setUniform('PBS_F0', pPBSData._Material._F0);
+                pPass.setUniform('PBS_DIFFUSE', pPBSData._Material._Diffuse);
+                pPass.setTexture('ENVMAP', pEnvTexture);
             }
 
 
@@ -246,6 +280,8 @@ module akra {
             pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
             pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
 
+            pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+
 			//if (iCounter++%240 === 0) {
 			//console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
 			//}
@@ -269,36 +305,36 @@ module akra {
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.1, 0.3, 0.1);
+        pOmniLight.getParams().diffuse.set(0.3, 0.3, 0.3);
         pOmniLight.getParams().specular.set(0.1, 0.3, 0.1, 0.3);
-        pOmniLight.getParams().attenuation.set(1, 0, 0);
+        pOmniLight.getParams().attenuation.set(1, 0, 0.02);
         pOmniLight.setShadowCaster(false);
 
         pOmniLight.addPosition(1, 3, 3);
 
-        pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
+        //pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-        pOmniLight.attachToParent(pScene.getRootNode());
-        pOmniLight.setEnabled(true);
-        pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.0, 0.1, 0.3);
-        pOmniLight.getParams().specular.set(0.0, 0.1, 0.3, 0.3);
-        pOmniLight.getParams().attenuation.set(1, 0, 0);
-        pOmniLight.setShadowCaster(false);
+        //pOmniLight.attachToParent(pScene.getRootNode());
+        //pOmniLight.setEnabled(true);
+        //pOmniLight.getParams().ambient.set(0.1);
+        //pOmniLight.getParams().diffuse.set(0.3, 0.3, 0.3);
+        //pOmniLight.getParams().specular.set(0.0, 0.1, 0.3, 0.3);
+        //pOmniLight.getParams().attenuation.set(1, 0, 0.02);
+        //pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(7, 5, 1);
+        //pOmniLight.addPosition(7, 5, 1);
 
-        pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
+        //pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-        pOmniLight.attachToParent(pScene.getRootNode());
-        pOmniLight.setEnabled(true);
-        pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.3,0.1,0.);
-        pOmniLight.getParams().specular.set(0.3, 0.1, 0.,0.3);
-        pOmniLight.getParams().attenuation.set(1, 0, 0);
-        pOmniLight.setShadowCaster(false);
+        //pOmniLight.attachToParent(pScene.getRootNode());
+        //pOmniLight.setEnabled(true);
+        //pOmniLight.getParams().ambient.set(0.1);
+        //pOmniLight.getParams().diffuse.set(0.3,0.3,0.3);
+        //pOmniLight.getParams().specular.set(0.3, 0.1, 0.,0.3);
+        //pOmniLight.getParams().attenuation.set(1, 0, 0.02);
+        //pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(-4, 3, -3);
+        //pOmniLight.addPosition(-4, 3, -3);
 
         pLight = pOmniLight;
 
@@ -318,11 +354,11 @@ module akra {
     }
 
     function createSkyBox(): void {
-        var pSkyBoxTexture: ITexture = pRmgr.createTexture(".sky-box-texture");
-        pSkyBoxTexture.loadResource("SKYBOX");
+        pSkyboxTexture = pRmgr.createTexture(".sky-box-texture");
+        <ITexture>pSkyboxTexture.loadResource("SKYBOX");
 
         if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-            (<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
+            (<render.DSViewport>pViewport).setSkybox(pSkyboxTexture);
         }
     }
 
@@ -405,8 +441,8 @@ module akra {
         createLighting();
 
 
-		var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
-        pSceneQuad.attachToParent(pScene.getRootNode());
+		//var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
+        //pSceneQuad.attachToParent(pScene.getRootNode());
 
         createSkyBox();
 
@@ -437,9 +473,10 @@ module akra {
                 pCamera.lookAt(Vec3.temp(0, 1.5, 0));
             });*/
 
-        var room: ISceneNode = loadModel("ROOMWITHROOM.DAE", null, 'Room', pScene.getRootNode());
-        var cube1: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-01', pScene.getRootNode()).scale(0.3).addRelPosition( 2., .3, 0. );
-        var cube2: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-02', pScene.getRootNode()).scale(0.3).addRelPosition( 5., 0.3, 3. );
+        //var room: ISceneNode = loadModel("ROOMWITHROOM.DAE", null, 'Room', pScene.getRootNode());
+        var cube1: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-01', pScene.getRootNode()).scale(0.3).addRelPosition( 2., .3, 4. );
+        //var cube2: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-02', pScene.getRootNode()).scale(0.3).addRelPosition(5., 0.3, 3.);
+        loadModel("TEAPOT.DAE", null, 'teapot', pScene.getRootNode()).scale(3.0);
 
 		pProgress.destroy();
 		pEngine.exec();
