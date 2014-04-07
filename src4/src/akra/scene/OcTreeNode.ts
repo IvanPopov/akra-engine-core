@@ -93,6 +93,9 @@ module akra.scene {
 		OcTreeObjectMoved(pObject: ISceneObject) {
 			// console.warn('object moving');
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
+			//if (pNode === null) {
+			//	logger.log(pObject);
+			//}
 			if (pNode !== this) {
 				this.removeMember(pObject);
 				pNode.addMember(pObject);

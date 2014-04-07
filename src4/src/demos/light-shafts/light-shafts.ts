@@ -116,6 +116,7 @@ module akra {
 			SUNSHAFT_INTENSITY: 0.25,
 			SUNSHAFT_DECAY: 1.2,
 			SUNSHAFT_SHARPNESS: 2,
+			SUNSHAFT_EXPOSURE: .9
 		};
 
 		var pGUI = new dat.GUI();
@@ -145,6 +146,8 @@ module akra {
 			.min(0.0).max(30).step(0.1).name("sharpness");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_INTENSITY'))
 			.min(0.0).max(1.).step(0.1).name("intensity");
+		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_EXPOSURE'))
+			.min(0.0).max(1.).step(0.01).name("exposure");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_DECAY'))
 			.min(0.0).max(10.).step(0.1).name("decay");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_SAMPLES'))
@@ -233,6 +236,7 @@ module akra {
 			pPass.setUniform('SUNSHAFT_INTENSITY', pSunshaftData.SUNSHAFT_INTENSITY);
 			pPass.setUniform('SUNSHAFT_DECAY', pSunshaftData.SUNSHAFT_DECAY);
 			pPass.setUniform('SUNSHAFT_SHARPNESS', pSunshaftData.SUNSHAFT_SHARPNESS);
+			pPass.setUniform('SUNSHAFT_EXPOSURE', pSunshaftData.SUNSHAFT_EXPOSURE);
 			pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
 
 			pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);

@@ -103,6 +103,8 @@ module akra.render {
 		setShadow(bShadow: boolean): void {
 			if (this._bShadow !== bShadow) {
 				this._bShadow = bShadow;
+				//debug.log("MeshSubset(" + this.guid + ")::setShadow(" + bShadow + ")");
+				//console.trace();
 				this.shadowed.emit(bShadow);
 			}
 		}

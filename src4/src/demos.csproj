@@ -17,16 +17,40 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="demos\atmospheric_scattering\demo.xml" />
     <Content Include="demos\css\metro-bootstrap.css" />
     <Content Include="demos\fonts\fontawesome-webfont.svg" />
     <Content Include="demos\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="demos\game\content\assets\about.png" />
+    <Content Include="demos\game\content\assets\Gamepad-2.svg" />
+    <Content Include="demos\game\content\assets\Gamepad.svg" />
+    <Content Include="demos\game\content\assets\Keyboard-2.svg" />
+    <Content Include="demos\game\content\assets\Keyboard.svg" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.default.css" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.default.icons.css" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.js" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.min.js" />
+    <Content Include="demos\game\data\models\can\images\can_diffuse_1024.png" />
+    <Content Include="demos\game\data\models\can\images\can_normal_1024.png" />
+    <Content Include="demos\game\data\models\can\images\can_specular_1024.png" />
     <Content Include="demos\game\data\models\character\images\diffuse.jpg" />
     <Content Include="demos\game\data\models\character\images\normals.jpg" />
     <Content Include="demos\game\data\models\character\images\specular.jpg" />
+    <Content Include="demos\game\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\game\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\game\data\models\oil\Images\oil_specular_1024.png" />
     <Content Include="demos\game\data\models\tubing\images\tech_diffuse.png" />
     <Content Include="demos\game\data\models\tubing\images\tech_normal.png" />
     <Content Include="demos\game\data\models\tubing\images\tech_specular.png" />
-    <Content Include="demos\game\demo.xml" />
+    <Content Include="demos\game\data\models\vehabar\images\v_diffuse.png" />
+    <Content Include="demos\game\data\models\vehabar\images\v_normal.png" />
+    <Content Include="demos\game\data\models\vehabar\images\v_specular.png" />
+    <Content Include="demos\game\data\models\windspot\images\WIND-SP.png" />
+    <Content Include="demos\game\data\models\windspot\images\wind_normal.png" />
+    <Content Include="demos\game\data\models\windspot\images\wind_WIND-DUST-DIFF.png" />
+    <Content Include="demos\game\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\light-shafts\dat.gui\dat.gui.min.js" />
     <Content Include="demos\light-shafts\data\models\WoodSoldier\WoodSoldier.png" />
     <Content Include="demos\light-shafts\data\textures\lensflare_cookies.png" />
@@ -197,6 +221,7 @@
     <Content Include="demos\parser\test_files.js" />
     <Content Include="demos\performance\demo.xml" />
     <Content Include="demos\performance\index.html" />
+    <Content Include="demos\WoodSoldier\WoodSoldier.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="demos\arteries\arteries.ts" />
@@ -346,6 +371,61 @@
     <Content Include="demos\game\data\textures\terrain\main_height_map_1025.dds" />
     <Content Include="demos\game\data\textures\terrain\main_terrain_normal_map.dds" />
     <Content Include="demos\arteries\index.jade" />
+    <Content Include="demos\game\data\effects\sunshaft.afx" />
+    <Content Include="demos\game\data\models\can\can.DAE" />
+    <Content Include="demos\game\data\models\oil\oil.DAE" />
+    <Content Include="demos\game\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\game\data\models\rock\images\normal.dds" />
+    <Content Include="demos\game\data\models\rock\images\specular.dds" />
+    <Content Include="demos\game\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\game\data\models\tube\rock_tube_door_2.max" />
+    <Content Include="demos\game\data\models\character\all-ed.json" />
+    <Content Include="demos\game\data\models\character\character.DAE" />
+    <Content Include="demos\game\data\models\character\character.max" />
+    <Content Include="demos\game\data\models\character\charX.DAE" />
+    <Content Include="demos\game\data\models\character\charY.DAE" />
+    <Content Include="demos\game\data\models\character\gun_draw_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_draw_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_draw_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_fire_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_fire_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_fire_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_idle_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_idle_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_idle_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_undraw_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_undraw_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_undraw_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_walk.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_combo.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_draw.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_idle.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_undraw.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_walk.DAE" />
+    <Content Include="demos\game\data\models\character\idle_0.DAE" />
+    <Content Include="demos\game\data\models\character\idle_1.DAE" />
+    <Content Include="demos\game\data\models\character\run.DAE" />
+    <Content Include="demos\game\data\models\character\run2.DAE" />
+    <Content Include="demos\game\data\models\character\walk.DAE" />
+    <Content Include="demos\game\data\models\character\walkback_new.DAE" />
+    <Content Include="demos\game\data\models\box\box_fin.max" />
+    <Content Include="demos\game\data\models\box\opened_box.DAE" />
+    <Content Include="demos\game\data\models\barrel\barrel.DAE" />
+    <Content Include="demos\game\data\models\barrel\barrel_support.DAE" />
+    <Content Include="demos\game\data\models\vehabar\vehabar.DAE" />
+    <Content Include="demos\game\data\models\windspot\images\WIND-SP.dds" />
+    <Content Include="demos\game\data\models\windspot\images\wind_normal.dds" />
+    <Content Include="demos\game\data\models\windspot\images\wind_WIND-DUST-DIFF.dds" />
+    <Content Include="demos\game\data\models\windspot\WINDSPOT.DAE" />
+    <Content Include="demos\game\index.jade" />
+    <Content Include="demos\dragon.dae" />
+    <Content Include="demos\kr360.dae" />
+    <Content Include="demos\seymourplane\images\planeDiffuse.dds" />
+    <Content Include="demos\seymourplane\images\planeDiffuse.tga" />
+    <Content Include="demos\seymourplane\seymourplane.dae" />
+    <Content Include="demos\teapot.dae" />
+    <Content Include="demos\Weldinggun.dae" />
+    <Content Include="demos\WoodSoldier\WoodSoldier.DAE" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -369,7 +449,9 @@
     <Content Include="demos\game\game.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="demos\atmospheric_scattering\demo.ts" />
     <TypeScriptCompile Include="demos\game\lib\createCameras.ts" />
+    <Content Include="demos\game\lib\createLightShafts.ts" />
     <TypeScriptCompile Include="demos\game\lib\createModelEntry.ts" />
     <TypeScriptCompile Include="demos\game\lib\createModelEx.ts" />
     <TypeScriptCompile Include="demos\game\lib\createSceneEnvironment.ts" />

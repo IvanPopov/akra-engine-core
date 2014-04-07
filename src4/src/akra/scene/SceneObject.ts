@@ -163,10 +163,11 @@ module akra.scene {
 				this._pWorldBounds.set(this._pLocalBounds);
 				// make sure we have some degree of thickness
 				if (true) {
-					this._pWorldBounds.x1 = Math.max(this._pWorldBounds.x1, this._pWorldBounds.x0 + 0.01);
-					this._pWorldBounds.y1 = Math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
-					this._pWorldBounds.z1 = Math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
+					this._pWorldBounds.x1 = math.max(this._pWorldBounds.x1, this._pWorldBounds.x0 + 0.01);
+					this._pWorldBounds.y1 = math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
+					this._pWorldBounds.z1 = math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
 				}
+
 				this._pWorldBounds.transform(this.getWorldMatrix());
 
 				// set the flag that our bounding box has changed

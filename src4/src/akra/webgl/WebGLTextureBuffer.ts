@@ -69,7 +69,7 @@ module akra.webgl {
 
 			pWebGLContext.texImage2D(this._eFaceTarget,
 									 this._iLevel,
-									 getClosestWebGLInternalFormat(getSupportedAlternative(this._eFormat)),	                            			
+									 getClosestWebGLInternalFormat(getSupportedAlternative(this._eFormat)),
 									 this._iWidth, this._iHeight, 0,
 									 getWebGLFormat(this._eFormat), getWebGLDataType(this._eFormat),
 									 null);	

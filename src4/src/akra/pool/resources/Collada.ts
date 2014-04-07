@@ -2350,6 +2350,7 @@ module akra.pool.resources {
 				pSubMesh.getMaterial().name = pPolygons.material;
 			}
 
+			//debug.log("mesh:", pMesh.getName(), "shadow: ", pMesh.getShadow(), "collada: ", this.findResourceName(), "total subsets: ", pMesh.getLength());
 			pMesh.setShadow(this.isShadowsEnabled());
 
 			//adding all data to cahce data

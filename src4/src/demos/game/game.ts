@@ -23,6 +23,7 @@
 /// <reference path="lib/createModelEx.ts" />
 /// <reference path="lib/putOnTerrain.ts" />
 /// <reference path="lib/fetchAllCameras.ts" />
+/// <reference path="lib/createLightShafts.ts" />
 
 
 /// <reference path="lib/updateKeyboardControls.ts" />
@@ -34,11 +35,11 @@ declare var AE_GAME_RESOURCES: akra.IDep;
 module akra {
 
 	export interface IGameParameters extends
-		IGameTimeParameters,
-		IGamePadParameters,
-		IGameHeroParameters,
-		IGameCameraParameters,
-		IGameTriggersParamerers {
+	IGameTimeParameters,
+	IGamePadParameters,
+	IGameHeroParameters,
+	IGameCameraParameters,
+	IGameTriggersParamerers {
 	}
 
 
@@ -64,7 +65,6 @@ module akra {
 	var pOptions: IEngineOptions = {
 		renderer: pRenderOpts,
 		progress: (e: IDepEvent) => {
-			console.log(e.source);
 			if (e.source.name == "HERO_CONTROLLER" && e.source.stats.status == EDependenceStatuses.LOADED) {
 				pControllerData = e.source.content;
 			}
@@ -673,7 +673,7 @@ module akra {
 			}
 		}
 		else {
-			console.warn("controller::active is null ;(");
+			logger.warn("controller::active is null ;(");
 		}
 
 		//character move
@@ -1337,7 +1337,7 @@ module akra {
 		//camera data
 		pCamera = self.hero.camera;
 		pCameraWorldData = pCamera.getWorldMatrix().data;
-		
+
 		//camera view direction projection to XZ axis
 		v3fCameraDir = Vec3.temp(-pCameraWorldData[math.__13], 0., -pCameraWorldData[math.__33]).normalize();
 		//v3fCameraOrtho  = Vec3(v3fCameraDir.z, 0., -v3fCameraDir.x);
@@ -1431,6 +1431,7 @@ module akra {
 			}
 
 			//hero orinted along Z-axis
+			//console.log(fMovementSpeed * fTimeDelta);
 			pHero.addRelPosition(Vec3.temp(0.0, 0.0, fMovementSpeed * fTimeDelta));
 			pHero.update();
 
@@ -1446,12 +1447,15 @@ module akra {
 					}
 
 					var fFallSpeed: float = ((time() - pStat.fallStartTime) / 1000) * math.GRAVITY_CONSTANT;
+					//console.log(pHero.getWorldPosition().x, pHero.getWorldPosition().y - fFallSpeed * fTimeDelta, pHero.getWorldPosition().z);
 					pHero.setPosition(pHero.getWorldPosition().x, pHero.getWorldPosition().y - fFallSpeed * fTimeDelta, pHero.getWorldPosition().z);
 				}
 				else {
 					pStat.fallDown = false;
+					//console.log(v3fHeroTerrainProjPoint);
 					pHero.setPosition(v3fHeroTerrainProjPoint);
 				}
+
 			}
 
 			//console.log((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
@@ -1744,6 +1748,7 @@ module akra {
 
 		pTubeBetweenRocks.explore((pEntity: IEntity) => {
 			if (scene.SceneModel.isModel(pEntity)) {
+				//debug.log((<ISceneModel>pEntity).getName(), "<<<");
 				(<ISceneModel>pEntity).getMesh().setShadow(false);
 			}
 
@@ -1768,6 +1773,8 @@ module akra {
 		pSkyBoxTexture = createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky = self.sky = createSky(pScene, 14.);
 
+		createLightShafts(<IDSViewport>pViewport, pSky);
+
 		//test viewports
 		// var pTestViewport = pCanvas.addViewport(new render.DSViewport(pCamera, .25, .25, .5, .5, 1.));
 		/*		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
@@ -1787,11 +1794,11 @@ module akra {
 				pNormalViewport.effect.addComponent("akra.system.display_normals");*/
 		//end of test
 
-		var pSprite: ISprite = pScene.createSprite("sprite");
+		//var pSprite: ISprite = pScene.createSprite("sprite");
 
-		pSprite.attachToParent(pScene.getRootNode());
-		pSprite.setPosition(0., -1., 0.);
-		pSprite.setTexture(<ITexture>pViewport["_pDeferredDepthTexture"]);
+		//pSprite.attachToParent(pScene.getRootNode());
+		//pSprite.setPosition(0., -1., 0.);
+		//pSprite.setTexture(<ITexture>pViewport["_pDeferredDepthTexture"]);
 
 		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
 
@@ -1840,11 +1847,8 @@ module akra {
 		// motionBlur(<IDSViewport>pViewport);
 
 		createSceneEnvironment(pScene, true, true);
-//#if DEBUG_TERRAIN == 1
-//		pEngine.getComposer()["bShowTriangles"] = true;
-//		if (pTerrain.megaTexture)
-//			pTerrain.megaTexture["_bColored"] = true;
-//#endif
+
+		pProgress.destroy();
 		pEngine.exec();
 	}
 

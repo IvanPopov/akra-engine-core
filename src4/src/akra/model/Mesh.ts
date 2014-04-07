@@ -37,7 +37,7 @@ module akra.model {
 			var pMesh: Mesh = <Mesh>this.getSender();
 
 			pMesh._setShadow(bShadow)
-
+			//debug.log("Mesh(" + pMesh.getName() + ")::ShadowSignal()", ", shadow = " + bShadow);
 			if (!bShadow) {
 				for (var i: int = 0; i < pMesh.getLength(); ++i) {
 					if (pMesh.getSubset(i).getShadow()) {
@@ -126,6 +126,8 @@ module akra.model {
 
 		setShadow(bValue: boolean): void {
 			for (var i: int = 0; i < this._pSubMeshes.length; ++i) {
+				//debug.log("Mehs(" + this.getName() + ")::setShadow() ==> MeshSubset(" + this._pSubMeshes[i].guid + ")::setShadow(" + bValue + ")");
+				//console.trace();
 				this._pSubMeshes[i].setShadow(bValue);
 			}
 		}
