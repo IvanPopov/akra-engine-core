@@ -22,7 +22,7 @@
     </Dependencies>
     <Resource Name="AE_RESOURCES">
       <Filename>data</Filename>
-      <Archive>False</Archive>
+      <Archive>True</Archive>
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="models" />

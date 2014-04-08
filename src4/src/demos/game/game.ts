@@ -74,6 +74,7 @@ module akra {
 		deps: pGameDeps
 	};
 
+	//console.profile("Loading");
 	var pEngine: IEngine = createEngine(pOptions);
 
 
@@ -1763,6 +1764,9 @@ module akra {
 	}
 
 	function main(pEngine: IEngine): void {
+		//console.profileEnd();
+		//console.profile("Initialization");
+
 		setup(pCanvas, pUI);
 
 		pCamera = self.camera = createCameras(pScene);
@@ -1848,6 +1852,7 @@ module akra {
 
 		createSceneEnvironment(pScene, true, true);
 
+		//console.profileEnd();
 		pProgress.destroy();
 		pEngine.exec();
 	}

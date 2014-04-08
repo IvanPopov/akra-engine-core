@@ -42,6 +42,7 @@
     <Resource Name="AE_GAME_RESOURCES">
       <Filename>game</Filename>
       <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
       <UseInlining>False</UseInlining>
       <Data>
         <ResourceFile Path="data/effects/sunshaft.afx" />

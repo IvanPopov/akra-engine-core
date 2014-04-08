@@ -233,7 +233,6 @@
             </xs:simpleContent>
           </xs:complexType>
         </xs:element>
-
         <xs:element name="Archive" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:documentation>
@@ -246,6 +245,23 @@
               <xs:extension base="Boolean"/>
             </xs:simpleContent>
           </xs:complexType>
+        </xs:element>
+        <xs:element name="CompressionLevel" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>
+              Archive compression level.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Store"/>
+              <xs:enumeration value="Fastest"/>
+              <xs:enumeration value="Fast"/>
+              <xs:enumeration value="Normal"/>
+              <xs:enumeration value="Maximum"/>
+              <xs:enumeration value="Ultra"/>
+            </xs:restriction>
+          </xs:simpleType>
         </xs:element>
         <xs:element name="UseInlining" minOccurs="0" maxOccurs="1">
           <xs:annotation>
