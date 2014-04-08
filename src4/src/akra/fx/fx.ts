@@ -3,14 +3,14 @@
 /// <reference path="EffectParser.ts" />
 module akra.fx {
 
-	/** @const */
-	export var ALL_PASSES = 0xffffff;
-	/** @const */
-	export var ANY_PASS = 0xfffffa;
-	/** @const */
-	export var ANY_SHIFT = 0xfffffb;
-	/** @const */
-	export var DEFAULT_SHIFT = 0xfffffc;
+	/** For addComponent/delComponent/hasComponent */
+	export const ALL_PASSES = 0xffffff;
+	/** Only for hasComponent */
+	export const ANY_PASS = 0xfffffa;
+	/** For addComponent/delComponent/hasComponent */
+	export const ANY_SHIFT = 0xfffffb;
+	/** For addComponent/delComponent/hasComponent  */
+	export const DEFAULT_SHIFT = 0xfffffc;
 
 	/** @const */
 	export var effectParser: EffectParser = new EffectParser();

@@ -3640,7 +3640,7 @@ declare module akra {
         getPostEffectStartPass(): number;
         containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): any;
         containComponentHash(sComponentHash: string): boolean;
-        findAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
+        findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
         addComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         removeComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         finalizeBlend(): boolean;
@@ -11946,7 +11946,7 @@ declare module akra.fx {
         public getHash(): string;
         public containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): boolean;
         public containComponentHash(sComponentHash: string): boolean;
-        public findAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
+        public findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
         public addComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         public removeComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         public finalizeBlend(): boolean;

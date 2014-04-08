@@ -126,7 +126,7 @@ module akra {
 				pEffect.addComponent("akra.system.sunshaft");
 			}
 			else {
-				pEffect.delComponent("akra.system.sunshaft", fx.ANY_SHIFT, fx.ANY_PASS);
+				pEffect.delComponent("akra.system.sunshaft");
 			}
 		});
 
@@ -136,7 +136,7 @@ module akra {
 				pEffect.addComponent("akra.system.lensflare");
 			}
 			else {
-				pEffect.delComponent("akra.system.lensflare", fx.ANY_SHIFT, fx.ANY_PASS);
+				pEffect.delComponent("akra.system.lensflare");
 			}
 		});
 
