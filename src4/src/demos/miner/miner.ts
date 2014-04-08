@@ -30,7 +30,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport: ILPPViewport = null;
+	export var pViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pScene: IScene3d = pEngine.getScene();
 
@@ -64,16 +64,22 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
-		//pViewport = new render.LPPViewport(pCamera);
+		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
+		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
+		pViewport = new render.LPPViewport(pCamera);
+
 
 		pCanvas.addViewport(pViewport);
-		pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
+		//pCanvas.addViewport(pLPPViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
+		pViewport.setFXAA(true);
+		
 		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
+
+		//pLPPViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -108,8 +114,10 @@ module akra {
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
 			((pSprite: ISprite, pLightOmni: IOmniLight) => {
-				//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
-				//pSprite.mouseout.connect(() => { pViewport.highlight(null); });
+				pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
+				pSprite.mouseout.connect(() => { pViewport.highlight(null); });
+				//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
+				//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
 				pSprite.click.connect(() => {
 					pLightOmni.setEnabled(!pLightOmni.isEnabled());
 					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);

@@ -15265,6 +15265,11 @@ declare module akra {
     interface ILPPViewport extends IViewport {
         getDepthTexture(): ITexture;
         getView(): IRenderableObject;
+        setFXAA(bValue?: boolean): void;
+        isFXAA(): boolean;
+        highlight(iRid: number): void;
+        highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        highlight(pPair: IRIDPair): void;
     }
 }
 declare module akra.render {
@@ -15273,31 +15278,47 @@ declare module akra.render {
         private _pNormalBufferTexture;
         /** Depth buffer of scene */
         private _pDepthBufferTexture;
-        /** Diffuse and specular */
-        private _pLightBufferTextureA;
-        /** Ambient and shadow */
-        private _pLightBufferTextureB;
+        /**
+        * 0 - Diffuse and specular
+        * 1 - Ambient and shadow
+        */
+        private _pLightBufferTextures;
         /** Resyult of LPP with out posteffects */
         private _pResultLPPTexture;
         private _pViewScreen;
         private _pLightPoints;
-        private _v2fTExtureRatio;
+        private _v2fTextureRatio;
         private _v2fScreenSize;
         private _pLightingUnifoms;
+        private _pHighlightedObject;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public getType(): EViewportTypes;
         public getView(): IRenderableObject;
         public getDepthTexture(): ITexture;
+        public getEffect(): IEffect;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
+        public getObject(x: number, y: number): ISceneObject;
+        public getRenderable(x: number, y: number): IRenderableObject;
+        public pick(x: number, y: number): IRIDPair;
+        public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;
         public _updateImpl(): void;
-        private prepareForLPPShading();
+        public setFXAA(bValue?: boolean): void;
+        public isFXAA(): boolean;
+        public highlight(iRid: number): void;
+        public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        public highlight(pPair: IRIDPair): void;
         public _onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public endFrame(): void;
         public getDepth(x: number, y: number): number;
+        private createNormalBufferRenderTarget(iWidth, iHeight);
+        private createLightBuffersRenderTargets(iWidth, iHeight);
+        private createResultLPPRenderTarget(iWidth, iHeight);
+        private updateRenderTextureDimensions(pTexture);
+        private prepareForLPPShading();
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
     }
@@ -16270,13 +16291,13 @@ declare module akra.fx {
     }
 }
 declare module akra.fx {
-    /** @const */
+    /** For addComponent/delComponent/hasComponent */
     var ALL_PASSES: number;
-    /** @const */
+    /** Only for hasComponent */
     var ANY_PASS: number;
-    /** @const */
+    /** For addComponent/delComponent/hasComponent */
     var ANY_SHIFT: number;
-    /** @const */
+    /** For addComponent/delComponent/hasComponent  */
     var DEFAULT_SHIFT: number;
     /** @const */
     var effectParser: EffectParser;

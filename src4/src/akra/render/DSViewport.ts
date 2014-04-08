@@ -278,20 +278,6 @@ module akra.render {
 									pPass.setForeign("optimeizeForDeferredPass2", true);
 								}
 							}
-
-							//if (j === 0) {
-							//	pTechnique._blockPass(1);
-							//}
-							//else {
-							//	pTechnique._blockPass(0);
-							//}
-
-							//if (pTechnique.getTotalPasses() > j) {
-							//	var pPass: IRenderPass = pTechnique.getPass(j);
-							//	pPass.blend("akra.system.prepareForDeferredShading", j);
-							//	//pPass.setForeign();
-							//}
-
 						}
 					}
 				}
@@ -433,6 +419,7 @@ module akra.render {
 				p.renderable = null;
 			}
 			else if (isInt(arguments[0])) {
+				iRid = a;
 				p.object = pComposer._getObjectByRid(iRid);
 				p.renderable = pComposer._getRenderableByRid(iRid);
 			}
@@ -521,7 +508,7 @@ module akra.render {
 
 				case 1:
 					//skybox
-					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+					pPass.setTexture("OBJECT_ID_TEXTURE", pDeferredTextures[0]);
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
@@ -537,7 +524,6 @@ module akra.render {
 						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
 					}
 
-					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
 						Vec2.temp(this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight()));
 					break;
