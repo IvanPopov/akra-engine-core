@@ -23,6 +23,7 @@
     <Resource Name="AE_RESOURCES">
       <Filename>data</Filename>
       <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="models" />
