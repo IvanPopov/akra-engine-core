@@ -122,6 +122,7 @@ float4 apply_light_omni() : COLOR{
 	float3 view_dir = normalize(-pixelData.position);
 	float3 normal_dir = pixelData.normal;
 	float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
+	// float3 reflect_dir = reflect(view_dir, normal_dir);
 	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
 
 	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, PBS_F0, PBS_gloss),1.);
@@ -231,10 +232,6 @@ float PBS_gloss : PBS_GLOSS = 0.;
 float3 PBS_F0 : PBS_F0 = float3(0.);
 float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
 
-float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
-	// F0 = Fresnel reflectance at 0° (reflectance at normal incidence)
-	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
-}
 
 float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3 normalDir, float Gloss)
 {
@@ -243,20 +240,43 @@ float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3
 }
 
 float2 getZone1z(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
+	uv.x = .5 - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
+	uv.y = pow(2., -float(lod)-1.) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone2x(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
+	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
+	uv.x = .5 - pow(2., -float(lod)-2.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
+	uv.y = pow(2., -float(lod)-1.) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone3y(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
+	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
+	uv.x = .5 - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
+	uv.y = (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	return uv;
+}
+float2 getZone4z(float2 uv, int lod) {
+	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
+	uv.x = 1. - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
+	uv.y = 1. - pow(2., -float(lod)) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	return uv;
+}
+
+float2 getZone5x(float2 uv, int lod) {
+	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
+	uv.x = 1. - pow(2., -float(lod)-2.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
+	uv.y = 1. - pow(2., -float(lod)) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	return uv;
+}
+
+float2 getZone6y(float2 uv, int lod) {
+	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
+	uv.x = 1. - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
+	uv.y = 1. - pow(2., -float(lod)-1.) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
@@ -269,20 +289,35 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, float quality) {
 
 	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
 
-	if(abs(direction.z) >= .99) {
-		uv.x = sign(direction.z)*direction.x;
-		uv.y = -direction.y;
-		uv = getZone1z((uv+float2(1.))/2., lod) + float2(0.5,0.)*(0.5+0.5*sign(direction.z));
+	if(direction.z >= .99) {
+		uv.x = -direction.x;
+		uv.y = direction.y;
+		uv = getZone1z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
 	}
-	else if(abs(direction.x) >= .99) {
-		uv.x = -1.*sign(direction.x)*direction.z;
-		uv.y = -direction.y;
-		uv = getZone2x((uv+float2(1.))/2., lod) + float2(0.5,0.)*(0.5+0.5*sign(direction.x));
+	else if(direction.x <= -.99) {
+		uv.x = -direction.z;
+		uv.y = direction.y;
+		uv = getZone2x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
 	}
-	else {//(abs(direction.y) == 1.) {
-		uv.x = -1.*direction.x;
+	else if(direction.y >= .99) {
+		uv.x = -direction.x;
 		uv.y = -direction.z;
-		uv = getZone3y((uv+float2(1.))/2., lod) + float2(0.5,0.)*(0.5+0.5*sign(-direction.y));
+		uv = getZone3y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+	}
+	else if(direction.z <= -.99) {
+		uv.x = direction.x;
+		uv.y = direction.y;
+		uv = getZone4z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+	}
+	else if(direction.x >= .99) {
+		uv.x = direction.z;
+		uv.y = direction.y;
+		uv = getZone5x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+	}
+	else {//(direction.y <= -.99) {
+		uv.x = direction.x;
+		uv.y = -direction.z;
+		uv = getZone6y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
 	}
 
 	color = tex2D(envSampler, uv);
@@ -296,6 +331,11 @@ float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float 
     float3 Envcolor = getEnvLod(envSampler0, R, Gloss).rgb;
 
     return FresnelSchlickWithRoughness(SpecularColor, E, N, Gloss) * Envcolor;// * EnvMapScaleAndModulate; // EnvMapScaleAndModulate is used to decompress range
+}
+
+float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
+	// F0 = Fresnel reflectance at 0° (reflectance at normal incidence)
+	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
 }
 
 // @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
