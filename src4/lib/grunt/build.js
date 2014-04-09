@@ -881,27 +881,29 @@ module.exports = function (grunt) {
 					});
 
 
-					var compressionLevel = resource.get("CompressionLevel").textContent;
 					var compressionKey = "-mx5";
+					if (resource.get("CompressionLevel")) {
+						var compressionLevel = resource.get("CompressionLevel").textContent;
 
-					switch (compressionLevel) {
-						case "Store":
-							compressionKey = "-mx0";
-							break;
-						case "Fastest":
-							compressionKey = "-mx1";
-							break;
-						case "Fast":
-							compressionKey = "-mx3";
-							break;
-						case "Normal":
-							compressionKey = "-mx5";
-							break;
-						case "Maximum":
-							compressionKey = "-mx7";
-							break;
-						case "Ultra":
-							compressionKey = "-mx9";
+						switch (compressionLevel) {
+							case "Store":
+								compressionKey = "-mx0";
+								break;
+							case "Fastest":
+								compressionKey = "-mx1";
+								break;
+							case "Fast":
+								compressionKey = "-mx3";
+								break;
+							case "Normal":
+								compressionKey = "-mx5";
+								break;
+							case "Maximum":
+								compressionKey = "-mx7";
+								break;
+							case "Ultra":
+								compressionKey = "-mx9";
+						}
 					}
 
 					var cmd = cmd7za + ' a -tzip -aoa ' + compressionKey + ' -mmt "' + path.resolve(outputFile) + '" "' + path.resolve(path.join(tempDir.path, "*")) + '"';
