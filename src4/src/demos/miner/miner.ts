@@ -67,9 +67,9 @@ module akra {
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
 		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
 		pViewport = new render.LPPViewport(pCamera);
-
-
 		pCanvas.addViewport(pViewport);
+
+		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
 		//pCanvas.addViewport(pLPPViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -86,6 +86,7 @@ module akra {
 		};
 
 		addons.navigation(pViewport);
+		addons.navigation(pViewport, null, null, EViewportTypes.LPPVIEWPORT, math.Vec4.temp(0.5, .05, .25, .25));
 
 		var pGUI = new dat.GUI();
 

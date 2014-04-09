@@ -16,6 +16,8 @@ module akra.render {
 	var pColor: IColor = new Color(0);
 
 	export class LPPViewport extends Viewport implements ILPPViewport {
+		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
+
 		/** Buffer with normal, shininess and objectID */
 		private _pNormalBufferTexture: ITexture = null;
 		/** Depth buffer of scene */
@@ -47,11 +49,18 @@ module akra.render {
 		};
 
 		private _pHighlightedObject: IRIDPair = { object: null, renderable: null };
+		private _pSkyboxTexture: ITexture = null;
 		
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
-		
+
+		protected setupSignals(): void {
+			this.addedSkybox = this.addedSkybox || new Signal(this);
+
+			super.setupSignals();
+		}
+
 		getType(): EViewportTypes {
 			return EViewportTypes.LPPVIEWPORT;
 		} 
@@ -66,6 +75,10 @@ module akra.render {
 		
 		getEffect(): IEffect {
 			return this.getView().getRenderMethodDefault().getEffect();
+		}
+
+		getSkybox(): ITexture {
+			return this._pSkyboxTexture;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -126,6 +139,8 @@ module akra.render {
 				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_ambient_shadow' pass)");
 			}
 
+			this.setClearEveryFrame(false);
+			this.setBackgroundColor(color.ZERO);
 			this.setDepthParams(false, false, 0);
 
 			this.setFXAA(true);
@@ -134,6 +149,9 @@ module akra.render {
 		setCamera(pCamera: ICamera): boolean {
 			var isOk = super.setCamera(pCamera);
 			this._pNormalBufferTexture.getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pLightBufferTextures[0].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pResultLPPTexture.getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
 			return isOk;
 		}
 
@@ -235,6 +253,27 @@ module akra.render {
 			//this.renderAsNormal("apply_lpp_shading", this.getCamera());
 		}
 
+		setSkybox(pSkyTexture: ITexture): boolean {
+			if (pSkyTexture.getTextureType() !== ETextureTypes.TEXTURE_CUBE_MAP) {
+				return null;
+			}
+
+			var pEffect: IEffect = this.getEffect();
+
+			if (pSkyTexture) {
+				pEffect.addComponent("akra.system.skybox", 1, 0);
+			}
+			else {
+				pEffect.delComponent("akra.system.skybox", 1, 0);
+			}
+
+			this._pSkyboxTexture = pSkyTexture;
+
+			this.addedSkybox.emit(pSkyTexture);
+
+			return true;
+		}
+
 		setFXAA(bValue: boolean = true): void {
 			var pEffect: IEffect = this.getEffect();
 
@@ -283,6 +322,11 @@ module akra.render {
 			}
 			else if (isNull(p.object) && pObjectPrev) {
 				pEffect.delComponent("akra.system.outline", 1, 0);
+
+				//FIX ME: Need do understood how to know that skybox added like single effect, and not as imported component
+				if (!isNull(this._pSkyboxTexture)) {
+					pEffect.addComponent("akra.system.skybox", 1, 0);
+				}
 			}
 		}
 
@@ -322,6 +366,7 @@ module akra.render {
 					break;
 				case 1:
 					pPass.setTexture("OBJECT_ID_TEXTURE", this._pNormalBufferTexture);
+					pPass.setTexture("SKYBOX_TEXTURE", this._pSkyboxTexture);
 					//outline
 					var p: IRIDPair = this._pHighlightedObject;
 

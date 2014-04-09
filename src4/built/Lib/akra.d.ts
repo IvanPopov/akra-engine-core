@@ -15274,6 +15274,7 @@ declare module akra {
 }
 declare module akra.render {
     class LPPViewport extends Viewport implements ILPPViewport {
+        public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
         /** Buffer with normal, shininess and objectID */
         private _pNormalBufferTexture;
         /** Depth buffer of scene */
@@ -15291,11 +15292,14 @@ declare module akra.render {
         private _v2fScreenSize;
         private _pLightingUnifoms;
         private _pHighlightedObject;
+        private _pSkyboxTexture;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public setupSignals(): void;
         public getType(): EViewportTypes;
         public getView(): IRenderableObject;
         public getDepthTexture(): ITexture;
         public getEffect(): IEffect;
+        public getSkybox(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public getObject(x: number, y: number): ISceneObject;
@@ -15304,6 +15308,7 @@ declare module akra.render {
         public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;
         public _updateImpl(): void;
+        public setSkybox(pSkyTexture: ITexture): boolean;
         public setFXAA(bValue?: boolean): void;
         public isFXAA(): boolean;
         public highlight(iRid: number): void;

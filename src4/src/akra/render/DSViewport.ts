@@ -177,7 +177,7 @@ module akra.render {
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 
 			this.setClearEveryFrame(false);
-			this.setDepthParams(false, false, 0);			
+			this.setDepthParams(false, false, 0);
 
 			//AA is default
 			this.setFXAA(true);
@@ -437,6 +437,11 @@ module akra.render {
 			}
 			else if (isNull(p.object) && pObjectPrev) {
 				pEffect.delComponent("akra.system.outline", 1, 0);
+
+				//FIX ME: Need do understood how to know that skybox added like single effect, and not as imported component
+				if (!isNull(this._pDeferredSkyTexture)) {
+					pEffect.addComponent("akra.system.skybox", 1, 0);
+				}
 			}
 		}
 

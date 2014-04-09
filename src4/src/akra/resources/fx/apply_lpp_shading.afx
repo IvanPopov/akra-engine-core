@@ -42,7 +42,7 @@ float4 fs_apply_lpp_shading() : COLOR {
 	color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
 	color += Fragment_material.specular * float4(lightsDataA.www, 1.);
 
-	return color;
+	return float4(color.xyz, 1.);
 }
 
 technique apply_lpp_shading{
