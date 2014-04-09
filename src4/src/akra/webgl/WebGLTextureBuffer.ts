@@ -39,10 +39,6 @@ module akra.webgl {
 		protected _bSoftwareMipmap: boolean = false;
 		protected _pRTTList: IRenderTexture[] = null;
 
-		constructor () {
-			super();
-		}
-
 		_clearRTT(iZOffset: uint): void {
 			this._pRTTList[iZOffset] = null;
 		}

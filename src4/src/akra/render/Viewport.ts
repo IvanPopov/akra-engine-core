@@ -189,8 +189,9 @@ module akra.render {
 
 			pViewport._keepLastMousePosition(x, y);
 			pViewport._setMouseCaptured(false);
+
 			//FIXME: do not create object this!
-			pViewport._handleMouseInout({ object: null, renderable: null }, x, y);
+			pViewport._handleMouseInout(null, x, y);
 			super.emit(x, y);
 		}
 	}
@@ -278,10 +279,12 @@ module akra.render {
 		protected _bMouseIsCaptured: boolean = false;
 
 		//3d event handing
-		private _i3DEvents: int = 0;
-		//friends for Mouse event signals...
-		private _p3DEventPickLast: IRIDPair = { object: null, renderable: null }
-		private _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
+		protected _i3DEvents: int = 0;
+		//Specifies whether the object is perfect choice in a given frame
+		protected _b3DRequirePick = true;
+		protected _p3DEventPickLast: IRIDPair = { object: null, renderable: null }
+		protected _p3DEventPickPrev: IRIDPair = { object: null, renderable: null }
+		protected _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
 
 		/**
 		 * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
@@ -578,7 +581,7 @@ module akra.render {
 			}
 		}
 
-		update(): void {
+		final update(): void {
 			if (this._bHidden) {
 				return;
 			}
@@ -592,6 +595,9 @@ module akra.render {
 			this._isDepthRangeUpdated = false;
 
 			this._updateImpl();
+
+			//framde updated, pick required, if needed
+			this._b3DRequirePick = true;
 
 			this.endFrame();
 		}
@@ -772,43 +778,40 @@ module akra.render {
 
 		//manual recall over/out events for objects
 		touch(): void {
-			this._handleMouseInout({ object: null, renderable: null }, 0, 0);
+			this._handleMouseInout(null, 0, 0);
 		}
 
 		//friends for RenderSignal.
 		_handleMouseInout(pCurr: IRIDPair, x: uint, y: uint): IRIDPair {
-			// var pCurr: IRIDPair = this.pick(x, y);
-			var pPrev: IRIDPair = this._p3DEventPickLast;
+			var pPrev: IRIDPair = this._p3DEventPickPrev;
 
-			if (pCurr.object !== pPrev.object) {
+			var pCurrObject = null;
+			var pCurrRenderable = null;
+
+			if (pCurr) {
+				pCurrObject = pCurr.object;
+				pCurrRenderable = pCurr.renderable;
+			}
+
+			if (pCurrObject !== pPrev.object) {
 				if (!isNull(pPrev.object)) {
 					pPrev.object.mouseout.emit(this, pPrev.renderable, x, y);
 				}
 
-				if (!isNull(pCurr.object)) {
-					pCurr.object.mouseover.emit(this, pCurr.renderable, x, y);
+				if (!isNull(pCurrObject)) {
+					pCurrObject.mouseover.emit(this, pCurrRenderable, x, y);
 				}
 			}
-			// var ov = false;
-			// var ou = false;
-			// var n = math.floor(Math.random() * 100500);
-			if (pCurr.renderable !== pPrev.renderable) {
+
+			if (pCurrRenderable !== pPrev.renderable) {
 				if (!isNull(pPrev.renderable)) {
-					// ou = true;
 					pPrev.renderable.mouseout.emit(this, pPrev.object, x, y);
 				}
 
-				if (!isNull(pCurr.renderable)) {
-					// ov = true;
-					pCurr.renderable.mouseover.emit(this, pCurr.object, x, y);
+				if (!isNull(pCurrRenderable)) {
+					pCurrRenderable.mouseover.emit(this, pCurrObject, x, y);
 				}
 			}
-
-			// if (!ov && ou) {
-			// console.log("opacity enabled");
-			// }
-
-			this._p3DEventPickLast = pCurr;
 
 			return pCurr;
 		}

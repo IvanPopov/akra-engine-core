@@ -204,7 +204,7 @@ module akra {
 
 		pController.play.emit(0);
 
-		pGUI.add({ wireframe: true }, 'wireframe').onChange(function (bValue: boolean) {
+		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
 			pModel.explore((pEntity: IEntity): boolean => {
 				if (scene.SceneModel.isModel(pEntity)) {
 					var pNode = <ISceneModel>pEntity;
@@ -216,6 +216,23 @@ module akra {
 				return true;
 			});
 		});
+
+		pGUI.add({ bb: false }, 'bb').name("bounding-box").onChange((bValue: boolean) => {
+			pModel.explore((pEntity: IEntity): boolean => {
+				if (scene.SceneModel.isModel(pEntity)) {
+					var pNode = <ISceneModel>pEntity;
+					if (bValue) {
+						pNode.getMesh().showBoundingBox();
+					}
+					else {
+						pNode.getMesh().hideBoundingBox();
+					}
+				}
+
+				return true;
+			});
+		});
+
 		pProgress.destroy();
 	}
 
