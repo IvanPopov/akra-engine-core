@@ -11,10 +11,14 @@ module akra.model {
 	import Mat4 = math.Mat4;
 	import DeclUsages = data.Usages;
 
-	export class Skin implements ISkin {
+	export final class Skin implements ISkin {
 		private _pMesh: IMesh;
 
 		private _pSkeleton: ISkeleton = null;
+
+		//init: {x: {inf, -inf}, y: {inf, -inf}, z: {inf, -inf}}
+		private _pBoneBoundingBox: IRect3d =
+			new geometry.Rect3d();
 		
 		// name of bones/nodes
 		private _pNodeNames: string[] = null;
@@ -68,7 +72,10 @@ module akra.model {
 		 */
 		private _pTiedData: IVertexData[] = [];
 
-
+		//bone bounding box in world space
+		getBonesBoundingBox(): IRect3d {
+			return this._pBoneBoundingBox;
+		}
 
 		getData(): IRenderDataCollection {
 			return this._pMesh.getData();
@@ -254,15 +261,39 @@ module akra.model {
 			var bResult: boolean;
 			var pNode: ISceneNode;
 			var isUpdated: boolean = false;
+			var pBB = this._pBoneBoundingBox.set(MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32);
+
+			var x0: float = pBB.x0;
+			var x1: float = pBB.x1;
+
+			var y0: float = pBB.y0;
+			var y1: float = pBB.y1;
+
+			var z0: float = pBB.z0;
+			var z1: float = pBB.z1;
+			
 
 			for (var i: int = 0, nMatrices = this.getTotalBones(); i < nMatrices; ++i) {
-			    pNode = this._pAffectingNodes[i];
+				pNode = this._pAffectingNodes[i];
+
+				var v3fPos: IVec3 = pNode.getWorldPosition();
+
+				x0 = math.min(x0, v3fPos.x);
+				x1 = math.max(x1, v3fPos.x);
+
+				y0 = math.min(y0, v3fPos.y);
+				y1 = math.max(y1, v3fPos.y);
+
+				z0 = math.min(z0, v3fPos.z);
+				z1 = math.max(z1, v3fPos.z);
 
 			    if (pNode.isWorldMatrixNew() || bForce) {
 			        pNode.getWorldMatrix().multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
 			        isUpdated = true;
 			    }
 			}
+
+			pBB.set(x0, x1, y0, y1, z0, z1);
 
 			if (isUpdated) {
 			    pData = this._pBoneOffsetMatrixBuffer;

@@ -195,7 +195,9 @@ module akra {
 			'ANIM_MINER_WORK_HAMMER'
 		]).onChange(function (sName: string) {
 				pController.play.emit(sName);
-			});
+		});
+
+
 
 		pMiner.getOptions().wireframe = true;
 		var pModel: ISceneNode = pMiner.attachToScene(pScene);
@@ -203,6 +205,40 @@ module akra {
 		pModel.scale(.5);
 
 		pController.play.emit(0);
+		
+		var pBB: IRect3d;
+		var pLibeCube = addons.lineCube(pScene);
+
+		pModel.explore((pEntity: IEntity): boolean => {
+			if (scene.SceneModel.isModel(pEntity)) {
+				var pNode = <ISceneModel>pEntity;
+				if (pNode.getMesh().getName() !== "geom-Object007") {
+					return;
+				}
+
+				pBB = pNode.getMesh().getSubset(0).getSkin().getBonesBoundingBox();
+				
+				pGUI.add(pBB, "x0").listen().__precision = 4;
+				pGUI.add(pBB, "x1").listen().__precision = 4;
+				pGUI.add(pBB, "y0").listen().__precision = 4;
+				pGUI.add(pBB, "y1").listen().__precision = 4;
+				pGUI.add(pBB, "z0").listen().__precision = 4;
+				pGUI.add(pBB, "z1").listen().__precision = 4;
+
+				window["bb"] = pBB;
+			}
+
+			return true;
+		});
+
+		pLibeCube.attachToParent(pScene.getRootNode());
+		
+
+		pScene.beforeUpdate.connect(() => {
+			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
+			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
+		});
+		
 
 		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
 			pModel.explore((pEntity: IEntity): boolean => {
@@ -221,6 +257,7 @@ module akra {
 			pModel.explore((pEntity: IEntity): boolean => {
 				if (scene.SceneModel.isModel(pEntity)) {
 					var pNode = <ISceneModel>pEntity;
+
 					if (bValue) {
 						pNode.getMesh().showBoundingBox();
 					}

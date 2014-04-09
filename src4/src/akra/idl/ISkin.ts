@@ -17,6 +17,9 @@ module akra {
 		getData(): IRenderDataCollection;
 		getSkeleton(): ISkeleton;
 		getTotalBones(): uint;
+
+		//bone bounding box in world space
+		getBonesBoundingBox(): IRect3d;
 	
 		/**
 		 * Set binding matrix. 

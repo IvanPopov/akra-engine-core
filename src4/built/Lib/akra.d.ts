@@ -4860,6 +4860,7 @@ declare module akra {
         getData(): IRenderDataCollection;
         getSkeleton(): ISkeleton;
         getTotalBones(): number;
+        getBonesBoundingBox(): IRect3d;
         /**
         * Set binding matrix.
         * @see <bind_shape_matrix> in Collada.
@@ -13927,6 +13928,7 @@ declare module akra.model {
     class Skin implements ISkin {
         private _pMesh;
         private _pSkeleton;
+        private _pBoneBoundingBox;
         private _pNodeNames;
         private _m4fBindMatrix;
         private _pBoneTransformMatrices;
@@ -13965,6 +13967,7 @@ declare module akra.model {
         * Links to VertexData, that contain meta from this skin.
         */
         private _pTiedData;
+        public getBonesBoundingBox(): IRect3d;
         public getData(): IRenderDataCollection;
         public getTotalBones(): number;
         public getSkeleton(): ISkeleton;
