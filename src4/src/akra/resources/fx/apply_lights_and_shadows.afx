@@ -240,43 +240,37 @@ float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3
 }
 
 float2 getZone1z(float2 uv, int lod) {
-	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
-	uv.x = .5 - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
+	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone2x(float2 uv, int lod) {
-	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
-	uv.x = .5 - pow(2., -float(lod)-2.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	uv.x = .5 - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
+	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone3y(float2 uv, int lod) {
-	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
-	uv.x = .5 - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
-	uv.y = (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
+	uv.y = uv.y*pow(2.,-float(lod)-1.);
 	return uv;
 }
 float2 getZone4z(float2 uv, int lod) {
-	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
-	uv.x = 1. - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
+	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone5x(float2 uv, int lod) {
-	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
-	uv.x = 1. - pow(2., -float(lod)-2.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	uv.x = 1. - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
+	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone6y(float2 uv, int lod) {
-	float2 texel = float2(pow(2.,-8.+float(lod)),pow(2.,-8.+float(lod)));
-	uv.x = 1. - pow(2., -float(lod)-1.) + (uv.x*(1.-texel.x)+texel.x*.5)*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)-1.) + (uv.y*(1.-texel.y)+texel.y*.5)*pow(2.,-float(lod)-1.);
+	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
+	uv.y = 1. - pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
 	return uv;
 }
 
@@ -289,38 +283,41 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, float quality) {
 
 	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
 
+	float2 local_texel = float2(pow(2.,-8.+float(lod)));
+	float2 texel = float2(pow(2.,-10.),pow(2.,-9.));
+
 	if(direction.z >= .99) {
 		uv.x = -direction.x;
 		uv.y = direction.y;
-		uv = getZone1z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+		uv = getZone1z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
 	}
 	else if(direction.x <= -.99) {
 		uv.x = -direction.z;
 		uv.y = direction.y;
-		uv = getZone2x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+		uv = getZone2x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
 	}
 	else if(direction.y >= .99) {
 		uv.x = -direction.x;
 		uv.y = -direction.z;
-		uv = getZone3y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+		uv = getZone3y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
 	}
 	else if(direction.z <= -.99) {
 		uv.x = direction.x;
 		uv.y = direction.y;
-		uv = getZone4z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+		uv = getZone4z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
 	}
 	else if(direction.x >= .99) {
 		uv.x = direction.z;
 		uv.y = direction.y;
-		uv = getZone5x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+		uv = getZone5x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
 	}
 	else {//(direction.y <= -.99) {
 		uv.x = direction.x;
 		uv.y = -direction.z;
-		uv = getZone6y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5), lod);
+		uv = getZone6y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
 	}
 
-	color = tex2D(envSampler, uv);
+	color = tex2D(envSampler, uv+texel/2.);
 
 	return color;
 }
