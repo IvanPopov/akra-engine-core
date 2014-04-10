@@ -21,9 +21,7 @@ module akra.addons {
 	function _navigation(
 		pGeneralViewport: IViewport,
 		pParameters: INavigationsParameters,
-		pCallback: (e: Error) => void,
-		eType: EViewportTypes,
-		v4fPos: IVec4): void {
+		pCallback: (e: Error) => void): void {
 
 		var pCanvas: webgl.WebGLCanvas = <webgl.WebGLCanvas>pGeneralViewport.getTarget();
 		var pEngine: IEngine = pCanvas.getRenderer().getEngine();
@@ -53,10 +51,9 @@ module akra.addons {
 		pParams.specular.set(.1);
 		pParams.attenuation.set(0.5, 0, 0);
 
-		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(
-			eType === EViewportTypes.LPPVIEWPORT ? <IViewport>(new render.LPPViewport(pCamera, v4fPos.x, v4fPos.y, v4fPos.z, v4fPos.w, 101)) : <IViewport>(new render.DSViewport(pCamera, v4fPos.x, v4fPos.y, v4fPos.z, v4fPos.w, 100)));
+		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.LPPViewport(pCamera, 0.7, .05, .25, .25, 100)));
 
-		pViewport.setFXAA(false);
+		pViewport.setFXAA(true);
 		pViewport.setClearEveryFrame(false);
 		//detection of center point
 
@@ -400,9 +397,7 @@ module akra.addons {
 	export function navigation(
 		pGeneralViewport: IViewport,
 		pParameters: INavigationsParameters = null,
-		pCallback: (e: Error) => void = null,
-		eType: EViewportTypes = EViewportTypes.DSVIEWPORT,
-		v4fPos: IVec4 = math.Vec4.temp(0.7, .05, .25, .25)): void {
+		pCallback: (e: Error) => void = null): void {
 
 		if (isNull(pParameters)) {
 			//TODO: user default parameters from config.addons.navigation
@@ -422,7 +417,7 @@ module akra.addons {
 			.getResourceManager()
 			.getModelPoolByFormat(EModelFormats.COLLADA)
 			.findResource("akra.navigation.ORIENTATION_CUBE")) {
-			return _navigation(pGeneralViewport, pParameters, pCallback, eType, v4fPos);
+			return _navigation(pGeneralViewport, pParameters, pCallback);
 
 		}
 
@@ -435,7 +430,7 @@ module akra.addons {
 					pCallback(new Error("Could not load resources for akra.addon.navigation"));
 				}
 
-				_navigation(pGeneralViewport, pParameters, pCallback, eType, v4fPos);
+				_navigation(pGeneralViewport, pParameters, pCallback);
 			});
 	}
 }

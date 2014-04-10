@@ -38,6 +38,7 @@ VS_OUT vs_sprite(VS_IN IN)
 	return Out;
 };
 
+foreign bool saveAlpha = false;
 float4 fs_sprite(VS_OUT IN) : COLOR
 {
 
@@ -46,7 +47,7 @@ float4 fs_sprite(VS_OUT IN) : COLOR
 
     textureColor = tex2D(sampler0, texturePosition);
 
-    return float4(textureColor.xyz, 1.0);
+    return float4(textureColor.xyz, saveAlpha ? textureColor.w : 1.0);
 };
 
 bool normalFix;

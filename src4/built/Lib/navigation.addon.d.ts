@@ -14,5 +14,5 @@ declare module akra.addons {
     * @param pParameters Parameters.
     * @param pCallback Loading callback.
     */
-    function navigation(pGeneralViewport: IViewport, pParameters?: INavigationsParameters, pCallback?: (e: Error) => void, eType?: EViewportTypes, v4fPos?: IVec4): void;
+    function navigation(pGeneralViewport: IViewport, pParameters?: INavigationsParameters, pCallback?: (e: Error) => void): void;
 }

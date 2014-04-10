@@ -11898,6 +11898,8 @@ declare module akra.fx {
         public hasVariableWithRealName(sName: string): boolean;
         public getVarByName(sName: string): IAFXVariableDeclInstruction;
         public getVarByRealName(sName: string): IAFXVariableDeclInstruction;
+        private static _pDefaultValuesForTypes;
+        static getVariableDefaultValue(pVar: IAFXVariableDeclInstruction): any;
         static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType;
     }
 }

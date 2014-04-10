@@ -125,6 +125,63 @@ module akra.fx {
 			}
 		}
 
+		private static _pDefaultValuesForTypes = {
+			"texture": null,
+
+			"float": 0.,
+			"int": 0,
+			"bool": false,
+
+			"float2": new math.Vec2(0.),
+			"int2": new math.Vec2(0),
+			"bool2": new math.Vec2(0),
+
+			"float3": new math.Vec3(0.),
+			"int3": new math.Vec3(0),
+			"bool3": new math.Vec3(0),
+
+			"float4": new math.Vec4(0.),
+			"int4": new math.Vec4(0),
+			"bool4": new math.Vec4(0),
+
+			"float2x2": null,
+			"float3x3": new math.Mat3(0),
+			"float4x4": new math.Mat4(0),
+
+			"sampler": null,
+			"samplerCUBE": null
+		};
+
+		static getVariableDefaultValue(pVar: IAFXVariableDeclInstruction): any {
+			var sBaseType: string = pVar._getType()._getBaseType()._getName();
+
+			switch (sBaseType) {
+				case "texture":
+				case "float":
+				case "int":
+				case "bool":
+				case "float2":
+				case "int2":
+				case "bool2":
+				case "float3":
+				case "int3":
+				case "bool3":
+				case "float4":
+				case "int4":
+				case "bool4":
+				case "float2x2":
+				case "float3x3":
+				case "float4x4":
+				case "sampler":
+				case "sampler2D":
+				case "samplerCUBE":
+					return VariableContainer._pDefaultValuesForTypes[sBaseType];
+
+				default:
+					return null;
+			}
+		}
+
 		static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType {
 			var sBaseType: string = pVar._getType()._getBaseType()._getName();
 

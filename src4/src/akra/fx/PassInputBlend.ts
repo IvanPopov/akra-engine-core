@@ -416,7 +416,14 @@ module akra.fx {
 			}
 
 			for (var i: uint = 0; i < this.foreignKeys.length; i++) {
-				this.foreigns[this.foreignKeys[i]] = null;
+				var pInfo: IAFXVariableInfo = this._pCreator.getForeigns().getVarInfoByIndex(this.foreignKeys[i]);
+				var pDefaultValue: any = pInfo.variable._getDefaultValue();
+
+				if (!isDefAndNotNull(pDefaultValue)) {
+					pDefaultValue = VariableContainer.getVariableDefaultValue(pInfo.variable);
+				}
+
+				this.foreigns[this.foreignKeys[i]] = pDefaultValue;
 			}
 
 			for (var i: uint = 0; i < this.textureKeys.length; i++) {
@@ -634,8 +641,14 @@ module akra.fx {
 
 			for (var i: uint = 0; i < pForeignKeys.length; i++) {
 				var iIndex: uint = pForeignKeys[i];
+				var pInfo: IAFXVariableInfo = this._pCreator.getForeigns().getVarInfoByIndex(iIndex);
+				var pDefaultValue: any = pInfo.variable._getDefaultValue();
 
-				this.foreigns[iIndex] = null;
+				if (!isDefAndNotNull(pDefaultValue)) {
+					pDefaultValue = VariableContainer.getVariableDefaultValue(pInfo.variable);
+				}
+
+				this.foreigns[iIndex] = pDefaultValue;
 			}
 
 			for (var i: uint = 0; i < pTextureKeys.length; i++) {

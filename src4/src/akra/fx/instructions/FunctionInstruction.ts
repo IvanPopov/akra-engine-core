@@ -836,6 +836,10 @@ module akra.fx.instructions {
 			}
 			else if (pMainVariable._getType()._isForeign()) {
 				this._pForeignVariableMap[iMainVar] = pMainVariable;
+
+				if (pMainVariable._hasConstantInitializer()) {
+					pMainVariable._prepareDefaultValue();
+				}
 			}
 			else if (isWrite || pMainVariable._getType()._isConst()) {
 				this._pGlobalVariableMap[iMainVar] = pMainVariable;

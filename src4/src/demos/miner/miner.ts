@@ -86,7 +86,6 @@ module akra {
 		};
 
 		addons.navigation(pViewport);
-		addons.navigation(pViewport, null, null, EViewportTypes.LPPVIEWPORT, math.Vec4.temp(0.5, .05, .25, .25));
 
 		var pGUI = new dat.GUI();
 

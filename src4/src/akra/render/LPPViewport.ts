@@ -244,8 +244,6 @@ module akra.render {
 			this._pViewScreen.render(this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0), "passB");
 			pRenderer.executeQueue(false);
 
-			this._pCamera._keepLastViewport(this);
-
 			this._pResultLPPTexture.getBuffer().getRenderTarget().update();
 
 			this._pViewScreen.render(this);
@@ -363,6 +361,7 @@ module akra.render {
 				case 0:
 					pPass.setUniform("VIEWPORT", math.Vec4.temp(0., 0., this._v2fTextureRatio.x, this._v2fTextureRatio.y));
 					pPass.setTexture("TEXTURE_FOR_SCREEN", this._pResultLPPTexture);
+					pPass.setForeign("saveAlpha", true);
 					break;
 				case 1:
 					pPass.setTexture("OBJECT_ID_TEXTURE", this._pNormalBufferTexture);
