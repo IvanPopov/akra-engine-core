@@ -1,5 +1,3 @@
-
-
 /// <reference path="ISkeleton.ts" />
 /// <reference path="INode.ts" />
 /// <reference path="IMesh.ts" />
@@ -9,14 +7,16 @@
 /// <reference path="IVertexData.ts" />
 
 module akra {
-	// export interface INodeMap {
-	// 	[index: string]: INode;
-	// }
 	
 	export interface ISkin {
 		getData(): IRenderDataCollection;
 		getSkeleton(): ISkeleton;
 		getTotalBones(): uint;
+
+		/**
+		 * @copydoc Skin::getAffectedNode()
+		 */
+		getAffectedNode(iNode: uint): ISceneNode;
 
 		//bone bounding box in world space
 		getBonesBoundingBox(): IRect3d;
@@ -36,10 +36,11 @@ module akra {
 		 * Bone offset matrices.
 		 * @see Bone offset matrices in Collada.
 		 */
-		getBoneOffsetMatrices(): IMat4[];
+		getBoneOffsetMatrix(iBone: uint): IMat4;
 		getBoneOffsetMatrix(sBoneName: string): IMat4;
 		setBoneOffsetMatrices(pMatrices: IMat4[]): void;
 	
+		/** Set skeleton. */
 		setSkeleton(pSkeleton: ISkeleton): boolean;
 		
 		/**
@@ -48,12 +49,6 @@ module akra {
 		 */
 		attachToScene(pRootNode: ISceneNode): boolean;
 		
-		// /**
-		//  * Bind skin to skeleton or scene.
-		//  */
-		// bind(pSkeleton: ISkeleton): boolean;
-		// bind(pNode: ISceneNode): boolean;
-	
 		/**
 		 * Set names of bones, that affect to skin.
 		 */
@@ -84,6 +79,7 @@ module akra {
 		
 		/**
 		 * Recalculate skin matrices and fill it to video memory.
+		 * @return Status showing if changed bone matrix with the last update.
 		 */
 		applyBoneMatrices(bForce?: boolean): boolean;
 	
@@ -105,7 +101,7 @@ module akra {
 		/**
 		 * Add skin info to data with vertices.
 		 */
-		attach(pData: IVertexData): void;
+		_attach(pData: IVertexData): void;
 	}
 	
 }

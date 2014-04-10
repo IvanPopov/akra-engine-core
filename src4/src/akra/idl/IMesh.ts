@@ -33,9 +33,6 @@ module akra {
 		getBoundingBox(): IRect3d;
 		getBoundingSphere(): ISphere;
 
-		getSkeleton(): ISkeleton;
-		setSkeleton(pSceleton: ISkeleton): void;
-
 		getShadow(): boolean;
 		setShadow(bValue: boolean): void;
 

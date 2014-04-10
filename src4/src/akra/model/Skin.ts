@@ -16,7 +16,6 @@ module akra.model {
 
 		private _pSkeleton: ISkeleton = null;
 
-		//init: {x: {inf, -inf}, y: {inf, -inf}, z: {inf, -inf}}
 		private _pBoneBoundingBox: IRect3d =
 			new geometry.Rect3d();
 		
@@ -85,6 +84,11 @@ module akra.model {
 			return this._pNodeNames.length;
 		}
 
+		getBoneName(iBone: uint): string {
+			debug.assert(iBone >= 0 && iBone < this._pNodeNames.length, "invalid bone index");
+			return this._pNodeNames[iBone];
+		}
+
 		getSkeleton(): ISkeleton {
 			return this._pSkeleton;
 		}
@@ -103,18 +107,31 @@ module akra.model {
 			return this._m4fBindMatrix;
 		}
 
-		getBoneOffsetMatrices(): IMat4[] {
-			return this._pBoneOffsetMatrices;
+		/**
+		 * Get scene node that are affected by this skin. 
+		 * Nodes are arranged in the order they are located in video memory.
+		 * @param iNode Node index.
+		 */
+		getAffectedNode(iNode: uint): ISceneNode {
+			debug.assert(!isNull(this._pSkeleton), "nodes not exists");
+			return this._pAffectingNodes[iNode];
 		}
 
-		getBoneOffsetMatrix(sBoneName: string): IMat4 {
+		getBoneOffsetMatrix(iBone: uint): IMat4;
+		getBoneOffsetMatrix(sBoneName: string): IMat4;
+		getBoneOffsetMatrix(bone): IMat4 {
+
 			var pBoneNames: string[] = this._pNodeNames;
 
+			if (isNumber(bone)) {
+				return this._pBoneOffsetMatrices[bone];
+			}
+
 			for (var i = 0; i < pBoneNames.length; i++) {
-			    if (pBoneNames[i] === sBoneName) {
+				if (pBoneNames[i] === bone) {
 			        return this._pBoneOffsetMatrices[i];
 			    }
-			};
+			}
 
 			return null;
 		}
@@ -149,6 +166,8 @@ module akra.model {
 			if (isNull(pNames)) {
 				return false;
 			}
+
+			debug.assert(isNull(this._pNodeNames), "you try redefine e existing node names...");
 
 			this._pNodeNames = pNames;
 			this._pAffectingNodes = new Array(pNames.length);
@@ -241,9 +260,11 @@ module akra.model {
 			                                             VE.float('BONE_INF_LOC'), /*адресс начала влияний на вершину*/
 			                                         ], pInfluencesMeta);
 
+
 			return this._pInfMetaData !== null &&
 			       this._pInfData !== null;
 		}
+
 
 		setVertexWeights(pInfluencesCount: uint[], pInfluences: Float32Array, pWeights: Float32Array): boolean {
 			debug.assert(arguments.length > 1, 'you must specify all parameters');
@@ -261,39 +282,31 @@ module akra.model {
 			var bResult: boolean;
 			var pNode: ISceneNode;
 			var isUpdated: boolean = false;
+
 			var pBB = this._pBoneBoundingBox.set(MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32);
-
-			var x0: float = pBB.x0;
-			var x1: float = pBB.x1;
-
-			var y0: float = pBB.y0;
-			var y1: float = pBB.y1;
-
-			var z0: float = pBB.z0;
-			var z1: float = pBB.z1;
 			
 
 			for (var i: int = 0, nMatrices = this.getTotalBones(); i < nMatrices; ++i) {
 				pNode = this._pAffectingNodes[i];
 
+				//bone AABB started
 				var v3fPos: IVec3 = pNode.getWorldPosition();
 
-				x0 = math.min(x0, v3fPos.x);
-				x1 = math.max(x1, v3fPos.x);
-
-				y0 = math.min(y0, v3fPos.y);
-				y1 = math.max(y1, v3fPos.y);
-
-				z0 = math.min(z0, v3fPos.z);
-				z1 = math.max(z1, v3fPos.z);
+				pBB.x0 = math.min(pBB.x0, v3fPos.x);
+				pBB.x1 = math.max(pBB.x1, v3fPos.x);
+				
+				pBB.y0 = math.min(pBB.y0, v3fPos.y);
+				pBB.y1 = math.max(pBB.y1, v3fPos.y);
+				
+				pBB.z0 = math.min(pBB.z0, v3fPos.z);
+				pBB.z1 = math.max(pBB.z1, v3fPos.z);
+				//bone AABB ended
 
 			    if (pNode.isWorldMatrixNew() || bForce) {
 			        pNode.getWorldMatrix().multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
 			        isUpdated = true;
 			    }
 			}
-
-			pBB.set(x0, x1, y0, y1, z0, z1);
 
 			if (isUpdated) {
 			    pData = this._pBoneOffsetMatrixBuffer;
@@ -326,7 +339,8 @@ module akra.model {
 			return false;
 		}
 
-		attach(pData: IVertexData): void {
+		//for MeshSubset 
+		_attach(pData: IVertexData): void {
 			debug.assert(pData.getStride() === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" +
 			                                  "\nyou need POSITION: {x, y, z, w}");
 

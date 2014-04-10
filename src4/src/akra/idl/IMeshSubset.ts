@@ -42,6 +42,7 @@ module akra {
 		destroy(): void;
 
 		_calculateSkin(): boolean;
+		_calculateBoundingBox(): IRect3d;
 
 		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }>;
 	}

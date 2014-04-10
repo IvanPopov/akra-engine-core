@@ -172,6 +172,9 @@ VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
 
 technique mesh_geometry{
     pass p0 {
+		//CULLFACEENABLE = TRUE;
+		//CULLFACE = BACK;
+
         if(engine.mesh.isSkinned){
             if(engine.mesh.isOptimizedSkinned){
                 VertexShader = compile vs_mesh_optimized_skinning();

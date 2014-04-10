@@ -65,7 +65,7 @@ module akra {
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
 		pViewport = new render.DSViewport(pCamera);
-		
+
 
 		pCanvas.addViewport(pViewport);
 		//pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
@@ -74,6 +74,7 @@ module akra {
 		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
+		pViewport.setFXAA(false);
 
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -193,8 +194,8 @@ module akra {
 			'ANIM_MINER_WALK3',
 			'ANIM_MINER_WORK_GUN',
 			'ANIM_MINER_WORK_HAMMER'
-		]).onChange(function (sName: string) {
-				pController.play.emit(sName);
+		]).onChange((sName: string) => {
+			pController.play.emit(sName);
 		});
 
 
@@ -205,9 +206,10 @@ module akra {
 		pModel.scale(.5);
 
 		pController.play.emit(0);
-		
+
 		var pBB: IRect3d;
 		var pLibeCube = addons.lineCube(pScene);
+		var pMinerBody: model.MeshSubset = null;
 
 		pModel.explore((pEntity: IEntity): boolean => {
 			if (scene.SceneModel.isModel(pEntity)) {
@@ -216,8 +218,10 @@ module akra {
 					return;
 				}
 
+				window["meshSubset"] = pMinerBody = <model.MeshSubset>pNode.getMesh().getSubset(0);
+
 				pBB = pNode.getMesh().getSubset(0).getSkin().getBonesBoundingBox();
-				
+
 				pGUI.add(pBB, "x0").listen().__precision = 4;
 				pGUI.add(pBB, "x1").listen().__precision = 4;
 				pGUI.add(pBB, "y0").listen().__precision = 4;
@@ -226,19 +230,47 @@ module akra {
 				pGUI.add(pBB, "z1").listen().__precision = 4;
 
 				window["bb"] = pBB;
+
+				//////////////////////////
+				var pSubset = <model.MeshSubset>pNode.getMesh().getSubset(0);
+				var pBoxes = pSubset.calculateBoneLocalBoundingBoxes();
+
+				for (var i = 0; i < pBoxes.length; ++i) {
+					if (!pBoxes[i]) {
+						continue;
+					}
+
+					var pBox = pBoxes[i];
+					var pBone = pSubset.getSkin().getAffectedNode(i);
+
+					var pCube = addons.lineCube(pScene);
+					pCube.attachToParent(pBone);
+					pCube.setInheritance(ENodeInheritance.ALL);
+					pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
+					pCube.setPosition(pBox.midPoint(Vec3.temp()));
+					(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
+				}
 			}
 
 			return true;
 		});
 
 		pLibeCube.attachToParent(pScene.getRootNode());
-		
+
 
 		pScene.beforeUpdate.connect(() => {
+			if (!pLibeCube.isVisible()) return;
+			var pBB = pMinerBody._getSkinBasedWorldBounds();
 			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
-		
+
+		pLibeCube.setVisible(false);
+
+		pGUI.add({ "bone-local-aabb": false }, "bone-local-aabb").onChange((bValue: boolean) => {
+			pLibeCube.setVisible(bValue);
+		});
+
 
 		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
 			pModel.explore((pEntity: IEntity): boolean => {
@@ -246,23 +278,6 @@ module akra {
 					var pNode = <ISceneModel>pEntity;
 					for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
 						pNode.getRenderable(i).wireframe(bValue);
-					}
-				}
-
-				return true;
-			});
-		});
-
-		pGUI.add({ bb: false }, 'bb').name("bounding-box").onChange((bValue: boolean) => {
-			pModel.explore((pEntity: IEntity): boolean => {
-				if (scene.SceneModel.isModel(pEntity)) {
-					var pNode = <ISceneModel>pEntity;
-
-					if (bValue) {
-						pNode.getMesh().showBoundingBox();
-					}
-					else {
-						pNode.getMesh().hideBoundingBox();
 					}
 				}
 

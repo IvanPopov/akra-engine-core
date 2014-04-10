@@ -1838,6 +1838,10 @@ declare module akra {
         multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+        /**
+        * @copydoc Mat4::multiplyNumber()
+        */
+        multiplyNumber(fValue: number, m4fDestination?: IMat4): IMat4;
         transpose(m4fDestination?: IMat4): IMat4;
         determinant(): number;
         inverse(m4fDestination?: IMat4): IMat4;
@@ -4860,6 +4864,10 @@ declare module akra {
         getData(): IRenderDataCollection;
         getSkeleton(): ISkeleton;
         getTotalBones(): number;
+        /**
+        * @copydoc Skin::getAffectedNode()
+        */
+        getAffectedNode(iNode: number): ISceneNode;
         getBonesBoundingBox(): IRect3d;
         /**
         * Set binding matrix.
@@ -4874,9 +4882,10 @@ declare module akra {
         * Bone offset matrices.
         * @see Bone offset matrices in Collada.
         */
-        getBoneOffsetMatrices(): IMat4[];
+        getBoneOffsetMatrix(iBone: number): IMat4;
         getBoneOffsetMatrix(sBoneName: string): IMat4;
         setBoneOffsetMatrices(pMatrices: IMat4[]): void;
+        /** Set skeleton. */
         setSkeleton(pSkeleton: ISkeleton): boolean;
         /**
         * Make a skin dependent on scene node whose names match the
@@ -4908,6 +4917,7 @@ declare module akra {
         setVertexWeights(pInfluencesCount: number[], pInfluences: Float32Array, pWeights: Float32Array): boolean;
         /**
         * Recalculate skin matrices and fill it to video memory.
+        * @return Status showing if changed bone matrix with the last update.
         */
         applyBoneMatrices(bForce?: boolean): boolean;
         /**
@@ -4925,7 +4935,7 @@ declare module akra {
         /**
         * Add skin info to data with vertices.
         */
-        attach(pData: IVertexData): void;
+        _attach(pData: IVertexData): void;
     }
 }
 declare module akra {
@@ -4956,6 +4966,7 @@ declare module akra {
         isRenderable(): boolean;
         destroy(): void;
         _calculateSkin(): boolean;
+        _calculateBoundingBox(): IRect3d;
         skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => any>;
     }
 }
@@ -4977,8 +4988,6 @@ declare module akra {
         getLength(): number;
         getBoundingBox(): IRect3d;
         getBoundingSphere(): ISphere;
-        getSkeleton(): ISkeleton;
-        setSkeleton(pSceleton: ISkeleton): void;
         getShadow(): boolean;
         setShadow(bValue: boolean): void;
         getOptions(): number;
@@ -7275,6 +7284,10 @@ declare module akra.math {
         public multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         public multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         public multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+        /**
+        * Multiply matrix by number. Per component multiply.
+        */
+        public multiplyNumber(fValue: number, m4fDestination?: IMat4): IMat4;
         public transpose(m4fDestination?: IMat4): IMat4;
         public determinant(): number;
         public inverse(m4fDestination?: IMat4): IMat4;
@@ -13970,11 +13983,18 @@ declare module akra.model {
         public getBonesBoundingBox(): IRect3d;
         public getData(): IRenderDataCollection;
         public getTotalBones(): number;
+        public getBoneName(iBone: number): string;
         public getSkeleton(): ISkeleton;
         constructor(pMesh: IMesh);
         public setBindMatrix(m4fMatrix: IMat4): void;
         public getBindMatrix(): IMat4;
-        public getBoneOffsetMatrices(): IMat4[];
+        /**
+        * Get scene node that are affected by this skin.
+        * Nodes are arranged in the order they are located in video memory.
+        * @param iNode Node index.
+        */
+        public getAffectedNode(iNode: number): ISceneNode;
+        public getBoneOffsetMatrix(iBone: number): IMat4;
         public getBoneOffsetMatrix(sBoneName: string): IMat4;
         public setSkeleton(pSkeleton: ISkeleton): boolean;
         public attachToScene(pRootNode: ISceneNode): boolean;
@@ -13989,7 +14009,7 @@ declare module akra.model {
         public isReady(): boolean;
         public getBoneTransforms(): IVertexData;
         public isAffect(pData: IVertexData): boolean;
-        public attach(pData: IVertexData): void;
+        public _attach(pData: IVertexData): void;
     }
     function createSkin(pMesh: IMesh): ISkin;
 }
@@ -15835,6 +15855,8 @@ declare module akra.model {
         public _pBoundingBox: IRect3d;
         public _pBoundingSphere: ISphere;
         public _isOptimizedSkinned: boolean;
+        private _pSkinBasedWorldBounds;
+        private _pSkinLocalBounds;
         public getBoundingBox(): IRect3d;
         public getBoundingSphere(): ISphere;
         public getSkin(): ISkin;
@@ -15862,8 +15884,11 @@ declare module akra.model {
         public show(): void;
         public hide(): void;
         public isRenderable(): boolean;
+        public calculateBoneLocalBoundingBoxes(): IRect3d[];
         public setSkin(pSkin: ISkin): boolean;
         public _calculateSkin(): boolean;
+        public _getSkinBasedWorldBounds(): IRect3d;
+        public _calculateBoundingBox(): IRect3d;
         static isMeshSubset(pObject: IRenderableObject): boolean;
     }
 }

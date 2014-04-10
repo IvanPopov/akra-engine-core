@@ -2389,8 +2389,6 @@ module akra.pool.resources {
 			pSkin.setBoneNames(pBoneList);
 			pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
 
-			logger.assert(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
-
 			if (!pSkin.setVertexWeights(
 				<uint[]>pVertexWeights.vcount,
 				new Float32Array(pVertexWeights.v),
@@ -2398,12 +2396,9 @@ module akra.pool.resources {
 				logger.error("cannot set vertex weight info to skin");
 			}
 
-			// debug.time("\t\t Mesh::setSkin()");
 			pMesh.setSkin(pSkin);
-			// debug.timeEnd("\t\t Mesh::setSkin()");
-			pMesh.setSkeleton(pSkeleton);
 			pSkeleton.attachMesh(pMesh);
-			// debug.timeEnd("Build skinned mesh #" + pControllerInstance.controller.id);
+
 			return pMesh;
 		}
 

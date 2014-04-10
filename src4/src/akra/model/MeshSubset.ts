@@ -18,15 +18,23 @@ module akra.model {
 	import DeclUsages = data.Usages;
 	import VertexDeclaration = data.VertexDeclaration;
 
+	import Vec3 = math.Vec3;
+	import Mat4 = math.Mat4;
+	import Vec4 = math.Vec4;
+
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
 		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }>;
 
 		protected _sName: string = null;
 		protected _pMesh: IMesh = null;
 		protected _pSkin: ISkin = null;
+		//in local coords
 		protected _pBoundingBox: IRect3d = null;
 		protected _pBoundingSphere: ISphere = null;
 		protected _isOptimizedSkinned: boolean = false;
+
+		private _pSkinBasedWorldBounds: IRect3d = new geometry.Rect3d();
+		private _pSkinLocalBounds: IRect3d[] = null;
 
 		getBoundingBox(): IRect3d {
 			return this._pBoundingBox;
@@ -47,7 +55,6 @@ module akra.model {
 		getMesh(): IMesh {
 			return this._pMesh;
 		}
-
 
 		constructor(pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
 			super(ERenderableTypes.MESH_SUBSET);
@@ -217,69 +224,6 @@ module akra.model {
 			return true;
 		}
 
-
-		/*wireframe(bEnable: boolean = true): boolean {
-			if(this.getData().findIndexSet(".wireframe") == -1) {
-				var ePrimType: EPrimitiveTypes = this.getData().getPrimitiveType();
-
-				if (ePrimType !== EPrimitiveTypes.TRIANGLELIST) {
-					logger.warn("wireframe supported only for TRIANGLELIST");
-					return false;
-				}
-
-				var pIndices: Float32Array = <Float32Array>this.getData().getIndexFor("POSITION");
-
-				var pWFindices: int[] = [];
-				var pWFCache: BoolMap = <any>{};
-				var pPairs: int[][] = [[0, 1], [1, 2], [2, 0]];
-
-				for (var n = 0; n < pIndices.length / 3; ++ n) {
-					var t: int = n * 3;
-					for (var i: int = 0; i < pPairs.length; ++ i) {
-						
-						var i1: int = pPairs[i][0];
-						var i2: int = pPairs[i][1];
-
-						var v1: int = pIndices[t + i1];
-						var v2: int = pIndices[t + i2];
-
-						if (v2 < v1) {
-							var y: int = v2; v1 = v2; v2 = y;
-						}
-
-						var k: string = v1 + "_" + v2;
-
-						if (pWFCache[k]) {
-							continue;
-						}
-
-						pWFCache[k] = true;
-						pWFindices.push(v1, v2);
-					}
-				}
-
-				var iData: int = this.getData().getDataLocation("POSITION");
-				var iCurrentIndexSet: int = this.getData().getIndexSet();
-				var iWireframeSet: int = this.getData().addIndexSet(false, EPrimitiveTypes.LINELIST, ".wireframe");
-
-				this.getData().allocateIndex([VE.float("WF_INDEX")], new Float32Array(pWFindices));
-				this.getData().index(iData, "WF_INDEX", false, 0, true);
-				
-				this.getData().setRenderable(iWireframeSet, true);
-				this.getData().setRenderable(iCurrentIndexSet, false);
-
-				this.getData().selectIndexSet(iCurrentIndexSet);
-			}
-
-			var iWireframeSet: int = this.getData().findIndexSet(".wireframe");
-			var iCurrentIndexSet: int = 0;
-
-			this.getData().setRenderable(iWireframeSet, bEnable);
-			this.getData().setRenderable(iCurrentIndexSet, !bEnable);
-
-			return true;
-		}*/
-
 		isBoundingSphereVisible(): boolean {
 			return this.getData().isRenderable(this.getData().findIndexSet(".BoundingSphere"));
 		}
@@ -335,8 +279,125 @@ module akra.model {
 			return this.getData().isRenderable();
 		}
 
+		calculateBoneLocalBoundingBoxes(): IRect3d[] {
+
+			debug.time("MeshSubset::calculateBonesLocalBoundingBoxes()");
+
+			var pSkin = this.getSkin();
+			pSkin.applyBoneMatrices(true);
+
+			//List of all bones.
+			var nBones: uint = pSkin.getTotalBones();
+
+			//List of vertex indices depend on each of the bones.
+			var pBoneDependentVertices: int[][] = new Array<int[]>(nBones);
+			var pBoneDependentVerticesWeights: int[][] = new Array<int[]>(nBones);
+
+			//Get bone influens meta data float2 = {BONE_INF_COUNT, BONE_INF_LOC}.
+			var pInfMetaData = pSkin.getInfluenceMetaData();
+			var pInfCount: Float32Array = <Float32Array>pInfMetaData.getTypedData("BONE_INF_COUNT");
+
+			//Get bome influences
+			var pInfData = pSkin.getInfluences();
+			//{weght, matrix_addr}
+			var pInfWeightLoc: Float32Array = new Float32Array(pInfData.getData());
+
+			//Get all vertices
+			var pRenderData: IRenderData = this.getData();
+			var pPositionFlow: IDataFlow = pRenderData._getFlow(DeclUsages.POSITION);
+			var pPosData: IVertexData = pPositionFlow.data;
+
+			var pPositions: Float32Array = <Float32Array>pPosData.getTypedData(DeclUsages.POSITION);
+
+			//Get bone trasform matrices data
+			var pMatricesData = pSkin.getBoneTransforms();
+
+			//число влияний, которые мы прочитали, в соответствие с тегом <vcount> в collada
+			var iTotalReadedInf: int = 0;
+
+			for (var i = 0, n = 0; i < pPositions.length; i += 3, n++) {
+				//var vVertex: IVec3 = math.Vec3.temp(pPositions[i], pPositions[i + 1], pPositions[i + 2]);
+				//var iBlendMetaAddr: int = <int>pBlendMeta[n];
+
+				//console.log("vertex: ", vVertex.toString(), "vcount: ", pInfCount[n]/*, pInfLoc[n]*/);
+
+
+				for (var j = 0; j < pInfCount[n]; ++j) {
+					var k = (iTotalReadedInf + j) * 2;
+
+					var fWeight = pInfWeightLoc[k + 1];
+					var iMatAddr = pInfWeightLoc[k];
+					var iBone: uint = (iMatAddr - pMatricesData.getByteOffset() / Float32Array.BYTES_PER_ELEMENT) / 16;
+
+					//console.log("matrix:", iBone, "weight", fWeight);
+
+					//skip weak influences
+					if (fWeight > 0.25) {
+						if (!isDefAndNotNull(pBoneDependentVertices[iBone])) {
+							pBoneDependentVertices[iBone] = [];
+							pBoneDependentVerticesWeights[iBone] = [];
+						}
+
+						pBoneDependentVertices[iBone].push(n);
+						pBoneDependentVerticesWeights[iBone].push(fWeight);
+					}
+				}
+
+				iTotalReadedInf += pInfCount[n]
+			}
+
+			var mBindShapeMatrix: IMat4 = pSkin.getBindMatrix();
+
+			var pBoneLocalBoxes: IRect3d[] = new Array<IRect3d>(nBones);
+
+			for (var iBone: uint = 0; iBone < nBones; ++iBone) {
+				var pVertexIndices = pBoneDependentVertices[iBone];
+				var pvertexWeights = pBoneDependentVerticesWeights[iBone];
+
+				if (!pVertexIndices) {
+					pBoneLocalBoxes[iBone] = null;
+					continue;
+				}
+
+				var mBoneOffsetMatrix: IMat4 = pSkin.getBoneOffsetMatrix(iBone);
+				var pLocalBox: IRect3d = pBoneLocalBoxes[iBone] =
+					new geometry.Rect3d(MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32);
+
+				for (var j = 0; j < pVertexIndices.length; ++j) {
+					var iVertex = pVertexIndices[j] * 3;
+					var vVertex: IVec4 =
+						Vec4.temp(pPositions[iVertex], pPositions[iVertex + 1], pPositions[iVertex + 2], 1.);
+					var fWeight: float = pvertexWeights[j];
+
+					var mBoneMatrix =
+						mBoneOffsetMatrix.multiplyNumber(fWeight, Mat4.temp()).multiply(mBindShapeMatrix);
+
+					mBoneMatrix.multiplyVec4(vVertex);
+
+					pLocalBox.x0 = math.min(pLocalBox.x0, vVertex.x);
+					pLocalBox.x1 = math.max(pLocalBox.x1, vVertex.x);
+
+					pLocalBox.y0 = math.min(pLocalBox.y0, vVertex.y);
+					pLocalBox.y1 = math.max(pLocalBox.y1, vVertex.y);
+
+					pLocalBox.z0 = math.min(pLocalBox.z0, vVertex.z);
+					pLocalBox.z1 = math.max(pLocalBox.z1, vVertex.z);
+				}
+			}
+
+			debug.timeEnd("MeshSubset::calculateBonesLocalBoundingBoxes()");
+
+			this._pSkinLocalBounds = pBoneLocalBoxes;
+
+			return pBoneLocalBoxes;
+		}
+
+
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): boolean {
+
+			logger.assert(pSkin.isReady(), "cannot add invalid skin");
+
 			var pRenderData: IRenderData = this.getData();
 			var pPosData: IVertexData;
 			var pPositionFlow: IDataFlow;
@@ -349,10 +410,10 @@ module akra.model {
 			// meta-data step (in floats)
 			var iInfMetaDataStride: int;
 
-			
+
 			// Get vertex data to put in {W} component, 
 			// address of meta information about the impact of this on vertex.
-			 
+
 
 			// getting vertex flow
 			pPositionFlow = pRenderData._getFlow(DeclUsages.POSITION);
@@ -378,11 +439,11 @@ module akra.model {
 
 		    // tie up the skin, according to the vertices of the current mesh susbset
 			// ie add markup at the end of each pixel
-		    pSkin.attach(pPosData);
+		    pSkin._attach(pPosData);
 
 			var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
 			var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
-			
+
 			//if BLENDMETA not found
 			debug.assert(isDefAndNotNull(pVEMeta), "you must specify location for storage blending data");
 
@@ -512,10 +573,44 @@ module akra.model {
 		}
 
 		_calculateSkin(): boolean {
-			
-			var isOk: boolean = config.WEBGL? webgl.calculateSkin(this): false;
+			var isOk: boolean = config.WEBGL ? webgl.calculateSkin(this) : false;
 			this._isOptimizedSkinned = isOk;
 			return isOk;
+		}
+
+		_getSkinBasedWorldBounds(): IRect3d {
+			return this._pSkinBasedWorldBounds;
+		}
+
+		_calculateBoundingBox() {
+			if (isNull(this._pSkinLocalBounds)) {
+				this.calculateBoneLocalBoundingBoxes();
+			}
+
+			var pLocalBounds: IRect3d[] = this._pSkinLocalBounds;
+			var pSkin: ISkin = this._pSkin;
+
+			var pBB: IRect3d = this._pSkinBasedWorldBounds.set(MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32);
+
+			for (var i: uint = 0; i < pLocalBounds.length; ++i) {
+				if (isNull(pLocalBounds[i])) {
+					continue;
+				}
+
+				var pLocalBB =
+					geometry.Rect3d.temp(pLocalBounds[i]).transform(pSkin.getAffectedNode(i).getWorldMatrix());
+
+				pBB.x0 = math.min(pBB.x0, pLocalBB.x0);
+				pBB.x1 = math.max(pBB.x1, pLocalBB.x1);
+
+				pBB.y0 = math.min(pBB.y0, pLocalBB.y0);
+				pBB.y1 = math.max(pBB.y1, pLocalBB.y1);
+
+				pBB.z0 = math.min(pBB.z0, pLocalBB.z0);
+				pBB.z1 = math.max(pBB.z1, pLocalBB.z1);
+			}
+
+			return pBB;
 		}
 
 		static isMeshSubset(pObject: IRenderableObject): boolean {
