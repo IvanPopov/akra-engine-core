@@ -119,6 +119,7 @@ float4 apply_light_omni() : COLOR{
 		result_color += calculateLight(pixelData,points_omni[i].lightData);
 	}
 
+	// calculating reflection separately
 	float3 view_dir = normalize(-pixelData.position);
 	float3 normal_dir = pixelData.normal;
 	float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
@@ -126,6 +127,7 @@ float4 apply_light_omni() : COLOR{
 	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
 
 	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, PBS_F0, PBS_gloss),1.);
+	// lowering reflection brightness if we have a strong lighting already
 	reflection *= float4(1.) - result_color;
 
 	result_color += reflection;
@@ -233,12 +235,19 @@ float3 PBS_F0 : PBS_F0 = float3(0.);
 float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
 
 
+// @c http://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
 float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3 normalDir, float Gloss)
 {
+	// Canonical equation (from paper):
     //return SpecularColor + (max(float3(Gloss), SpecularColor) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.);
+	// Other possible function (used by Treyarch, Black Ops 2, Dimitar Lazarov):
+	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
     return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.) / (4. - 3. * Gloss);
 }
 
+// Functions for getting pixel position from cubemap formatted as follows:
+// zone3	nextlvl	zone4	zone5
+// zone1	zone2	zone6	nextlvl
 float2 getZone1z(float2 uv, int lod) {
 	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
 	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
@@ -279,6 +288,8 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, float quality) {
 
 	float2 uv = float2(0.);
 
+	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
+	// HACK: get maximum level of detail from size of texture
 	int lod = int((1.-quality)*6.);
 
 	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
@@ -286,7 +297,7 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, float quality) {
 	float2 local_texel = float2(pow(2.,-8.+float(lod)));
 	float2 texel = float2(pow(2.,-10.),pow(2.,-9.));
 
-	if(direction.z >= .99) {
+	if(direction.z >= .99) { // calculations are not precise
 		uv.x = -direction.x;
 		uv.y = direction.y;
 		uv = getZone1z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
@@ -341,29 +352,20 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	float light_dir_length = length(light_dir);
 	light_dir = normalize(light_dir);
 
-	// multiplicator for better visibility
-	float attenuation = 4.0 / (lightData.attenuation.x +
+	// multiplicator for better visibility now removed
+	float attenuation = 1.0 / (lightData.attenuation.x +
 							   lightData.attenuation.y * light_dir_length + 
 							   lightData.attenuation.z * light_dir_length * light_dir_length);
 
 	float3 view_dir = normalize(-pixelData.position);
 
-	float3 view_dir_real = float3(invView*float4(view_dir,0.));
-
-	//float3 normal_dir = pixelData.normal;
-	float3 normal_dir = pixelData.normal;
-
-	float3 normal_dir_real = float3(invView*float4(normal_dir,0.));
-
-	//float3 reflect_dir = reflect(view_dir, normalize(normal_dir));
-	float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
-
-	//float3 reflect_dir_real = normalize(-view_dir_real + 2.*float3(0.,1.,0.)*dot(float3(0.,1.,0.),view_dir_real));
-
+	// Specular power used in paper:
 	float alpha_p = pow(2., 10.*PBS_gloss + 1.);
+	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
+	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
+	// float alpha_p = pow(8192., PBS_gloss);
 
-	//float4 incLightColor = pixelData.diffuse * attenuation;
-	float4 incLightColor = float4(PBS_Diffuse,1.) * attenuation;
+	float4 incLightColor = float4(PBS_Diffuse, 1.) * attenuation;
 
 	float3 halfVector = normalize(view_dir + light_dir);
 
@@ -372,31 +374,14 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	float4 lightSpec = float4( func_Shlick(PBS_F0, light_dir, halfVector) * (alpha_p+2.)/8.
 		* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
 
-
-	//float3 cubeVertex = float3(IN.position,1.);
-	//float3 cubeVertexInCameraSpace = unproj(projMat,cubeVertex);
-
-	float3 pixelVertexInRealSpace = (invView * float4(pixelData.position, 0.)).xyz;
-	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
-	float3 skyboxVector = float3(1., 2., 1.) * (cubeVertexInRealSpace - pixelVertexInRealSpace);
-	//float4 reflection = texCUBE(cubeSampler0, skyboxVector);
-	//float4 reflection = texCUBE(cubeSampler0, cubeVertexInRealSpace);
-
-
-	//float4 color = incLightColor * ( lightDiff + lightSpec ) + reflection*0.5 ;
-	//lightDiff += reflection;
 	lightDiff *= (float4(1.) - lightSpec);
 	lightDiff.a = 1.;
-	//reflection *= (float4(1.) - lightSpec - lightDiff);
-	//reflection.a = 1.;
 
-	float4 color = incLightColor * ( lightDiff + lightSpec);// + reflection );
+	float4 color = incLightColor * ( lightDiff + lightSpec);
 	color.a = 1.;
 
-	//float4 color = float4((pixelData.normal+1.)/2., 1.);
-
-//	float4 color = float4(dot_saturate(halfVector,pixelData.normal)*float3(0.3), 1.);
-
+	// Testing which direction reflects better:
+//	color = float4(func_Shlick(PBS_F0, view_dir, pixelData.normal), 1.); //or this:
 //	if( func_Shlick(PBS_F0, view_dir, pixelData.normal).x < 0.5){
 //		color = float4(1., 0., 0., 1.);
 //	} 
@@ -410,12 +395,6 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 //	}
 
 	return color;
-
-	// reflect direction
-	//float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
-
-
-	//return float4(0.5);
 }
 
 float4 calculateLight(pixel_data pixelData, light_data lightData){
