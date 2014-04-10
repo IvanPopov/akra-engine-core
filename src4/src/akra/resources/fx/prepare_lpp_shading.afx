@@ -138,55 +138,55 @@ void fs_prepare_lpp_data_positionOnly(float2 texCoords: TEXCOORD0, float2 screen
 }
 
 
-float4 prepare_lpp_lights_omni() : COLOR {
-    for(int i = 0; i < nOmni; i++){
-        result_color += calculateLight(pixelData, points_omni[i].lightData);
-    }
+// float4 prepare_lpp_lights_omni() : COLOR {
+//     for(int i = 0; i < nOmni; i++){
+//         result_color += calculateLight(pixelData, points_omni[i].lightData);
+//     }
 
-    return result_color;
-}
+//     return result_color;
+// }
 
-float4 prepare_lpp_lights_omni_ambient() : COLOR {
-    for(int i = 0; i < nOmni; i++){
-        result_color += calculateAbmientLight(pixelData, points_omni[i].lightData);
-    }
+// float4 prepare_lpp_lights_omni_ambient() : COLOR {
+//     for(int i = 0; i < nOmni; i++){
+//         result_color += calculateAbmientLight(pixelData, points_omni[i].lightData);
+//     }
 
-    result_color.w = 1.;
+//     result_color.w = 1.;
 
-    return result_color;
-}
+//     return result_color;
+// }
 
-float4 calculateLight(pixel_data pixelData, light_data lightData){
-    float3 light_dir = lightData.position - pixelData.position;
-    float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
+// float4 calculateLight(pixel_data pixelData, light_data lightData){
+//     float3 light_dir = lightData.position - pixelData.position;
+//     float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
 
-    light_dir = normalize(light_dir);
-    float light_distancedotVpow = 0.;
+//     light_dir = normalize(light_dir);
+//     float light_distancedotVpow = 0.;
 
-    if(pixelData.shininess != 0.){
-        float3 view_dir = normalize(-pixelData.position);
-        float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
+//     if(pixelData.shininess != 0.){
+//         float3 view_dir = normalize(-pixelData.position);
+//         float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
 
-        light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess);
-    }
+//         light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess);
+//     }
     
-    float specular = lightData.specular.x * light_distancedotVpow * attenuation;
+//     float specular = lightData.specular.x * light_distancedotVpow * attenuation;
 
-    float diffuseMultiplier =  max(dot(pixelData.normal, light_dir), .0) * attenuation;
+//     float diffuseMultiplier =  max(dot(pixelData.normal, light_dir), .0) * attenuation;
 
-    return float4(lightData.diffuse.xyz * diffuseMultiplier, specular);
-}
+//     return float4(lightData.diffuse.xyz * diffuseMultiplier, specular);
+// }
 
-float calcAttenuation(float light_dir_length, float3 attenuation) {
-    return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
-}
+// float calcAttenuation(float light_dir_length, float3 attenuation) {
+//     return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
+// }
 
-float4 calculateAbmientLight(pixel_data pixelData, light_data lightData){
-    float3 light_dir = lightData.position - pixelData.position;
-    float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
+// float4 calculateAbmientLight(pixel_data pixelData, light_data lightData){
+//     float3 light_dir = lightData.position - pixelData.position;
+//     float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
 
-    return float4(lightData.ambient.xyz * attenuation, 0.);
-}
+//     return float4(lightData.ambient.xyz * attenuation, 0.);
+// }
 
 foreign bool prepareOnlyPosition;
 technique prepare_lpp_lights_base {
@@ -201,19 +201,19 @@ technique prepare_lpp_lights_base {
     }
 }
 
-technique prepare_lpp_lights_omni{
-    pass p1{
-        if(nOmni > 0){
-            PixelShader = compile prepare_lpp_lights_omni();
-        }
-    }
-}
+// technique prepare_lpp_lights_omni{
+//     pass p1{
+//         if(nOmni > 0){
+//             PixelShader = compile prepare_lpp_lights_omni();
+//         }
+//     }
+// }
 
-technique prepare_lpp_lights_omni_ambient{
-    pass p1{
-        if(nOmni > 0){
-            PixelShader = compile prepare_lpp_lights_omni_ambient();
-        }
-    };
-};
+// technique prepare_lpp_lights_omni_ambient{
+//     pass p1{
+//         if(nOmni > 0){
+//             PixelShader = compile prepare_lpp_lights_omni_ambient();
+//         }
+//     };
+// };
 

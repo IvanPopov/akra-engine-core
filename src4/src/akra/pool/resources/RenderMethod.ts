@@ -70,9 +70,8 @@ module akra.pool.resources {
 			if(!isNull(pMaterial)){
 				this.sync(this._pSurfaceMaterial, EResourceItemEvents.LOADED, EResourceItemEvents.CREATED);
 				this._pSurfaceMaterial.altered.connect(this, this.notifyAltered, EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.addRef();
 			}
-
-			this._pSurfaceMaterial.addRef();
 
 			this.notifyAltered();
 			this.notifyLoaded();

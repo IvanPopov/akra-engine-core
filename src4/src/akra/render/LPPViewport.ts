@@ -120,9 +120,15 @@ module akra.render {
 			if (this._pViewScreen.addRenderMethod(".prepare_diffuse_specular", "passA")) {
 				var pLPPEffect: IEffect = this._pViewScreen.getRenderMethodByName("passA").getEffect();
 				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
-				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_omni");
+				pLPPEffect.addComponent("akra.system.omniLighting");
+				pLPPEffect.addComponent("akra.system.projectLighting");
+				pLPPEffect.addComponent("akra.system.omniShadowsLighting");
+				pLPPEffect.addComponent("akra.system.projectShadowsLighting");
 
 				this._pViewScreen.getRenderMethodByName("passA").setForeign("prepareOnlyPosition", false);
+				this._pViewScreen.getRenderMethodByName("passA").setForeign("isForLPPPass0", true);
+				this._pViewScreen.getRenderMethodByName("passA").setForeign("isPrepareAll", false);
+				this._pViewScreen.getRenderMethodByName("passA").setSurfaceMaterial(null);
 			}
 			else {
 				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_diffuse_specular' pass)");
@@ -131,9 +137,15 @@ module akra.render {
 			if (this._pViewScreen.addRenderMethod(".prepare_ambient_shadow", "passB")) {
 				var pLPPEffect: IEffect = this._pViewScreen.getRenderMethodByName("passB").getEffect();
 				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
-				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_omni_ambient");
+				pLPPEffect.addComponent("akra.system.omniLighting");
+				pLPPEffect.addComponent("akra.system.projectLighting");
+				pLPPEffect.addComponent("akra.system.omniShadowsLighting");
+				pLPPEffect.addComponent("akra.system.projectShadowsLighting");
 
 				this._pViewScreen.getRenderMethodByName("passB").setForeign("prepareOnlyPosition", true);
+				this._pViewScreen.getRenderMethodByName("passB").setForeign("isForLPPPass1", true);
+				this._pViewScreen.getRenderMethodByName("passB").setForeign("isPrepareAll", false);
+				this._pViewScreen.getRenderMethodByName("passB").setSurfaceMaterial(null);
 			}
 			else {
 				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_ambient_shadow' pass)");
@@ -231,9 +243,9 @@ module akra.render {
 			//render light map
 			var pLights: IObjectArray<ILightPoint> = <IObjectArray<any>>this.getCamera().display(scene.Scene3d.DL_LIGHTING);
 
-			//for (var i: int = 0; i < pLights.getLength(); i++) {
-			//	pLights.value(i)._calculateShadows();
-			//}
+			for (var i: int = 0; i < pLights.getLength(); i++) {
+				pLights.value(i)._calculateShadows();
+			}
 
 			this._pLightPoints = pLights;
 
@@ -331,10 +343,6 @@ module akra.render {
 		_onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setTexture("LPP_DEPTH_BUFFER_TEXTURE", this._pDepthBufferTexture);
-			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
-			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
-
 			var pLightUniforms: UniformMap = this._pLightingUnifoms;
 			var pLightPoints: IObjectArray<ILightPoint> = this._pLightPoints;
 			var pCamera: ICamera = this.getCamera();
@@ -342,7 +350,33 @@ module akra.render {
 			this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
 			pPass.setForeign("nOmni", pLightUniforms.omni.length);
+			pPass.setForeign("nProject", pLightUniforms.project.length);
+			pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
+			pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
+			pPass.setForeign("nSun", pLightUniforms.sun.length);
+			pPass.setForeign("nSunShadows", pLightUniforms.sunShadows.length);
+
 			pPass.setStruct("points_omni", pLightUniforms.omni);
+			pPass.setStruct("points_project", pLightUniforms.project);
+			pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
+			pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
+			pPass.setStruct("points_sun", pLightUniforms.sun);
+			pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
+
+			for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
+				pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
+			}
+
+			pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
+			pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
+			pPass.setUniform("SUN_SHADOW_SAMPLER", pLightUniforms.samplersSun);
+
+			pPass.setUniform("MIN_SHADOW_VALUE", 0.5);
+			pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
+
+			pPass.setTexture("LPP_DEPTH_BUFFER_TEXTURE", this._pDepthBufferTexture);
+			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
+			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
 		}
 
 		_onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {

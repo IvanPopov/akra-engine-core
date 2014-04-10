@@ -77,7 +77,7 @@ module akra {
 		pCamera.setPosition(Vec3.temp(0., 7., 10.));
 		pCamera.lookAt(Vec3.temp(0, 0.8, -15));
 
-		pViewport = new render.DSViewport(pCamera);
+		pViewport = new render.LPPViewport(pCamera);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -95,6 +95,15 @@ module akra {
 
 		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
 		pLight.setShadowCaster(true);
+
+		var pLight2: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 6, 3));
+		pLight2.setShadowCaster(false);
+
+		var pLight3: ILightPoint = std.createLighting(pScene, ELightTypes.PROJECT, Vec3.temp(0, 2, 5));
+		pLight3.setShadowCaster(true);
+
+		var pLight4: ILightPoint = std.createLighting(pScene, ELightTypes.PROJECT, Vec3.temp(1, 5, 3));
+		pLight4.setShadowCaster(false);
 
 		var pDepthTextures: ITexture[] = (<IOmniLight>pLight).getDepthTextureCube();
 		var pShowedDepthRange: IVec2 = new Vec2(0.9, 1.);

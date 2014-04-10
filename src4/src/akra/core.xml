@@ -124,6 +124,7 @@
       <UseInlining>True</UseInlining>
       <Data>
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
+        <File Path="resources/fx/lightingFunctions.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>
