@@ -567,7 +567,7 @@ declare module akra {
         getRoot(): IEntity;
         destroy(bRecursive?: boolean, bPromoteChildren?: boolean): void;
         findEntity(sName: string): IEntity;
-        explore(fn: IExplorerFunc): void;
+        explore(fn: IExplorerFunc, bWithSiblings?: boolean): void;
         childOf(pParent: IEntity): boolean;
         siblingCount(): number;
         childCount(): number;
@@ -9116,7 +9116,7 @@ declare module akra.util {
         public getRoot(): IEntity;
         public destroy(bRecursive?: boolean, bPromoteChildren?: boolean): void;
         public findEntity(sName: string): IEntity;
-        public explore(fn: IExplorerFunc): void;
+        public explore(fn: IExplorerFunc, bWithSiblings?: boolean): void;
         public childOf(pParent: IEntity): boolean;
         public children(): IEntity[];
         public childAt(i: number): IEntity;

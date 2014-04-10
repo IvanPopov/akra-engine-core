@@ -126,7 +126,7 @@ float4 apply_light_omni() : COLOR{
 	// float3 reflect_dir = reflect(view_dir, normal_dir);
 	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
 
-	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, PBS_F0, PBS_gloss),1.);
+	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, pixelData.specular.xyz, pixelData.shininess),1.);
 	// lowering reflection brightness if we have a strong lighting already
 	reflection *= float4(1.) - result_color;
 
@@ -230,9 +230,13 @@ float dot_saturate (float3 a, float3 b) {
 }
 
 foreign int IS_USE_PBS_SIMPLE;
-float PBS_gloss : PBS_GLOSS = 0.;
-float3 PBS_F0 : PBS_F0 = float3(0.);
-float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
+//float PBS_gloss : PBS_GLOSS = 0.;
+//float3 PBS_F0 : PBS_F0 = float3(0.);
+//float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
+
+//float3 PBS_F0_Static : PBS_F0_STATIC = float3(0.);
+//float PBS_gloss_Static : PBS_GLOSS_STATIC = 0.;
+//float3 PBS_Diffuse_Static : PBS_DIFFUSE_STATIC = float3(0.);
 
 
 // @c http://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
@@ -370,18 +374,18 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	float3 view_dir = normalize(-pixelData.position);
 
 	// Specular power used in paper:
-	float alpha_p = pow(2., 10.*PBS_gloss + 1.);
+	float alpha_p = pow(2., 10.*pixelData.shininess + 1.);
 	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	// float alpha_p = pow(8192., PBS_gloss);
+	// float alpha_p = pow(8192., pixelData.shininess);
 
-	float4 incLightColor = float4(PBS_Diffuse, 1.) * attenuation;
+	float4 incLightColor = float4(pixelData.diffuse.xyz, 1.) * attenuation;
 
 	float3 halfVector = normalize(view_dir + light_dir);
 
 	float4 lightDiff = lightData.diffuse *  dot_saturate(pixelData.normal, light_dir);
 
-	float4 lightSpec = float4( func_Shlick(PBS_F0, light_dir, halfVector) * (alpha_p+2.)/8.
+	float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
 		* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
 
 	lightDiff *= (float4(1.) - lightSpec);

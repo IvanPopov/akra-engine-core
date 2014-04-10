@@ -66,7 +66,7 @@ module akra {
 		destroy(bRecursive?: boolean, bPromoteChildren?: boolean): void;
 
 		findEntity(sName: string): IEntity;
-		explore(fn: IExplorerFunc): void;
+		explore(fn: IExplorerFunc, bWithSiblings?: boolean): void;
 		childOf(pParent: IEntity): boolean;
 		siblingCount(): uint;
 		childCount(): uint;
