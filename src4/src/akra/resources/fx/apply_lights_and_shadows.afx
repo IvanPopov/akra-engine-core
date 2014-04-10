@@ -283,17 +283,14 @@ float2 getZone6y(float2 uv, int lod) {
 	return uv;
 }
 
-float4 getEnvLod(sampler2D envSampler, float3 direction, float quality) {
+float4 getEnvLod(sampler2D envSampler, float3 direction, int lod) {
 	float4 color = float4(0.);
 
 	float2 uv = float2(0.);
 
-	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
-	// HACK: get maximum level of detail from size of texture
-	int lod = int((1.-quality)*6.);
-
 	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
 
+	// HACK: fixed cubemap size
 	float2 local_texel = float2(pow(2.,-8.+float(lod)));
 	float2 texel = float2(pow(2.,-10.),pow(2.,-9.));
 
@@ -333,10 +330,23 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, float quality) {
 	return color;
 }
 
+float glossToQualityConverter(float Gloss, float MaxLod)
+{
+	return (1.-pow(Gloss,2.))*MaxLod;
+}
+
 float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float Gloss)
 {
+
+	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
+	// HACK: get maximum level of detail from size of texture
+	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
+	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
+	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
+
     //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
-    float3 Envcolor = getEnvLod(envSampler0, R, Gloss).rgb;
+    float3 Envcolor = getEnvLod(envSampler0, R, lod1).rgb * (1. - alpha)
+    	+ getEnvLod(envSampler0, R, lod2).rgb * alpha;
 
     return FresnelSchlickWithRoughness(SpecularColor, E, N, Gloss) * Envcolor;// * EnvMapScaleAndModulate; // EnvMapScaleAndModulate is used to decompress range
 }
