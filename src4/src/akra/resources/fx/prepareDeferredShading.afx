@@ -26,7 +26,7 @@ float4 prepareForDeferredShadingPass1() : COLOR {
     Fragment_material.emissive = min(Fragment_material.emissive, 0.99);
     Fragment_material.diffuse = min(Fragment_material.diffuse, 0.99);
     
-    
+    /*
     float3 tmp;
 
     if(normalFix){
@@ -41,8 +41,11 @@ float4 prepareForDeferredShadingPass1() : COLOR {
 	data.x = float3ToFloat(Fragment_material.emissive.xyz);
 	data.y = float3ToFloat(tmp);
 	data.z = float3ToFloat(Fragment_material.diffuse.xyz);
-	
+
 	data.w = float(objectId);
+	*/
+
+	data = float4((Normal.xyz+1.)/2., float(objectId));
 
 	return data;
 };

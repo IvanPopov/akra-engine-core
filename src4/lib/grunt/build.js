@@ -12,7 +12,7 @@ var domain = require('domain');
 var Zip = require('node-native-zip');
 var jade = require('jade');
 
-var TYPESCRIPT = "typescript-1.0RC";
+var TYPESCRIPT = "typescript-1.0";
 
 
 module.exports = function (grunt) {

@@ -119,10 +119,16 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 		discard;
 	}
 	
-	float4 emissive = float4(floatToFloat3(data0.x),1.);
+	//float4 emissive = float4(floatToFloat3(data0.x),1.);
+	float4 emissive = float4(0.,0.,0.,1.);
 
-	float3 temp = floatToFloat3(data0.y);
+	//float3 temp = floatToFloat3(data0.y);
+	float3 temp = data0.xyz;
 
+	pixelData.normal = float3((temp.xyz * 2. - 1.) * 0.95);
+	pixelData.shininess = data1.z * 255.;
+
+	/*
 	if (normalFix) {
 		pixelData.normal = float3((temp.xyz * 2. - 1.) * 0.95);
 		pixelData.shininess = data1.z * 255.;
@@ -132,8 +138,9 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 		pixelData.normal = normalize(float3(temp.xy, sqrt(1. - clamp(dot(temp.xy,temp.xy),0.,1.))));
 		pixelData.shininess = temp.z * 255.;
 	}    
-
-	pixelData.diffuse = float4(floatToFloat3(data0.z), 1.);
+	*/
+	//pixelData.diffuse = float4(floatToFloat3(data0.z), 1.);
+	pixelData.diffuse = float4(1.);
 	pixelData.ambient = float4(floatToFloat3(data1.x), 1.);
 	pixelData.specular = float4(floatToFloat3(data1.y), 1.);
 
