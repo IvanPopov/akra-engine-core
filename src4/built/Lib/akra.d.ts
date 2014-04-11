@@ -4860,7 +4860,11 @@ declare module akra {
     }
 }
 declare module akra {
-    interface ISkin {
+    interface ISkin extends IEventProvider {
+        /**
+        * Event is sent when the skin transformed.
+        */
+        transformed: ISignal<(pSkin: ISkin) => void>;
         getData(): IRenderDataCollection;
         getSkeleton(): ISkeleton;
         getTotalBones(): number;
@@ -4868,7 +4872,6 @@ declare module akra {
         * @copydoc Skin::getAffectedNode()
         */
         getAffectedNode(iNode: number): ISceneNode;
-        getBonesBoundingBox(): IRect3d;
         /**
         * Set binding matrix.
         * @see <bind_shape_matrix> in Collada.
@@ -4878,6 +4881,8 @@ declare module akra {
         * @see <bind_shape_matrix> in Collada.
         */
         getBindMatrix(): IMat4;
+        getBoneName(iBone: number): string;
+        getBoneIndex(sBone: string): number;
         /**
         * Bone offset matrices.
         * @see Bone offset matrices in Collada.
@@ -4940,34 +4945,37 @@ declare module akra {
 }
 declare module akra {
     interface IMeshSubset extends IEventProvider, IRenderableObject {
+        skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        skinRemoved: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        /**
+        * Emit when mesh geometry transformated by skin.
+        */
+        transformed: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        /**
+        * @return False - if persisted geometry.
+        */
+        update(): boolean;
         getName(): string;
         getMesh(): IMesh;
         getSkin(): ISkin;
         getBoundingBox(): IRect3d;
         getBoundingSphere(): ISphere;
-        createBoundingBox(): boolean;
-        deleteBoundingBox(): boolean;
-        showBoundingBox(): boolean;
-        hideBoundingBox(): boolean;
-        isBoundingBoxVisible(): boolean;
-        createBoundingSphere(): boolean;
-        deleteBoundingSphere(): boolean;
-        showBoundingSphere(): boolean;
-        hideBoundingSphere(): boolean;
-        isBoundingSphereVisible(): boolean;
+        /**
+        * @copydoc Skin::getTotalBones()
+        * Alias for Skin::getTotalBones()
+        */
+        getTotalBones(): number;
+        getBoneLocalBound(sBone: string): IRect3d;
+        getBoneLocalBound(iBone: number): IRect3d;
+        getInitialGeometryBoundingBox(): IRect3d;
+        getInitialGeometryBoundingSphere(): ISphere;
         computeNormals(): void;
         computeTangents(): void;
         computeBinormals(): void;
         isSkinned(): boolean;
         isOptimizedSkinned(): boolean;
         setSkin(pSkin: ISkin): boolean;
-        show(): void;
-        hide(): void;
-        isRenderable(): boolean;
         destroy(): void;
-        _calculateSkin(): boolean;
-        _calculateBoundingBox(): IRect3d;
-        skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => any>;
     }
 }
 declare module akra {
@@ -4983,11 +4991,17 @@ declare module akra {
         [name: string]: IMesh;
     }
     interface IMesh extends IEventProvider {
+        /** notify, when one of substets added or removed shadow */
+        shadowed: ISignal<(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean) => void>;
         getName(): string;
         getData(): IRenderDataCollection;
         getLength(): number;
         getBoundingBox(): IRect3d;
         getBoundingSphere(): ISphere;
+        /**
+        * Return TRUE if after last update mesh geometry was changed.
+        */
+        isGeometryChanged(): boolean;
         getShadow(): boolean;
         setShadow(bValue: boolean): void;
         getOptions(): number;
@@ -5001,26 +5015,11 @@ declare module akra {
         appendSubset(sName: string, pData: IRenderData): IMeshSubset;
         setSkin(pSkin: ISkin): void;
         createSkin(): ISkin;
-        createBoundingBox(): boolean;
-        deleteBoundingBox(): boolean;
-        showBoundingBox(): boolean;
-        hideBoundingBox(): boolean;
-        isBoundingBoxVisible(): boolean;
-        createAndShowSubBoundingBox(): void;
-        createBoundingSphere(): boolean;
-        deleteBoundingSphere(): boolean;
-        showBoundingSphere(): boolean;
-        hideBoundingSphere(): boolean;
-        isBoundingSphereVisible(): boolean;
-        createAndShowSubBoundingSphere(): void;
+        calculateBoundingBox(): boolean;
+        calculateBoundingSphere(): boolean;
         isReadyForRender(): boolean;
-        toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
         /** Updtae all submeshes(apply bone matricie for skinned submeshes) */
         update(): boolean;
-        _drawSubset(iSubset: number): void;
-        _draw(): void;
-        /** notify, when one of substets added or removed shadow */
-        shadowed: ISignal<(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean) => void>;
     }
 }
 declare module akra {
@@ -13939,9 +13938,13 @@ declare module akra.scene {
 }
 declare module akra.model {
     class Skin implements ISkin {
+        public guid: number;
+        /**
+        * @copydoc ISkin::transformed
+        */
+        public transformed: ISignal<(pSkin: ISkin) => void>;
         private _pMesh;
         private _pSkeleton;
-        private _pBoneBoundingBox;
         private _pNodeNames;
         private _m4fBindMatrix;
         private _pBoneTransformMatrices;
@@ -13980,12 +13983,13 @@ declare module akra.model {
         * Links to VertexData, that contain meta from this skin.
         */
         private _pTiedData;
-        public getBonesBoundingBox(): IRect3d;
+        constructor(pMesh: IMesh);
+        public setupSignals(): void;
         public getData(): IRenderDataCollection;
         public getTotalBones(): number;
         public getBoneName(iBone: number): string;
+        public getBoneIndex(sBone: string): number;
         public getSkeleton(): ISkeleton;
-        constructor(pMesh: IMesh);
         public setBindMatrix(m4fMatrix: IMat4): void;
         public getBindMatrix(): IMat4;
         /**
@@ -14031,6 +14035,7 @@ declare module akra.scene {
         public setShadow(bValue: boolean): void;
         public isVisible(): boolean;
         public toString(isRecursive?: boolean, iDepth?: number): string;
+        public update(): boolean;
         static isModel(pEntity: IEntity): boolean;
     }
 }
@@ -15848,47 +15853,51 @@ declare module akra.webgl {
 }
 declare module akra.model {
     class MeshSubset extends render.RenderableObject implements IMeshSubset {
-        public skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => any>;
-        public _sName: string;
-        public _pMesh: IMesh;
-        public _pSkin: ISkin;
-        public _pBoundingBox: IRect3d;
-        public _pBoundingSphere: ISphere;
-        public _isOptimizedSkinned: boolean;
-        private _pSkinBasedWorldBounds;
+        public skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        public skinRemoved: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        public transformed: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        private _sName;
+        private _pMesh;
+        private _pSkin;
+        private _pBoundingBox;
+        private _pBoundingSphere;
+        private _isOptimizedSkinned;
+        private _pInitialGeometryBoundingBox;
+        private _pInitialGeometryBoundingSphere;
         private _pSkinLocalBounds;
+        constructor(pMesh: IMesh, pRenderData: IRenderData, sName?: string);
         public getBoundingBox(): IRect3d;
         public getBoundingSphere(): ISphere;
+        public getInitialGeometryBoundingBox(): IRect3d;
+        public getInitialGeometryBoundingSphere(): ISphere;
         public getSkin(): ISkin;
         public getName(): string;
         public getMesh(): IMesh;
-        constructor(pMesh: IMesh, pRenderData: IRenderData, sName?: string);
         public setupSignals(): void;
         public setup(pMesh: IMesh, pRenderData: IRenderData, sName: string): void;
         public createBoundingBox(): boolean;
-        public deleteBoundingBox(): boolean;
-        public showBoundingBox(): boolean;
-        public isBoundingBoxVisible(): boolean;
-        public hideBoundingBox(): boolean;
         public createBoundingSphere(): boolean;
+        public deleteBoundingBox(): boolean;
         public deleteBoundingSphere(): boolean;
-        public showBoundingSphere(): boolean;
-        public isBoundingSphereVisible(): boolean;
-        public hideBoundingSphere(): boolean;
+        public _showBoundingBox(): boolean;
+        public _isBoundingBoxVisible(): boolean;
+        public _hideBoundingBox(): boolean;
+        public _showBoundingSphere(): boolean;
+        public _isBoundingSphereVisible(): boolean;
+        public _hideBoundingSphere(): boolean;
+        public getTotalBones(): number;
+        public getBoneLocalBound(sBone: string): IRect3d;
+        public getBoneLocalBound(iBone: number): IRect3d;
         public computeNormals(): void;
         public computeTangents(): void;
         public computeBinormals(): void;
         public isSkinned(): boolean;
         public isOptimizedSkinned(): boolean;
-        public _draw(): void;
-        public show(): void;
-        public hide(): void;
-        public isRenderable(): boolean;
-        public calculateBoneLocalBoundingBoxes(): IRect3d[];
         public setSkin(pSkin: ISkin): boolean;
-        public _calculateSkin(): boolean;
-        public _getSkinBasedWorldBounds(): IRect3d;
-        public _calculateBoundingBox(): IRect3d;
+        public update(): boolean;
+        private calculateBoneLocalBoundingBoxes();
+        private calculateSkin();
+        private calculateSkinBasedBoundingBox();
         static isMeshSubset(pObject: IRenderableObject): boolean;
     }
 }

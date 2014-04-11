@@ -60,11 +60,17 @@ module akra.model {
 		private _pBuffer: IRenderDataCollection = null;
 		private _pEngine: IEngine;
 		private _eOptions: int = 0;
-		private _pBoundingBox: IRect3d = null;
-		private _pBoundingSphere: ISphere = null;
+
+		private _pBoundingBox: IRect3d = new geometry.Rect3d();
+		private _pBoundingSphere: ISphere = new geometry.Sphere();
+
 		private _pSubMeshes: IMeshSubset[] = [];
 		private _bShadow: boolean = true;
-		private _pSkinList: ISkin[] = [];
+
+		private _bBoundgingBoxChanged: boolean = false;
+		private _bBoundingSphereChanged: boolean = false;
+		private _bGeometryChanged: boolean = false;
+		
 
 		constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
 			super();
@@ -79,33 +85,33 @@ module akra.model {
 			this.shadowed = this.shadowed || new ShadowedSignal(this);
 		}
 
-		getLength(): uint {
+		final isGeometryChanged(): boolean {
+			return this._bGeometryChanged;
+		}
+
+		final getLength(): uint {
 			return this._pSubMeshes.length;
 		}
 
-		getName(): string {
+		final getName(): string {
 			return this._sName;
 		}
 
-		getData(): IRenderDataCollection {
+		final getData(): IRenderDataCollection {
 			return this._pBuffer;
 		}
 
 		getBoundingBox(): IRect3d {
-			if (isNull(this._pBoundingBox)) {
-				if (!this.createBoundingBox()) {
-					logger.warn("could not compute bounding box fo mesh");
-				}
+			if (this._bBoundgingBoxChanged) {
+				logger.assert(this.calculateBoundingBox(), "could not compute bounding box for mesh");
 			}
 
 			return this._pBoundingBox;
 		}
 
 		getBoundingSphere(): ISphere {
-			if (isNull(this._pBoundingSphere)) {
-				if (!this.createBoundingSphere()) {
-					logger.warn("could not compute bounding sphere for mesh");
-				}
+			if (this._bBoundingSphereChanged) {
+				logger.assert(this.calculateBoundingSphere(), "could not compute bounding sphere for mesh");
 			}
 
 			return this._pBoundingSphere;
@@ -117,13 +123,11 @@ module akra.model {
 
 		setShadow(bValue: boolean): void {
 			for (var i: int = 0; i < this._pSubMeshes.length; ++i) {
-				//debug.log("Mehs(" + this.getName() + ")::setShadow() ==> MeshSubset(" + this._pSubMeshes[i].guid + ")::setShadow(" + bValue + ")");
-				//console.trace();
 				this._pSubMeshes[i].setShadow(bValue);
 			}
 		}
 
-		getOptions(): int {
+		final getOptions(): int {
 			return this._eOptions;
 		}
 
@@ -131,17 +135,8 @@ module akra.model {
 			return this._pEngine;
 		}
 
-		_drawSubset(iSubset: int): void {
-			this._pBuffer._draw(iSubset);
-		}
 
-		_draw(): void {
-			for (var i: int = 0; i < this.getLength(); i++) {
-				this._pSubMeshes[i]._draw();
-			};
-		}
-
-		isReadyForRender(): boolean {
+		final isReadyForRender(): boolean {
 			for (var i: int = 0; i < this._pSubMeshes.length; ++i) {
 				if (this._pSubMeshes[i].isReadyForRender()) {
 					return true;
@@ -174,7 +169,7 @@ module akra.model {
 
 		createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int = 0): IMeshSubset {
 			var pData: IRenderData;
-			//TODO: modify options and create options for data dactory.
+			//TODO: modify options and create options for data factory.
 			pData = this._pBuffer.getEmptyRenderData(ePrimType/*EPrimitiveTypes.POINTLIST*/, eOptions);
 			pData.addRef();
 
@@ -191,21 +186,19 @@ module akra.model {
 			var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
 			this._pSubMeshes.push(pSubMesh);
 
-			pSubMesh.skinAdded.connect(this, this._skinAdded);
 			pSubMesh.shadowed.connect(this.shadowed);
+			pSubMesh.transformed.connect(this, this._notifyGeometryChanged);
 
-			//this.connect(pSubMesh, SIGNAL(skinAdded), SLOT(_skinAdded));
-			//this.connect(pSubMesh, SIGNAL(shadowed), SLOT(shadowed), EEventTypes.UNICAST);
+			this._notifyGeometryChanged();
 
 			return pSubMesh;
 		}
 
-		_skinAdded(pSubMesh: IMeshSubset, pSkin: ISkin): void {
-			if (this._pSkinList.indexOf(pSkin) != -1) {
-				return;
-			}
-
-			this._pSkinList.push(pSkin);
+		// mark, that mesh geometry changed
+		_notifyGeometryChanged(): void {
+			this._bBoundgingBoxChanged = true;
+			this._bBoundingSphereChanged = true;
+			this._bGeometryChanged = true;
 		}
 
 
@@ -277,93 +270,65 @@ module akra.model {
 			return pClone;
 		}
 
-		createAndShowSubBoundingBox(): void {
+		_createAndShowSubBoundingBox(): void {
+			/*
 			for (var i = 0; i < this.getLength(); i++) {
-				var pSubMesh: IMeshSubset = this.getSubset(i);
+				var pSubMesh: model.MeshSubset = <model.MeshSubset>this.getSubset(i);
 				if (pSubMesh.createBoundingBox()) {
-					if (!pSubMesh.showBoundingBox()) {
-						logger.error("could not show sub bounding box");
+					if (!pSubMesh._showBoundingBox()) {
+						debug.error("could not show sub bounding box");
 					}
 				}
 				else {
-					logger.error("could not create sub bounding box.");
+					debug.error("could not create sub bounding box.");
 				}
-				//console.log("SubMesh" + i);
 			}
+			*/
 		}
 
-		createAndShowSubBoundingSphere(): void {
+		_createAndShowSubBoundingSphere(): void {
+			/*
 			for (var i = 0; i < this.getLength(); i++) {
-				var pSubMesh: IMeshSubset = this.getSubset(i);
+				var pSubMesh: model.MeshSubset = <model.MeshSubset>this.getSubset(i);
 				pSubMesh.createBoundingSphere();
-				pSubMesh.showBoundingSphere();
-				//console.log("SubMesh" + i);
+				pSubMesh._showBoundingSphere();
 			}
+			*/
 		}
 
-		createBoundingBox(): boolean {
-			var pVertexData: IVertexData;
-			var pSubMesh: IMeshSubset;
-			var pNewBoundingBox: IRect3d;
-			var pTempBoundingBox: IRect3d;
-			var i: int;
 
-			pNewBoundingBox = new geometry.Rect3d();
-			pTempBoundingBox = new geometry.Rect3d();
+		//SKINNED
+		//	IF SUBMESH NOT ATTACHED TO SCENE -> SKIP
+		//	
 
-			pSubMesh = this.getSubset(0);
-			pVertexData = pSubMesh.getData()._getData(DeclUsages.POSITION);
+		calculateBoundingBox(): boolean {
+			var pSubsets: IMeshSubset[] = this._pSubMeshes;
+			var pBB: IRect3d = this._pBoundingBox.set(pSubsets[0].getBoundingBox());
 
-			if (isNull(pVertexData)) {
-				return false;
+			for (var i = 1; i < pSubsets.length; ++i) {
+				var pSubset: IMeshSubset = pSubsets[i];
+				var pLocalBB: IRect3d = pSubset.getBoundingBox();
+
+				pBB.x0 = math.min(pBB.x0, pLocalBB.x0);
+				pBB.x1 = math.max(pBB.x1, pLocalBB.x1);
+
+				pBB.y0 = math.min(pBB.y0, pLocalBB.y0);
+				pBB.y1 = math.max(pBB.y1, pLocalBB.y1);
+
+				pBB.z0 = math.min(pBB.z0, pLocalBB.z0);
+				pBB.z1 = math.max(pBB.z1, pLocalBB.z1);
 			}
 
-			if (geometry.computeBoundingBox(pVertexData, pNewBoundingBox) == false)
-				return false;
+			//debug.log("Mesh(" + this.getName() + ")::calculateBoundingBox()");
 
-			if (pSubMesh.isSkinned()) {
-				pNewBoundingBox.transform(pSubMesh.getSkin().getBindMatrix());
-				pNewBoundingBox.transform(pSubMesh.getSkin().getBoneOffsetMatrix(pSubMesh.getSkin().getSkeleton().getRoot().getBoneName()));
-			}
+			this._bBoundgingBoxChanged = false;
 
-			for (i = 1; i < this.getLength(); i++) {
-
-				pSubMesh = this.getSubset(i);
-				pVertexData = pSubMesh.getData()._getData(DeclUsages.POSITION);
-				//trace(pSubMesh.name);
-
-				if (!pVertexData) {
-					return false;
-				}
-
-				if (geometry.computeBoundingBox(pVertexData, pTempBoundingBox) == false) {
-					return false;
-				}
-
-				if (pSubMesh.isSkinned()) {
-					pTempBoundingBox.transform(pSubMesh.getSkin().getBindMatrix());
-					pTempBoundingBox.transform(pSubMesh.getSkin().getBoneOffsetMatrix(pSubMesh.getSkin().getSkeleton().getRoot().getBoneName()));
-				}
-
-				pNewBoundingBox.x0 = Math.min(pNewBoundingBox.x0, pTempBoundingBox.x0);
-				pNewBoundingBox.y0 = Math.min(pNewBoundingBox.y0, pTempBoundingBox.y0);
-				pNewBoundingBox.z0 = Math.min(pNewBoundingBox.z0, pTempBoundingBox.z0);
-
-				pNewBoundingBox.x1 = Math.max(pNewBoundingBox.x1, pTempBoundingBox.x1);
-				pNewBoundingBox.y1 = Math.max(pNewBoundingBox.y1, pTempBoundingBox.y1);
-				pNewBoundingBox.z1 = Math.max(pNewBoundingBox.z1, pTempBoundingBox.z1);
-			}
-
-			this._pBoundingBox = pNewBoundingBox;
 			return true;
 		}
 
-		deleteBoundingBox(): boolean {
-			this._pBoundingBox = null;
-			return true;
-		}
-
-		showBoundingBox(): boolean {
+		_showBoundingBox(): boolean {
+			if (config.DEBUG) return false;
+			/*
 			var pSubMesh: IMeshSubset;
 			var pMaterial: IMaterial;
 			var iData: int;
@@ -411,9 +376,13 @@ module akra.model {
 
 			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), true);
 			return true;
-		}
+			*/
 
-		hideBoundingBox(): boolean {
+			return false;
+		}
+		_hideBoundingBox(): boolean {
+			if (config.DEBUG) return false;
+			/*
 			var pSubMesh: IMeshSubset = this.getSubset(".BoundingBox");
 
 			if (!pSubMesh) {
@@ -423,9 +392,14 @@ module akra.model {
 			//TODO: hide bounding box!!
 			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), false);
 			return true;
-		}
+			*/
 
-		isBoundingBoxVisible(): boolean {
+			return false;
+		}
+		_isBoundingBoxVisible(): boolean {
+			if (config.DEBUG) return false;
+
+			/*
 			var pSubMesh: IMeshSubset = this.getSubset(".BoundingBox");
 
 			if (!pSubMesh) {
@@ -433,9 +407,39 @@ module akra.model {
 			}
 
 			return pSubMesh.getData().isRenderable(pSubMesh.getData().getIndexSet());
+			*/
+
+			return false;
 		}
 
-		createBoundingSphere(): boolean {
+		calculateBoundingSphere(): boolean {
+
+			var pSubsets: IMeshSubset[] = this._pSubMeshes;
+			var pSphere: ISphere = this._pBoundingSphere;
+
+			for (var i = 0; i < pSubsets.length; ++i) {
+				var pSubset: IMeshSubset = pSubsets[i];
+				var pLocalSphere: ISphere = pSubset.getBoundingSphere();
+
+				if (pSubset.isSkinned()) {
+					pLocalSphere.transform(pSubset.getSkin().getBindMatrix());
+					pLocalSphere.transform(pSubset.getSkin().getBoneOffsetMatrix(pSubset.getSkin().getSkeleton().getRoot().getBoneName()));
+				}
+
+				if (i == 0) {
+					pSphere.set(pLocalSphere);
+					continue;
+				}
+
+				geometry.computeGeneralizingSphere(pSphere, pLocalSphere);
+			}
+
+			//debug.log("Mesh(" + this.getName() + ")::calculateBoundingSphere()");
+
+			this._bBoundingSphereChanged = false;
+
+			return true;
+
 			var pVertexData: IVertexData;
 			var pSubMesh: IMeshSubset;
 			var pNewBoundingSphere: ISphere,
@@ -486,7 +490,7 @@ module akra.model {
 			}
 
 			this._pBoundingSphere = pNewBoundingSphere;
-
+			
 			return true;
 		}
 
@@ -495,7 +499,9 @@ module akra.model {
 			return true;
 		}
 
-		showBoundingSphere(): boolean {
+		_showBoundingSphere(): boolean {
+			if (config.DEBUG) return false;
+			/*
 			var pSubMesh: IMeshSubset, pMaterial: IMaterial;
 			var iData: int;
 			var pPoints: float[], pIndexes: uint[];
@@ -542,62 +548,46 @@ module akra.model {
 			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), true);
 
 			return true;
+			*/
+
+			return false;
 		}
 
-		hideBoundingSphere(): boolean {
-			var pSubMesh: IMeshSubset;
+		_hideBoundingSphere(): boolean {
+			if (config.DEBUG) return false;
+			//var pSubMesh: IMeshSubset;
 
-			pSubMesh = this.getSubset(".BoundingSphere");
+			//pSubMesh = this.getSubset(".BoundingSphere");
 
-			if (!pSubMesh) {
-				return false;
-			}
+			//if (!pSubMesh) {
+			//	return false;
+			//}
 
-			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), false);
-			return true;
+			//pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), false);
+			//return true;
+
+			return false;
 		}
 
-		isBoundingSphereVisible(): boolean {
-			var pSubMesh: IMeshSubset = this.getSubset(".BoundingSphere");
+		_isBoundingSphereVisible(): boolean {
+			//var pSubMesh: IMeshSubset = this.getSubset(".BoundingSphere");
 
-			if (!pSubMesh) {
-				return false;
-			}
+			//if (!pSubMesh) {
+			//	return false;
+			//}
 
-			return pSubMesh.getData().isRenderable(pSubMesh.getData().getIndexSet());
-		}
+			//return pSubMesh.getData().isRenderable(pSubMesh.getData().getIndexSet());
 
-		toSceneModel(pParent: ISceneNode, sName: string = null): ISceneModel {
-			if (isNull(pParent)) {
-				return null;
-			}
-
-			var pSceneModel: ISceneModel = pParent.getScene().createModel(sName);
-
-			if (!pSceneModel.create()) {
-				return null;
-			}
-
-			pSceneModel.setMesh(this);
-			pSceneModel.attachToParent(pParent);
-
-			return pSceneModel;
+			return false;
 		}
 
 		update(): boolean {
 			var isOk: boolean = false;
 
-			for (var i: uint = 0; i < this._pSkinList.length; ++i) {
-				isOk = this._pSkinList[i].applyBoneMatrices() ? true : isOk;
-			}
+			this._bGeometryChanged = false;
 
-			if (isOk) {
-				for (var i: uint = 0; i < this.getLength(); ++i) {
-					if (this._pSubMeshes[i].isSkinned()) {
-						this._pSubMeshes[i]._calculateSkin();
-						this._pSubMeshes[i]._calculateBoundingBox();
-					}
-				}
+			for (var i: uint = 0; i < this._pSubMeshes.length; ++i) {
+				isOk = this._pSubMeshes[i].update() ? true : isOk;
 			}
 
 			return isOk;

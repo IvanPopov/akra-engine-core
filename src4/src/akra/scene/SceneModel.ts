@@ -40,7 +40,6 @@ module akra.scene {
 				this._pMesh = pMesh;
 				//FIXME: event handing used out of object, bad practice..
 				this.getScene().postUpdate.connect(this._pMesh, this._pMesh.update);
-				//pMesh.connect(this.scene, SIGNAL(postUpdate), SLOT(update));
 			}
 		}
 
@@ -83,6 +82,14 @@ module akra.scene {
 			}
 
 			return null;
+		}
+
+		update(): boolean {
+			if (this._pMesh.isGeometryChanged()) {
+				this.accessLocalBounds().set(this._pMesh.getBoundingBox());
+			}
+
+			return super.update();
 		}
 
 		static isModel(pEntity: IEntity): boolean {

@@ -8,7 +8,12 @@
 
 module akra {
 	
-	export interface ISkin {
+	export interface ISkin extends IEventProvider {
+		/**
+		 * Event is sent when the skin transformed.
+		 */
+		transformed: ISignal<{ (pSkin: ISkin): void; }>;
+
 		getData(): IRenderDataCollection;
 		getSkeleton(): ISkeleton;
 		getTotalBones(): uint;
@@ -17,10 +22,6 @@ module akra {
 		 * @copydoc Skin::getAffectedNode()
 		 */
 		getAffectedNode(iNode: uint): ISceneNode;
-
-		//bone bounding box in world space
-		getBonesBoundingBox(): IRect3d;
-	
 		/**
 		 * Set binding matrix. 
 		 * @see <bind_shape_matrix> in Collada.
@@ -32,6 +33,9 @@ module akra {
 		 */
 		getBindMatrix(): IMat4;
 	
+		getBoneName(iBone: uint): string;
+		getBoneIndex(sBone: string): uint;
+
 		/**
 		 * Bone offset matrices.
 		 * @see Bone offset matrices in Collada.
@@ -54,7 +58,8 @@ module akra {
 		 */
 		setBoneNames(pNames: string[]): boolean;
 	
-	
+		
+
 		/**
 		 * Weights.
 		 */

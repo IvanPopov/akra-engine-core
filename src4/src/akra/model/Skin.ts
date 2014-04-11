@@ -12,12 +12,16 @@ module akra.model {
 	import DeclUsages = data.Usages;
 
 	export final class Skin implements ISkin {
+		guid: uint = guid();
+
+		/**
+		 * @copydoc ISkin::transformed
+		 */
+		transformed: ISignal<{ (pSkin: ISkin): void;}>;
+
 		private _pMesh: IMesh;
 
 		private _pSkeleton: ISkeleton = null;
-
-		private _pBoneBoundingBox: IRect3d =
-			new geometry.Rect3d();
 		
 		// name of bones/nodes
 		private _pNodeNames: string[] = null;
@@ -71,9 +75,15 @@ module akra.model {
 		 */
 		private _pTiedData: IVertexData[] = [];
 
-		//bone bounding box in world space
-		getBonesBoundingBox(): IRect3d {
-			return this._pBoneBoundingBox;
+		constructor(pMesh: IMesh) {
+			debug.assert(isDefAndNotNull(pMesh), "you must specify mesh for skin");
+
+			this.setupSignals();
+			this._pMesh = pMesh;
+		}
+
+		protected setupSignals(): void {
+			this.transformed = this.transformed || new Signal(this);
 		}
 
 		getData(): IRenderDataCollection {
@@ -89,14 +99,12 @@ module akra.model {
 			return this._pNodeNames[iBone];
 		}
 
-		getSkeleton(): ISkeleton {
-			return this._pSkeleton;
+		getBoneIndex(sBone: string): uint {
+			return this._pNodeNames.indexOf(sBone);
 		}
 
-		constructor(pMesh: IMesh) {
-		    debug.assert(isDefAndNotNull(pMesh), "you must specify mesh for skin");
-
-		    this._pMesh = pMesh;
+		getSkeleton(): ISkeleton {
+			return this._pSkeleton;
 		}
 
 		setBindMatrix(m4fMatrix: IMat4): void {
@@ -150,6 +158,7 @@ module akra.model {
 
 			this._pSkeleton = pSkeleton;
 
+			this.transformed.emit();
 			return true;
 		}
 
@@ -158,7 +167,8 @@ module akra.model {
 			    this._pAffectingNodes[i] = <ISceneNode>pRootNode.findEntity(this._pNodeNames[i]);
 			    debug.assert(isDefAndNotNull(this._pAffectingNodes[i]), "node<" + this._pNodeNames[i] + "> must exists...");
 			}
-			
+
+			this.transformed.emit();
 			return true;
 		}
 
@@ -283,32 +293,18 @@ module akra.model {
 			var pNode: ISceneNode;
 			var isUpdated: boolean = false;
 
-			var pBB = this._pBoneBoundingBox.set(MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32, MAX_UINT32, MIN_UINT32);
-			
-
 			for (var i: int = 0, nMatrices = this.getTotalBones(); i < nMatrices; ++i) {
 				pNode = this._pAffectingNodes[i];
 
-				//bone AABB started
-				var v3fPos: IVec3 = pNode.getWorldPosition();
 
-				pBB.x0 = math.min(pBB.x0, v3fPos.x);
-				pBB.x1 = math.max(pBB.x1, v3fPos.x);
-				
-				pBB.y0 = math.min(pBB.y0, v3fPos.y);
-				pBB.y1 = math.max(pBB.y1, v3fPos.y);
-				
-				pBB.z0 = math.min(pBB.z0, v3fPos.z);
-				pBB.z1 = math.max(pBB.z1, v3fPos.z);
-				//bone AABB ended
-
-			    if (pNode.isWorldMatrixNew() || bForce) {
+				if (pNode && (pNode.isWorldMatrixNew() || bForce)) {
 			        pNode.getWorldMatrix().multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
 			        isUpdated = true;
 			    }
 			}
 
 			if (isUpdated) {
+				this.transformed.emit();
 			    pData = this._pBoneOffsetMatrixBuffer;
 			    return this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
 			}

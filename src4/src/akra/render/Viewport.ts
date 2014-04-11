@@ -692,9 +692,9 @@ module akra.render {
 			var x: uint, y: uint;
 			var v3fDestination: IVec3;
 
-			if (isInt(arguments[0])) {
-				x = arguments[0];
-				y = arguments[1];
+			if (isNumber(arguments[0])) {
+				x = math.round(arguments[0]);
+				y = math.round(arguments[1]);
 				v3fDestination = arguments[2];
 			}
 			else {

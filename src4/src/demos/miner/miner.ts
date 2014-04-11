@@ -210,6 +210,8 @@ module akra {
 		var pBB: IRect3d;
 		var pLibeCube = addons.lineCube(pScene);
 		var pMinerBody: model.MeshSubset = null;
+		var pMinerMesh: IMesh = null;
+		var pMinerModel: ISceneModel = null;
 
 		pModel.explore((pEntity: IEntity): boolean => {
 			if (scene.SceneModel.isModel(pEntity)) {
@@ -218,29 +220,19 @@ module akra {
 					return;
 				}
 
-				window["meshSubset"] = pMinerBody = <model.MeshSubset>pNode.getMesh().getSubset(0);
-
-				pBB = pNode.getMesh().getSubset(0).getSkin().getBonesBoundingBox();
-
-				pGUI.add(pBB, "x0").listen().__precision = 4;
-				pGUI.add(pBB, "x1").listen().__precision = 4;
-				pGUI.add(pBB, "y0").listen().__precision = 4;
-				pGUI.add(pBB, "y1").listen().__precision = 4;
-				pGUI.add(pBB, "z0").listen().__precision = 4;
-				pGUI.add(pBB, "z1").listen().__precision = 4;
-
-				window["bb"] = pBB;
+				pMinerModel = window["minerNode"] = pNode;
+				pMinerMesh = pNode.getMesh();
+				pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
 
 				//////////////////////////
-				var pSubset = <model.MeshSubset>pNode.getMesh().getSubset(0);
-				var pBoxes = pSubset.calculateBoneLocalBoundingBoxes();
+				var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-				for (var i = 0; i < pBoxes.length; ++i) {
-					if (!pBoxes[i]) {
+				for (var i = 0; i < pSubset.getTotalBones(); ++i) {
+					if (!pSubset.getBoneLocalBound(i)) {
 						continue;
 					}
 
-					var pBox = pBoxes[i];
+					var pBox = pSubset.getBoneLocalBound(i);
 					var pBone = pSubset.getSkin().getAffectedNode(i);
 
 					var pCube = addons.lineCube(pScene);
@@ -260,14 +252,17 @@ module akra {
 
 		pScene.beforeUpdate.connect(() => {
 			if (!pLibeCube.isVisible()) return;
-			var pBB = pMinerBody._getSkinBasedWorldBounds();
+			var pBB = geometry.Rect3d.temp(pMinerModel.getMesh().getBoundingBox());
+
+			pBB.transform(pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getWorldMatrix());
+
 			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
 
-		pLibeCube.setVisible(false);
+		//pLibeCube.setVisible(false);
 
-		pGUI.add({ "bone-local-aabb": false }, "bone-local-aabb").onChange((bValue: boolean) => {
+		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);
 		});
 
