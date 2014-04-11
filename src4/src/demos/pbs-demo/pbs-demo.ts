@@ -124,27 +124,35 @@ module akra {
 
         var pMaterialPresets = {
             Gold: {
-                _F0: new math.Vec3(1.00, 0.71, 0.29),
+                _F0: new math.Vec3(1., 1., 1.),
                 _Diffuse: new math.Vec3(1.00, 0.86, 0.57),
             },
             Copper: {
-                _F0: new math.Vec3(0.95, 0.64, 0.54),
+                _F0: new math.Vec3(1., 1., 1.),
                 _Diffuse: new math.Vec3(0.98, 0.82, 0.76),
             },
             Plastic: {
-                _F0: new math.Vec3(0.03, 0.03, 0.03),
+                _F0: new math.Vec3(1., 1., 1.),
                 _Diffuse: new math.Vec3(0.21, 0.21, 0.21),
             },
             Iron: {
-                _F0: new math.Vec3(0.56, 0.57, 0.58),
+                _F0: new math.Vec3(1., 1., 1.),
                 _Diffuse: new math.Vec3(0.77, 0.78, 0.78),
             },
             Aluminium: {
-                _F0: new math.Vec3(0.91, 0.92, 0.92),
+                _F0: new math.Vec3(1., 1., 1.),
                 _Diffuse: new math.Vec3(0.96, 0.96, 0.97),
             },
             Silver: {
-                _F0: new math.Vec3(0.95, 0.93, 0.88),
+                _F0: new math.Vec3(1., 1., 1.),
+                _Diffuse: new math.Vec3(0.98, 0.97, 0.95),
+            },
+            Water: {
+                _F0: new math.Vec3(0.15, 0.15, 0.15),
+                _Diffuse: new math.Vec3(0.98, 0.97, 0.95),
+            },
+            Glass: {
+                _F0: new math.Vec3(0.21, 0.21, 0.21),
                 _Diffuse: new math.Vec3(0.98, 0.97, 0.95),
             }
         };
