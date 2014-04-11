@@ -87,12 +87,18 @@ module akra {
 			if (pKeymap.isKeyPress(EKeyCodes.S)) {
 				pCamera.addRelPosition(0, 0, fSpeed);
 			}
-			if (pKeymap.isKeyPress(EKeyCodes.A)) {
+			if (pKeymap.isKeyPress(EKeyCodes.A) || pKeymap.isKeyPress(EKeyCodes.LEFT)) {
 				pCamera.addRelPosition(-fSpeed, 0, 0);
 			}
-			if (pKeymap.isKeyPress(EKeyCodes.D)) {
+			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
 				pCamera.addRelPosition(fSpeed, 0, 0);
 			}
+            if (pKeymap.isKeyPress(EKeyCodes.UP)) {
+                pCamera.addRelPosition(0, fSpeed, 0);
+            }
+            if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
+                pCamera.addRelPosition(0, -fSpeed, 0);
+            }
 		});
 	}
 
@@ -297,6 +303,10 @@ module akra {
 		return pViewport;
     }
 
+    var lightPos1: math.Vec3 = new math.Vec3(0, 11.5, 20);
+    var lightPos2: math.Vec3 = new math.Vec3(0, 6, 20);
+    var lightPos3: math.Vec3 = new math.Vec3(0, 3, 20);
+
     export var pLight: IOmniLight = null;
     function createLighting(): void {
         var pOmniLight: IOmniLight;
@@ -306,36 +316,36 @@ module akra {
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.5, 0.5, 0.5);
-        pOmniLight.getParams().specular.set(0.1, 0.3, 0.1, 0.3);
-        pOmniLight.getParams().attenuation.set(1, 0, 0.02);
+        pOmniLight.getParams().diffuse.set(0.4, 0.4, 0.4);
+        pOmniLight.getParams().specular.set(0.4, 0.4, 0.4, 0.3);
+        pOmniLight.getParams().attenuation.set(1, 0, 0.01);
         pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(0, 13, 20);
+        pOmniLight.addPosition(lightPos1);
 
         pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.5, 0.5, 0.5);
-        pOmniLight.getParams().specular.set(0.0, 0.1, 0.3, 0.3);
-        pOmniLight.getParams().attenuation.set(1, 0, 0.02);
+        pOmniLight.getParams().diffuse.set(0.4, 0.4, 0.4);
+        pOmniLight.getParams().specular.set(0.4, 0.4, 0.4, 0.3);
+        pOmniLight.getParams().attenuation.set(1, 0, 0.01);
         pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(0, 6, 20);
+        pOmniLight.addPosition(lightPos2);
 
         pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.5,0.5,0.5);
-        pOmniLight.getParams().specular.set(0.3, 0.1, 0.,0.3);
-        pOmniLight.getParams().attenuation.set(1, 0, 0.02);
+        pOmniLight.getParams().diffuse.set(0.4, 0.4, 0.4);
+        pOmniLight.getParams().specular.set(0.4, 0.4, 0.4, 0.3);
+        pOmniLight.getParams().attenuation.set(1, 0, 0.01);
         pOmniLight.setShadowCaster(false);
 
-        pOmniLight.addPosition(0, 3, 20);
+        pOmniLight.addPosition(lightPos3);
 
         pLight = pOmniLight;
 
@@ -482,6 +492,40 @@ module akra {
         //var cube1: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-01', pScene.getRootNode()).scale(0.3).addRelPosition( 2., .3, 4. );
         //var cube2: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-02', pScene.getRootNode()).scale(0.3).addRelPosition(5., 0.3, 3.);
         
+        // LIGHT SOURCES MARKS: (crazy water)
+        loadModel("SPHERE.DAE", 
+            (model)=>{
+                model.explore( function(node) {
+                    if(akra.scene.SceneModel.isModel(node)) {
+                        node.getMesh().getSubset(0).getMaterial().shininess=0.50;
+                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
+                        }
+                    });
+                }, 'sphere-light-00', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos1 );
+        loadModel("SPHERE.DAE", 
+            (model)=>{
+                model.explore( function(node) {
+                    if(akra.scene.SceneModel.isModel(node)) {
+                        node.getMesh().getSubset(0).getMaterial().shininess=0.50;
+                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
+                        }
+                    });
+                }, 'sphere-light-01', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos2 );
+        loadModel("SPHERE.DAE", 
+            (model)=>{
+                model.explore( function(node) {
+                    if(akra.scene.SceneModel.isModel(node)) {
+                        node.getMesh().getSubset(0).getMaterial().shininess=0.50;
+                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
+                        }
+                    });
+                }, 'sphere-light-02', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos3 );
+
+
+        // GOLDEN TEAPOTS:
         loadModel("TEAPOT.DAE",
             (model)=>{
                 model.explore( function(node) {
@@ -546,6 +590,7 @@ module akra {
         // loadModel("DONUT.DAE", null, 'donut-08', pScene.getRootNode()).scale(3.0).addRelPosition( 14., -3., 6. );
         // loadModel("DONUT.DAE", null, 'donut-09', pScene.getRootNode()).scale(3.0).addRelPosition( 18., -3., 6. );
 
+        // COPPER BALLS:
         var ballDistance: float = 3.;
 
         loadModel("SPHERE.DAE", 
@@ -650,6 +695,7 @@ module akra {
                 }, 'sphere-metal-09', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*9, 4., 20. );
 
 
+        // PLASTIC BALLS:
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {

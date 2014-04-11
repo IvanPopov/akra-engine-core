@@ -376,12 +376,9 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
 	// float alpha_p = pow(8192., pixelData.shininess);
 
-	float4 incLightColor = attenuation * float4(0.21, 0.21, 0.21, 1.);
-	//float4 incLightColor = float4(pixelData.diffuse.xyz, 1.) * attenuation;
-
 	float3 halfVector = normalize(view_dir + light_dir);
 
-	float4 lightDiff = lightData.diffuse *  dot_saturate(pixelData.normal, light_dir);
+	float4 lightDiff = lightData.diffuse * dot_saturate(pixelData.normal, light_dir);
 
 	float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
 		* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
@@ -389,7 +386,8 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	lightDiff *= (float4(1.) - lightSpec);
 	lightDiff.a = 1.;
 
-	float4 color = incLightColor * ( lightDiff + lightSpec);
+	float4 color = attenuation * pixelData.diffuse * ( lightDiff + lightSpec);
+	//float4 color = attenuation * float4(0.21, 0.21, 0.21, 1.) * ( lightDiff + lightSpec);
 	color.a = 1.;
 
 	// Testing which direction reflects better:
