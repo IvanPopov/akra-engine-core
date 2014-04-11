@@ -13502,6 +13502,15 @@ declare module akra.render {
         public ATTENUATION: IVec3;
         public set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData;
     }
+    class SunLightData {
+        public SUN_DIRECTION: IVec3;
+        public EYE_POSITION: IVec3;
+        public GROUNDC0: IVec3;
+        public GROUNDC1: IVec3;
+        public HG: IVec3;
+        public SKY_DOME_ID: number;
+        public set(pSunParam: ISunParameters, iSunDomeId: number): SunLightData;
+    }
     class UniformOmni implements IUniform {
         public LIGHT_DATA: LightData;
         public setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmni;
@@ -13544,24 +13553,14 @@ declare module akra.render {
         static temp(): IUniform;
     }
     class UniformSun implements IUniform {
-        public SUN_DIRECTION: IVec3;
-        public EYE_POSITION: IVec3;
-        public GROUNDC0: IVec3;
-        public GROUNDC1: IVec3;
-        public HG: IVec3;
-        public SKY_DOME_ID: number;
+        public LIGHT_DATA: SunLightData;
         public setLightData(pSunParam: ISunParameters, iSunDomeId: number): UniformSun;
         private static _pBuffer;
         private static _iElement;
         static temp(): IUniform;
     }
     class UniformSunShadow implements IUniform {
-        public SUN_DIRECTION: IVec3;
-        public EYE_POSITION: IVec3;
-        public GROUNDC0: IVec3;
-        public GROUNDC1: IVec3;
-        public HG: IVec3;
-        public SKY_DOME_ID: number;
+        public LIGHT_DATA: SunLightData;
         public SHADOW_SAMPLER: IAFXSamplerState;
         public TO_LIGHT_SPACE: IMat4;
         public OPTIMIZED_PROJECTION_MATRIX: IMat4;

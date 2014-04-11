@@ -124,6 +124,8 @@ module akra.render {
 				pLPPEffect.addComponent("akra.system.projectLighting");
 				pLPPEffect.addComponent("akra.system.omniShadowsLighting");
 				pLPPEffect.addComponent("akra.system.projectShadowsLighting");
+				pLPPEffect.addComponent("akra.system.sunLighting");
+				pLPPEffect.addComponent("akra.system.sunShadowsLighting");
 
 				this._pViewScreen.getRenderMethodByName("passA").setForeign("prepareOnlyPosition", false);
 				this._pViewScreen.getRenderMethodByName("passA").setForeign("isForLPPPass0", true);
@@ -141,6 +143,8 @@ module akra.render {
 				pLPPEffect.addComponent("akra.system.projectLighting");
 				pLPPEffect.addComponent("akra.system.omniShadowsLighting");
 				pLPPEffect.addComponent("akra.system.projectShadowsLighting");
+				pLPPEffect.addComponent("akra.system.sunLighting");
+				pLPPEffect.addComponent("akra.system.sunShadowsLighting");
 
 				this._pViewScreen.getRenderMethodByName("passB").setForeign("prepareOnlyPosition", true);
 				this._pViewScreen.getRenderMethodByName("passB").setForeign("isForLPPPass1", true);

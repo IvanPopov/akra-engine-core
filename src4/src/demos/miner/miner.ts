@@ -92,8 +92,8 @@ module akra {
 		//std.createSceneEnvironment(pScene, true, false, 50);
 
 
-		for (var i = 0; i < 3; ++i) {
-			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, i === 0 ? true : false, 512);
+		for (var i = 0; i < 10; ++i) {
+			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
 			pLightOmni.attachToParent(pScene.getRootNode());
 			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
 			var pSprite = pScene.createSprite();

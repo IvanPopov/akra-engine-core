@@ -44,6 +44,26 @@ module akra.render {
 		}
 	}
 
+	export class SunLightData {
+		SUN_DIRECTION: IVec3 = new Vec3();
+		EYE_POSITION: IVec3 = new Vec3();
+		GROUNDC0: IVec3 = new Vec3();
+		GROUNDC1: IVec3 = new Vec3();
+		HG: IVec3 = new Vec3;
+		SKY_DOME_ID: int = 0;
+
+		set(pSunParam: ISunParameters, iSunDomeId: int): SunLightData {
+			this.SUN_DIRECTION.set(pSunParam.sunDir);
+			this.EYE_POSITION.set(pSunParam.eyePosition);
+			this.GROUNDC0.set(pSunParam.groundC0);
+			this.GROUNDC1.set(pSunParam.groundC1);
+			this.HG.set(pSunParam.hg);
+			this.SKY_DOME_ID = iSunDomeId;
+
+			return this;
+		}
+	}
+
 	//////////////////////////////////////
 
 
@@ -183,21 +203,10 @@ module akra.render {
 	//////////////////////////////////////
 
 	export class UniformSun implements IUniform {
-		SUN_DIRECTION: IVec3 = new Vec3();
-		EYE_POSITION: IVec3 = new Vec3();
-		GROUNDC0: IVec3 = new Vec3();
-		GROUNDC1: IVec3 = new Vec3();
-		HG: IVec3 = new Vec3;
-		SKY_DOME_ID: int = 0;
+		LIGHT_DATA: SunLightData = new SunLightData();
 
 		setLightData(pSunParam: ISunParameters, iSunDomeId: int): UniformSun {
-			this.SUN_DIRECTION.set(pSunParam.sunDir);
-			this.EYE_POSITION.set(pSunParam.eyePosition);
-			this.GROUNDC0.set(pSunParam.groundC0);
-			this.GROUNDC1.set(pSunParam.groundC1);
-			this.HG.set(pSunParam.hg);
-			this.SKY_DOME_ID = iSunDomeId;
-
+			this.LIGHT_DATA.set(pSunParam, iSunDomeId);
 			return this;
 		}
 
@@ -215,23 +224,14 @@ module akra.render {
 	//////////////////////////////////////
 
 	export class UniformSunShadow implements IUniform {
-		SUN_DIRECTION: IVec3 = new Vec3();
-		EYE_POSITION: IVec3 = new Vec3();
-		GROUNDC0: IVec3 = new Vec3();
-		GROUNDC1: IVec3 = new Vec3();
-		HG: IVec3 = new Vec3;
-		SKY_DOME_ID: int = 0;
+		LIGHT_DATA: SunLightData = new SunLightData();
+
 		SHADOW_SAMPLER: IAFXSamplerState = render.createSamplerState();
 		TO_LIGHT_SPACE: IMat4 = new Mat4();
 		OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
 
 		setLightData(pSunParam: ISunParameters, iSunDomeId: int): UniformSunShadow {
-			this.SUN_DIRECTION.set(pSunParam.sunDir);
-			this.EYE_POSITION.set(pSunParam.eyePosition);
-			this.GROUNDC0.set(pSunParam.groundC0);
-			this.GROUNDC1.set(pSunParam.groundC1);
-			this.HG.set(pSunParam.hg);
-			this.SKY_DOME_ID = iSunDomeId;
+			this.LIGHT_DATA.set(pSunParam, iSunDomeId);
 
 			return this;
 		}
