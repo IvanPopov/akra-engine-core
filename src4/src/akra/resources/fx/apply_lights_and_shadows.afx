@@ -119,18 +119,20 @@ float4 apply_light_omni() : COLOR{
 		result_color += calculateLight(pixelData,points_omni[i].lightData);
 	}
 
-	// calculating reflection separately
-	float3 view_dir = normalize(-pixelData.position);
-	float3 normal_dir = pixelData.normal;
-	float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
-	// float3 reflect_dir = reflect(view_dir, normal_dir);
-	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
+	if(IS_USE_PBS_SIMPLE == 2){
+		// calculating reflection separately
+		float3 view_dir = normalize(-pixelData.position);
+		float3 normal_dir = pixelData.normal;
+		float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
+		// float3 reflect_dir = reflect(view_dir, normal_dir);
+		float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
 
-	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, pixelData.specular.xyz, pixelData.shininess),1.);
-	// lowering reflection brightness if we have a strong lighting already
-	reflection *= float4(1.) - result_color;
+		float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, pixelData.specular.xyz, pixelData.shininess),1.);
+		// lowering reflection brightness if we have a strong lighting already
+		reflection *= float4(1.) - result_color;
 
-	result_color += reflection;
+		result_color += reflection;
+	}
 
 	return float4(result_color.xyz, 1.);
 };
@@ -234,11 +236,6 @@ foreign int IS_USE_PBS_SIMPLE;
 //float3 PBS_F0 : PBS_F0 = float3(0.);
 //float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
 
-//float3 PBS_F0_Static : PBS_F0_STATIC = float3(0.);
-//float PBS_gloss_Static : PBS_GLOSS_STATIC = 0.;
-//float3 PBS_Diffuse_Static : PBS_DIFFUSE_STATIC = float3(0.);
-
-
 // @c http://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
 float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3 normalDir, float Gloss)
 {
@@ -336,7 +333,7 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, int lod) {
 
 float glossToQualityConverter(float Gloss, float MaxLod)
 {
-	return (1.-pow(Gloss,1.5))*MaxLod;
+	return (1.-pow(Gloss,2.))*MaxLod;
 }
 
 float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float Gloss)
@@ -344,9 +341,9 @@ float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float 
 
 	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
 	// HACK: get maximum level of detail from size of texture
-	int lod1 = int(floor(glossToQualityConverter(Gloss, 7.)));
-	int lod2 = int(ceil(glossToQualityConverter(Gloss, 7.)));
-	float alpha = glossToQualityConverter(Gloss, 7.) - float(lod1);
+	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
+	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
+	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
 
     //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
     float3 Envcolor = getEnvLod(envSampler0, R, lod1).rgb * (1. - alpha)
@@ -379,7 +376,8 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
 	// float alpha_p = pow(8192., pixelData.shininess);
 
-	float4 incLightColor = float4(pixelData.diffuse.xyz, 1.) * attenuation;
+	float4 incLightColor = attenuation * float4(0.21, 0.21, 0.21, 1.);
+	//float4 incLightColor = float4(pixelData.diffuse.xyz, 1.) * attenuation;
 
 	float3 halfVector = normalize(view_dir + light_dir);
 
