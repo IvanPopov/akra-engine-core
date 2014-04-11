@@ -490,7 +490,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
                         }
                     });
-                }, 'teapot-01', pScene.getRootNode()).scale(3.0).addRelPosition( -12., 0., 6. );
+                }, 'teapot-01', pScene.getRootNode()).scale(3.0).addRelPosition( -12., 8., 20. );
         loadModel("TEAPOT.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -500,7 +500,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
                         }
                     });
-                }, 'teapot-02', pScene.getRootNode()).scale(3.0).addRelPosition( -6., 0., 6. );
+                }, 'teapot-02', pScene.getRootNode()).scale(3.0).addRelPosition( -6., 8., 20. );
         loadModel("TEAPOT.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -510,7 +510,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
                         }
                     });
-                }, 'teapot-03', pScene.getRootNode()).scale(3.0).addRelPosition( 0., 0., 6. );
+                }, 'teapot-03', pScene.getRootNode()).scale(3.0).addRelPosition( 0., 8., 20. );
         loadModel("TEAPOT.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -520,7 +520,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
                         }
                     });
-                }, 'teapot-04', pScene.getRootNode()).scale(3.0).addRelPosition( 6., 0., 6. );
+                }, 'teapot-04', pScene.getRootNode()).scale(3.0).addRelPosition( 6., 8., 20. );
         loadModel("TEAPOT.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -530,19 +530,21 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
                         }
                     });
-                }, 'teapot-05', pScene.getRootNode()).scale(3.0).addRelPosition( 12., 0., 6. );
+                }, 'teapot-05', pScene.getRootNode()).scale(3.0).addRelPosition( 12., 8., 20. );
         
 
-        loadModel("DONUT.DAE", null, 'donut-00', pScene.getRootNode()).scale(3.0).addRelPosition( -18., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-01', pScene.getRootNode()).scale(3.0).addRelPosition( -14., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-02', pScene.getRootNode()).scale(3.0).addRelPosition( -10., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-03', pScene.getRootNode()).scale(3.0).addRelPosition( -6., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-04', pScene.getRootNode()).scale(3.0).addRelPosition( -2., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-05', pScene.getRootNode()).scale(3.0).addRelPosition( 2., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-06', pScene.getRootNode()).scale(3.0).addRelPosition( 6., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-07', pScene.getRootNode()).scale(3.0).addRelPosition( 10., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-08', pScene.getRootNode()).scale(3.0).addRelPosition( 14., -3., 6. );
-        loadModel("DONUT.DAE", null, 'donut-09', pScene.getRootNode()).scale(3.0).addRelPosition( 18., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-00', pScene.getRootNode()).scale(3.0).addRelPosition( -18., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-01', pScene.getRootNode()).scale(3.0).addRelPosition( -14., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-02', pScene.getRootNode()).scale(3.0).addRelPosition( -10., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-03', pScene.getRootNode()).scale(3.0).addRelPosition( -6., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-04', pScene.getRootNode()).scale(3.0).addRelPosition( -2., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-05', pScene.getRootNode()).scale(3.0).addRelPosition( 2., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-06', pScene.getRootNode()).scale(3.0).addRelPosition( 6., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-07', pScene.getRootNode()).scale(3.0).addRelPosition( 10., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-08', pScene.getRootNode()).scale(3.0).addRelPosition( 14., -3., 6. );
+        // loadModel("DONUT.DAE", null, 'donut-09', pScene.getRootNode()).scale(3.0).addRelPosition( 18., -3., 6. );
+
+        var ballDistance: float = 3.;
 
         loadModel("SPHERE.DAE", 
             (model)=>{
@@ -553,7 +555,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-00', pScene.getRootNode()).scale(2.5).addRelPosition( -18., -8., 6. );
+                }, 'sphere-metal-00', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*9, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -563,7 +565,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-01', pScene.getRootNode()).scale(2.5).addRelPosition( -14., -8., 6. );
+                }, 'sphere-metal-01', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*7, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -573,7 +575,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-02', pScene.getRootNode()).scale(2.5).addRelPosition( -10., -8., 6. );
+                }, 'sphere-metal-02', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*5, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -583,7 +585,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-03', pScene.getRootNode()).scale(2.5).addRelPosition( -6., -8., 6. );
+                }, 'sphere-metal-03', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*3, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -593,7 +595,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-04', pScene.getRootNode()).scale(2.5).addRelPosition( -2., -8., 6. );
+                }, 'sphere-metal-04', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -603,7 +605,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-05', pScene.getRootNode()).scale(2.5).addRelPosition( 2., -8., 6. );
+                }, 'sphere-metal-05', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -613,7 +615,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-06', pScene.getRootNode()).scale(2.5).addRelPosition( 6., -8., 6. );
+                }, 'sphere-metal-06', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*3, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -623,7 +625,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-07', pScene.getRootNode()).scale(2.5).addRelPosition( 10., -8., 6. );
+                }, 'sphere-metal-07', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*5, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -633,7 +635,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-08', pScene.getRootNode()).scale(2.5).addRelPosition( 14., -8., 6. );
+                }, 'sphere-metal-08', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*7, 4., 20. );
         loadModel("SPHERE.DAE", 
             (model)=>{
                 model.explore( function(node) {
@@ -643,7 +645,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.98, 0.97, 0.95, 1.0);
                         }
                     });
-                }, 'sphere-metal-09', pScene.getRootNode()).scale(2.5).addRelPosition( 18., -8., 6. );
+                }, 'sphere-metal-09', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*9, 4., 20. );
 
 
         loadModel("SPHERE.DAE",  
@@ -655,7 +657,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-00', pScene.getRootNode()).scale(2.5).addRelPosition( -18., -13., 6. );
+                }, 'sphere-diel-00', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*9, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -665,7 +667,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-01', pScene.getRootNode()).scale(2.5).addRelPosition( -14., -13., 6. );
+                }, 'sphere-diel-01', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*7, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -675,7 +677,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-02', pScene.getRootNode()).scale(2.5).addRelPosition( -10., -13., 6. );
+                }, 'sphere-diel-02', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*5, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -685,7 +687,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-03', pScene.getRootNode()).scale(2.5).addRelPosition( -6., -13., 6. );
+                }, 'sphere-diel-03', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*3, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -695,7 +697,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-04', pScene.getRootNode()).scale(2.5).addRelPosition( -2., -13., 6. );
+                }, 'sphere-diel-04', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -705,7 +707,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-05', pScene.getRootNode()).scale(2.5).addRelPosition( 2., -13., 6. );
+                }, 'sphere-diel-05', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -715,7 +717,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-06', pScene.getRootNode()).scale(2.5).addRelPosition( 6., -13., 6. );
+                }, 'sphere-diel-06', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*3, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -725,7 +727,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-07', pScene.getRootNode()).scale(2.5).addRelPosition( 10., -13., 6. );
+                }, 'sphere-diel-07', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*5, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -735,7 +737,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-08', pScene.getRootNode()).scale(2.5).addRelPosition( 14., -13., 6. );
+                }, 'sphere-diel-08', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*7, 0., 20. );
         loadModel("SPHERE.DAE",  
             (model)=>{
                 model.explore( function(node) {
@@ -745,7 +747,7 @@ module akra {
                         node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.99, 0.99, 0.99, 1.0);
                         }
                     });
-                }, 'sphere-diel-09', pScene.getRootNode()).scale(2.5).addRelPosition( 18., -13., 6. );
+                }, 'sphere-diel-09', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*9, 0., 20. );
 
 		pProgress.destroy();
 		pEngine.exec();
