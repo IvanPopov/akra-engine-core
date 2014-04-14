@@ -882,6 +882,10 @@ module akra.fx {
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cGlobalDensity]] = this.cGlobalDensity;
 
 			pPassInput.setUniform("isBillboard", this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard());
+
+			if (this._pCurrentViewport.getType() === EViewportTypes.DSVIEWPORT || this._pCurrentViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+				pPassInput.setForeign("isUsedPhong", (<I3DViewport>this._pCurrentViewport).getShadingModel() === EShadingModel.PHONG);
+			}
 		}
 
 		private prepareComposerState(): void {

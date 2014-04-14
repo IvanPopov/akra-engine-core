@@ -1,7 +1,7 @@
 ﻿/// <reference path="../idl/ILPPViewport.ts" />
 /// <reference path="Viewport.ts" />
 /// <reference path="../scene/Scene3d.ts" />
-/// <reference path="DSUniforms.ts" />
+/// <reference path="LightingUniforms.ts" />
 
 module akra.render {
 	import Vec2 = math.Vec2;
@@ -50,6 +50,8 @@ module akra.render {
 
 		private _pHighlightedObject: IRIDPair = { object: null, renderable: null };
 		private _pSkyboxTexture: ITexture = null;
+
+		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
 		
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -79,6 +81,22 @@ module akra.render {
 
 		getSkybox(): ITexture {
 			return this._pSkyboxTexture;
+		}
+
+		getTextureWithObjectID(): ITexture {
+			return this._pNormalBufferTexture;
+		}
+
+		getLightSources(): IObjectArray<ILightPoint> {
+			return this._pLightPoints;
+		}
+
+		setShadingModel(eModel: EShadingModel) {
+			this._eShadingModel = eModel;
+		}
+
+		getShadingModel(): EShadingModel {
+			return this._eShadingModel;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -111,49 +129,7 @@ module akra.render {
 			this._v2fTextureRatio = new math.Vec2(this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
 			this._v2fScreenSize = new Vec2(this.getActualWidth(), this.getActualHeight());
 
-			//creatin deferred effects
-			this._pViewScreen.switchRenderMethod(null);
-			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
-
-			//this._pViewScreen.getEffect().addComponent("akra.system.fxaa");
-
-			if (this._pViewScreen.addRenderMethod(".prepare_diffuse_specular", "passA")) {
-				var pLPPEffect: IEffect = this._pViewScreen.getRenderMethodByName("passA").getEffect();
-				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
-				pLPPEffect.addComponent("akra.system.omniLighting");
-				pLPPEffect.addComponent("akra.system.projectLighting");
-				pLPPEffect.addComponent("akra.system.omniShadowsLighting");
-				pLPPEffect.addComponent("akra.system.projectShadowsLighting");
-				pLPPEffect.addComponent("akra.system.sunLighting");
-				pLPPEffect.addComponent("akra.system.sunShadowsLighting");
-
-				this._pViewScreen.getRenderMethodByName("passA").setForeign("prepareOnlyPosition", false);
-				this._pViewScreen.getRenderMethodByName("passA").setForeign("isForLPPPass0", true);
-				this._pViewScreen.getRenderMethodByName("passA").setForeign("isPrepareAll", false);
-				this._pViewScreen.getRenderMethodByName("passA").setSurfaceMaterial(null);
-			}
-			else {
-				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_diffuse_specular' pass)");
-			}
-
-			if (this._pViewScreen.addRenderMethod(".prepare_ambient_shadow", "passB")) {
-				var pLPPEffect: IEffect = this._pViewScreen.getRenderMethodByName("passB").getEffect();
-				pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
-				pLPPEffect.addComponent("akra.system.omniLighting");
-				pLPPEffect.addComponent("akra.system.projectLighting");
-				pLPPEffect.addComponent("akra.system.omniShadowsLighting");
-				pLPPEffect.addComponent("akra.system.projectShadowsLighting");
-				pLPPEffect.addComponent("akra.system.sunLighting");
-				pLPPEffect.addComponent("akra.system.sunShadowsLighting");
-
-				this._pViewScreen.getRenderMethodByName("passB").setForeign("prepareOnlyPosition", true);
-				this._pViewScreen.getRenderMethodByName("passB").setForeign("isForLPPPass1", true);
-				this._pViewScreen.getRenderMethodByName("passB").setForeign("isPrepareAll", false);
-				this._pViewScreen.getRenderMethodByName("passB").setSurfaceMaterial(null);
-			}
-			else {
-				logger.critical("Cannot initialize LPPViewport(problem with 'prepare_ambient_shadow' pass)");
-			}
+			this.prepareRenderMethods();
 
 			this.setClearEveryFrame(false);
 			this.setBackgroundColor(color.ZERO);
@@ -256,8 +232,10 @@ module akra.render {
 			//render deferred
 			this._pViewScreen.render(this._pLightBufferTextures[0].getBuffer().getRenderTarget().getViewport(0), "passA");
 			//pRenderer.executeQueue(false);
+			if (this.getShadingModel() === EShadingModel.PHONG) {
+				this._pViewScreen.render(this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0), "passB");
+			}
 
-			this._pViewScreen.render(this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0), "passB");
 			pRenderer.executeQueue(false);
 
 			this._pResultLPPTexture.getBuffer().getRenderTarget().update();
@@ -514,6 +492,38 @@ module akra.render {
 			pViewport.render.connect(this, this._onObjectsRender);
 		}
 
+		private prepareRenderMethods(): void {
+			this._pViewScreen.switchRenderMethod(null);
+			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
+
+			for (var i: uint = 0; i < 2; i++) {
+				var sRenderMethod: string = i === 0 ? ".prepare_diffuse_specular" : ".prepare_ambient";
+				var sName: string = i === 0 ? "passA" : "passB";
+
+				if (this._pViewScreen.addRenderMethod(sRenderMethod, sName)) {
+					var pLPPMethod: IRenderMethod = this._pViewScreen.getRenderMethodByName(sName);
+					var pLPPEffect: IEffect = pLPPMethod.getEffect();
+
+					pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
+					pLPPEffect.addComponent("akra.system.omniLighting");
+					pLPPEffect.addComponent("akra.system.projectLighting");
+					pLPPEffect.addComponent("akra.system.omniShadowsLighting");
+					pLPPEffect.addComponent("akra.system.projectShadowsLighting");
+					pLPPEffect.addComponent("akra.system.sunLighting");
+					pLPPEffect.addComponent("akra.system.sunShadowsLighting");
+
+					pLPPMethod.setForeign("prepareOnlyPosition", i === 1);
+					pLPPMethod.setForeign("isForLPPPass0", i === 0);
+					pLPPMethod.setForeign("isForLPPPass1", i === 1);
+					pLPPMethod.setForeign("isPrepareAll", false);
+					pLPPMethod.setSurfaceMaterial(null);
+				}
+				else {
+					logger.critical("Cannot initialize LPPViewport(problem with '" + sRenderMethod + "' pass)");
+				}
+			}
+		}
+
 		private updateRenderTextureDimensions(pTexture: ITexture) {
 			pTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
 			pTexture.getBuffer().getRenderTarget().getViewport(0).setDimensions(0., 0., this.getActualWidth() / pTexture.getWidth(), this.getActualHeight() / pTexture.getHeight());
@@ -561,8 +571,6 @@ module akra.render {
 				}
 			}
 		}
-
-
 
 		protected createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;

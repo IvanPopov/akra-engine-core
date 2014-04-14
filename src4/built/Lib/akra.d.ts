@@ -13426,11 +13426,15 @@ declare module akra.render {
     }
 }
 declare module akra {
-    interface IDSViewport extends IViewport {
+    enum EShadingModel {
+        BLINNPHONG = 0,
+        PHONG = 1,
+    }
+    interface I3DViewport extends IViewport {
         getEffect(): IEffect;
         getDepthTexture(): ITexture;
         getLightSources(): IObjectArray<ILightPoint>;
-        getColorTextures(): ITexture[];
+        getTextureWithObjectID(): ITexture;
         getView(): IRenderableObject;
         getSkybox(): ITexture;
         setSkybox(pSkyTexture: ITexture): void;
@@ -13440,8 +13444,15 @@ declare module akra {
         highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         highlight(pPair: IRIDPair): void;
         _getRenderId(x: number, y: number): number;
-        _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
         addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        setShadingModel(eModel: EShadingModel): any;
+        getShadingModel(): EShadingModel;
+    }
+}
+declare module akra {
+    interface IDSViewport extends I3DViewport {
+        getColorTextures(): ITexture[];
+        _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
     }
 }
 declare module akra {
@@ -15229,6 +15240,7 @@ declare module akra.render {
         private _pLightPoints;
         private _pLightingUnifoms;
         private _pHighlightedObject;
+        private _eShadingModel;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15237,6 +15249,9 @@ declare module akra.render {
         public getColorTextures(): ITexture[];
         public getDepthTexture(): ITexture;
         public getView(): IRenderableObject;
+        public getTextureWithObjectID(): ITexture;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15263,14 +15278,7 @@ declare module akra.render {
     }
 }
 declare module akra {
-    interface ILPPViewport extends IViewport {
-        getDepthTexture(): ITexture;
-        getView(): IRenderableObject;
-        setFXAA(bValue?: boolean): void;
-        isFXAA(): boolean;
-        highlight(iRid: number): void;
-        highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
-        highlight(pPair: IRIDPair): void;
+    interface ILPPViewport extends I3DViewport {
     }
 }
 declare module akra.render {
@@ -15294,6 +15302,7 @@ declare module akra.render {
         private _pLightingUnifoms;
         private _pHighlightedObject;
         private _pSkyboxTexture;
+        private _eShadingModel;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15301,6 +15310,10 @@ declare module akra.render {
         public getDepthTexture(): ITexture;
         public getEffect(): IEffect;
         public getSkybox(): ITexture;
+        public getTextureWithObjectID(): ITexture;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public getObject(x: number, y: number): ISceneObject;
@@ -15323,6 +15336,7 @@ declare module akra.render {
         private createNormalBufferRenderTarget(iWidth, iHeight);
         private createLightBuffersRenderTargets(iWidth, iHeight);
         private createResultLPPRenderTarget(iWidth, iHeight);
+        private prepareRenderMethods();
         private updateRenderTextureDimensions(pTexture);
         private prepareForLPPShading();
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;

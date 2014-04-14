@@ -31,6 +31,9 @@ sampler sampler_lpp_amb_shad:LPP_LIGHT_SAMPLER_B  = sampler_state
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 float2 screenSize: SCREEN_SIZE;
 
+foreign bool isUsedBlinnPhong = false;
+foreign bool isUsedPhong = true;
+
 float4 fs_apply_lpp_shading() : COLOR {
 	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
 	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
@@ -38,7 +41,10 @@ float4 fs_apply_lpp_shading() : COLOR {
 
 	float4 color = Fragment_material.emissive;
 
-	color += Fragment_material.ambient * float4(lightsDataB.xyz, 1.);
+	if(isUsedPhong){
+		color += Fragment_material.ambient * float4(lightsDataB.xyz, 1.);
+	}
+	
 	color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
 	color += Fragment_material.specular * float4(lightsDataA.www, 1.);
 

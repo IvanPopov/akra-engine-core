@@ -512,11 +512,12 @@
     <TypeScriptCompile Include="akra\fx\instructions\VariableTypeInstruction.ts" />
     <TypeScriptCompile Include="akra\fx\instructions\WhileStmtInstruction.ts" />
     <TypeScriptCompile Include="akra\idl\3d-party\es6-promises.d.ts" />
+    <TypeScriptCompile Include="akra\idl\I3DViewport.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
-    <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
+    <TypeScriptCompile Include="akra\render\LightingUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
     <TypeScriptCompile Include="akra\render\LPPViewport.ts" />
     <TypeScriptCompile Include="akra\render\Renderer.ts" />

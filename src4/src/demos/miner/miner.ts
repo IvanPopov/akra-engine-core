@@ -30,7 +30,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport = null;
+	export var pViewport: I3DViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pScene: IScene3d = pEngine.getScene();
 
@@ -224,6 +224,11 @@ module akra {
 				return true;
 			});
 		});
+
+		pGUI.add({ usePhong: true }, 'usePhong').onChange(function (bValue: boolean) {
+			pViewport.setShadingModel(bValue ? EShadingModel.PHONG : EShadingModel.BLINNPHONG);
+		});
+
 		pProgress.destroy();
 	}
 

@@ -66,9 +66,6 @@ struct calc_light_Params {
 	float shadowMultiplier;
 };
 
-foreign bool isForLPPPass0 = false;
-foreign bool isForLPPPass1 = false;
-foreign bool isPrepareAll = true;
 
 float calcAttenuation(float light_dir_length, float3 attenuation) {
     return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
@@ -82,6 +79,12 @@ float4 returnColor(float4 color) {
 		return color;
 	}
 }
+
+foreign bool isForLPPPass0 = false;
+foreign bool isForLPPPass1 = false;
+foreign bool isPrepareAll = true;
+foreign bool isUsedBlinnPhong = false;
+foreign bool isUsedPhong = true;
 
 calc_light_Params prepareBaseLightParams(pixel_data pixelData, light_data lightData) {
 	calc_light_Params lightParams;
@@ -105,7 +108,7 @@ calc_light_Params prepareBaseLightParams(pixel_data pixelData, light_data lightD
 	    lightParams.specular = lightData.specular.xyz * light_distancedotVpow * attenuation;
     }
 
-    if(isPrepareAll || isForLPPPass1) {
+    if(isUsedPhong && (isPrepareAll || isForLPPPass1)) {
     	lightParams.ambient = lightData.ambient.xyz * attenuation;
     }
 
@@ -131,7 +134,7 @@ calc_light_Params prepareBaseLightParamsSun(pixel_data pixelData, float3 light_d
 		lightParams.specular = specular.xyz * light_distancedotVpow;
 	}
 
-	if(isPrepareAll || isForLPPPass1) {
+	if(isUsedPhong && (isPrepareAll || isForLPPPass1)) {
     	lightParams.ambient = ambient.xyz;
     }
 	
