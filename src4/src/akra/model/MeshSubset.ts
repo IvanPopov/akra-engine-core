@@ -702,9 +702,9 @@ module akra.model {
 				pBB.z1 = math.max(pBB.z1, pLocalBB.z1);
 			}
 
-			var mInvWorldMatrix: IMat4 = pSkin.getSkeleton().getRoot().getInverseWorldMatrix();
+			//var mInvWorldMatrix: IMat4 = (<INode>pSkin.getSkeleton().getRoot().getParent()).getInverseWorldMatrix();
 
-			pBB.transform(mInvWorldMatrix);
+			//pBB.transform(mInvWorldMatrix);
 		}
 
 		static isMeshSubset(pObject: IRenderableObject): boolean {

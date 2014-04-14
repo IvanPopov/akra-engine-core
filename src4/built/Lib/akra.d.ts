@@ -5002,6 +5002,7 @@ declare module akra {
         * Return TRUE if after last update mesh geometry was changed.
         */
         isGeometryChanged(): boolean;
+        isSkinned(): boolean;
         getShadow(): boolean;
         setShadow(bValue: boolean): void;
         getOptions(): number;
@@ -13928,7 +13929,8 @@ declare module akra.scene {
         public destroy(): void;
         public prepareForUpdate(): void;
         public update(): boolean;
-        private recalcWorldBounds();
+        public recalcWorldBounds(): boolean;
+        public _setWorldBoundsUpdated(): number;
         public isBillboard(): boolean;
         public getObjectFlags(): number;
         public prepareForRender(pViewport: IViewport): void;
@@ -14035,7 +14037,7 @@ declare module akra.scene {
         public setShadow(bValue: boolean): void;
         public isVisible(): boolean;
         public toString(isRecursive?: boolean, iDepth?: number): string;
-        public update(): boolean;
+        public recalcWorldBounds(): boolean;
         static isModel(pEntity: IEntity): boolean;
     }
 }

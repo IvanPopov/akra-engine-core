@@ -252,9 +252,9 @@ module akra {
 
 		pScene.beforeUpdate.connect(() => {
 			if (!pLibeCube.isVisible()) return;
-			var pBB = geometry.Rect3d.temp(pMinerModel.getMesh().getBoundingBox());
+			var pBB = geometry.Rect3d.temp(pMinerModel.getWorldBounds());
 
-			pBB.transform(pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getWorldMatrix());
+			//pBB.transform((<INode>pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getParent()).getWorldMatrix());
 
 			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));

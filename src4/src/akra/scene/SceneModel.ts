@@ -84,12 +84,30 @@ module akra.scene {
 			return null;
 		}
 
-		update(): boolean {
+		//update(): boolean {
+		//	if (this._pMesh.isGeometryChanged()) {
+		//		this.accessLocalBounds().set(this._pMesh.getBoundingBox());
+		//	}
+
+		//	return super.update();
+		//}
+
+		protected recalcWorldBounds(): boolean {
 			if (this._pMesh.isGeometryChanged()) {
-				this.accessLocalBounds().set(this._pMesh.getBoundingBox());
+				// Mesh::isGeometryChanged() can be TRUE only for Skinned meshes.
+				// bounding boxes for skinned meshes always calculated in World Space,
+				// because, skin depends of skeleton, skeletom is part of scene.
+				this._pWorldBounds.set(this._pMesh.getBoundingBox());
+				this.worldBoundsUpdated.emit();
+
+				return true;
 			}
 
-			return super.update();
+			if (!this._pMesh.isSkinned()) {
+				return super.recalcWorldBounds();
+			}
+
+			return false;
 		}
 
 		static isModel(pEntity: IEntity): boolean {

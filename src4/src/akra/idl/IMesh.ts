@@ -40,6 +40,7 @@ module akra {
 		 * Return TRUE if after last update mesh geometry was changed.
 		 */
 		isGeometryChanged(): boolean;
+		isSkinned(): boolean;
 
 		getShadow(): boolean;
 		setShadow(bValue: boolean): void;

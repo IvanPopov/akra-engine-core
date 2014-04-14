@@ -270,6 +270,16 @@ module akra.model {
 			return pClone;
 		}
 
+		isSkinned(): boolean {
+			for (var i = 0; i < this._pSubMeshes.length; ++i) {
+				if (this._pSubMeshes[i].isSkinned()) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		_createAndShowSubBoundingBox(): void {
 			/*
 			for (var i = 0; i < this.getLength(); i++) {
@@ -296,10 +306,6 @@ module akra.model {
 			*/
 		}
 
-
-		//SKINNED
-		//	IF SUBMESH NOT ATTACHED TO SCENE -> SKIP
-		//	
 
 		calculateBoundingBox(): boolean {
 			var pSubsets: IMeshSubset[] = this._pSubMeshes;
