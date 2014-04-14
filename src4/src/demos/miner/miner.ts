@@ -201,7 +201,7 @@ module akra {
 
 
 		pMiner.getOptions().wireframe = true;
-		var pModel: ISceneNode = pMiner.attachToScene(pScene);
+		var pModel: ISceneNode = pMiner.extractFullScene(pScene);
 		pModel.addController(pController);
 		pModel.scale(.5);
 

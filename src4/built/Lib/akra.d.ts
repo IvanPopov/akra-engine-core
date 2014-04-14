@@ -175,6 +175,7 @@ interface Array<T> {
     el(i: number): any;
     clear(): any[];
     swap(i: number, j: number): any[];
+    /** Insert array as elements sequens or just push single element. */
     insert(elements: any[]): any[];
     find(pElement: any): boolean;
 }
@@ -5121,10 +5122,26 @@ declare module akra {
         getBasename(): string;
         isVisualSceneLoaded(): boolean;
         isAnimationLoaded(): boolean;
-        attachToScene(pNode: ISceneNode): IModelEntry;
-        attachToScene(pScene: IScene3d): IModelEntry;
+        extractFullScene(pScene: IScene3d): IModelEntry;
+        extractFullScene(pNode: ISceneNode): IModelEntry;
+        extractFullScene(): IModelEntry;
         extractAnimations(): IAnimation[];
         extractAnimation(i: number): IAnimation;
+        /**
+        * Works only for static geometry.
+        */
+        extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
+        extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;
+        extractModel(sMeshName?: string): ISceneModel;
+        /**
+        * Works only for static geometry.
+        */
+        extractMesh(sMeshName?: string): IMesh;
+        /**
+        * @deprecated Use Collada::extractFullScene() instead.
+        */
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(pScene: IScene3d): IModelEntry;
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
     }
@@ -5521,8 +5538,6 @@ declare module akra {
         getByteLength(): number;
         getModelFormat(): EModelFormats;
         loadResource(sFilename?: string, pOptions?: IModelLoadOptions): boolean;
-        attachToScene(pNode: ISceneNode): IModelEntry;
-        attachToScene(pScene: IScene3d): IModelEntry;
     }
 }
 declare module akra {
@@ -16467,6 +16482,7 @@ declare module akra.pool.resources {
         private buildSkinMesh(pControllerInstance);
         private buildSkinMeshInstance(pControllers, pSceneNode?);
         private buildMeshInstance(pGeometries, pSceneNode?);
+        private buildMeshByName(sName);
         private buildMeshes();
         private buildSceneNode(pNode, pParentNode);
         private buildJointNode(pNode, pParentNode);
@@ -16507,10 +16523,21 @@ declare module akra.pool.resources {
         private checkLibraries(pXML, pTemplates);
         public parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         public loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
-        public attachToScene(pScene: IScene3d): IModelEntry;
-        public attachToScene(pNode: ISceneNode): IModelEntry;
+        public extractMesh(sMeshName?: string): IMesh;
+        public extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
+        public extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;
+        public extractModel(sMeshName?: string): ISceneModel;
+        public extractFullScene(pScene: IScene3d): IModelEntry;
+        public extractFullScene(pNode: ISceneNode): IModelEntry;
+        public extractFullScene(): IModelEntry;
         public extractAnimation(i: number): IAnimation;
         public extractAnimations(): IAnimation[];
+        /**
+        * @deprecated Use Collada::extractFullScene() instead.
+        */
+        public attachToScene(pScene: IScene3d): IModelEntry;
+        public attachToScene(pNode: ISceneNode): IModelEntry;
+        private getNodeByParent(pScene);
         static isColladaResource(pItem: IResourcePoolItem): boolean;
     }
     function isModelResource(pItem: IResourcePoolItem): boolean;

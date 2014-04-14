@@ -271,8 +271,6 @@ module akra.core {
 			this.frameEnded.emit();
 
 			// this._pSceneManager.preUpdate();
-
-			// LOG("frame rendered();");
 			return true;
 		}
 
