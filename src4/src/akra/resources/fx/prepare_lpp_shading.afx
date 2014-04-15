@@ -21,7 +21,7 @@ const float MAX_SHININESS = 30000.;
 float4 fs_prepare_lpp_geometry(VS_OUT_1 IN) : COLOR {   
     float3 normalAndShininess = float3(Normal.xy, 0.);
     normalAndShininess.z = min(defaultMaterial.shininess, MAX_SHININESS - 1.);
-    if(Normal.z >= 0.){
+    if(Normal.z < 0.){
         normalAndShininess.z += MAX_SHININESS;
     }
     return float4(normalAndShininess, float(objectId));
@@ -121,7 +121,7 @@ void fs_prepare_lpp_data_base(float2 texCoords: TEXCOORD0, float2 screenPosition
     float3 normal = float3(bufferData.xy, sqrt(1. - dot(bufferData.xy, bufferData.xy)));
     float shininess = bufferData.z >= MAX_SHININESS ? (bufferData.z - MAX_SHININESS) : bufferData.z;
 
-    if(bufferData.z < MAX_SHININESS){
+    if(bufferData.z >= MAX_SHININESS){
         normal.z *= -1.;
     }
     

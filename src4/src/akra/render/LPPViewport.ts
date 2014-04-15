@@ -322,6 +322,12 @@ module akra.render {
 			}
 		}
 
+		_onNormalBufferRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			pPass.setForeign("optimizeForLPPPrepare", true);
+		}
+
 		_onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
@@ -368,6 +374,7 @@ module akra.render {
 			pPass.setTexture("LPP_LIGHT_BUFFER_A", this._pLightBufferTextures[0]);
 			pPass.setTexture("LPP_LIGHT_BUFFER_B", this._pLightBufferTextures[1]);
 			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
+			pPass.setForeign("optimizeForLPPApply", true);
 		}
 
 		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -443,6 +450,7 @@ module akra.render {
 
 			pRenderTarget.attachDepthTexture(pDepthTexture);
 
+			pViewport.render.connect(this._onNormalBufferRender);
 			this._pNormalBufferTexture = pNormalBufferTexture;
 			this._pDepthBufferTexture = pDepthTexture;
 		}
@@ -551,10 +559,10 @@ module akra.render {
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
 
-						var iTotalPasses = pTechnique.getTotalPasses();
-						for (var i: uint = 0; i < iTotalPasses; i++) {
-							pTechnique.getPass(i).setForeign("optimizeForLPPPrepare", true);
-						}
+						//var iTotalPasses = pTechnique.getTotalPasses();
+						//for (var i: uint = 0; i < iTotalPasses; i++) {
+						//	pTechnique.getPass(i).setForeign("optimizeForLPPPrepare", true);
+						//}
 					}
 
 					sMethod = "apply_lpp_shading";

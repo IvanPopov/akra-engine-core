@@ -468,6 +468,15 @@ module akra.fx {
 
 			render.clearRenderStateMap(this.renderStates);
 
+			this._pStatesInfo.uniformKey = 0;
+			this._pStatesInfo.foreignKey = 0;
+			this._pStatesInfo.samplerKey = 0;
+			this._pStatesInfo.renderStatesKey = 0;
+			
+			this._nLastSufraceMaterialTextureUpdates = 0;
+			this._nLastSamplerUpdates = -1;
+			this._pLastSurfaceMaterial = null;
+
 			this._pCreator.releasePassInput(this);
 
 			// this._bNeedToCalcShader = true;

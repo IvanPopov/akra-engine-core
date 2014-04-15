@@ -15328,6 +15328,7 @@ declare module akra.render {
         public highlight(iRid: number): void;
         public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         public highlight(pPair: IRIDPair): void;
+        public _onNormalBufferRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;

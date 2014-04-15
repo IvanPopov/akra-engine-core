@@ -123,6 +123,15 @@ void fs_mesh_texture_normal(VS_OUT_2 IN){
     Normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy);
 }
 
+void fs_mesh_texture_material(VS_OUT_2 IN){
+    Fragment_material.emissive = clamp(defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy)), 0., 1.);
+    Fragment_material.diffuse = clamp(defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy)), 0., 1.);
+    Fragment_material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
+    Fragment_material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
+
+    Fragment_material.shininess = defaultMaterial.shininess;
+}
+
 void fs_mesh_texture_full(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;    
     
@@ -190,6 +199,7 @@ technique mesh_texture_full{
 foreign bool optimeizeForDeferredPass1;
 foreign bool optimeizeForDeferredPass2;
 foreign bool optimizeForLPPPrepare;
+foreign bool optimizeForLPPApply;
 
 technique mesh_texture {
     import akra.system.mesh_geometry;
@@ -203,6 +213,9 @@ technique mesh_texture {
         }
         else if(optimizeForLPPPrepare) {
             PixelShader = compile fs_mesh_texture_normal();
+        }
+        else if(optimizeForLPPApply) {
+            PixelShader = compile fs_mesh_texture_material();
         }
         else {
             PixelShader = compile fs_mesh_texture_full();

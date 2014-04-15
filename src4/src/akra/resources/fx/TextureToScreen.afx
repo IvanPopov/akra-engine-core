@@ -68,6 +68,19 @@ float4 fs_display_normals(VS_OUT IN) : COLOR
 	return float4(normal, 1.);
 }
 
+float4 fs_display_lpp_normals(VS_OUT IN) : COLOR 
+{
+	float3 normal = float3(resultAFXColor.xy, sqrt(1. - dot(resultAFXColor.xy, resultAFXColor.xy)));
+
+	if(resultAFXColor.z >= 30000.){
+		normal.z *= -1.;
+	}
+
+	normal = (normal + 1.) / 2.;
+
+	return float4(normal, 1.);
+}
+
 float4 fs_display_consistent_colors(VS_OUT IN) : COLOR 
 {
 	return float4(floatToFloat3(resultAFXColor.z), 1.);
@@ -94,6 +107,14 @@ technique display_normals
 	pass p0
 	{
 		PixelShader = compile fs_display_normals();
+	}
+}
+
+technique display_lpp_normals 
+{
+	pass p0
+	{
+		PixelShader = compile fs_display_lpp_normals();
 	}
 }
 

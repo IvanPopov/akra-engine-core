@@ -79,6 +79,12 @@ module akra {
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
 
+		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
+
+		//var pNormalViewport = new render.TextureViewport(pViewport["_pNormalBufferTexture"], 0.01, 0.17, 0.15, 0.15, 2);
+		//pCanvas.addViewport(pNormalViewport);
+		//pNormalViewport.getEffect().addComponent("akra.system.display_lpp_normals");
+
 		//pLPPViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 
 		window.onresize = () => {
