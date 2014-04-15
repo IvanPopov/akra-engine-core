@@ -1261,7 +1261,7 @@ module akra.pool.resources {
 				specular: new Color(0.),
 				ambient: new Color(0.),
 				emissive: new Color(0.),
-				shininess: 0.0,
+				shininess: .5 / 128.,
 
 				reflective: new Color(0.),
 				reflectivity: 0.0,
@@ -1315,7 +1315,7 @@ module akra.pool.resources {
 			}
 
 			// correct shininess
-			pMat.shininess *= 10.0;
+			//pMat.shininess *= 10.0;
 
 			return pMat;
 		}
@@ -1328,6 +1328,7 @@ module akra.pool.resources {
 			};
 
 			var pValue: Element = firstChild(pXML);
+			var pMat: IColladaPhong = null;
 
 			pTech.type = pValue.nodeName;
 
@@ -1337,13 +1338,27 @@ module akra.pool.resources {
 				case "lambert":
 					debug.warn("<blinn /> or <lambert /> material interprated as phong");
 				case "phong":
-					pTech.value = this.COLLADAPhong(pValue);
+					pMat = this.COLLADAPhong(pValue);
 					break;
 
 				default:
 					logger.error("unsupported technique <" + pTech.type + " /> founded");
 			}
 
+
+			//normalize shininess value
+			switch (pTech.type) {
+				case "phong":
+					debug.assert(pMat.shininess <= 128. && pMat.shininess >= 0., "Invalid shininess value in collada phong material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 128.");
+					pMat.shininess = math.clamp(pMat.shininess, 0., 128.) / 128.;
+					break;
+				case "blinn":
+					debug.assert(pMat.shininess <= 1. && pMat.shininess >= 0., "Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
+					pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
+					break;
+			}
+
+			pTech.value = pMat;
 			//finding normal maps like this
 			/*
 				<technique profile=​"OpenCOLLADA3dsMax">​
@@ -3017,7 +3032,9 @@ module akra.pool.resources {
 			if (!isNull(pMesh)) {
 				pScene = pNode.getScene();
 				pModel = pScene.createModel();
-				pModel.setMesh(pMesh)
+				pModel.setMesh(pMesh);
+
+				this.buildAssetTransform(pModel);
 
 				return pModel;
 			}

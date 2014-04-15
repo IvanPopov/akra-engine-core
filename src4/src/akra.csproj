@@ -17,6 +17,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="akra\core.xml" />
+    <Content Include="akra\io\FileInterface.t.js" />
+    <Content Include="akra\io\LocalFile.t.js" />
+    <Content Include="akra\io\RemoteFile.t.js" />
     <Content Include="akra\parser.xml" />
     <None Include="akra\resources\fx\apply_lights_and_shadows.afx" />
     <Content Include="akra\resources\fx\color_maps.afx" />

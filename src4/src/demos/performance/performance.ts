@@ -23,12 +23,8 @@ module akra {
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 	function loadModel(sPath, fnCallback?: Function): ISceneNode {
-		//var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
 
-		//pModelRoot.attachToParent(pScene.getRootNode());
-
-		//pModel.setOptions({wireframe: true});
 		var pModelRoot: ISceneNode = pModel.extractModel(pModelRoot);
 		pModelRoot.attachToParent(pScene.getRootNode());
 
@@ -65,7 +61,7 @@ module akra {
 
 				pCube = i === 0 ? pCube : loadModel(sPath);
 				pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
-				//pCube.scale(0.1);
+				pCube.scale(0.1);
 
 				fShiftX += fDX;
 				iCountInRow++;

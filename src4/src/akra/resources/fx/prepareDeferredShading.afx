@@ -33,7 +33,7 @@ float4 prepareForDeferredShadingPass1() : COLOR {
     	tmp = float3((Normal.xyz + 1.)/2.);
     }
     else {
-    	tmp = float3((Normal.xy + 1.)/2., Fragment_material.shininess / 255.);
+    	tmp = float3((Normal.xy + 1.)/2., Fragment_material.shininess * 128. / 255.);
     }
      
     tmp *= 254./255.;
@@ -60,7 +60,7 @@ float4 prepareForDeferredShadingPass2() : COLOR {
 	data.y = float3ToFloat(Fragment_material.specular.xyz);
 	
 	if(normalFix){
-		data.z = Fragment_material.shininess / 255.;
+		data.z = Fragment_material.shininess * 128. / 255.;
 	}
 	
 	return data;

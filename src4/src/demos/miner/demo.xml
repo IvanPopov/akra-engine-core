@@ -15,7 +15,8 @@
         <OutDir>js</OutDir>
         <Type>javascript</Type>
       </Attachment>
-      
+
+      <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-navigation" />
       <Module Name="addon-base3dObjects" />
