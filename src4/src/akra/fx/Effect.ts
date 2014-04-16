@@ -720,14 +720,14 @@ module akra.fx {
 			//Extracts
 
 			this.generateNotBuiltInSystemFuction("extractHeader",
-				"void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture)",
+				"void A_extractTextureHeader(sampler2D src, out A_TextureHeader texture)",
 				"{vec4 v = texture2D(src, vec2(0.00001)); " +
 				"texture = A_TextureHeader(v.r, v.g, v.b, v.a);}",
 				"void",
 				["video_buffer_header"], null, ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat",
-				"float A_extractFloat(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+				"float A_extractFloat(sampler2D sampler, A_TextureHeader header, float offset)",
 				"{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
 				"float y = floor(pixelNumber / header.width) + .5; " +
 				"float x = mod(pixelNumber, header.width) + .5; " +
@@ -737,13 +737,14 @@ module akra.fx {
 				"else if(shift == 1) return A_tex2D(sampler, header, x, y).g; " +
 				"else if(shift == 2) return A_tex2D(sampler, header, x, y).b; " +
 				"else if(shift == 3) return A_tex2D(sampler, header, x, y).a; " +
+				"else return 0.; " + 
 				"\n#endif\n" +
 				"return 0.;}",
 				"float",
 				["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat2",
-				"vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+				"vec2 A_extractVec2(sampler2D sampler, A_TextureHeader header, float offset)",
 				"{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
 				"float y = floor(pixelNumber / header.width) + .5; " +
 				"float x = mod(pixelNumber, header.width) + .5; " +
@@ -758,13 +759,14 @@ module akra.fx {
 				"else " +
 				"return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).r); " +
 				"} " +
+				"else { return vec2(0.); } " +
 				"\n#endif\n" +
 				"return vec2(0.);}",
 				"float2",
 				["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat3",
-				"vec3 A_extractVec3(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+				"vec3 A_extractVec3(sampler2D sampler, A_TextureHeader header, float offset)",
 				"{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
 				"float y = floor(pixelNumber / header.width) + .5; " +
 				"float x = mod(pixelNumber, header.width) + .5; " +
@@ -778,6 +780,7 @@ module akra.fx {
 				"else if(shift == 3){ " +
 				"if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
 				"else return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+				"else { return vec3(0.); } " +
 				"\n#endif\n" +
 				"\n#ifdef A_VB_COMPONENT3\n" +
 				"if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
@@ -787,13 +790,14 @@ module akra.fx {
 				"else if(shift == 3){ " +
 				"if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
 				"else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
+				"else { return vec3(0.); } " +
 				"\n#endif\n" +
 				"return vec3(0.);}",
 				"float3",
 				["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat4",
-				"vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+				"vec4 A_extractVec4(sampler2D sampler, A_TextureHeader header, float offset)",
 				"{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
 				"float y = floor(pixelNumber / header.width) + .5; " +
 				"float x = mod(pixelNumber, header.width) + .5; " +
@@ -814,6 +818,7 @@ module akra.fx {
 				"if(int(x) == int(header.width - 1.)) " +
 				"return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0.5, (y + 1.)).rgb); " +
 				"else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " +
+				"else { return vec4(0.); } " + 
 				"\n#endif\n" +
 				"\n#ifdef A_VB_COMPONENT3\n" +
 				"\n#endif\n" +
@@ -822,14 +827,14 @@ module akra.fx {
 				["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("findPixel",
-				"vec2 A_findPixel(const A_TextureHeader header, const float offset)",
+				"vec2 A_findPixel(A_TextureHeader header, float offset)",
 				"{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
 				"return vec2(header.stepX * (mod(pixelNumber, header.width) + .5), header.stepY * (floor(pixelNumber / header.width) + .5));}",
 				"float2",
 				["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat4x4",
-				"mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+				"mat4 A_extractMat4(sampler2D sampler, A_TextureHeader header, float offset)",
 				"{return mat4(A_tex2Dv(sampler, header, A_findPixel(header, offset))," +
 				"A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.))," +
 				"A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.))," +

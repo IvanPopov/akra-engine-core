@@ -1634,7 +1634,14 @@ module akra.fx {
 			var pVarInfoList: IAFXVariableBlendInfo[] = pVars.getVarsInfo();
 			var sCode: string = "";
 
+			//if (this._pAttributeContainerV.getAttributeBySemantic("POSITION")._getType()._isEqual(Effect.getSystemType("float4"))) {
+			//	sCode += "gl_Position = POSITION;\ngl_PointSize = Out.PSIZE;\n";
+			//}
+			//else {
+			//	sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
+			//}
 			sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
+
 			for (var i: uint = 0; i < pVarInfoList.length; i++) {
 				var sName: string = pVarInfoList[i].name;
 				if (sName !== "POSITION" && sName !== "PSIZE") {

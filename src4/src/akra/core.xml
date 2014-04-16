@@ -15,6 +15,7 @@
     <Variable Name="AE_WEBGL_DEBUG">$(WebGLDebug)</Variable>
     <Dependencies>
       <Attachment>
+        <File Path="resources/js/promise-0.1.1.min.js"/>
         <File Path="resources/js/zip.js/zip.js"/>
         <File Path="resources/js/zip.js/zip-ext.js"/>
         <File Path="resources/js/zip.js/mime-types.js"/>

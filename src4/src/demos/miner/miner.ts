@@ -107,11 +107,8 @@ module akra {
 			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
 			pSprite.setBillboard(true);
 			pSprite.setShadow(false);
-
-
-
-
 			pSprite.attachToParent(pLightOmni);
+
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
