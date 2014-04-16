@@ -37,23 +37,27 @@ module akra.addons {
 	}
 
 	function buildLog(): string {
-		var s = "";
+		if (AE_DEBUG) {
+			var s = "";
 
-		for (var sName in pRequirements) {
-			var pReq: IRequirement = pRequirements[sName];
+			for (var sName in pRequirements) {
+				var pReq: IRequirement = pRequirements[sName];
 
-			var sNew = " Check " + pReq.desc;
-			s += sNew;
+				var sNew = " Check " + pReq.desc;
+				s += sNew;
 
-			for (var n = sNew.length; n < 64; ++n) {
-				s += ".";
+				for (var n = sNew.length; n < 64; ++n) {
+					s += ".";
+				}
+
+				s += check(sName) ? "[   OK   ]" : "[ FAILED ]";
+				s += "\n";
 			}
 
-			s += check(sName) ? "[   OK   ]" : "[ FAILED ]";
-			s += "\n";
+			return s;
 		}
 
-		return s;
+		return null;
 	}
 
 	export function checkCompatibility(): boolean {

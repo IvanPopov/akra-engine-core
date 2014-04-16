@@ -1275,7 +1275,8 @@ module akra.pool.resources {
 					specular: null,
 					ambient: null,
 					emissive: null,
-					normal: null
+					normal: null,
+					shininess: null
 				}
 			};
 
