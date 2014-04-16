@@ -127,7 +127,11 @@ float4 apply_light_omni() : COLOR{
 		// float3 reflect_dir = reflect(view_dir, normal_dir);
 		float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
 
-		float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, pixelData.specular.xyz, pixelData.shininess),1.);
+		//float shi = pixelData.specular.x * pixelData.specular.y * pixelData.specular.z;
+		float shi = pixelData.shininess;
+
+		float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace,
+			pixelData.specular.xyz * float3(1.0), shi), 1.);
 		// lowering reflection brightness if we have a strong lighting already
 		reflection *= float4(1.) - result_color;
 
@@ -440,8 +444,8 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	float light_dir_length = length(light_dir);
 	light_dir = normalize(light_dir);
 
-	// multiplicator for better visibility now removed
-	float attenuation = 1.0 / (lightData.attenuation.x +
+	// multiplicator for better visibility (bill-phong is much more shiny)
+	float attenuation = 3.0 / (lightData.attenuation.x +
 							   lightData.attenuation.y * light_dir_length + 
 							   lightData.attenuation.z * light_dir_length * light_dir_length);
 
@@ -456,6 +460,10 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	float3 halfVector = normalize(view_dir + light_dir);
 
 	float4 lightDiff = lightData.diffuse * dot_saturate(pixelData.normal, light_dir);
+
+	//float3 correctedColor = normalize(pixelData.specular.xyz + pixelData.diffuse.xyz);
+	//float4 correctedColor = float4((pixelData.specular.xyz + pixelData.diffuse.xyz), 1.);
+	//correctedColor.xyz *= 1. / max(max(correctedColor.x, correctedColor.y), correctedColor.z);
 
 	float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
 		* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);

@@ -314,6 +314,7 @@ module akra {
     var lightPos1: math.Vec3 = new math.Vec3(0, 11.5, 20);
     var lightPos2: math.Vec3 = new math.Vec3(0, 6, 20);
     var lightPos3: math.Vec3 = new math.Vec3(0, 3, 20);
+    var lightPos4: math.Vec3 = new math.Vec3(0, -6, 18);
 
     export var pLight: IOmniLight = null;
     function createLighting(): void {
@@ -324,8 +325,8 @@ module akra {
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.4, 0.4, 0.4);
-        pOmniLight.getParams().specular.set(0.4, 0.4, 0.4, 0.3);
+        pOmniLight.getParams().diffuse.set(0.3, 0.3, 0.3);
+        pOmniLight.getParams().specular.set(0.3, 0.3, 0.3, 0.3);
         pOmniLight.getParams().attenuation.set(1, 0, 0.01);
         pOmniLight.setShadowCaster(false);
 
@@ -336,8 +337,8 @@ module akra {
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.4, 0.4, 0.4);
-        pOmniLight.getParams().specular.set(0.4, 0.4, 0.4, 0.3);
+        pOmniLight.getParams().diffuse.set(0.3, 0.3, 0.3);
+        pOmniLight.getParams().specular.set(0.3, 0.3, 0.3, 0.3);
         pOmniLight.getParams().attenuation.set(1, 0, 0.01);
         pOmniLight.setShadowCaster(false);
 
@@ -348,12 +349,24 @@ module akra {
         pOmniLight.attachToParent(pScene.getRootNode());
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.4, 0.4, 0.4);
-        pOmniLight.getParams().specular.set(0.4, 0.4, 0.4, 0.3);
+        pOmniLight.getParams().diffuse.set(0.3, 0.3, 0.3);
+        pOmniLight.getParams().specular.set(0.3, 0.3, 0.3, 0.3);
         pOmniLight.getParams().attenuation.set(1, 0, 0.01);
         pOmniLight.setShadowCaster(false);
 
         pOmniLight.addPosition(lightPos3);
+
+        pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
+
+        pOmniLight.attachToParent(pScene.getRootNode());
+        pOmniLight.setEnabled(true);
+        pOmniLight.getParams().ambient.set(0.1);
+        pOmniLight.getParams().diffuse.set(0.6, 0.6, 0.6);
+        pOmniLight.getParams().specular.set(0.6, 0.6, 0.6, 0.3);
+        pOmniLight.getParams().attenuation.set(1, 0, 0.01);
+        pOmniLight.setShadowCaster(false);
+
+        pOmniLight.addPosition(lightPos4);
 
         pLight = pOmniLight;
 
@@ -808,6 +821,12 @@ module akra {
                         }
                     });
                 }, 'sphere-diel-09', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*9, 0., 20. );
+
+
+        var pOil = loadModel("OIL.DAE", null, 'oil-00', pScene.getRootNode()).scale(5.0).addRelPosition( 0., -5., 20. );
+        pScene.beforeUpdate.connect(()=>{
+                pOil.addRotationByXYZAxis(0., 0.01, 0.);
+            })
 
 		pProgress.destroy();
 		pEngine.exec();
