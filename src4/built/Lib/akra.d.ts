@@ -2907,6 +2907,7 @@ declare module akra {
     /**
     * System
     */
+<<<<<<< HEAD
     _clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
     _blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction;
   }
@@ -3211,6 +3212,396 @@ declare module akra {
   interface IAFXFunctionDeclListMap {
     [functionName: string]: IAFXFunctionDeclInstruction[];
   }
+=======
+    interface IAFXInstruction {
+        _setParent(pParent: IAFXInstruction): void;
+        _getParent(): IAFXInstruction;
+        _setOperator(sOperator: string): void;
+        _getOperator(): string;
+        _setInstructions(pInstructionList: IAFXInstruction[]): void;
+        _getInstructions(): IAFXInstruction[];
+        _getInstructionType(): EAFXInstructionTypes;
+        _getInstructionID(): number;
+        _getScope(): number;
+        _setScope(iScope: number): void;
+        _isInGlobalScope(): boolean;
+        _check(eStage: ECheckStage): boolean;
+        _getLastError(): IAFXInstructionError;
+        _setError(eCode: number, pInfo?: any): void;
+        _clearError(): void;
+        _isErrorOccured(): boolean;
+        _setVisible(isVisible: boolean): void;
+        _isVisible(): boolean;
+        _initEmptyInstructions(): void;
+        _push(pInstruction: IAFXInstruction, isSetParent?: boolean): void;
+        _addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: number): any;
+        _prepareFor(eUsedType: EFunctionType): void;
+        toString(): string;
+        _toFinalCode(): string;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
+    }
+    interface IAFXSimpleInstruction extends IAFXInstruction {
+        _setValue(sValue: string): void;
+        _isValue(sValue: string): boolean;
+    }
+    interface IAFXTypeInstruction extends IAFXInstruction {
+        _toDeclString(): string;
+        _isBuiltIn(): boolean;
+        _setBuiltIn(isBuiltIn: boolean): void;
+        /**
+        * Simple tests
+        */
+        _isBase(): boolean;
+        _isArray(): boolean;
+        _isNotBaseArray(): boolean;
+        _isComplex(): boolean;
+        _isEqual(pType: IAFXTypeInstruction): boolean;
+        _isStrongEqual(pType: IAFXTypeInstruction): boolean;
+        _isConst(): boolean;
+        _isSampler(): boolean;
+        _isSamplerCube(): boolean;
+        _isSampler2D(): boolean;
+        _isWritable(): boolean;
+        _isReadable(): boolean;
+        _containArray(): boolean;
+        _containSampler(): boolean;
+        _containPointer(): boolean;
+        _containComplexType(): boolean;
+        /**
+        * Set private params
+        */
+        _setName(sName: string): void;
+        _canWrite(isWritable: boolean): void;
+        _canRead(isReadable: boolean): void;
+        /**
+        * get type info
+        */
+        _getName(): string;
+        _getRealName(): string;
+        _getHash(): string;
+        _getStrongHash(): string;
+        _getSize(): number;
+        _getBaseType(): IAFXTypeInstruction;
+        _getLength(): number;
+        _getArrayElementType(): IAFXTypeInstruction;
+        _getTypeDecl(): IAFXTypeDeclInstruction;
+        _hasField(sFieldName: string): boolean;
+        _hasFieldWithSematic(sSemantic: string): any;
+        _hasAllUniqueSemantics(): boolean;
+        _hasFieldWithoutSemantic(): boolean;
+        _getField(sFieldName: string): IAFXVariableDeclInstruction;
+        _getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction;
+        _getFieldType(sFieldName: string): IAFXVariableTypeInstruction;
+        _getFieldNameList(): string[];
+        /**
+        * System
+        */
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
+        _blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction;
+    }
+    interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
+        _setCollapsed(bValue: boolean): void;
+        _isCollapsed(): boolean;
+        /**
+        * Simple tests
+        */
+        _isPointer(): boolean;
+        _isStrictPointer(): boolean;
+        _isPointIndex(): boolean;
+        _isFromVariableDecl(): boolean;
+        _isFromTypeDecl(): boolean;
+        _isUniform(): boolean;
+        _isGlobal(): boolean;
+        _isConst(): boolean;
+        _isShared(): boolean;
+        _isForeign(): boolean;
+        _isTypeOfField(): boolean;
+        _isUnverifiable(): boolean;
+        /**
+        * init api
+        */
+        _setPadding(iPadding: number): void;
+        _pushType(pType: IAFXTypeInstruction): void;
+        _addUsage(sUsage: string): void;
+        _addArrayIndex(pExpr: IAFXExprInstruction): void;
+        _addPointIndex(isStrict?: boolean): void;
+        _setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
+        _initializePointers(): void;
+        _setPointerToStrict(): void;
+        _addPointIndexInDepth(): void;
+        _setVideoBufferInDepth(): void;
+        _markAsUnverifiable(isUnverifiable: boolean): void;
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void;
+        /**
+        * Type info
+        */
+        _getPadding(): number;
+        _getArrayElementType(): IAFXVariableTypeInstruction;
+        _getUsageList(): string[];
+        _getSubType(): IAFXTypeInstruction;
+        _hasUsage(sUsageName: string): boolean;
+        _hasVideoBuffer(): boolean;
+        _getPointDim(): number;
+        _getPointer(): IAFXVariableDeclInstruction;
+        _getVideoBuffer(): IAFXVariableDeclInstruction;
+        _getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
+        _getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction;
+        _getSubVarDecls(): IAFXVariableDeclInstruction[];
+        _getFullName(): string;
+        _getVarDeclName(): string;
+        _getTypeDeclName(): string;
+        _getParentVarDecl(): IAFXVariableDeclInstruction;
+        _getParentContainer(): IAFXVariableDeclInstruction;
+        _getMainVariable(): IAFXVariableDeclInstruction;
+        _getMainPointer(): IAFXVariableDeclInstruction;
+        _getUpPointer(): IAFXVariableDeclInstruction;
+        _getDownPointer(): IAFXVariableDeclInstruction;
+        _getAttrOffset(): IAFXVariableDeclInstruction;
+        /**
+        * System
+        */
+        _wrap(): IAFXVariableTypeInstruction;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
+        _blend(pVariableType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction;
+        _setCloneHash(sHash: string, sStrongHash: string): void;
+        _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction, pIndexExpr: IAFXExprInstruction, iLength: number): void;
+        _setClonePointeIndexes(nDim: number, pPointerList: IAFXVariableDeclInstruction[]): void;
+        _setCloneFields(pFieldMap: IAFXVariableDeclMap): void;
+        _setUpDownPointers(pUpPointer: IAFXVariableDeclInstruction, pDownPointer: IAFXVariableDeclInstruction): void;
+    }
+    interface IAFXTypedInstruction extends IAFXInstruction {
+        _getType(): IAFXTypeInstruction;
+        _setType(pType: IAFXTypeInstruction): void;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXTypedInstruction;
+    }
+    interface IAFXDeclInstruction extends IAFXTypedInstruction {
+        _setSemantic(sSemantic: string): any;
+        _setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
+        _getName(): string;
+        _getRealName(): string;
+        _getNameId(): IAFXIdInstruction;
+        _getSemantic(): string;
+        _isBuiltIn(): boolean;
+        _setBuiltIn(isBuiltIn: boolean): void;
+        _isForAll(): boolean;
+        _isForPixel(): boolean;
+        _isForVertex(): boolean;
+        _setForAll(canUse: boolean): void;
+        _setForPixel(canUse: boolean): void;
+        _setForVertex(canUse: boolean): void;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXDeclInstruction;
+    }
+    interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
+        _blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
+    }
+    interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
+        _hasInitializer(): boolean;
+        _getInitializeExpr(): IAFXInitExprInstruction;
+        _hasConstantInitializer(): boolean;
+        _lockInitializer(): void;
+        _unlockInitializer(): void;
+        _getDefaultValue(): any;
+        _prepareDefaultValue(): void;
+        _getValue(): any;
+        _setValue(pValue: any): any;
+        _getType(): IAFXVariableTypeInstruction;
+        _setType(pType: IAFXVariableTypeInstruction): void;
+        _isUniform(): boolean;
+        _isField(): boolean;
+        _isPointer(): boolean;
+        _isVideoBuffer(): boolean;
+        _isSampler(): boolean;
+        _getSubVarDecls(): IAFXVariableDeclInstruction[];
+        _isDefinedByZero(): boolean;
+        _defineByZero(isDefine: boolean): void;
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
+        _getAttrExtractionBlock(): IAFXInstruction;
+        _markAsVarying(bValue: boolean): void;
+        _markAsShaderOutput(isShaderOutput: boolean): void;
+        _isShaderOutput(): boolean;
+        _getNameIndex(): number;
+        _getFullNameExpr(): IAFXExprInstruction;
+        _getFullName(): string;
+        _getVideoBufferSampler(): IAFXVariableDeclInstruction;
+        _getVideoBufferHeader(): IAFXVariableDeclInstruction;
+        _getVideoBufferInitExpr(): IAFXInitExprInstruction;
+        _setName(sName: string): void;
+        _setRealName(sName: string): void;
+        _setVideoBufferRealName(sSampler: string, sHeader: string): void;
+        _setCollapsed(bValue: boolean): void;
+        _isCollapsed(): boolean;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
+        _blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
+    }
+    interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+        _toFinalDefCode(): string;
+        _hasImplementation(): boolean;
+        _getArguments(): IAFXTypedInstruction[];
+        _getNumNeededArguments(): number;
+        _getReturnType(): IAFXVariableTypeInstruction;
+        _getFunctionType(): EFunctionType;
+        _setFunctionType(eType: EFunctionType): void;
+        _getVertexShader(): IAFXFunctionDeclInstruction;
+        _getPixelShader(): IAFXFunctionDeclInstruction;
+        _setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
+        _setImplementation(pImplementation: IAFXStmtInstruction): void;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
+        _addOutVariable(pVariable: IAFXVariableDeclInstruction): boolean;
+        _getOutVariable(): IAFXVariableDeclInstruction;
+        _markUsedAs(eUsedType: EFunctionType): void;
+        _isUsedAs(eUsedType: EFunctionType): boolean;
+        _isUsedAsFunction(): boolean;
+        _isUsedAsVertex(): boolean;
+        _isUsedAsPixel(): boolean;
+        _isUsed(): boolean;
+        _markUsedInVertex(): void;
+        _markUsedInPixel(): void;
+        _isUsedInVertex(): boolean;
+        _isUsedInPixel(): boolean;
+        _checkVertexUsage(): boolean;
+        _checkPixelUsage(): boolean;
+        _checkDefenitionForVertexUsage(): boolean;
+        _checkDefenitionForPixelUsage(): boolean;
+        _canUsedAsFunction(): boolean;
+        _notCanUsedAsFunction(): void;
+        _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): boolean;
+        _getUsedFunctionList(): IAFXFunctionDeclInstruction[];
+        _addUsedVariable(pVariable: IAFXVariableDeclInstruction): void;
+        _isBlackListFunction(): boolean;
+        _addToBlackList(): void;
+        _getStringDef(): string;
+        _convertToVertexShader(): IAFXFunctionDeclInstruction;
+        _convertToPixelShader(): IAFXFunctionDeclInstruction;
+        _prepareForVertex(): void;
+        _prepareForPixel(): void;
+        _generateInfoAboutUsedData(): void;
+        _getAttributeVariableMap(): IAFXVariableDeclMap;
+        _getVaryingVariableMap(): IAFXVariableDeclMap;
+        _getSharedVariableMap(): IAFXVariableDeclMap;
+        _getGlobalVariableMap(): IAFXVariableDeclMap;
+        _getUniformVariableMap(): IAFXVariableDeclMap;
+        _getForeignVariableMap(): IAFXVariableDeclMap;
+        _getTextureVariableMap(): IAFXVariableDeclMap;
+        _getUsedComplexTypeMap(): IAFXTypeMap;
+        _getAttributeVariableKeys(): number[];
+        _getVaryingVariableKeys(): number[];
+        _getSharedVariableKeys(): number[];
+        _getUniformVariableKeys(): number[];
+        _getForeignVariableKeys(): number[];
+        _getGlobalVariableKeys(): number[];
+        _getTextureVariableKeys(): number[];
+        _getUsedComplexTypeKeys(): number[];
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[];
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[];
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[];
+    }
+    interface IAFXStructDeclInstruction extends IAFXInstruction {
+    }
+    interface IAFXIdInstruction extends IAFXInstruction {
+        _getName(): string;
+        _getRealName(): string;
+        _setName(sName: string): void;
+        _setRealName(sName: string): void;
+        _markAsVarying(bValue: boolean): void;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXIdInstruction;
+    }
+    interface IAFXKeywordInstruction extends IAFXInstruction {
+        _setValue(sValue: string): void;
+        _isValue(sTestValue: string): boolean;
+    }
+    interface IAFXAnalyzedInstruction extends IAFXInstruction {
+        _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
+    }
+    interface IAFXExprInstruction extends IAFXTypedInstruction, IAFXAnalyzedInstruction {
+        _evaluate(): boolean;
+        _simplify(): boolean;
+        _getEvalValue(): any;
+        _isConst(): boolean;
+        _getType(): IAFXVariableTypeInstruction;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
+    }
+    interface IAFXInitExprInstruction extends IAFXExprInstruction {
+        _optimizeForVariableType(pType: IAFXVariableTypeInstruction): boolean;
+    }
+    interface IAFXIdExprInstruction extends IAFXExprInstruction {
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction;
+    }
+    interface IAFXLiteralInstruction extends IAFXExprInstruction {
+        _setValue(pValue: any): void;
+        _clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction;
+    }
+    interface IAFXAnnotationInstruction extends IAFXInstruction {
+    }
+    interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction {
+    }
+    interface IAFXPassInstruction extends IAFXDeclInstruction {
+        _addFoundFunction(pNode: parser.IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
+        _getFoundedFunction(pNode: parser.IParseNode): IAFXFunctionDeclInstruction;
+        _getFoundedFunctionType(pNode: parser.IParseNode): EFunctionType;
+        _setParseNode(pNode: parser.IParseNode): void;
+        _getParseNode(): parser.IParseNode;
+        _markAsComplex(isComplex: boolean): void;
+        _addCodeFragment(sCode: string): void;
+        _getSharedVariableMapV(): IAFXVariableDeclMap;
+        _getGlobalVariableMapV(): IAFXVariableDeclMap;
+        _getUniformVariableMapV(): IAFXVariableDeclMap;
+        _getForeignVariableMapV(): IAFXVariableDeclMap;
+        _getTextureVariableMapV(): IAFXVariableDeclMap;
+        _getUsedComplexTypeMapV(): IAFXTypeMap;
+        _getSharedVariableMapP(): IAFXVariableDeclMap;
+        _getGlobalVariableMapP(): IAFXVariableDeclMap;
+        _getUniformVariableMapP(): IAFXVariableDeclMap;
+        _getForeignVariableMapP(): IAFXVariableDeclMap;
+        _getTextureVariableMapP(): IAFXVariableDeclMap;
+        _getUsedComplexTypeMapP(): IAFXTypeMap;
+        _getFullUniformMap(): IAFXVariableDeclMap;
+        _getFullForeignMap(): IAFXVariableDeclMap;
+        _getFullTextureMap(): IAFXVariableDeclMap;
+        _getVertexShader(): IAFXFunctionDeclInstruction;
+        _getPixelShader(): IAFXFunctionDeclInstruction;
+        _addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
+        _addShader(pShader: IAFXFunctionDeclInstruction): void;
+        _setState(eType: ERenderStates, eValue: ERenderStateValues): void;
+        _finalizePass(): void;
+        _isComplexPass(): boolean;
+        _evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean;
+        _getState(eType: ERenderStates): ERenderStateValues;
+        _getRenderStates(): IMap<ERenderStateValues>;
+    }
+    interface IAFXTechniqueInstruction extends IAFXDeclInstruction {
+        _setName(sName: string, isComplexName: boolean): void;
+        _getName(): string;
+        _hasComplexName(): boolean;
+        _isPostEffect(): boolean;
+        _addPass(pPass: IAFXPassInstruction): void;
+        _getPassList(): IAFXPassInstruction[];
+        _getPass(iPass: number): IAFXPassInstruction;
+        _totalOwnPasses(): number;
+        _totalPasses(): number;
+        _getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
+        _getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
+        _addTechniqueFromSameEffect(pTechnique: IAFXTechniqueInstruction, iShift: number): void;
+        _addComponent(pComponent: IAFXComponent, iShift: number): void;
+        _getFullComponentList(): IAFXComponent[];
+        _getFullComponentShiftList(): number[];
+        _checkForCorrectImports(): boolean;
+        _setGlobalParams(sProvideNameSpace: string, pGloabalImportList: IAFXImportedTechniqueInfo[]): void;
+        _finalize(pComposer: IAFXComposer): void;
+    }
+    interface IAFXVariableBlendInfo {
+        varList: IAFXVariableDeclInstruction[];
+        blendType: IAFXVariableTypeInstruction;
+        name: string;
+        nameIndex: number;
+    }
+    interface IAFXVariableBlendInfoMap {
+        [index: number]: IAFXVariableBlendInfo;
+    }
+    interface IAFXFunctionDeclListMap {
+        [functionName: string]: IAFXFunctionDeclInstruction[];
+    }
+>>>>>>> lpp-sading
 }
 declare module akra {
   interface IAFXComponent extends IResourcePoolItem {
@@ -3618,6 +4009,7 @@ declare module akra {
   }
 }
 declare module akra {
+<<<<<<< HEAD
   interface IAFXComponentInfo {
     component: IAFXComponent;
     shift: number;
@@ -3659,6 +4051,49 @@ declare module akra {
     [index: number]: IAFXComponentBlend;
     [index: string]: IAFXComponentBlend;
   }
+=======
+    interface IAFXComponentInfo {
+        component: IAFXComponent;
+        shift: number;
+        pass: number;
+        hash: string;
+    }
+    interface IAFXComponentPassInputBlend {
+        getUniforms(): IAFXVariableContainer;
+        getTextures(): IAFXVariableContainer;
+        getForeigns(): IAFXVariableContainer;
+        addDataFromPass(pPass: IAFXPassInstruction): void;
+        finalizeInput(): void;
+        getPassInput(): IAFXPassInputBlend;
+        releasePassInput(pPassInput: IAFXPassInputBlend): void;
+    }
+    interface IAFXComponentBlend extends IUnique {
+        isReadyToUse(): boolean;
+        isEmpty(): boolean;
+        getComponentCount(): number;
+        getTotalPasses(): number;
+        getHash(): string;
+        _getMinShift(): number;
+        _getMaxShift(): number;
+        hasPostEffect(): boolean;
+        getPostEffectStartPass(): number;
+        containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): any;
+        containComponentHash(sComponentHash: string): boolean;
+        findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
+        addComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
+        removeComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
+        finalizeBlend(): boolean;
+        getPassInputForPass(iPass: number): IAFXPassInputBlend;
+        getPassListAtPass(iPass: number): IAFXPassInstruction[];
+        clone(): IAFXComponentBlend;
+        _getComponentInfoList(): IAFXComponentInfo[];
+        _setDataForClone(pAddedComponentInfoList: IAFXComponentInfo[], pComponentHashMap: IBoolMap, nShiftMin: number, nShiftMax: number): void;
+    }
+    interface IAFXComponentBlendMap {
+        [index: number]: IAFXComponentBlend;
+        [index: string]: IAFXComponentBlend;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra {
   enum EPrimitiveTypes {
@@ -4133,6 +4568,7 @@ declare module akra {
   }
 }
 declare module akra {
+<<<<<<< HEAD
   interface IRenderPass extends IUnique {
     setForeign(sName: string, fValue: number): void;
     setTexture(sName: string, pTexture: ITexture): void;
@@ -4150,6 +4586,26 @@ declare module akra {
     deactivate(): void;
     isActive(): boolean;
   }
+=======
+    interface IRenderPass extends IUnique {
+        setForeign(sName: string, fValue: number): void;
+        setForeign(sName: string, bValue: boolean): void;
+        setTexture(sName: string, pTexture: ITexture): void;
+        setUniform(sName: string, pValue: any): void;
+        setStruct(sName: string, pValue: any): void;
+        setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void;
+        setSamplerTexture(sName: string, sTexture: string): void;
+        setSamplerTexture(sName: string, pTexture: ITexture): void;
+        getRenderTarget(): IRenderTarget;
+        setRenderTarget(pTarget: IRenderTarget): void;
+        getPassInput(): IAFXPassInputBlend;
+        setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: boolean): void;
+        blend(sComponentName: string, iPass: number): boolean;
+        activate(): void;
+        deactivate(): void;
+        isActive(): boolean;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra {
   interface IRenderMethod extends IResourcePoolItem {
@@ -10067,6 +10523,7 @@ declare module akra.stringUtils {
   }
 }
 declare module akra {
+<<<<<<< HEAD
   enum EEffectErrors {
     REDEFINE_SYSTEM_TYPE = 2201,
     REDEFINE_TYPE = 2202,
@@ -10153,6 +10610,95 @@ declare module akra {
     BAD_LOCAL_OF_SHADER_OUTPUT = 2302,
     UNSUPPORTED_PROVIDE_AS = 2303,
   }
+=======
+    enum EEffectErrors {
+        REDEFINE_SYSTEM_TYPE = 2201,
+        REDEFINE_TYPE = 2202,
+        REDEFINE_VARIABLE = 2234,
+        REDEFINE_SYSTEM_VARIABLE = 2235,
+        REDEFINE_FUNCTION = 2236,
+        REDEFINE_SYSTEM_FUNCTION = 2237,
+        UNSUPPORTED_TYPEDECL = 2203,
+        UNSUPPORTED_EXPR = 2204,
+        UNKNOWN_VARNAME = 2205,
+        BAD_ARITHMETIC_OPERATION = 2206,
+        BAD_ARITHMETIC_ASSIGNMENT_OPERATION = 2207,
+        BAD_ASSIGNMENT_OPERATION = 2208,
+        BAD_RELATIONAL_OPERATION = 2209,
+        BAD_LOGICAL_OPERATION = 2210,
+        BAD_CONDITION_TYPE = 2211,
+        BAD_CONDITION_VALUE_TYPES = 2212,
+        BAD_CAST_TYPE_USAGE = 2213,
+        BAD_CAST_TYPE_NOT_BASE = 2214,
+        BAD_CAST_UNKNOWN_TYPE = 2215,
+        BAD_UNARY_OPERATION = 2216,
+        BAD_POSTIX_NOT_ARRAY = 2217,
+        BAD_POSTIX_NOT_INT_INDEX = 2218,
+        BAD_POSTIX_NOT_FIELD = 2219,
+        BAD_POSTIX_NOT_POINTER = 2220,
+        BAD_POSTIX_ARITHMETIC = 2221,
+        BAD_PRIMARY_NOT_POINT = 2222,
+        BAD_COMPLEX_NOT_FUNCTION = 2223,
+        BAD_COMPLEX_NOT_TYPE = 2224,
+        BAD_COMPLEX_NOT_CONSTRUCTOR = 2225,
+        BAD_COMPILE_NOT_FUNCTION = 2226,
+        BAD_REDEFINE_FUNCTION = 2227,
+        BAD_WHILE_CONDITION = 2228,
+        BAD_DO_WHILE_CONDITION = 2229,
+        BAD_IF_CONDITION = 2230,
+        BAD_FOR_INIT_EXPR = 2231,
+        BAD_FOR_INIT_EMPTY_ITERATOR = 2232,
+        BAD_FOR_COND_EMPTY = 2233,
+        BAD_FOR_COND_RELATION = 2238,
+        BAD_FOR_STEP_EMPTY = 2239,
+        BAD_FOR_STEP_OPERATOR = 2240,
+        BAD_FOR_STEP_EXPRESSION = 2241,
+        BAD_NEW_FIELD_FOR_STRUCT_NAME = 2242,
+        BAD_NEW_FIELD_FOR_STRUCT_SEMANTIC = 2243,
+        BAD_NEW_ANNOTATION_VAR = 2244,
+        BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT = 2245,
+        BAD_CANNOT_CHOOSE_FUNCTION = 2246,
+        BAD_FUNCTION_DEF_RETURN_TYPE = 2247,
+        BAD_SYSTEM_FUNCTION_REDEFINE = 2248,
+        BAD_SYSTEM_FUNCTION_RETURN_TYPE = 2249,
+        BAD_TYPE_NAME_NOT_TYPE = 2250,
+        BAD_TYPE_VECTOR_MATRIX = 2251,
+        BAD_TECHNIQUE_REDEFINE_NAME = 2252,
+        BAD_MEMOF_ARGUMENT = 2253,
+        BAD_MEMOF_NO_BUFFER = 2254,
+        BAD_FUNCTION_USAGE_RECURSION = 2255,
+        BAD_FUNCTION_USAGE_BLACKLIST = 2256,
+        BAD_FUNCTION_USAGE_VERTEX = 2257,
+        BAD_FUNCTION_USAGE_PIXEL = 2258,
+        BAD_FUNCTION_VERTEX_DEFENITION = 2259,
+        BAD_FUNCTION_PIXEL_DEFENITION = 2260,
+        BAD_RETURN_STMT_VOID = 2261,
+        BAD_RETURN_STMT_EMPTY = 2262,
+        BAD_RETURN_STMT_NOT_EQUAL_TYPES = 2263,
+        BAD_RETURN_TYPE_FOR_FUNCTION = 2264,
+        BAD_FUNCTION_PARAMETER_USAGE = 2265,
+        BAD_OUT_VARIABLE_IN_FUNCTION = 2266,
+        BAD_TYPE_FOR_WRITE = 2267,
+        BAD_TYPE_FOR_READ = 2268,
+        BAD_VARIABLE_INITIALIZER = 2269,
+        NOT_SUPPORT_STATE_INDEX = 2270,
+        BAD_TEXTURE_FOR_SAMLER = 2271,
+        CANNOT_CALCULATE_PADDINGS = 2272,
+        UNSUPPORTED_EXTRACT_BASE_TYPE = 2273,
+        BAD_EXTRACTING = 2274,
+        BAD_TECHNIQUE_IMPORT = 2275,
+        BAD_USE_OF_ENGINE_VARIABLE = 2276,
+        BAD_IMPORTED_COMPONENT_NOT_EXIST = 2277,
+        CANNOT_ADD_SHARED_VARIABLE = 2278,
+        BAD_FUNCTION_DONT_HAVE_RETURN_STMT = 2279,
+    }
+    enum EEffectTempErrors {
+        BAD_ARRAY_OF_POINTERS = 2300,
+        BAD_LOCAL_OF_SHADER_INPUT = 2301,
+        BAD_LOCAL_OF_SHADER_OUTPUT = 2302,
+        UNSUPPORTED_PROVIDE_AS = 2303,
+    }
+>>>>>>> lpp-sading
 }
 declare module akra {
   interface IEffectErrorInfo {
@@ -11035,6 +11581,7 @@ declare module akra.fx.instructions {
   }
 }
 declare module akra.fx.instructions {
+<<<<<<< HEAD
   /**
   * Represent boolExpr && || boolExpr
   * (&& | ||) Instruction Instruction
@@ -11045,6 +11592,75 @@ declare module akra.fx.instructions {
     public _addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
     public _isConst(): boolean;
   }
+=======
+    class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
+        private _pTempNodeList;
+        private _pTempFoundedFuncList;
+        private _pTempFoundedFuncTypeList;
+        private _pParseNode;
+        private _sFunctionCode;
+        private _pShadersMap;
+        private _pPassStateMap;
+        private _bIsComlexPass;
+        private _fnPassFunction;
+        private _pVertexShader;
+        private _pPixelShader;
+        private _pSharedVariableMapV;
+        private _pGlobalVariableMapV;
+        private _pUniformVariableMapV;
+        private _pForeignVariableMapV;
+        private _pTextureVariableMapV;
+        private _pUsedComplexTypeMapV;
+        private _pSharedVariableMapP;
+        private _pGlobalVariableMapP;
+        private _pUniformVariableMapP;
+        private _pForeignVariableMapP;
+        private _pTextureVariableMapP;
+        private _pUsedComplexTypeMapP;
+        private _pFullUniformVariableMap;
+        private _pFullForeignVariableMap;
+        private _pFullTextureVariableMap;
+        private _pOwnUsedForeignVariableMap;
+        private _pComplexPassEvaluateOutput;
+        constructor();
+        public _addFoundFunction(pNode: parser.IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
+        public _getFoundedFunction(pNode: parser.IParseNode): IAFXFunctionDeclInstruction;
+        public _getFoundedFunctionType(pNode: parser.IParseNode): EFunctionType;
+        public _setParseNode(pNode: parser.IParseNode): void;
+        public _getParseNode(): parser.IParseNode;
+        public _addCodeFragment(sCode: string): void;
+        public _markAsComplex(isComplex: boolean): void;
+        public _getSharedVariableMapV(): IAFXVariableDeclMap;
+        public _getGlobalVariableMapV(): IAFXVariableDeclMap;
+        public _getUniformVariableMapV(): IAFXVariableDeclMap;
+        public _getForeignVariableMapV(): IAFXVariableDeclMap;
+        public _getTextureVariableMapV(): IAFXVariableDeclMap;
+        public _getUsedComplexTypeMapV(): IAFXTypeMap;
+        public _getSharedVariableMapP(): IAFXVariableDeclMap;
+        public _getGlobalVariableMapP(): IAFXVariableDeclMap;
+        public _getUniformVariableMapP(): IAFXVariableDeclMap;
+        public _getForeignVariableMapP(): IAFXVariableDeclMap;
+        public _getTextureVariableMapP(): IAFXVariableDeclMap;
+        public _getUsedComplexTypeMapP(): IAFXTypeMap;
+        public _getFullUniformMap(): IAFXVariableDeclMap;
+        public _getFullForeignMap(): IAFXVariableDeclMap;
+        public _getFullTextureMap(): IAFXVariableDeclMap;
+        public _isComplexPass(): boolean;
+        public _getVertexShader(): IAFXFunctionDeclInstruction;
+        public _getPixelShader(): IAFXFunctionDeclInstruction;
+        public _addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
+        public _addShader(pShader: IAFXFunctionDeclInstruction): void;
+        public _setState(eType: ERenderStates, eValue: ERenderStateValues): void;
+        public _finalizePass(): void;
+        public _evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean;
+        public _getState(eType: ERenderStates): ERenderStateValues;
+        public _getRenderStates(): IMap<ERenderStateValues>;
+        private clearPassStates();
+        private generateInfoAboutUsedVaraibles();
+        private addInfoAbouUsedVariablesFromFunction(pFunction);
+        static POST_EFFECT_SEMANTIC: string;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.fx.instructions {
   class MemExprInstruction extends ExprInstruction {
@@ -11756,6 +12372,7 @@ declare module akra.fx.instructions {
     * Represent type var_name [= init_expr]
     * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
     */
+<<<<<<< HEAD
     constructor();
     public _hasInitializer(): boolean;
     public _getInitializeExpr(): IAFXInitExprInstruction;
@@ -11799,6 +12416,312 @@ declare module akra.fx.instructions {
     public _clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
     public _blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
   }
+=======
+    class WhileStmtInstruction extends StmtInstruction {
+        constructor();
+        public _toFinalCode(): string;
+    }
+}
+declare module akra.fx {
+    class Effect implements IAFXEffect {
+        private _pComposer;
+        private _pParseTree;
+        private _pAnalyzedNode;
+        private _pEffectScope;
+        private _pCurrentInstruction;
+        private _pCurrentFunction;
+        private _pCurrentPass;
+        private _bHaveCurrentFunctionReturnOccur;
+        private _pStatistics;
+        private _sAnalyzedFileName;
+        private _pSystemMacros;
+        private _pSystemTypes;
+        private _pSystemFunctionsMap;
+        private _pSystemFunctionHashMap;
+        private _pSystemVariables;
+        private _pPointerForExtractionList;
+        private _pFunctionWithImplementationList;
+        private _pTechniqueList;
+        private _pTechniqueMap;
+        private _isAnalyzeInPass;
+        private _sProvideNameSpace;
+        private _pImportedGlobalTechniqueList;
+        private _pAddedTechniqueList;
+        static pSystemMacros: IAFXSimpleInstructionMap;
+        static pSystemTypes: IMap<instructions.SystemTypeInstruction>;
+        static pSystemFunctions: IMap<instructions.SystemFunctionInstruction[]>;
+        static pSystemVariables: IAFXVariableDeclMap;
+        static pSystemVertexOut: instructions.ComplexTypeInstruction;
+        constructor(pComposer: IAFXComposer);
+        public analyze(pTree: parser.IParseTree): boolean;
+        public getStats(): IAFXEffectStats;
+        public setAnalyzedFileName(sFileName: string): void;
+        public clear(): void;
+        public getTechniqueList(): IAFXTechniqueInstruction[];
+        static getBaseVertexOutType(): instructions.ComplexTypeInstruction;
+        static getSystemType(sTypeName: string): instructions.SystemTypeInstruction;
+        static getSystemVariable(sName: string): IAFXVariableDeclInstruction;
+        static getSystemMacros(sName: string): IAFXSimpleInstruction;
+        static findSystemFunction(sFunctionName: string, pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction;
+        static createVideoBufferVariable(): IAFXVariableDeclInstruction;
+        static getExternalType(pType: IAFXTypeInstruction): any;
+        static isMatrixType(pType: IAFXTypeInstruction): boolean;
+        static isVectorType(pType: IAFXTypeInstruction): boolean;
+        static isScalarType(pType: IAFXTypeInstruction): boolean;
+        static isFloatBasedType(pType: IAFXTypeInstruction): boolean;
+        static isIntBasedType(pType: IAFXTypeInstruction): boolean;
+        static isBoolBasedType(pType: IAFXTypeInstruction): boolean;
+        static isSamplerType(pType: IAFXTypeInstruction): boolean;
+        private generateSuffixLiterals(pLiterals, pOutput, iDepth?);
+        private initSystemMacros();
+        private initSystemTypes();
+        private initSystemFunctions();
+        private initSystemVariables();
+        private addSystemMacros();
+        private addSystemVariables();
+        private generateSystemVariable(sName, sRealName, sTypeName, isForVertex, isForPixel, isOnlyRead);
+        private generatePassEngineVariable();
+        private generateBaseVertexOutput();
+        private addSystemFunctions();
+        private generateSystemFunction(sName, sTranslationExpr, sReturnTypeName, pArgumentsTypes, pTemplateTypes, isForVertex?, isForPixel?);
+        private generateSystemMacros(sMacrosName, sMacrosCode);
+        private generateNotBuiltInSystemFuction(sName, sDefenition, sImplementation, sReturnType, pUsedTypes, pUsedFunctions, pUsedMacros);
+        private generateSystemType(sName, sRealName, iSize?, isArray?, pElementType?, iLength?);
+        private generateNotBuildtInSystemType(sName, sRealName, sDeclString, iSize?, isArray?, pElementType?, iLength?);
+        private addSystemTypeScalar();
+        private addSystemTypeVector();
+        private addSystemTypeMatrix();
+        private addFieldsToVectorFromSuffixObject(pSuffixMap, pType, sBaseType);
+        private getVariable(sName);
+        private hasVariable(sName);
+        private getType(sTypeName);
+        private isSystemFunction(pFunction);
+        private isSystemVariable(pVariable);
+        private isSystemType(pType);
+        private _errorFromInstruction(pError);
+        private _error(eCode, pInfo?);
+        private setAnalyzedNode(pNode);
+        private getAnalyzedNode();
+        private isStrictMode();
+        private setStrictModeOn();
+        private newScope(eScopeType?);
+        private resumeScope();
+        private getScope();
+        private setScope(iScope);
+        private endScope();
+        private getScopeType();
+        private setCurrentAnalyzedFunction(pFunction);
+        private setCurrentAnalyzedPass(pPass);
+        private getCurrentAnalyzedFunction();
+        private getCurrentAnalyzedPass();
+        private isAnalzeInPass();
+        private setAnalyzeInPass(isInPass);
+        private setOperator(sOperator);
+        private clearPointersForExtract();
+        private addPointerForExtract(pPointer);
+        private getPointerForExtractList();
+        private findFunction(sFunctionName, pArguments);
+        private findConstructor(pType, pArguments);
+        private findShaderFunction(sFunctionName, pArguments);
+        private findFunctionByDef(pDef);
+        private addVariableDecl(pVariable);
+        private addTypeDecl(pType);
+        private addFunctionDecl(pFunction);
+        private addTechnique(pTechnique);
+        private addExternalSharedVariable(pVariable, eShaderType);
+        private analyzeGlobalUseDecls();
+        private analyzeGlobalProvideDecls();
+        private analyzeGlobalTypeDecls();
+        private analyzeFunctionDefinitions();
+        private analyzeGlobalImports();
+        private analyzeTechniqueImports();
+        private analyzeVariableDecls();
+        private analyzeFunctionDecls();
+        private analyzeTechniques();
+        private checkFunctionsForRecursion();
+        private checkFunctionForCorrectUsage();
+        private generateInfoAboutUsedData();
+        private generateShadersFromFunctions();
+        private analyzeVariableDecl(pNode, pInstruction?);
+        private analyzeUsageType(pNode);
+        private analyzeType(pNode);
+        private analyzeUsage(pNode);
+        private analyzeVariable(pNode, pGeneralType);
+        private analyzeVariableDim(pNode, pVariableDecl);
+        private analyzeAnnotation(pNode);
+        private analyzeSemantic(pNode);
+        private analyzeInitializer(pNode);
+        private analyzeFromExpr(pNode);
+        private analyzeInitExpr(pNode);
+        private analyzeExpr(pNode);
+        private analyzeObjectExpr(pNode);
+        private analyzeCompileExpr(pNode);
+        private analyzeSamplerStateBlock(pNode);
+        private analyzeSamplerState(pNode, pSamplerStates);
+        private analyzeComplexExpr(pNode);
+        private analyzeFunctionCallExpr(pNode);
+        private analyzeConstructorCallExpr(pNode);
+        private analyzeSimpleComplexExpr(pNode);
+        private analyzePrimaryExpr(pNode);
+        private analyzePostfixExpr(pNode);
+        private analyzePostfixIndex(pNode);
+        private analyzePostfixPoint(pNode);
+        private analyzePostfixArithmetic(pNode);
+        private analyzeUnaryExpr(pNode);
+        private analyzeCastExpr(pNode);
+        private analyzeConditionalExpr(pNode);
+        private analyzeArithmeticExpr(pNode);
+        private analyzeRelationExpr(pNode);
+        private analyzeLogicalExpr(pNode);
+        private analyzeAssignmentExpr(pNode);
+        private analyzeIdExpr(pNode);
+        private analyzeSimpleExpr(pNode);
+        private analyzeMemExpr(pNode);
+        private analyzeConstTypeDim(pNode);
+        private analyzeVarStructDecl(pNode, pInstruction?);
+        private analyzeUsageStructDecl(pNode);
+        private analyzeTypeDecl(pNode, pParentInstruction?);
+        private analyzeStructDecl(pNode);
+        private analyzeStruct(pNode);
+        private analyzeFunctionDeclOnlyDefinition(pNode);
+        private resumeFunctionAnalysis(pAnalzedFunction);
+        private analyzeFunctionDef(pNode);
+        private analyzeParamList(pNode, pFunctionDef);
+        private analyzeParameterDecl(pNode);
+        private analyzeParamUsageType(pNode);
+        private analyzeStmtBlock(pNode);
+        private analyzeStmt(pNode);
+        private analyzeSimpleStmt(pNode);
+        private analyzeReturnStmt(pNode);
+        private analyzeBreakStmt(pNode);
+        private analyzeDeclStmt(pNode);
+        private analyzeExprStmt(pNode);
+        private analyzeWhileStmt(pNode);
+        private analyzeIfStmt(pNode);
+        private analyzeNonIfStmt(pNode);
+        private analyzeForStmt(pNode);
+        private analyzeForInit(pNode, pForStmtInstruction);
+        private analyzeForCond(pNode, pForStmtInstruction);
+        private analyzeForStep(pNode, pForStmtInstruction);
+        private analyzeUseDecl(pNode);
+        private analyzeTechniqueForImport(pNode);
+        private analyzeComplexName(pNode);
+        private analyzeTechniqueBodyForImports(pNode, pTechnique);
+        private analyzePassDeclForImports(pNode, pTechnique);
+        private analyzePassStateBlockForShaders(pNode, pPass);
+        private analyzePassStateForShader(pNode, pPass);
+        private analyzePassStateIfForShader(pNode, pPass);
+        private analyzePassStateSwitchForShader(pNode, pPass);
+        private analyzePassCaseBlockForShader(pNode, pPass);
+        private analyzePassCaseStateForShader(pNode, pPass);
+        private analyzePassDefaultStateForShader(pNode, pPass);
+        private resumeTechniqueAnalysis(pTechnique);
+        private resumePassAnalysis(pPass);
+        private analyzePassStateBlock(pNode, pPass);
+        private analyzePassState(pNode, pPass);
+        private analyzePassStateIf(pNode, pPass);
+        private analyzePassStateSwitch(pNode, pPass);
+        private analyzePassCaseBlock(pNode, pPass);
+        private analyzePassCaseState(pNode, pPass);
+        private analyzePassDefault(pNode, pPass);
+        private analyzeImportDecl(pNode, pTechnique?);
+        private analyzeProvideDecl(pNode);
+        private analyzeShiftOpt(pNode);
+        private addComponent(pComponent, iShift, pTechnique);
+        private isAddedTechnique(pTechnique);
+        /**
+        * Проверят возможность использования оператора между двумя типами.
+        * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
+        *
+        * @sOperator {string} Один из операторов: + - * / % += -= *= /= %= = < > <= >= == != =
+        * @pLeftType {IAFXVariableTypeInstruction} Тип левой части выражения
+        * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
+        */
+        private checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
+        /**
+        * Проверят возможность использования оператора к типу данных.
+        * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
+        *
+        * @sOperator {string} Один из операторов: + - ! ++ --
+        * @pLeftType {IAFXVariableTypeInstruction} Тип операнда
+        */
+        private checkOneOperandExprType(sOperator, pType);
+        private isAssignmentOperator(sOperator);
+        private isArithmeticalOperator(sOperator);
+        private isRelationalOperator(sOperator);
+        private isEqualOperator(sOperator);
+        private addExtactionStmts(pStmt);
+        private generateExtractStmtFromPointer(pPointer, pParentStmt);
+        private generateExtractStmtForComplexVar(pVarDecl, pParentStmt, pPointer, pBuffer, iPadding);
+        private getNodeSourceLocation(pNode);
+        private checkInstruction(pInst, eStage);
+    }
+}
+declare module akra.fx.instructions {
+    class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
+        private _bIsVideoBuffer;
+        private _pVideoBufferSampler;
+        private _pVideoBufferHeader;
+        private _pFullNameExpr;
+        private _bDefineByZero;
+        private _pSubDeclList;
+        private _bShaderOutput;
+        private _pAttrOffset;
+        private _pAttrExtractionBlock;
+        private _pValue;
+        private _pDefaultValue;
+        private _bLockInitializer;
+        private _iNameIndex;
+        static pShaderVarNamesGlobalDictionary: stringUtils.StringDictionary;
+        static _getIndex(sName: string): number;
+        /**
+        * Represent type var_name [= init_expr]
+        * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
+        */
+        constructor();
+        public _hasInitializer(): boolean;
+        public _getInitializeExpr(): IAFXInitExprInstruction;
+        public _hasConstantInitializer(): boolean;
+        public _lockInitializer(): void;
+        public _unlockInitializer(): void;
+        public _getDefaultValue(): any;
+        public _prepareDefaultValue(): void;
+        public _getValue(): any;
+        public _setValue(pValue: any): any;
+        public _getType(): IAFXVariableTypeInstruction;
+        public _setType(pType: IAFXVariableTypeInstruction): void;
+        public _setName(sName: string): void;
+        public _setRealName(sRealName: string): void;
+        public _setVideoBufferRealName(sSampler: string, sHeader: string): void;
+        public _getName(): string;
+        public _getRealName(): string;
+        public _getNameId(): IAFXIdInstruction;
+        public _isUniform(): boolean;
+        public _isField(): boolean;
+        public _isPointer(): boolean;
+        public _isVideoBuffer(): boolean;
+        public _isSampler(): boolean;
+        public _getSubVarDecls(): IAFXVariableDeclInstruction[];
+        public _isDefinedByZero(): boolean;
+        public _defineByZero(isDefine: boolean): void;
+        public _toFinalCode(): string;
+        public _markAsVarying(bValue: boolean): void;
+        public _markAsShaderOutput(isShaderOutput: boolean): void;
+        public _isShaderOutput(): boolean;
+        public _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
+        public _getAttrExtractionBlock(): IAFXInstruction;
+        public _getNameIndex(): number;
+        public _getFullNameExpr(): IAFXExprInstruction;
+        public _getFullName(): string;
+        public _getVideoBufferSampler(): IAFXVariableDeclInstruction;
+        public _getVideoBufferHeader(): IAFXVariableDeclInstruction;
+        public _getVideoBufferInitExpr(): IAFXInitExprInstruction;
+        public _setCollapsed(bValue: boolean): void;
+        public _isCollapsed(): boolean;
+        public _clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
+        public _blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.fx {
   class SamplerBlender {
@@ -11899,6 +12822,7 @@ declare module akra.sort {
   function binary<T>(array: T[], value: T): number;
 }
 declare module akra.fx {
+<<<<<<< HEAD
   class VariableContainer implements IAFXVariableContainer {
     private _pNameToIndexMap;
     private _pRealNameToIndexMap;
@@ -11922,6 +12846,33 @@ declare module akra.fx {
     public getVarByRealName(sName: string): IAFXVariableDeclInstruction;
     static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType;
   }
+=======
+    class VariableContainer implements IAFXVariableContainer {
+        private _pNameToIndexMap;
+        private _pRealNameToIndexMap;
+        private _pIndexList;
+        private _pVariableInfoMap;
+        private _bLock;
+        constructor();
+        public getIndices(): number[];
+        public add(pVar: IAFXVariableDeclInstruction): void;
+        public addSystemEntry(sName: string, eType: EAFXShaderVariableType): void;
+        public finalize(): void;
+        public getVarInfoByIndex(iIndex: number): IAFXVariableInfo;
+        public getVarByIndex(iIndex: number): IAFXVariableDeclInstruction;
+        public getTypeByIndex(iIndex: number): EAFXShaderVariableType;
+        public isArrayVariable(iIndex: number): boolean;
+        public getIndexByName(sName: string): number;
+        public getIndexByRealName(sName: string): number;
+        public hasVariableWithName(sName: string): boolean;
+        public hasVariableWithRealName(sName: string): boolean;
+        public getVarByName(sName: string): IAFXVariableDeclInstruction;
+        public getVarByRealName(sName: string): IAFXVariableDeclInstruction;
+        private static _pDefaultValuesForTypes;
+        static getVariableDefaultValue(pVar: IAFXVariableDeclInstruction): any;
+        static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.fx {
   class ComponentPassInputBlend implements IAFXComponentPassInputBlend {
@@ -11942,6 +12893,7 @@ declare module akra.fx {
   }
 }
 declare module akra.fx {
+<<<<<<< HEAD
   class ComponentBlend implements IAFXComponentBlend {
     public guid: number;
     private _pComposer;
@@ -11980,6 +12932,46 @@ declare module akra.fx {
     private calcHash();
     static EMPTY_BLEND: string;
   }
+=======
+    class ComponentBlend implements IAFXComponentBlend {
+        public guid: number;
+        private _pComposer;
+        private _isReady;
+        private _sHash;
+        private _bNeedToUpdateHash;
+        private _pComponentHashMap;
+        private _pAddedComponentInfoList;
+        private _iShiftMin;
+        private _iShiftMax;
+        private _nTotalPasses;
+        private _iPostEffectsStart;
+        private _pPassesDList;
+        private _pComponentInputVarBlend;
+        constructor(pComposer: IAFXComposer);
+        public _getMinShift(): number;
+        public _getMaxShift(): number;
+        public isReadyToUse(): boolean;
+        public isEmpty(): boolean;
+        public getComponentCount(): number;
+        public getTotalPasses(): number;
+        public hasPostEffect(): boolean;
+        public getPostEffectStartPass(): number;
+        public getHash(): string;
+        public containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): boolean;
+        public containComponentHash(sComponentHash: string): boolean;
+        public findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
+        public addComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
+        public removeComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
+        public finalizeBlend(): boolean;
+        public getPassInputForPass(iPass: number): IAFXPassInputBlend;
+        public getPassListAtPass(iPass: number): IAFXPassInstruction[];
+        public clone(): IAFXComponentBlend;
+        public _getComponentInfoList(): IAFXComponentInfo[];
+        public _setDataForClone(pComponentInfoList: IAFXComponentInfo[], pComponentHashMap: IMap<boolean>, iShiftMin: number, iShiftMax: number): void;
+        private calcHash();
+        static EMPTY_BLEND: string;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.stringUtils {
   class StringMinifier {
@@ -12646,6 +13638,7 @@ declare module akra.data {
   }
 }
 declare module akra.render {
+<<<<<<< HEAD
   class RenderPass implements IRenderPass {
     public guid: number;
     private _pTechnique;
@@ -12671,6 +13664,34 @@ declare module akra.render {
     public isActive(): boolean;
     private relocateOldInput(pNewInput);
   }
+=======
+    class RenderPass implements IRenderPass {
+        public guid: number;
+        private _pTechnique;
+        private _pRenderTarget;
+        private _iPassNumber;
+        private _pInput;
+        private _isActive;
+        constructor(pTechnique: IRenderTechnique, iPass: number);
+        public setForeign(sName: string, bValue: boolean): void;
+        public setForeign(sName: string, fValue: number): void;
+        public setTexture(sName: string, pTexture: ITexture): void;
+        public setUniform(sName: string, pValue: any): void;
+        public setStruct(sName: string, pValue: any): void;
+        public setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void;
+        public setSamplerTexture(sName: string, sTexture: string): void;
+        public setSamplerTexture(sName: string, pTexture: ITexture): void;
+        public getRenderTarget(): IRenderTarget;
+        public setRenderTarget(pTarget: IRenderTarget): void;
+        public getPassInput(): IAFXPassInputBlend;
+        public setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: boolean): void;
+        public blend(sComponentName: string, iPass: number): boolean;
+        public activate(): void;
+        public deactivate(): void;
+        public isActive(): boolean;
+        private relocateOldInput(pNewInput);
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.render {
   class RenderTechnique implements IRenderTechnique {
@@ -13447,6 +14468,7 @@ declare module akra.render {
   }
 }
 declare module akra {
+<<<<<<< HEAD
   interface IDSViewport extends IViewport {
     getEffect(): IEffect;
     getDepthTexture(): ITexture;
@@ -13464,6 +14486,36 @@ declare module akra {
     _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
     addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
   }
+=======
+    enum EShadingModel {
+        BLINNPHONG = 0,
+        PHONG = 1,
+    }
+    interface I3DViewport extends IViewport {
+        getEffect(): IEffect;
+        getDepthTexture(): ITexture;
+        getLightSources(): IObjectArray<ILightPoint>;
+        getTextureWithObjectID(): ITexture;
+        getView(): IRenderableObject;
+        getSkybox(): ITexture;
+        setSkybox(pSkyTexture: ITexture): void;
+        setFXAA(bValue?: boolean): void;
+        isFXAA(): boolean;
+        highlight(iRid: number): void;
+        highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        highlight(pPair: IRIDPair): void;
+        _getRenderId(x: number, y: number): number;
+        addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        setShadingModel(eModel: EShadingModel): any;
+        getShadingModel(): EShadingModel;
+    }
+}
+declare module akra {
+    interface IDSViewport extends I3DViewport {
+        getColorTextures(): ITexture[];
+        _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
+    }
+>>>>>>> lpp-sading
 }
 declare module akra {
   interface IOmniParameters extends ILightParameters {
@@ -13513,6 +14565,7 @@ declare module akra {
   }
 }
 declare module akra.render {
+<<<<<<< HEAD
   interface IUniform {
   }
   class LightData {
@@ -13605,6 +14658,99 @@ declare module akra.render {
     samplersProject: IAFXSamplerState[];
     samplersSun: IAFXSamplerState[];
   }
+=======
+    interface IUniform {
+    }
+    class LightData {
+        public DIFFUSE: IVec4;
+        public AMBIENT: IVec4;
+        public SPECULAR: IVec4;
+        public POSITION: IVec3;
+        public ATTENUATION: IVec3;
+        public set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData;
+    }
+    class SunLightData {
+        public SUN_DIRECTION: IVec3;
+        public EYE_POSITION: IVec3;
+        public GROUNDC0: IVec3;
+        public GROUNDC1: IVec3;
+        public HG: IVec3;
+        public SKY_DOME_ID: number;
+        public set(pSunParam: ISunParameters, iSunDomeId: number): SunLightData;
+    }
+    class UniformOmni implements IUniform {
+        public LIGHT_DATA: LightData;
+        public setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmni;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
+    class UniformProject implements IUniform {
+        public LIGHT_DATA: LightData;
+        public SHADOW_MATRIX: IMat4;
+        public setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformProject;
+        public setMatrix(m4fMatrix: IMat4): UniformProject;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
+    class UniformProjectShadow implements IUniform {
+        public LIGHT_DATA: LightData;
+        public TO_LIGHT_SPACE: IMat4;
+        public REAL_PROJECTION_MATRIX: IMat4;
+        public OPTIMIZED_PROJECTION_MATRIX: IMat4;
+        public SHADOW_SAMPLER: IAFXSamplerState;
+        public setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformProjectShadow;
+        public setMatrix(m4fToLightSpace: IMat4, m4fRealProj: IMat4, m4fOptimizedProj: IMat4): UniformProjectShadow;
+        public setSampler(sTexture: string): UniformProjectShadow;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
+    class UniformOmniShadow implements IUniform {
+        public LIGHT_DATA: LightData;
+        public TO_LIGHT_SPACE: IMat4[];
+        public OPTIMIZED_PROJECTION_MATRIX: IMat4[];
+        public SHADOW_SAMPLER: IAFXSamplerState[];
+        public setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmniShadow;
+        public setMatrix(m4fToLightSpace: IMat4, m4fOptimizedProj: IMat4, index: number): UniformOmniShadow;
+        public setSampler(sTexture: string, index: number): UniformOmniShadow;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
+    class UniformSun implements IUniform {
+        public LIGHT_DATA: SunLightData;
+        public setLightData(pSunParam: ISunParameters, iSunDomeId: number): UniformSun;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
+    class UniformSunShadow implements IUniform {
+        public LIGHT_DATA: SunLightData;
+        public SHADOW_SAMPLER: IAFXSamplerState;
+        public TO_LIGHT_SPACE: IMat4;
+        public OPTIMIZED_PROJECTION_MATRIX: IMat4;
+        public setLightData(pSunParam: ISunParameters, iSunDomeId: number): UniformSunShadow;
+        public setSampler(sTexture: string): UniformSunShadow;
+        public setMatrix(m4fToLightSpace: IMat4, m4fOptimizedProj: IMat4): UniformSunShadow;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
+    interface UniformMap {
+        omni: UniformOmni[];
+        project: UniformProject[];
+        sun: UniformSun[];
+        omniShadows: UniformOmniShadow[];
+        projectShadows: UniformProjectShadow[];
+        sunShadows: UniformSunShadow[];
+        textures: ITexture[];
+        samplersOmni: IAFXSamplerState[];
+        samplersProject: IAFXSamplerState[];
+        samplersSun: IAFXSamplerState[];
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.render {
   class Screen extends RenderableObject {
@@ -15254,6 +16400,7 @@ declare module akra.scene {
   }
 }
 declare module akra.render {
+<<<<<<< HEAD
   class DSViewport extends Viewport implements IDSViewport {
     public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
     public addedBackground: ISignal<(pViewport: IViewport, pTexture: ITexture) => void>;
@@ -15330,6 +16477,123 @@ declare module akra.render {
     public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
     private resetUniforms();
   }
+=======
+    class DSViewport extends Viewport implements IDSViewport {
+        public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        public addedBackground: ISignal<(pViewport: IViewport, pTexture: ITexture) => void>;
+        private _pDeferredEffect;
+        private _pDeferredColorTextures;
+        private _pDeferredDepthTexture;
+        private _pDeferredView;
+        private _pDeferredSkyTexture;
+        private _pLightDL;
+        private _pLightPoints;
+        private _pLightingUnifoms;
+        private _pHighlightedObject;
+        private _eShadingModel;
+        constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public setupSignals(): void;
+        public getType(): EViewportTypes;
+        public getEffect(): IEffect;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public getColorTextures(): ITexture[];
+        public getDepthTexture(): ITexture;
+        public getView(): IRenderableObject;
+        public getTextureWithObjectID(): ITexture;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public _setTarget(pTarget: IRenderTarget): void;
+        public setCamera(pCamera: ICamera): boolean;
+        public _updateDimensions(bEmitEvent?: boolean): void;
+        public _updateImpl(): void;
+        public endFrame(): void;
+        public prepareForDeferredShading(): void;
+        public getSkybox(): ITexture;
+        public getObject(x: number, y: number): ISceneObject;
+        public getRenderable(x: number, y: number): IRenderableObject;
+        public pick(x: number, y: number): IRIDPair;
+        public _getRenderId(x: number, y: number): number;
+        public _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
+        public getDepth(x: number, y: number): number;
+        public setSkybox(pSkyTexture: ITexture): boolean;
+        public setFXAA(bValue?: boolean): void;
+        public highlight(iRid: number): void;
+        public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        public highlight(pPair: IRIDPair): void;
+        public isFXAA(): boolean;
+        public destroy(): void;
+        public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
+        private resetUniforms();
+    }
+}
+declare module akra {
+    interface ILPPViewport extends I3DViewport {
+    }
+}
+declare module akra.render {
+    class LPPViewport extends Viewport implements ILPPViewport {
+        public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        /** Buffer with normal, shininess and objectID */
+        private _pNormalBufferTexture;
+        /** Depth buffer of scene */
+        private _pDepthBufferTexture;
+        /**
+        * 0 - Diffuse and specular
+        * 1 - Ambient and shadow
+        */
+        private _pLightBufferTextures;
+        /** Resyult of LPP with out posteffects */
+        private _pResultLPPTexture;
+        private _pViewScreen;
+        private _pLightPoints;
+        private _v2fTextureRatio;
+        private _v2fScreenSize;
+        private _pLightingUnifoms;
+        private _pHighlightedObject;
+        private _pSkyboxTexture;
+        private _eShadingModel;
+        constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public setupSignals(): void;
+        public getType(): EViewportTypes;
+        public getView(): IRenderableObject;
+        public getDepthTexture(): ITexture;
+        public getEffect(): IEffect;
+        public getSkybox(): ITexture;
+        public getTextureWithObjectID(): ITexture;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public _setTarget(pTarget: IRenderTarget): void;
+        public setCamera(pCamera: ICamera): boolean;
+        public getObject(x: number, y: number): ISceneObject;
+        public getRenderable(x: number, y: number): IRenderableObject;
+        public pick(x: number, y: number): IRIDPair;
+        public _getRenderId(x: number, y: number): number;
+        public _updateDimensions(bEmitEvent?: boolean): void;
+        public _updateImpl(): void;
+        public setSkybox(pSkyTexture: ITexture): boolean;
+        public setFXAA(bValue?: boolean): void;
+        public isFXAA(): boolean;
+        public highlight(iRid: number): void;
+        public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        public highlight(pPair: IRIDPair): void;
+        public _onNormalBufferRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public _onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public _onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public endFrame(): void;
+        public getDepth(x: number, y: number): number;
+        private createNormalBufferRenderTarget(iWidth, iHeight);
+        private createLightBuffersRenderTargets(iWidth, iHeight);
+        private createResultLPPRenderTarget(iWidth, iHeight);
+        private prepareRenderMethods();
+        private updateRenderTextureDimensions(pTexture);
+        private prepareForLPPShading();
+        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
+        private resetUniforms();
+    }
+>>>>>>> lpp-sading
 }
 declare module akra.render {
   class ColorViewport extends Viewport implements IViewport {
@@ -16308,6 +17572,7 @@ declare module akra.fx {
   }
 }
 declare module akra.fx {
+<<<<<<< HEAD
   /** @const */
   var ALL_PASSES: number;
   /** @const */
@@ -16319,6 +17584,19 @@ declare module akra.fx {
   /** @const */
   var effectParser: EffectParser;
   function initAFXParser(sGrammar: string): void;
+=======
+    /** For addComponent/delComponent/hasComponent */
+    var ALL_PASSES: number;
+    /** Only for hasComponent */
+    var ANY_PASS: number;
+    /** For addComponent/delComponent/hasComponent */
+    var ANY_SHIFT: number;
+    /** For addComponent/delComponent/hasComponent  */
+    var DEFAULT_SHIFT: number;
+    /** @const */
+    var effectParser: EffectParser;
+    function initAFXParser(sGrammar: string): void;
+>>>>>>> lpp-sading
 }
 declare module akra.pool.resources {
   class RenderMethod extends ResourcePoolItem implements IRenderMethod {

@@ -136,7 +136,7 @@ struct pixel_data {
 };
 
 shared pixel_data pixelData;
-shared float4 result_color;
+shared float4 result_color = float4(0.);
 
 float4 fs_prepare_lpp_lights_base(VS_OUT_2 IN): COLOR {
 	float2 textureCoords = IN.textureCoords;
@@ -149,6 +149,8 @@ float4 fs_prepare_lpp_lights_base(VS_OUT_2 IN): COLOR {
 	pixelData.depth = depth;
 	pixelData.normal = normal;
 	pixelData.position = pixelPos;
+    
+    return result_color;
 }
 
 float4 prepare_lpp_lights_omni() : COLOR {

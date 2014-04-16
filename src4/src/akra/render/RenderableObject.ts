@@ -144,7 +144,7 @@ module akra.render {
 			var pRmgr: IResourcePoolManager = this.getRenderer().getEngine().getResourceManager();
 			var pMethod: IRenderMethod = null;
 
-			if (isNull(csMethod)) {
+			if (!isDefAndNotNull(csMethod)) {
 				csMethod = DEFAULT_RM;
 			}
 

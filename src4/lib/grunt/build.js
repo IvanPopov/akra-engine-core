@@ -16,7 +16,7 @@ var shell = require('shelljs');
 
 require('shelljs/global');
 
-var TYPESCRIPT = "typescript-1.0RC";
+var TYPESCRIPT = "typescript-1.0";
 
 
 module.exports = function (grunt) {
@@ -49,7 +49,7 @@ module.exports = function (grunt) {
 	}
 
 	function rm(file) {
-		return grunt.file.delete(file);
+		return fs.unlinkSync(file);
 	}
 
 	function copy(from, to) {
@@ -1357,7 +1357,6 @@ module.exports = function (grunt) {
 
 		if (!demo) {
 			log("\nAvailable demos:");
-
 			var i = 0;
 
 			var all = [];

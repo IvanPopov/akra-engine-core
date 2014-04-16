@@ -9,7 +9,7 @@
 /// <reference path="../idl/IEffect.ts" />
 
 /// <reference path="Viewport.ts" />
-/// <reference path="DSUniforms.ts" />
+/// <reference path="LightingUniforms.ts" />
 /// <reference path="RenderableObject.ts" />
 /// <reference path="Screen.ts" />
 
@@ -61,6 +61,7 @@ module akra.render {
 
 		//highligting
 		private _pHighlightedObject: IRIDPair = { object: null, renderable: null };
+		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
 
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
@@ -96,6 +97,18 @@ module akra.render {
 
 		getView(): IRenderableObject {
 			return this._pDeferredView;
+		}
+
+		getTextureWithObjectID(): ITexture {
+			return this._pDeferredColorTextures[0];
+		}
+
+		setShadingModel(eModel: EShadingModel) {
+			this._eShadingModel = eModel;
+		}
+
+		getShadingModel(): EShadingModel {
+			return this._eShadingModel;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -261,19 +274,23 @@ module akra.render {
 							pTechnique.render._syncSignal(pTechCurr.render);
 							//pTechnique._syncTable(pTechCurr);
 
-
-							if (j === 0) {
-								pTechnique._blockPass(1);
-							}
-							else {
-								pTechnique._blockPass(0);
-							}
-
-							if (pTechnique.getTotalPasses() > j) {
-								var pPass: IRenderPass = pTechnique.getPass(j);
+							var iTotalPasses = pTechnique.getTotalPasses();
+							for (var k: uint = 0; k < iTotalPasses; k++) {
+								var pPass: IRenderPass = pTechnique.getPass(k);
 								pPass.blend("akra.system.prepareForDeferredShading", j);
 							}
 
+							pTechnique.updatePasses(false);
+							
+							for (var k: uint = 0; k < iTotalPasses; k++) {
+								var pPass: IRenderPass = pTechnique.getPass(k);
+								if (j === 0) {
+									pPass.setForeign("optimeizeForDeferredPass1", true);
+								}
+								else {
+									pPass.setForeign("optimeizeForDeferredPass2", true);
+								}
+							}
 						}
 					}
 				}
@@ -427,6 +444,7 @@ module akra.render {
 				p.renderable = null;
 			}
 			else if (isInt(arguments[0])) {
+				iRid = a;
 				p.object = pComposer._getObjectByRid(iRid);
 				p.renderable = pComposer._getRenderableByRid(iRid);
 			}
@@ -444,6 +462,11 @@ module akra.render {
 			}
 			else if (isNull(p.object) && pObjectPrev) {
 				pEffect.delComponent("akra.system.outline", 1, 0);
+
+				//FIX ME: Need do understood how to know that skybox added like single effect, and not as imported component
+				if (!isNull(this._pDeferredSkyTexture)) {
+					pEffect.addComponent("akra.system.skybox", 1, 0);
+				}
 			}
 		}
 
@@ -515,7 +538,7 @@ module akra.render {
 
 				case 1:
 					//skybox
-					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+					pPass.setTexture("OBJECT_ID_TEXTURE", pDeferredTextures[0]);
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
@@ -531,7 +554,6 @@ module akra.render {
 						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
 					}
 
-					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
 						Vec2.temp(this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight()));
 					break;

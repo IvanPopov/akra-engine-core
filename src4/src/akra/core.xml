@@ -96,9 +96,10 @@
           <ResourceFile Path="resources/fx/skybox.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
-            <ResourceFile Path="resources/fx/mesh_texture.afx"/>
-            <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
-              <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+            <ResourceFile Path="resources/fx/mesh_texture.afx">
+              <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+                <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+              </ResourceFile>
             </ResourceFile>
           </ResourceFile>
           <ResourceFile Path="resources/fx/prepare_shadows.afx"/>
@@ -125,6 +126,7 @@
       <UseInlining>True</UseInlining>
       <Data>
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
+        <File Path="resources/fx/lightingFunctions.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>

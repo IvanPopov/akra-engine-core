@@ -94,7 +94,7 @@ module akra {
 	}
 
 	function createViewport(): IViewport {
-		var pViewport: IDSViewport = new render.DSViewport(pCamera);
+		var pViewport: I3DViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -127,7 +127,7 @@ module akra {
 				pEffect.addComponent("akra.system.sunshaft");
 			}
 			else {
-				pEffect.delComponent("akra.system.sunshaft", fx.ANY_SHIFT, fx.ANY_PASS);
+				pEffect.delComponent("akra.system.sunshaft");
 			}
 		});
 
@@ -137,7 +137,7 @@ module akra {
 				pEffect.addComponent("akra.system.lensflare");
 			}
 			else {
-				pEffect.delComponent("akra.system.lensflare", fx.ANY_SHIFT, fx.ANY_PASS);
+				pEffect.delComponent("akra.system.lensflare");
 			}
 		});
 
@@ -210,10 +210,10 @@ module akra {
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
 
-		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+		pViewport.render.connect((pViewport: I3DViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			var pDeferredTexture: ITexture = (<render.DSViewport>pViewport).getColorTextures()[0];
+			var pIDTexture: ITexture = pViewport.getTextureWithObjectID();//(<render.DSViewport>pViewport).getColorTextures()[0];
 			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
@@ -239,7 +239,7 @@ module akra {
 			pPass.setUniform('SUNSHAFT_EXPOSURE', pSunshaftData.SUNSHAFT_EXPOSURE);
 			pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
 
-			pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
+			pPass.setTexture('OBJECT_ID_TEXTURE', pIDTexture);
 			pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
 			pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
 			pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
@@ -258,8 +258,8 @@ module akra {
 			//console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
 			//}
 
-			pPass.setUniform("INPUT_TEXTURE_RATIO",
-				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
+			pPass.setUniform("DEPTH_TEXTURE_RATIO",
+				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
 		});

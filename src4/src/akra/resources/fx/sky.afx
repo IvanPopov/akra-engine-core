@@ -97,7 +97,7 @@ struct base_material{
 
 shared base_material Fragment_material;
 
-float4 SkyFromGround_PS( vertexOutput In): COLOR
+void SkyFromGround_PS( vertexOutput In)
 {
 	float4 color;
 
@@ -132,8 +132,6 @@ float4 SkyFromGround_PS( vertexOutput In): COLOR
 	//Out.color.rgba = In.t0.x;
 	Fragment_material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
 	//Fragment_material.emissive = S00;
-	
-	return color;
 }
 
 float ComputeVolumetricFog( float3 cameraToWorldPos )
@@ -234,12 +232,13 @@ float4 UpdateTexture_PS( pixel_IN In ) : COLOR
     return float4( v3FrontColor, 1);
 }
 
+foreign bool optimizeForLPPPrepare;
 
 technique sky {
-	pass
-	{	 
+	pass {	 
 		ZEnable = true;
 		ZWriteEnable = false;
+		ZFunc = LESS;
 		AlphaBlendEnable = false;
     
     	VertexShader = compile SkyFromGround_VS( );
