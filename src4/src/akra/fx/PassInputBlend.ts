@@ -306,6 +306,8 @@ module akra.fx {
 				this._pCreator.getUniforms().getIndexByRealName("S_EMISSIVE") : 0;
 				this._pMaterialNameIndices.normal = this.hasUniform("S_NORMAL") ?
 				this._pCreator.getUniforms().getIndexByRealName("S_NORMAL") : 0;
+				this._pMaterialNameIndices.shininess = this.hasUniform("S_SHININESS") ?
+				this._pCreator.getUniforms().getIndexByRealName("S_SHININESS") : 0;
 
 				this._isFirstSetSurfaceNaterial = false;
 			}
