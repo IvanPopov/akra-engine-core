@@ -100,6 +100,8 @@ module akra {
 		isTextureCube(): boolean;
 		isCompressed(): boolean;
 		isValid(): boolean;
+
+        unwrapCubeTexture(pCubeTex: ITexture): boolean;
 	
 		create(iWidth: uint, iHeight: uint, iDepth: uint, cFillColor?: IColor, 
 			   eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;

@@ -187,6 +187,10 @@ module akra.webgl {
 			}
 		}
 
+        unwrapFromCubeTexture(pCubeTex: ITexture): boolean {
+            return false;
+        }
+
 		blitFromMemory(pSource: IPixelBox): boolean;
 		blitFromMemory(pSource: IPixelBox, pDestBox: IBox): boolean;
 		blitFromMemory(): boolean {

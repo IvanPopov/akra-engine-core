@@ -42,7 +42,7 @@
         <ResourceFile Path="data/models/Donut.dae" Name="DONUT.DAE"/>
         <ResourceFile Path="data/models/Sphere.dae" Name="SPHERE.DAE"/>
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX"/>
-        <ResourceFile Path="data/textures/skyboxes/desert-2a.png" Name="ENVMAP"/>
+        <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>
       </Data>
     </Resource>
   </PropertyGroup>

@@ -37,6 +37,7 @@
         <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.dae" Name="WOOD_SOLDIER.DAE"/>
         <ResourceFile Path="data/models/rock/rock-1-low-p.DAE" Name="ROCK.DAE"/>
         <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
+        <ResourceFile Path="data/textures/desert-3.dds" Name="SKYBOX"/>
       </Data>
     </Resource>
   </PropertyGroup>

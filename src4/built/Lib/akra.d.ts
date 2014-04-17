@@ -3965,6 +3965,7 @@ declare module akra {
         create(iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats, iFlags: number): boolean;
         blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): boolean;
         blit(pSource: IPixelBuffer): any;
+        unwrapFromCubeTexture(pCubeTex: ITexture): boolean;
         blitFromMemory(pSource: IPixelBox): boolean;
         blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): boolean;
         blitToMemory(pDest: IPixelBox): boolean;
@@ -6240,6 +6241,7 @@ declare module akra {
         isTextureCube(): boolean;
         isCompressed(): boolean;
         isValid(): boolean;
+        unwrapCubeTexture(pCubeTex: ITexture): boolean;
         create(iWidth: number, iHeight: number, iDepth: number, cFillColor?: IColor, eFlags?: ETextureFlags, nMipLevels?: number, nFaces?: number, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
         create(iWidth: number, iHeight: number, iDepth: number, pPixels?: any[], eFlags?: ETextureFlags, nMipLevels?: number, nFaces?: number, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
         create(iWidth: number, iHeight: number, iDepth: number, pPixels?: ArrayBufferView, eFlags?: ETextureFlags, nMipLevels?: number, nFaces?: number, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
@@ -12183,6 +12185,7 @@ declare module akra.pool.resources {
         public isValid(): boolean;
         public getNumFaces(): number;
         public getSize(): number;
+        public unwrapCubeTexture(pCubeTex: ITexture): boolean;
         public reset(): void;
         public reset(iSize: number): void;
         public reset(iWidth: number, iHeight: number): void;
@@ -13671,6 +13674,7 @@ declare module akra.webgl {
         public readPixels(pDestBox: IPixelBox): boolean;
         public blit(pSource: IPixelBuffer): boolean;
         public blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): boolean;
+        public unwrapFromCubeTexture(pCubeTex: ITexture): boolean;
         public blitFromMemory(pSource: IPixelBox): boolean;
         public blitFromMemory(pSource: IPixelBox, pDestBox: IBox): boolean;
         public blitToMemory(pDest: IPixelBox): boolean;
@@ -13706,6 +13710,7 @@ declare module akra.webgl {
         public create(iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats, iFlags: number): boolean;
         public create(eTarget: number, pTexture: WebGLTexture, iWidth: number, iHeight: number, iInternalFormat: number, iFormat: number, iFace: number, iLevel: number, iFlags: number, bSoftwareMipmap: boolean): boolean;
         public destroy(): void;
+        public unwrapFromCubeTexture(pCubeTex: WebGLInternalTexture): boolean;
         public upload(pData: IPixelBox, pDestBox: IBox): void;
         public download(pData: IPixelBox): void;
         public buildMipmaps(pData: IPixelBox): void;
@@ -13741,7 +13746,6 @@ declare module akra.webgl {
         public _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): boolean;
         public _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): boolean;
         public _getFilterInternalTexture(eParam: ETextureParameters): ETextureFilters;
-        public _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes;
         public _createInternalTextureImpl(cFillColor?: IColor): boolean;
         public freeInternalTextureImpl(): boolean;
         private _createSurfaceList();

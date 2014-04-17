@@ -15,7 +15,9 @@ module akra {
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): boolean;
 	
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): boolean;
-		blit(pSource: IPixelBuffer);
+        blit(pSource: IPixelBuffer);
+
+        unwrapFromCubeTexture(pCubeTex: ITexture): boolean;
 	
 		blitFromMemory(pSource: IPixelBox): boolean;
 		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): boolean;

@@ -341,9 +341,9 @@ float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float 
 
 	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
 	// HACK: get maximum level of detail from size of texture
-	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
-	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
-	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
+	int lod1 = int(floor(glossToQualityConverter(Gloss, 4.)));
+	int lod2 = int(ceil(glossToQualityConverter(Gloss, 4.)));
+	float alpha = glossToQualityConverter(Gloss, 4.) - float(lod1);
 
     //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
     float3 Envcolor = getEnvLod(envSampler0, R, lod1).rgb * (1. - alpha)
@@ -376,15 +376,17 @@ float4 PBS(pixel_data pixelData, light_data lightData) {
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
 	// float alpha_p = pow(8192., pixelData.shininess);
 
-	float4 incLightColor = attenuation * float4(0.21, 0.21, 0.21, 1.);
+	float4 incLightColor = attenuation * pixelData.diffuse;
 	//float4 incLightColor = float4(pixelData.diffuse.xyz, 1.) * attenuation;
 
 	float3 halfVector = normalize(view_dir + light_dir);
 
 	float4 lightDiff = lightData.diffuse *  dot_saturate(pixelData.normal, light_dir);
 
+	//float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
+	//	* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
 	float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
-		* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
+		* pow(dot_saturate(light_dir,pixelData.normal), alpha_p ), 1.);
 
 	lightDiff *= (float4(1.) - lightSpec);
 	lightDiff.a = 1.;

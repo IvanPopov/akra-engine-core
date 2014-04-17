@@ -19,6 +19,8 @@
         <File Path="resources/js/zip.js/zip-ext.js"/>
         <File Path="resources/js/zip.js/mime-types.js"/>
         <File Path="resources/js/zip.js/inflate.js"/>
+        <File Path="resources/js/promise-0.1.1.min.js"/>
+        <File Path="resources/js/FileSaver/FileSaver.min.js"/>
         <CollapsePath>True</CollapsePath>
         <Format>Enclosure</Format>
         <OutDir>zip.js</OutDir>

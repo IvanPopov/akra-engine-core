@@ -230,9 +230,6 @@ module akra {
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
         //var iCounter: int = 0;
 
-        pEnvTexture = pRmgr.createTexture(".env-texture-01");
-        (<ITexture>pEnvTexture).loadResource("ENVMAP");
-
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
@@ -240,9 +237,9 @@ module akra {
 			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			var v3fLightDir: IVec3 = math.Vec3.temp( math.Vec3.temp(pLight.getWorldPosition()).subtract(pCamera.getWorldPosition()).normalize() );
-			var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
-            pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
+			//var v3fLightDir: IVec3 = math.Vec3.temp( math.Vec3.temp(pLight.getWorldPosition()).subtract(pCamera.getWorldPosition()).normalize() );
+			//var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
+            //pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
 
             if (iPass == 0) {
                 pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
@@ -253,11 +250,11 @@ module akra {
             }
 
 
-			pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
-			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
+			//pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
+			//pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
-			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
-            pLensflareData.LENSFLARE_LIGHT_ANGLE = pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).dot(v3fLightDir);;
+			//pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
+            //pLensflareData.LENSFLARE_LIGHT_ANGLE = pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).dot(v3fLightDir);;
 
             pDofData.DOF_FOCAL_PLANE = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth()/2., pViewport.getActualHeight()/2., 1.)).subtract(pCamera.getWorldPosition()).length();
 
@@ -298,15 +295,19 @@ module akra {
     }
 
     export var pLight: IOmniLight = null;
+    export var pOmniLights: INode = null;
     function createLighting(): void {
+        pOmniLights = pScene.createNode('lights-root');
+        pOmniLights.attachToParent(pScene.getRootNode());
+
         var pOmniLight: IOmniLight;
 
         pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-        pOmniLight.attachToParent(pScene.getRootNode());
+        pOmniLight.attachToParent(pOmniLights);
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.5, 0.5, 0.5);
+        pOmniLight.getParams().diffuse.set(1., 1., 1.);
         pOmniLight.getParams().specular.set(0.1, 0.3, 0.1, 0.3);
         pOmniLight.getParams().attenuation.set(1, 0, 0.02);
         pOmniLight.setShadowCaster(false);
@@ -315,10 +316,10 @@ module akra {
 
         pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-        pOmniLight.attachToParent(pScene.getRootNode());
+        pOmniLight.attachToParent(pOmniLights);
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.5, 0.5, 0.5);
+        pOmniLight.getParams().diffuse.set(1., 1., 1.);
         pOmniLight.getParams().specular.set(0.0, 0.1, 0.3, 0.3);
         pOmniLight.getParams().attenuation.set(1, 0, 0.02);
         pOmniLight.setShadowCaster(false);
@@ -327,17 +328,22 @@ module akra {
 
         pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-        pOmniLight.attachToParent(pScene.getRootNode());
+        pOmniLight.attachToParent(pOmniLights);
         pOmniLight.setEnabled(true);
         pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(0.5,0.5,0.5);
+        pOmniLight.getParams().diffuse.set(1., 1., 1.);
         pOmniLight.getParams().specular.set(0.3, 0.1, 0.,0.3);
         pOmniLight.getParams().attenuation.set(1, 0, 0.02);
         pOmniLight.setShadowCaster(false);
 
         pOmniLight.addPosition(0, 3, 20);
 
-        pLight = pOmniLight;
+        //pLight = pOmniLight;
+
+        pScene.postUpdate.connect(() => {
+            var t = akra.time() * 0.001 * 0.3;
+            pOmniLights.setLocalPosition(math.Vec3.temp(10.*math.sin(t), 0., 4.*math.cos(t)));
+        });
 
         //loadModel(data + "models/cube.DAE", null, 'camera').setPosition(1, 5, 3).scale(0.1);
 
@@ -361,6 +367,13 @@ module akra {
         if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
             (<render.DSViewport>pViewport).setSkybox(pSkyboxTexture);
         }
+
+        pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
+        pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
+            ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+        pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
+        
+        pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), pEnvTexture.getWidth() / pViewport.getActualWidth(), pEnvTexture.getHeight() / pViewport.getActualHeight(),10));
     }
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -447,7 +460,7 @@ module akra {
 		//var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
         //pSceneQuad.attachToParent(pScene.getRootNode());
 
-        // createSkyBox();
+        createSkyBox();
 
 		//loadModel("WOOD_SOLDIER.DAE", null, 'WoodSoldier-01');
 		//loadModel("ROCK.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
@@ -656,7 +669,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.99;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-00', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*9, 0., 20. );
@@ -666,7 +679,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.88;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-01', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*7, 0., 20. );
@@ -676,7 +689,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.77;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-02', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*5, 0., 20. );
@@ -686,7 +699,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.66;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-03', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2*3, 0., 20. );
@@ -696,7 +709,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.55;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-04', pScene.getRootNode()).scale(2.5).addRelPosition( -ballDistance/2, 0., 20. );
@@ -706,7 +719,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.44;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-05', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2, 0., 20. );
@@ -716,7 +729,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.33;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-06', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*3, 0., 20. );
@@ -726,7 +739,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.22;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-07', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*5, 0., 20. );
@@ -736,7 +749,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.11;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-08', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*7, 0., 20. );
@@ -746,7 +759,7 @@ module akra {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.01;
                         node.getMesh().getSubset(0).getMaterial().specular=new Color(0.05, 0.05, 0.05, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.21, 0.21, 0.21, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.85, 0.21, 0.21, 1.0);
                         }
                     });
                 }, 'sphere-diel-09', pScene.getRootNode()).scale(2.5).addRelPosition( ballDistance/2*9, 0., 20. );
