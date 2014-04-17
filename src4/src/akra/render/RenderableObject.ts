@@ -103,6 +103,8 @@ module akra.render {
 		setShadow(bShadow: boolean): void {
 			if (this._bShadow !== bShadow) {
 				this._bShadow = bShadow;
+				//debug.log("MeshSubset(" + this.guid + ")::setShadow(" + bShadow + ")");
+				//console.trace();
 				this.shadowed.emit(bShadow);
 			}
 		}
@@ -142,7 +144,7 @@ module akra.render {
 			var pRmgr: IResourcePoolManager = this.getRenderer().getEngine().getResourceManager();
 			var pMethod: IRenderMethod = null;
 
-			if (isNull(csMethod)) {
+			if (!isDefAndNotNull(csMethod)) {
 				csMethod = DEFAULT_RM;
 			}
 

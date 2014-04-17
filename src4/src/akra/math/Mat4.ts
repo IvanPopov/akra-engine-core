@@ -554,6 +554,40 @@ module akra.math {
 			return v4fDestination;
 		}
 
+		/** 
+		 * Multiply matrix by number. Per component multiply.
+		 */
+		multiplyNumber(fValue: float, m4fDestination?: IMat4): IMat4 {
+			if (!isDef(m4fDestination)) {
+				m4fDestination = this;
+			}
+
+			var pDataDestination: Float32Array = m4fDestination.data;
+			var pData: Float32Array = this.data;
+
+			pDataDestination[__11] = pData[__11] * fValue;
+			pDataDestination[__12] = pData[__12] * fValue;
+			pDataDestination[__13] = pData[__13] * fValue;
+			pDataDestination[__14] = pData[__14] * fValue;
+
+			pDataDestination[__21] = pData[__21] * fValue;
+			pDataDestination[__22] = pData[__22] * fValue;
+			pDataDestination[__23] = pData[__23] * fValue;
+			pDataDestination[__24] = pData[__24] * fValue;
+									 
+			pDataDestination[__31] = pData[__31] * fValue;
+			pDataDestination[__32] = pData[__32] * fValue;
+			pDataDestination[__33] = pData[__33] * fValue;
+			pDataDestination[__34] = pData[__34] * fValue;
+									 
+			pDataDestination[__41] = pData[__41] * fValue;
+			pDataDestination[__42] = pData[__42] * fValue;
+			pDataDestination[__43] = pData[__43] * fValue;
+			pDataDestination[__44] = pData[__44] * fValue;
+
+			return m4fDestination;
+		}
+
 		transpose(m4fDestination?: IMat4): IMat4 {
 
 			var pData = this.data;

@@ -15,9 +15,10 @@ module akra.render {
 			this._pTechnique = pTechnique;
 			this._iPassNumber = iPass;
 		}
-
-		setForeign(sName: string, fValue: float): void {
-			this._pInput.setForeign(sName, fValue);
+		setForeign(sName: string, bValue: boolean): void;
+		setForeign(sName: string, fValue: float): void;
+		setForeign(sName: string, pValue: any): void {
+			this._pInput.setForeign(sName, pValue);
 		}
 
 		setTexture(sName: string, pTexture: ITexture): void {

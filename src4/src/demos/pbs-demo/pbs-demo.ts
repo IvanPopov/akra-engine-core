@@ -259,7 +259,7 @@ module akra {
             pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
 
             if (iPass == 0) {
-                pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
+                //pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
                 pPass.setUniform('PBS_GLOSS', pPBSData._Gloss );
                 pPass.setUniform('PBS_F0', pPBSData._Material._F0);
                 pPass.setUniform('PBS_DIFFUSE', pPBSData._Material._Diffuse);
@@ -514,36 +514,36 @@ module akra {
         //var cube2: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-02', pScene.getRootNode()).scale(0.3).addRelPosition(5., 0.3, 3.);
         
         // LIGHT SOURCES MARKS: (crazy water)
-        loadModel("SPHERE.DAE", 
-            (model)=>{
-                model.explore( function(node) {
-                    if(akra.scene.SceneModel.isModel(node)) {
-                        node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
-                        }
-                    });
-                }, 'sphere-light-00', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos1 );
-        loadModel("SPHERE.DAE", 
-            (model)=>{
-                model.explore( function(node) {
-                    if(akra.scene.SceneModel.isModel(node)) {
-                        node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
-                        }
-                    });
-                }, 'sphere-light-01', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos2 );
-        loadModel("SPHERE.DAE", 
-            (model)=>{
-                model.explore( function(node) {
-                    if(akra.scene.SceneModel.isModel(node)) {
-                        node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
-                        }
-                    });
-                }, 'sphere-light-02', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos3 );
+        // loadModel("SPHERE.DAE", 
+        //     (model)=>{
+        //         model.explore( function(node) {
+        //             if(akra.scene.SceneModel.isModel(node)) {
+        //                 node.getMesh().getSubset(0).getMaterial().shininess=0.50;
+        //                 node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
+        //                 node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
+        //                 }
+        //             });
+        //         }, 'sphere-light-00', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos1 );
+        // loadModel("SPHERE.DAE", 
+        //     (model)=>{
+        //         model.explore( function(node) {
+        //             if(akra.scene.SceneModel.isModel(node)) {
+        //                 node.getMesh().getSubset(0).getMaterial().shininess=0.50;
+        //                 node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
+        //                 node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
+        //                 }
+        //             });
+        //         }, 'sphere-light-01', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos2 );
+        // loadModel("SPHERE.DAE", 
+        //     (model)=>{
+        //         model.explore( function(node) {
+        //             if(akra.scene.SceneModel.isModel(node)) {
+        //                 node.getMesh().getSubset(0).getMaterial().shininess=0.50;
+        //                 node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
+        //                 node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
+        //                 }
+        //             });
+        //         }, 'sphere-light-02', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos3 );
 
 
         // GOLDEN TEAPOTS:
@@ -563,8 +563,8 @@ module akra {
                 model.explore( function(node) {
                     if(akra.scene.SceneModel.isModel(node)) {
                         node.getMesh().getSubset(0).getMaterial().shininess=0.75;
-                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
-                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.99, 0.99, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0., 0., 1.0);
                         }
                     });
                 }, 'teapot-02', pScene.getRootNode()).scale(3.0).addRelPosition( -6., 8., 20. );

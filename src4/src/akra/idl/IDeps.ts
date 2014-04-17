@@ -9,7 +9,8 @@ module akra {
 		EXTRACTION,			///< Extraction from arhive, second argument - progress.
 		LOADED,				///< Loaded. Content will be passed as the second argument
 
-		REJECTED			///< Rejected with error. 
+		REJECTED,			///< Rejected with error. 
+		INTERNAL_UPDATE		///< Sub resource status changed
 	}
 	
 	export interface IDepStats {

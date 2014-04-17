@@ -5,7 +5,9 @@ module akra {
 		updateKeyboardControls(pCamera, 0.25, 0.05, pKeymap, pGamepad);
 
 		//default camera.
-		var pCanvas: ICanvas3d = pCamera._getLastViewport().getTarget().getRenderer().getDefaultCanvas();
+		
+		var pCanvas: ICanvas3d = pCamera.getScene().getManager().getEngine().getRenderer().getDefaultCanvas();
+		//var pCanvas: ICanvas3d = pCamera._getLastViewport().getTarget().getRenderer().getDefaultCanvas();
 
 		if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
 			var v2fD: IOffset = pKeymap.getMouseShift();
@@ -13,7 +15,7 @@ module akra {
 
 			fdX /= pCanvas.getWidth() / 10.0;
 			fdY /= pCanvas.getHeight() / 10.0;
-
+			
 			pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
 		}
 

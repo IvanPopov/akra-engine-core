@@ -9,6 +9,9 @@
   <PropertyGroup>
     <TypeScriptOutFile>../../../$(BuiltDir)/demos/game/game.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <!--<ClosureCompiler>-->
+      <!--<CompilationLevel>SIMPLE_OPTIMIZATIONS</CompilationLevel>-->
+    <!--</ClosureCompiler>-->
     <Dependencies>
 
       <Attachment>
@@ -37,9 +40,43 @@
       
     </Dependencies>
     <Resource Name="AE_GAME_RESOURCES">
-      <MapFile>data/data.map</MapFile>
+      <Filename>game</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
       <Data>
-        <Folder Path="data" />
+        <ResourceFile Path="data/effects/sunshaft.afx" />
+        
+        <ResourceFile Path="data/textures/terrain/main_height_map_1025.dds" Name="TERRAIN_HEIGHT_MAP" />
+        <ResourceFile Path="data/textures/terrain/main_terrain_normal_map.dds" Name="TERRAIN_NORMAL_MAP" />
+        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX" />
+        <ResourceFile Path="data/textures/terrain/diffuse.dds" Name="MEGATEXTURE_MIN_LEVEL" />
+
+        <ResourceFile Path="data/models/barrel/barrel_and_support.DAE" Name="BARREL" />
+        <Folder Path="data/models/barrel/images/" />
+        
+        <ResourceFile Path="data/models/box/closed_box.DAE" Name="CLOSED_BOX" />
+        <Folder Path="data/models/box/images/" />
+        
+        <ResourceFile Path="data/models/tube/tube.DAE" Name="TUBE" />
+        <Folder Path="data/models/tube/images/" />
+        
+        <ResourceFile Path="data/models/tubing/tube_beeween_rocks.DAE" Name="TUBE_BETWEEN_ROCKS" />
+        <Folder Path="data/models/tubing/images/">
+          <Exclude Path="tech_diffuse.dds"/>
+          <Exclude Path="tech_normal.dds"/>
+          <Exclude Path="tech_specular.dds"/>
+        </Folder>
+        
+        <ResourceFile Path="data/models/character/charZ.DAE" Name="CHARACTER_MODEL" >
+          <ResourceFile Path="data/models/character/all-ih.json" Name="HERO_CONTROLLER" />
+        </ResourceFile>
+        <Folder Path="data/models/character/images/">
+          <Exclude Path="diffuse.dds"/>
+          <Exclude Path="normals.dds"/>
+          <Exclude Path="specular.dds"/>
+        </Folder>
+        
       </Data>
     </Resource>
   </PropertyGroup>

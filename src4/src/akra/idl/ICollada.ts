@@ -27,12 +27,31 @@ module akra {
 		
 		isVisualSceneLoaded(): boolean;
 		isAnimationLoaded(): boolean;
-	
-		attachToScene(pNode: ISceneNode): IModelEntry;
-		attachToScene(pScene: IScene3d): IModelEntry;
-	
+
+		extractFullScene(pScene: IScene3d): IModelEntry;
+		extractFullScene(pNode: ISceneNode): IModelEntry;
+		extractFullScene(): IModelEntry;
+
 		extractAnimations(): IAnimation[];
 		extractAnimation(i: int): IAnimation;
+
+		/**
+		 * Works only for static geometry.
+		 */
+		extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
+		extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;
+		extractModel(sMeshName?: string): ISceneModel;
+
+		/**
+		 * Works only for static geometry.
+		 */
+		extractMesh(sMeshName?: string): IMesh;
+	
+		/**
+		 * @deprecated Use Collada::extractFullScene() instead.
+		 */
+		attachToScene(pNode: ISceneNode): IModelEntry;
+		attachToScene(pScene: IScene3d): IModelEntry;
 		
 		parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
 		loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;

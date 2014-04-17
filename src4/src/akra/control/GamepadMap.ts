@@ -15,7 +15,7 @@ module akra.control {
 
 	import ObjectArray = util.ObjectArray;
 
-	navigator.getGamepads = <any>(navigator.getGamepads || navigator.webkitGetGamepads);
+	navigator["getGamepads"] = <any>(navigator["getGamepads"] || navigator["webkitGetGamepads"]);
 
 	export class GamepadMap implements IGamepadMap {
 
@@ -68,7 +68,7 @@ module akra.control {
 				}
 			}, false);
 
-			if (!!navigator.gamepads || !!navigator.getGamepads) {
+			if (!!navigator["gamepads"] || !!navigator["getGamepads"]) {
 				this.startPolling();
 				return true;
 			}

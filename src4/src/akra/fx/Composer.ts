@@ -686,16 +686,16 @@ module akra.fx {
 		protected bIsDebug: boolean = false;
 		protected bIsRealNormal: boolean = false;
 		protected bTerrainBlackSectors: boolean = false;
-		protected bShowTriangles: boolean = false;
+		public bShowTriangles: boolean = false;
 
 		//sun parameters
-		protected kFixNormal: float = 0.43;
-		protected fSunSpecular: float = 0.5;
-		protected fSunAmbient: float = 0.22;
+		public kFixNormal: float = 0.43;
+		public fSunSpecular: float = 0.5;
+		public fSunAmbient: float = 0.22;
 
 		//fog
-		protected cHeightFalloff: float = 0.;/*0.04;*/
-		protected cGlobalDensity: float = 0.;/*0.002;*/
+		public cHeightFalloff: float = 0.;/*0.04;*/
+		public cGlobalDensity: float = 0.;/*0.002;*/
 
 		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: boolean = false): int {
 			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
@@ -813,7 +813,7 @@ module akra.fx {
 			var iIndex: uint = 0;
 
 			if (!isNull(pSceneObject)) {
-				pSceneObject.getWorldMatrix()
+				//pSceneObject.getWorldMatrix()
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix]] = pSceneObject.getWorldMatrix();
 
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition]] = pSceneObject.getWorldPosition();
@@ -882,6 +882,10 @@ module akra.fx {
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cGlobalDensity]] = this.cGlobalDensity;
 
 			pPassInput.setUniform("isBillboard", this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard());
+
+			if (this._pCurrentViewport.getType() === EViewportTypes.DSVIEWPORT || this._pCurrentViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+				pPassInput.setForeign("isUsedPhong", (<I3DViewport>this._pCurrentViewport).getShadingModel() === EShadingModel.PHONG);
+			}
 		}
 
 		private prepareComposerState(): void {

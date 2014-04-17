@@ -936,13 +936,18 @@ module akra.fx {
 				var iNameIndex: uint = pKeys[i];
 				var pVarList: IAFXVariableDeclInstruction[] = null;
 				var iVarBlendIndex: int = 0;
+				var pValue: any = pForeignValues[iNameIndex];
+
+				//if (pValue === 0) {
+				//	pValue = 1;
+				//}
 
 				iVarBlendIndex = pForeignsV.getKeyIndexByNameIndex(iNameIndex);
 				if (iVarBlendIndex !== -1) {
 					pVarList = pForeignsV.getVarList(iVarBlendIndex);
 
 					for (var j: uint = 0; j < pVarList.length; j++) {
-						pVarList[j]._setValue(pForeignValues[iNameIndex] || 1);
+						pVarList[j]._setValue(pValue);
 					}
 				}
 
@@ -951,7 +956,7 @@ module akra.fx {
 					pVarList = pForeignsP.getVarList(iVarBlendIndex);
 
 					for (var j: uint = 0; j < pVarList.length; j++) {
-						pVarList[j]._setValue(pForeignValues[iNameIndex] || 1);
+						pVarList[j]._setValue(pValue);
 					}
 				}
 			}
@@ -1629,7 +1634,14 @@ module akra.fx {
 			var pVarInfoList: IAFXVariableBlendInfo[] = pVars.getVarsInfo();
 			var sCode: string = "";
 
+			//if (this._pAttributeContainerV.getAttributeBySemantic("POSITION")._getType()._isEqual(Effect.getSystemType("float4"))) {
+			//	sCode += "gl_Position = POSITION;\ngl_PointSize = Out.PSIZE;\n";
+			//}
+			//else {
+			//	sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
+			//}
 			sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
+
 			for (var i: uint = 0; i < pVarInfoList.length; i++) {
 				var sName: string = pVarInfoList[i].name;
 				if (sName !== "POSITION" && sName !== "PSIZE") {

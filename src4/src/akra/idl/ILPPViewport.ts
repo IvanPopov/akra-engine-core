@@ -1,7 +1,6 @@
-﻿/// <reference path="IViewport.ts" />
+﻿/// <reference path="I3DViewport.ts" />
+
 module akra {
-	export interface ILPPViewport extends IViewport {
-		getDepthTexture(): ITexture;
-		getView(): IRenderableObject;
+	export interface ILPPViewport extends I3DViewport {
 	}
 }

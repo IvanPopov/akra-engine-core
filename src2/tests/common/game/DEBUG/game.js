@@ -1751,10 +1751,10 @@ var akra;
         pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
         pNormalViewport.effect.addComponent("akra.system.display_normals");*/
         //end of test
-        var pSprite = pScene.createSprite("sprite");
-        pSprite.attachToParent(pScene.getRootNode());
-        pSprite.setPosition(0., -1., 0.);
-        pSprite.setTexture(pViewport["_pDeferredDepthTexture"]);
+        // var pSprite = pScene.createSprite("sprite");
+        // pSprite.attachToParent(pScene.getRootNode());
+        // pSprite.setPosition(0., -1., 0.);
+        // pSprite.setTexture(pViewport["_pDeferredDepthTexture"]);
         var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
         pProject.attachToParent(pScene.getRootNode());
         pProject.enabled = false;

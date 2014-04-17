@@ -102,6 +102,10 @@ bool normalFix;
 float rand(float2 co){
 	return fract(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
 }
+
+foreign bool isUsedBlinnPhong = false;
+foreign bool isUsedPhong = true;
+
 float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 	float2 textureCoords = IN.textureCoords;
 	pixelData.id = 0;
@@ -125,18 +129,20 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 
 	if (normalFix) {
 		pixelData.normal = float3((temp.xyz * 2. - 1.) * 0.95);
-		pixelData.shininess = data1.z * 255.;
+		pixelData.shininess = data1.z;
 	}
 	else {
 		temp.xy = (temp.xy * 2. - 1.) * 0.95;//fix me
 		pixelData.normal = normalize(float3(temp.xy, sqrt(1. - clamp(dot(temp.xy,temp.xy),0.,1.))));
-		pixelData.shininess = temp.z * 255.;
+		pixelData.shininess = temp.z;
 	}    
 
 	pixelData.diffuse = float4(floatToFloat3(data0.z), 1.);
-	pixelData.ambient = float4(floatToFloat3(data1.x), 1.);
 	pixelData.specular = float4(floatToFloat3(data1.y), 1.);
 
+	if(isUsedPhong){
+		pixelData.ambient = float4(floatToFloat3(data1.x), 1.);
+	}
 	//pixelData.diffuse = float4(float3(rand(float2(data0.w))), 1.);
 
 	//result_color = pixelData.diffuse;

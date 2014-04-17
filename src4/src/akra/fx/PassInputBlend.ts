@@ -35,7 +35,7 @@ module akra.fx {
 
 		//need for accelerate setSurfaceMaterial
 		private _nLastSufraceMaterialTextureUpdates: uint = 0;
-		private _nLastSamplerUpdates: uint = 0;
+		private _nLastSamplerUpdates: int = -1;
 		private _pLastSurfaceMaterial: ISurfaceMaterial = null;
 
 		private _isFirstSetSurfaceNaterial: boolean = true;
@@ -306,6 +306,8 @@ module akra.fx {
 				this._pCreator.getUniforms().getIndexByRealName("S_EMISSIVE") : 0;
 				this._pMaterialNameIndices.normal = this.hasUniform("S_NORMAL") ?
 				this._pCreator.getUniforms().getIndexByRealName("S_NORMAL") : 0;
+				this._pMaterialNameIndices.shininess = this.hasUniform("S_SHININESS") ?
+				this._pCreator.getUniforms().getIndexByRealName("S_SHININESS") : 0;
 
 				this._isFirstSetSurfaceNaterial = false;
 			}
@@ -340,6 +342,7 @@ module akra.fx {
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.shininess, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SHININESS) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
 			}
 
@@ -416,7 +419,14 @@ module akra.fx {
 			}
 
 			for (var i: uint = 0; i < this.foreignKeys.length; i++) {
-				this.foreigns[this.foreignKeys[i]] = null;
+				var pInfo: IAFXVariableInfo = this._pCreator.getForeigns().getVarInfoByIndex(this.foreignKeys[i]);
+				var pDefaultValue: any = pInfo.variable._getDefaultValue();
+
+				if (!isDefAndNotNull(pDefaultValue)) {
+					pDefaultValue = VariableContainer.getVariableDefaultValue(pInfo.variable);
+				}
+
+				this.foreigns[this.foreignKeys[i]] = pDefaultValue;
 			}
 
 			for (var i: uint = 0; i < this.textureKeys.length; i++) {
@@ -460,6 +470,15 @@ module akra.fx {
 			}
 
 			render.clearRenderStateMap(this.renderStates);
+
+			this._pStatesInfo.uniformKey = 0;
+			this._pStatesInfo.foreignKey = 0;
+			this._pStatesInfo.samplerKey = 0;
+			this._pStatesInfo.renderStatesKey = 0;
+			
+			this._nLastSufraceMaterialTextureUpdates = 0;
+			this._nLastSamplerUpdates = -1;
+			this._pLastSurfaceMaterial = null;
 
 			this._pCreator.releasePassInput(this);
 
@@ -634,8 +653,14 @@ module akra.fx {
 
 			for (var i: uint = 0; i < pForeignKeys.length; i++) {
 				var iIndex: uint = pForeignKeys[i];
+				var pInfo: IAFXVariableInfo = this._pCreator.getForeigns().getVarInfoByIndex(iIndex);
+				var pDefaultValue: any = pInfo.variable._getDefaultValue();
 
-				this.foreigns[iIndex] = null;
+				if (!isDefAndNotNull(pDefaultValue)) {
+					pDefaultValue = VariableContainer.getVariableDefaultValue(pInfo.variable);
+				}
+
+				this.foreigns[iIndex] = pDefaultValue;
 			}
 
 			for (var i: uint = 0; i < pTextureKeys.length; i++) {

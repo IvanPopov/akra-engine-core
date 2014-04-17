@@ -78,8 +78,7 @@ module akra.fx {
 						this._pTmpToTex[i] = pAttr._getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
 					}
 					else {
-						this._pTmpToTex[i] = pAttr._getRealName() + "=" +
-						pAttrConatiner.getTexcoordVar(pTexcoords[i])._getRealName() + ";";
+						this._pTmpToTex[i] = pAttr._getRealName() + "=" + pAttrConatiner.getTexcoordVar(pTexcoords[i])._getRealName() + ";";
 					}
 
 					this._sTmpToTexCode += this._pTmpToTex[i] + "\n";

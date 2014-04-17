@@ -1,7 +1,7 @@
 ﻿/// <reference path="../idl/ILPPViewport.ts" />
 /// <reference path="Viewport.ts" />
 /// <reference path="../scene/Scene3d.ts" />
-/// <reference path="DSUniforms.ts" />
+/// <reference path="LightingUniforms.ts" />
 
 module akra.render {
 	import Vec2 = math.Vec2;
@@ -11,14 +11,29 @@ module akra.render {
 
 	import Color = color.Color;
 
-	export class LPPViewport extends Viewport implements ILPPViewport {
-		private _pNormalBufferTexture: ITexture = null;
-		private _pNormalDepthTexture: ITexture = null;
+	var pDepthPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_DEPTH, new Uint8Array(4 * 1));
+	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
+	var pColor: IColor = new Color(0);
 
-		private _pLightMapTexture: ITexture = null;
+	export class LPPViewport extends Viewport implements ILPPViewport {
+		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
+
+		/** Buffer with normal, shininess and objectID */
+		private _pNormalBufferTexture: ITexture = null;
+		/** Depth buffer of scene */
+		private _pDepthBufferTexture: ITexture = null;
+
+		/** 
+		* 0 - Diffuse and specular 
+		* 1 - Ambient and shadow
+		*/
+		private _pLightBufferTextures: ITexture[] = null;
+		/** Resyult of LPP with out posteffects */
+		private _pResultLPPTexture: ITexture = null;
+
 		private _pViewScreen: IRenderableObject = null;
 		private _pLightPoints: IObjectArray<ILightPoint> = null;
-		private _v2fTExtureRatio: IVec2 = null;
+		private _v2fTextureRatio: IVec2 = null;
 		private _v2fScreenSize: IVec2 = null;
 		private _pLightingUnifoms: UniformMap = {
 			omni: [],
@@ -32,11 +47,22 @@ module akra.render {
 			samplersProject: [],
 			samplersSun: []
 		};
+
+		private _pHighlightedObject: IRIDPair = { object: null, renderable: null };
+		private _pSkyboxTexture: ITexture = null;
+
+		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
 		
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
-		
+
+		protected setupSignals(): void {
+			this.addedSkybox = this.addedSkybox || new Signal(this);
+
+			super.setupSignals();
+		}
+
 		getType(): EViewportTypes {
 			return EViewportTypes.LPPVIEWPORT;
 		} 
@@ -46,7 +72,31 @@ module akra.render {
 		}
 
 		getDepthTexture(): ITexture {
-			return this._pNormalDepthTexture;
+			return this._pDepthBufferTexture;
+		}
+		
+		getEffect(): IEffect {
+			return this.getView().getRenderMethodDefault().getEffect();
+		}
+
+		getSkybox(): ITexture {
+			return this._pSkyboxTexture;
+		}
+
+		getTextureWithObjectID(): ITexture {
+			return this._pNormalBufferTexture;
+		}
+
+		getLightSources(): IObjectArray<ILightPoint> {
+			return this._pLightPoints;
+		}
+
+		setShadingModel(eModel: EShadingModel) {
+			this._eShadingModel = eModel;
+		}
+
+		getShadingModel(): EShadingModel {
+			return this._eShadingModel;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -72,81 +122,87 @@ module akra.render {
 				iHeight = math.min(iHeight, webgl.maxTextureSize);
 			}
 
-			//create NormalBufferTexture
-			var pNormalBufferTexture: ITexture = pResMgr.createTexture("lpp-normal-texture-" + iGuid);
-			var pRenderTarget: IRenderTarget = null;
-			var pViewport: IViewport = null;
+			this.createNormalBufferRenderTarget(iWidth, iHeight);
+			this.createLightBuffersRenderTargets(iWidth, iHeight);
+			this.createResultLPPRenderTarget(iWidth, iHeight);
 
-			pNormalBufferTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
-				ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
-			pRenderTarget = pNormalBufferTexture.getBuffer().getRenderTarget();
-			pRenderTarget.setAutoUpdated(false);
-			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), "lpp_normal_pass",
-				0, 0, this.getActualWidth() / pNormalBufferTexture.getWidth(), this.getActualHeight() / pNormalBufferTexture.getHeight()));
-
-			var pDepthTexture = pResMgr.createTexture(".lpp-depth-texture" + iGuid);
-			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
-			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-
-			pRenderTarget.attachDepthTexture(pDepthTexture);
-
-			this._pNormalBufferTexture = pNormalBufferTexture;
-			this._pNormalDepthTexture = pDepthTexture;
-
-			//create LightMapTexture
-			var pLightMapTexture: ITexture = pResMgr.createTexture("lpp-lightMap-texture-" + iGuid);
-			pLightMapTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
-				ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
-			pRenderTarget = pLightMapTexture.getBuffer().getRenderTarget();
-			pRenderTarget.setAutoUpdated(false);
-			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), null,
-				0, 0, this.getActualWidth() / pLightMapTexture.getWidth(), this.getActualHeight() / pLightMapTexture.getHeight()));
-
-			pViewport.render.connect(this, this._onLightMapRender);
-
-			this._pLightMapTexture = pLightMapTexture;
-			this._v2fTExtureRatio = new math.Vec2(this.getActualWidth() / pNormalBufferTexture.getWidth(), this.getActualHeight() / pNormalBufferTexture.getHeight());
-
-			//creatin deferred effects
-			var pLPPMethod: IRenderMethod = null;
-			var pLPPEffect: IEffect = null;
-
-			pLPPMethod = pResMgr.createRenderMethod(".lpp_generate_lightMap" + iGuid);
-			pLPPEffect = pResMgr.createEffect(".lpp_generate_lightMap" + iGuid);
-
-			pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
-			pLPPEffect.addComponent("akra.system.prepare_lpp_lights_omni");
-
-			pLPPMethod.setEffect(pLPPEffect);
-
-			this._pViewScreen.getTechnique().setMethod(pLPPMethod);
-
+			this._v2fTextureRatio = new math.Vec2(this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
 			this._v2fScreenSize = new Vec2(this.getActualWidth(), this.getActualHeight());
+
+			this.prepareRenderMethods();
+
+			this.setClearEveryFrame(false);
+			this.setBackgroundColor(color.ZERO);
+			this.setDepthParams(false, false, 0);
+
+			this.setFXAA(true);
 		}
 
 		setCamera(pCamera: ICamera): boolean {
 			var isOk = super.setCamera(pCamera);
 			this._pNormalBufferTexture.getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pLightBufferTextures[0].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pResultLPPTexture.getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
 			return isOk;
+		}
+
+		getObject(x: uint, y: uint): ISceneObject {
+			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
+		}
+
+		getRenderable(x: uint, y: uint): IRenderableObject {
+			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
+		}
+
+		pick(x: uint, y: uint): IRIDPair {
+			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
+			var iRid: int = this._getRenderId(x, y);
+			var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
+			var pRenderable: IRenderableObject = null;
+
+			if (isNull(pObject) || !pObject.isFrozen()) {
+				pRenderable = pComposer._getRenderableByRid(iRid);
+			}
+			else {
+				pObject = null;
+			}
+
+			return { renderable: pRenderable, object: pObject };
+		}
+
+		_getRenderId(x: int, y: int): int {
+			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(),
+				"invalid pixel: {" + x + "(" + this.getActualWidth() + ")" + ", " + y + "(" + this.getActualHeight() + ")" + "}");
+
+			var pColorTexture: ITexture = this._pNormalBufferTexture;
+
+			//depth texture has POT sized, but viewport not;
+			//depth texture attached to left bottom angle of viewport
+			y = pColorTexture.getHeight() - y - 1;
+			pFloatColorPixel.left = x;
+			pFloatColorPixel.top = y;
+			pFloatColorPixel.right = x + 1;
+			pFloatColorPixel.bottom = y + 1;
+
+			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
+
+			return pFloatColorPixel.getColorAt(pColor, 0, 0).a;
 		}
 
 		_updateDimensions(bEmitEvent: boolean = true): void {
 			super._updateDimensions(false);
 
 			if (isDefAndNotNull(this._pNormalBufferTexture)) {
-				this._pNormalBufferTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
-				this._pNormalBufferTexture.getBuffer().getRenderTarget().getViewport(0)
-					.setDimensions(0., 0., this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
+				this.updateRenderTextureDimensions(this._pNormalBufferTexture);
+				this.updateRenderTextureDimensions(this._pLightBufferTextures[0]);
+				this.updateRenderTextureDimensions(this._pLightBufferTextures[1]);
+				this.updateRenderTextureDimensions(this._pResultLPPTexture);
 
-				this._pLightMapTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
-				this._pLightMapTexture.getBuffer().getRenderTarget().getViewport(0)
-					.setDimensions(0., 0., this.getActualWidth() / this._pLightMapTexture.getWidth(), this.getActualHeight() / this._pLightMapTexture.getHeight());
+				this._pDepthBufferTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
 
-				this._v2fTExtureRatio.set(this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
+				this._v2fTextureRatio.set(this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
 				this._v2fScreenSize.set(this.getActualWidth(), this.getActualHeight());
-
-				this._pNormalDepthTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
 			}
 
 			if (bEmitEvent) {
@@ -155,6 +211,8 @@ module akra.render {
 		}
 
 		_updateImpl(): void {
+			var pRenderer: IRenderer = this.getTarget().getRenderer();
+
 			this.prepareForLPPShading();
 			//prepare normal buffer texture
 			this._pNormalBufferTexture.getBuffer().getRenderTarget().update();
@@ -165,18 +223,321 @@ module akra.render {
 			//render light map
 			var pLights: IObjectArray<ILightPoint> = <IObjectArray<any>>this.getCamera().display(scene.Scene3d.DL_LIGHTING);
 
-			//for (var i: int = 0; i < pLights.getLength(); i++) {
-			//	pLights.value(i)._calculateShadows();
-			//}
+			for (var i: int = 0; i < pLights.getLength(); i++) {
+				pLights.value(i)._calculateShadows();
+			}
 
 			this._pLightPoints = pLights;
 
 			//render deferred
-			this._pViewScreen.render(this._pLightMapTexture.getBuffer().getRenderTarget().getViewport(0));
-			this._pLightMapTexture.getBuffer().getRenderTarget().getRenderer().executeQueue(false);
-			this._pCamera._keepLastViewport(this);
+			this._pViewScreen.render(this._pLightBufferTextures[0].getBuffer().getRenderTarget().getViewport(0), "passA");
+			//pRenderer.executeQueue(false);
+			if (this.getShadingModel() === EShadingModel.PHONG) {
+				this._pViewScreen.render(this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0), "passB");
+			}
 
-			this.renderAsNormal("apply_lpp_shading", this.getCamera());
+			pRenderer.executeQueue(false);
+
+			this._pResultLPPTexture.getBuffer().getRenderTarget().update();
+
+			this._pViewScreen.render(this);
+			this._pCamera._keepLastViewport(this);
+			//this.renderAsNormal("apply_lpp_shading", this.getCamera());
+		}
+
+		setSkybox(pSkyTexture: ITexture): boolean {
+			if (pSkyTexture.getTextureType() !== ETextureTypes.TEXTURE_CUBE_MAP) {
+				return null;
+			}
+
+			var pEffect: IEffect = this.getEffect();
+
+			if (pSkyTexture) {
+				pEffect.addComponent("akra.system.skybox", 1, 0);
+			}
+			else {
+				pEffect.delComponent("akra.system.skybox", 1, 0);
+			}
+
+			this._pSkyboxTexture = pSkyTexture;
+
+			this.addedSkybox.emit(pSkyTexture);
+
+			return true;
+		}
+
+		setFXAA(bValue: boolean = true): void {
+			var pEffect: IEffect = this.getEffect();
+
+			if (bValue) {
+				pEffect.addComponent("akra.system.fxaa", 2, 0);
+			}
+			else {
+				pEffect.delComponent("akra.system.fxaa", 2, 0);
+			}
+		}
+
+		isFXAA(): boolean {
+			return this.getEffect().hasComponent("akra.system.fxaa");
+		}
+
+		highlight(iRid: int): void;
+		highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+		highlight(pPair: IRIDPair): void;
+		highlight(a): void {
+			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
+			var pEffect: IEffect = this.getEffect();
+			var iRid: int = 0;
+			var p: IRIDPair = this._pHighlightedObject;
+			var pObjectPrev: ISceneObject = p.object;
+
+			if (isNull(arguments[0])) {
+				p.object = null;
+				p.renderable = null;
+			}
+			else if (isInt(arguments[0])) {
+				iRid = a;
+				p.object = pComposer._getObjectByRid(iRid);
+				p.renderable = pComposer._getRenderableByRid(iRid);
+			}
+			else if (arguments[0] instanceof akra.scene.SceneObject) {
+				p.object = arguments[0];
+				p.renderable = arguments[1];
+			}
+			else {
+				p.object = arguments[0].object;
+				p.renderable = arguments[0].renderable;
+			}
+
+			if (p.object && isNull(pObjectPrev)) {
+				pEffect.addComponent("akra.system.outline", 1, 0);
+			}
+			else if (isNull(p.object) && pObjectPrev) {
+				pEffect.delComponent("akra.system.outline", 1, 0);
+
+				//FIX ME: Need do understood how to know that skybox added like single effect, and not as imported component
+				if (!isNull(this._pSkyboxTexture)) {
+					pEffect.addComponent("akra.system.skybox", 1, 0);
+				}
+			}
+		}
+
+		_onNormalBufferRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			pPass.setForeign("optimizeForLPPPrepare", true);
+		}
+
+		_onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			var pLightUniforms: UniformMap = this._pLightingUnifoms;
+			var pLightPoints: IObjectArray<ILightPoint> = this._pLightPoints;
+			var pCamera: ICamera = this.getCamera();
+
+			this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
+
+			pPass.setForeign("nOmni", pLightUniforms.omni.length);
+			pPass.setForeign("nProject", pLightUniforms.project.length);
+			pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
+			pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
+			pPass.setForeign("nSun", pLightUniforms.sun.length);
+			pPass.setForeign("nSunShadows", pLightUniforms.sunShadows.length);
+
+			pPass.setStruct("points_omni", pLightUniforms.omni);
+			pPass.setStruct("points_project", pLightUniforms.project);
+			pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
+			pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
+			pPass.setStruct("points_sun", pLightUniforms.sun);
+			pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
+
+			for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
+				pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
+			}
+
+			pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
+			pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
+			pPass.setUniform("SUN_SHADOW_SAMPLER", pLightUniforms.samplersSun);
+
+			pPass.setUniform("MIN_SHADOW_VALUE", 0.5);
+			pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
+
+			pPass.setTexture("LPP_DEPTH_BUFFER_TEXTURE", this._pDepthBufferTexture);
+			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
+			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
+		}
+
+		_onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
+			pPass.setTexture("LPP_LIGHT_BUFFER_A", this._pLightBufferTextures[0]);
+			pPass.setTexture("LPP_LIGHT_BUFFER_B", this._pLightBufferTextures[1]);
+			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
+			pPass.setForeign("optimizeForLPPApply", true);
+
+			pPass.setForeign("isUsedPBSSimple", true);
+		}
+
+		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			switch (iPass) {
+				case 0:
+					pPass.setUniform("VIEWPORT", math.Vec4.temp(0., 0., this._v2fTextureRatio.x, this._v2fTextureRatio.y));
+					pPass.setTexture("TEXTURE_FOR_SCREEN", this._pResultLPPTexture);
+					pPass.setForeign("saveAlpha", true);
+					break;
+				case 1:
+					pPass.setTexture("OBJECT_ID_TEXTURE", this._pNormalBufferTexture);
+					pPass.setTexture("SKYBOX_TEXTURE", this._pSkyboxTexture);
+					//outline
+					var p: IRIDPair = this._pHighlightedObject;
+
+					if (!isNull(p.object)) {
+						var iRid: int = this.getTarget().getRenderer().getEngine().getComposer()._calcRenderID(p.object, p.renderable);
+
+						pPass.setUniform("OUTLINE_TARGET", iRid);
+						pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
+						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
+					}
+
+					pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
+					break;
+			}
+
+			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);
+		}
+
+		endFrame(): void {
+			this.getTarget().getRenderer().executeQueue(false);
+		}
+
+
+		getDepth(x: int, y: int): float {
+			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(), "invalid pixel: {" + x + ", " + y + "}");
+
+			var pDepthTexture: ITexture = this._pDepthBufferTexture;
+
+			y = pDepthTexture.getHeight() - y - 1;
+			pDepthPixel.left = x;
+			pDepthPixel.top = y;
+			pDepthPixel.right = x + 1;
+			pDepthPixel.bottom = y + 1;
+
+			pDepthTexture.getBuffer(0, 0).readPixels(pDepthPixel);
+
+			return pDepthPixel.getColorAt(pColor, 0, 0).r;
+		}
+		
+		private createNormalBufferRenderTarget(iWidth: uint, iHeight: uint): void {
+			var pEngine: IEngine = this._pTarget.getRenderer().getEngine();
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+
+			var pNormalBufferTexture: ITexture = pResMgr.createTexture("lpp-normal-buffer-" + this.guid);
+			var pRenderTarget: IRenderTarget = null;
+			var pViewport: IViewport = null;
+
+			pNormalBufferTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+				ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
+			pRenderTarget = pNormalBufferTexture.getBuffer().getRenderTarget();
+			pRenderTarget.setAutoUpdated(false);
+			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), "lpp_normal_pass",
+				0, 0, this.getActualWidth() / pNormalBufferTexture.getWidth(), this.getActualHeight() / pNormalBufferTexture.getHeight()));
+
+			var pDepthTexture = pResMgr.createTexture(".lpp-depth-buffer-" + this.guid);
+			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+
+			pRenderTarget.attachDepthTexture(pDepthTexture);
+
+			pViewport.render.connect(this._onNormalBufferRender);
+			this._pNormalBufferTexture = pNormalBufferTexture;
+			this._pDepthBufferTexture = pDepthTexture;
+		}
+
+		private createLightBuffersRenderTargets(iWidth: uint, iHeight: uint): void {
+			var pEngine: IEngine = this._pTarget.getRenderer().getEngine();
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+
+			var pRenderTarget: IRenderTarget = null;
+			var pViewport: IViewport = null;
+			var pLightMapTexture: ITexture = null;
+
+			this._pLightBufferTextures = new Array(2);
+
+			for (var i: uint = 0; i < 2; i++) {
+				pLightMapTexture = pResMgr.createTexture("lpp-light-buffer-" + i + "-" + this.guid);
+				pLightMapTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
+				pRenderTarget = pLightMapTexture.getBuffer().getRenderTarget();
+				pRenderTarget.setAutoUpdated(false);
+				pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), null,
+					0, 0, this.getActualWidth() / pLightMapTexture.getWidth(), this.getActualHeight() / pLightMapTexture.getHeight()));
+
+				pViewport.render.connect(this, this._onLightMapRender);
+				this._pLightBufferTextures[i] = pLightMapTexture;
+			}
+		}
+
+		private createResultLPPRenderTarget(iWidth: uint, iHeight: uint): void {
+			var pEngine: IEngine = this._pTarget.getRenderer().getEngine();
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+
+			var pRenderTarget: IRenderTarget = null;
+			var pViewport: IViewport = null;
+
+			this._pResultLPPTexture = pResMgr.createTexture("resultr-lpp-texture-" + this.guid);
+			this._pResultLPPTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+				ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+			pRenderTarget = this._pResultLPPTexture.getBuffer().getRenderTarget();
+			pRenderTarget.setAutoUpdated(false);
+			pRenderTarget.attachDepthTexture(this._pDepthBufferTexture);
+			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), "apply_lpp_shading",
+				0, 0, this.getActualWidth() / this._pResultLPPTexture.getWidth(), this.getActualHeight() / this._pResultLPPTexture.getHeight()));
+			pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+			pViewport.setDepthParams(true, false, ECompareFunction.EQUAL);
+
+			pViewport.render.connect(this, this._onObjectsRender);
+		}
+
+		private prepareRenderMethods(): void {
+			this._pViewScreen.switchRenderMethod(null);
+			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
+
+			for (var i: uint = 0; i < 2; i++) {
+				var sRenderMethod: string = i === 0 ? ".prepare_diffuse_specular" : ".prepare_ambient";
+				var sName: string = i === 0 ? "passA" : "passB";
+
+				if (this._pViewScreen.addRenderMethod(sRenderMethod, sName)) {
+					var pLPPMethod: IRenderMethod = this._pViewScreen.getRenderMethodByName(sName);
+					var pLPPEffect: IEffect = pLPPMethod.getEffect();
+
+					pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
+					pLPPEffect.addComponent("akra.system.omniLighting");
+					pLPPEffect.addComponent("akra.system.projectLighting");
+					pLPPEffect.addComponent("akra.system.omniShadowsLighting");
+					pLPPEffect.addComponent("akra.system.projectShadowsLighting");
+					pLPPEffect.addComponent("akra.system.sunLighting");
+					pLPPEffect.addComponent("akra.system.sunShadowsLighting");
+
+					pLPPMethod.setForeign("prepareOnlyPosition", i === 1);
+					pLPPMethod.setForeign("isForLPPPass0", i === 0);
+					pLPPMethod.setForeign("isForLPPPass1", i === 1);
+					pLPPMethod.setForeign("isPrepareAll", false);
+					pLPPMethod.setForeign("isUsedPBSSimple", true);
+					pLPPMethod.setSurfaceMaterial(null);
+				}
+				else {
+					logger.critical("Cannot initialize LPPViewport(problem with '" + sRenderMethod + "' pass)");
+				}
+			}
+		}
+
+		private updateRenderTextureDimensions(pTexture: ITexture) {
+			pTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
+			pTexture.getBuffer().getRenderTarget().getViewport(0).setDimensions(0., 0., this.getActualWidth() / pTexture.getWidth(), this.getActualHeight() / pTexture.getHeight());
 		}
 
 		private prepareForLPPShading(): void {
@@ -187,69 +548,39 @@ module akra.render {
 
 				for (var k: int = 0; k < pSceneObject.getTotalRenderable(); k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
+					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+
 					var sMethod: string = "lpp_normal_pass";
 					var pTechnique: IRenderTechnique = null;
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
-						if (!pRenderable.addRenderMethod(sMethod, sMethod)) {
+						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
 							logger.critical("cannot create render method for first pass of LPP");
 						}
 
 						pTechnique = pRenderable.getTechnique(sMethod);
-						//pTechnique.addComponent("akra.system.mesh_geometry");
+						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
-
-						pTechnique.getMethod().setSurfaceMaterial(pRenderable.getTechniqueDefault().getMethod().getSurfaceMaterial());
+						pTechnique.addComponent("akra.system.pbsReflection");
+						//var iTotalPasses = pTechnique.getTotalPasses();
+						//for (var i: uint = 0; i < iTotalPasses; i++) {
+						//	pTechnique.getPass(i).setForeign("optimizeForLPPPrepare", true);
+						//}
 					}
 
 					sMethod = "apply_lpp_shading";
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
-						if (!pRenderable.addRenderMethod(sMethod, sMethod)) {
+						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
 							logger.critical("cannot create render method for first pass of LPP");
 						}
 
 						pTechnique = pRenderable.getTechnique(sMethod);
-						//pTechnique.addComponent("akra.system.mesh_geometry");
-						pTechnique.addComponent("akra.system.mesh_texture_full");
+						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.apply_lpp_shading");
-
-						pTechnique.getMethod().setSurfaceMaterial(pRenderable.getTechniqueDefault().getMethod().getSurfaceMaterial());
 					}
 				}
 			}
-		}
-
-		_onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
-			var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-			pPass.setTexture("LPP_DEPTH_BUFFER_TEXTURE", this._pNormalDepthTexture);
-			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
-			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTExtureRatio);
-
-			var pLightUniforms: UniformMap = this._pLightingUnifoms;
-			var pLightPoints: IObjectArray<ILightPoint> = this._pLightPoints;
-			var pCamera: ICamera = this.getCamera();
-
-			this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
-
-			pPass.setForeign("nOmni", pLightUniforms.omni.length);
-			pPass.setStruct("points_omni", pLightUniforms.omni);
-		}
-
-		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
-			var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTExtureRatio);
-			pPass.setTexture("LPP_LIGHT_MAP_BUFFER", this._pLightMapTexture);
-			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
-
-			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);
-
-		}
-
-		endFrame(): void {
-			this.getTarget().getRenderer().executeQueue(false);
 		}
 
 		protected createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {

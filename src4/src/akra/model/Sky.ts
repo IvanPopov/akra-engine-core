@@ -101,6 +101,34 @@ module akra.model {
 			this.sun.setSkyDome(this.skyDome);
 		}
 
+		/** Number of sample rays to use in integral equation */
+		getSize(): uint {
+			return this._nSize;
+		}
+
+		getSampler(): uint {
+			return this._nSamples;
+		}
+
+		setWaveLength(x: float, y: float, z: float): Sky;
+		setWaveLength(v3fLength: IVec3): Sky;
+		setWaveLength(x, y?, z?): Sky {
+			var v: IVec3 = arguments.length > 1 ? Vec3.temp(x, y, z) : arguments[0];
+			this._v3fInvWavelength4.x = 1.0 / math.pow(v.x, 4.0);
+			this._v3fInvWavelength4.y = 1.0 / math.pow(v.y, 4.0);
+			this._v3fInvWavelength4.z = 1.0 / math.pow(v.z, 4.0);
+
+			return this;
+		}
+
+		getWaveLength(v3fDest?: IVec3): IVec3 {
+			v3fDest = isDefAndNotNull(v3fDest) ? v3fDest : Vec3.temp();
+			v3fDest.x = math.pow(1 / this._v3fInvWavelength4.x, 1. / 4.);
+			v3fDest.y = math.pow(1 / this._v3fInvWavelength4.y, 1. / 4.);
+			v3fDest.z = math.pow(1 / this._v3fInvWavelength4.z, 1. / 4.);
+			return v3fDest;
+		}
+
 		protected setupSignals(): void {
 
 		}
@@ -134,9 +162,7 @@ module akra.model {
 
 			this._fRayleighScaleDepth = 0.25;
 			this._fMieScaleDepth = 0.1;
-			this._v3fInvWavelength4.x = 1.0 / math.pow(0.650, 4.0);
-			this._v3fInvWavelength4.y = 1.0 / math.pow(0.570, 4.0);
-			this._v3fInvWavelength4.z = 1.0 / math.pow(0.475, 4.0);
+			this.setWaveLength(0.650, 0.570, 0.475);
 		}
 
 		init(): void {

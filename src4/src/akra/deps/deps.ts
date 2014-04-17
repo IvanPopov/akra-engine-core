@@ -285,6 +285,8 @@ module akra.deps {
 	//redirect events from load() function to cb() of custom dep. 
 	function redirectProgress(pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): (e: IDepEvent) => void {
 		return (e: IDepEvent): void => {
+			cb(e.source, EDependenceStatuses.INTERNAL_UPDATE);
+
 			switch (e.source.stats.status) {
 				case EDependenceStatuses.CHECKING:
 					return cb(pDep, EDependenceStatuses.CHECKING);
@@ -803,8 +805,18 @@ module akra.deps {
 				fnProgress(pProgress);
 			}
 
+			function renotifyProgress(pDep): void {
+				pProgress.source = pDep;
+				fnProgress(pProgress);
+			}
+
 			/** Watch deps states. */
 			function depWatcher(pDep: IDep, eStatus: EDependenceStatuses, pData?): void {
+				if (eStatus === EDependenceStatuses.INTERNAL_UPDATE) {
+					renotifyProgress(pDep);
+					return;
+				}
+
 				pDep.stats.status = eStatus;
 
 				switch (eStatus) {

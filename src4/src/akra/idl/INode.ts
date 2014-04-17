@@ -85,15 +85,15 @@ module akra {
 		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
 		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
 		addRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
-        addRotation(q4fRotation: IQuat4): INode;
+		addRotation(q4fRotation: IQuat4): INode;
 
-        addOrbitRotationByMatrix(m4fRotation: IMat4): INode;
-        addOrbitRotationByMatrix(m3fRotation: IMat3): INode;
-        addOrbitRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode;
-        addOrbitRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
-        addOrbitRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
-        addOrbitRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
-        addOrbitRotation(q4fRotation: IQuat4): INode;
+		addOrbitRotationByMatrix(m4fRotation: IMat4): INode;
+		addOrbitRotationByMatrix(m3fRotation: IMat3): INode;
+		addOrbitRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): INode;
+		addOrbitRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): INode;
+		addOrbitRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): INode;
+		addOrbitRotationByXYZAxis(fX: float, fY: float, fZ: float): INode;
+		addOrbitRotation(q4fRotation: IQuat4): INode;
 	
 		scale(fScale: float): INode;
 		scale(v3fScale: IVec3): INode;

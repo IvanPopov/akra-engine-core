@@ -18,6 +18,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="akra-addons\addons\base3dObjects.xml" />
+    <Content Include="akra-addons\addons\compatibility.xml" />
     <Content Include="akra-addons\addons\filedrop.xml" />
     <Content Include="akra-addons\addons\navigation.xml" />
     <Content Include="akra-addons\addons\navigation\cubemap.png" />
@@ -40,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="akra-addons\addons\base3dObjects.ts" />
+    <None Include="akra-addons\addons\compatibility.ts" />
     <TypeScriptCompile Include="akra-addons\addons\navigation.ts" />
     <TypeScriptCompile Include="akra-addons\addons\filedrop\filedrop.ts" />
     <TypeScriptCompile Include="akra-addons\addons\progress.ts" />
@@ -61,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="akra-addons\addons\base3dObjects\" />
+    <Folder Include="akra-addons\addons\compatibility\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -98,12 +98,12 @@ module akra.webgl {
 		private _pFreeRenderStatesPool: IObjectArray<IWebGLContextStates> = new util.ObjectArray<IWebGLContextStates>();
 
 		static DEFAULT_OPTIONS: IRendererOptions = {
-			depth: true,
+			depth: false,
 			stencil: false,
-			antialias: true,
+			antialias: false,
 			preserveDrawingBuffer: false,
 			premultipliedAlpha: false,
-			alpha: true
+			alpha: false
 		};
 
 		getType(): ERenderers {

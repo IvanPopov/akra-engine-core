@@ -1,0 +1,158 @@
+struct light_data {
+	float4 diffuse     : DIFFUSE;
+	float4 ambient     : AMBIENT;
+	float4 specular    : SPECULAR;
+	float3 attenuation : ATTENUATION;
+	float3 position    : POSITION; //in camera space
+};
+
+struct pixel_data{
+	float4 diffuse  : DIFFUSE;
+	float4 ambient  : AMBIENT;
+	float4 specular : SPECULAR;
+	float3 position : POSITION; //in camera space
+	float3 normal   : NORMAL;
+	float shininess : SHININESS;
+	float  depth    : DEPTH;
+	int    id       : RENDER_OBJECT_ID;
+};
+
+struct light_omni{
+	light_data lightData : LIGHT_DATA;
+};
+
+struct light_project{
+	light_data lightData   : LIGHT_DATA;
+	float4x4 shadow_matrix : SHADOW_MATRIX;
+};
+
+struct light_omni_shadows{
+	light_data lightData      : LIGHT_DATA;
+	float4x4 toLightSpace[6] : TO_LIGHT_SPACE;
+	float4x4 optimized_projection_matrix[6] : OPTIMIZED_PROJECTION_MATRIX;
+};
+
+struct light_project_shadows{
+	light_data lightData   : LIGHT_DATA;
+	float4x4 toLightSpace : TO_LIGHT_SPACE;
+	float4x4 real_projection_matrix : REAL_PROJECTION_MATRIX;
+	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
+};
+
+struct light_sun{
+	float3 sunDir: SUN_DIRECTION;
+	float3 eyePos: EYE_POSITION;
+	float3 ground0: GROUNDC0;
+	float3 ground1: GROUNDC1;
+	float3 hg: HG;
+	int skyDomeId: SKY_DOME_ID; 
+};
+
+struct light_sun_shadows{
+	float3 sunDir: SUN_DIRECTION;
+	float3 eyePos: EYE_POSITION;
+	float3 ground0: GROUNDC0;
+	float3 ground1: GROUNDC1;
+	float3 hg: HG;
+	int skyDomeId: SKY_DOME_ID; 
+
+	float4x4 toLightSpace : TO_LIGHT_SPACE;
+	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
+};
+
+
+struct calc_light_Params {
+	float3 ambient;
+	float3 diffuse;
+	float3 specular;
+	float shadowMultiplier;
+}
+
+foreign bool isForLPPPass0 = false;
+foreign bool isForLPPPass1 = false;
+foreign bool isPrepareAll = true;
+
+float calcAttenuation(float light_dir_length, float3 attenuation) {
+    return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
+}
+
+calc_light_Params prepareBaseLightParams(pixel_data pixelData, light_data lightData) {
+	calc_light_Params lightParams;
+
+	float3 light_dir = lightData.position - pixelData.position;
+    float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
+
+    light_dir = normalize(light_dir);
+
+    if(isPrepareAll || isForLPPPass0){
+    	float light_distancedotVpow = 0.;
+
+	    if(pixelData.shininess != 0.){
+	        float3 view_dir = normalize(-pixelData.position);
+	        float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
+
+	        light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess);
+	    }
+
+	    lightParams.diffuse = lightData.diffuse * max(dot(pixelData.normal, light_dir), .0) * attenuation;
+	    lightParams.specular = lightData.specular.xyz * light_distancedotVpow * attenuation;
+    }
+
+    if(isPrepareAll || isForLPPPass1) {
+    	lightParams.ambient = lightData.ambient * attenuation;
+    }
+
+    return lightParams;
+}
+
+float4 applyBaseLightParams(pixel_data pixelData, light_data lightData){
+	float4 color = float4(0.);
+	calc_light_Params lightParams = prepareBaseLightParams(pixelData, lightData);
+
+	if(isPrepareAll){
+		color = pixelData.ambient * lightParams.ambient + pixelData.diffuse * lightParams.diffuse + pixelData.specular * lightParams.specular;
+	}
+	else if(isForLPPPass0) {
+		color = float4(lightParams.diffuse, lightParams.specular.x);
+	}
+	else if(isForLPPPass1) {
+		color = float4(lightParams.ambient, 0.);
+	}
+
+	return color;
+}
+
+float calcProjectLightInfluence(float4x4 toLightProjectSpace, float3 position){
+	float lightAttenuation = -1.;
+
+	float4 v4fTmp = toLightProjectSpace * float4(position, 1.);
+	float3 v3fTest = abs(v4fTmp.xyz/v4fTmp.w);
+
+	//тест на попадание в область действия источника
+	//if(all(lessThanEqual(v3fTest,float3(1.)))){
+	if(length(v3fTest) <= sqrt(3.) && v4fTmp.w >= 0.){ //более приятно выглядит
+		float alpha = 0.05;
+		lightAttenuation = (exp(-alpha*dot(v3fTest,v3fTest)) - exp(-alpha*3.))/(1. - exp(-alpha*3.));
+	}
+
+	return lightAttenuation;
+}
+
+bool isUnderShadowInfluence(float4x4 toLightSpace, float4x4 projMat, float3 position, out float2 shadowTexCoords, out float realDepth) {
+	float4 v4fLightSpace = toLightSpace *float4(position, 1.);
+
+	float4 v4fTmp = projMat * v4fLightSpace;
+	float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
+
+	float3 v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
+
+	//тест на попадание в область действия источника
+	//так как здесь происходит считывание из текстуру другой тест не корректен
+	if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
+		shadowTexCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
+		realDepth = v4fLightSpace.z;
+		return true;
+	}
+	
+	return false;
+}

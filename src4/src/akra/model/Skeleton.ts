@@ -131,6 +131,11 @@ module akra.model {
 				return false;
 			}
 
+			for (var i = 0; i < pMesh.getLength(); ++i) {
+				logger.assert(pMesh.getSubset(i).getSkin().setSkeleton(this), "Could not set skeleton to skin.");
+			}
+
+
 		    if (this._pMeshNode == null) {
 		    	this._pMeshNode = this.getRoot().getScene().createModel();
 		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
@@ -138,8 +143,9 @@ module akra.model {
 		    }
 
 		    this._pMeshNode.setName(this.getName() + "[mesh-container]");
-		    this._pMeshNode.setMesh(pMesh);
+			this._pMeshNode.setMesh(pMesh);
 
+			
 		    return true;
 		}
 

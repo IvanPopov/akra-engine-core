@@ -233,6 +233,9 @@ module akra.fx {
 	registerCode(EEffectTempErrors.UNSUPPORTED_PROVIDE_AS,
 		"We don`t support 'provide ... as' operator now.");
 
+	registerCode(EEffectErrors.BAD_FUNCTION_DONT_HAVE_RETURN_STMT,
+		"Function '{funcName}' with non-void return type dont`t have return stmt.");
+
 
 	function sourceLocationToString(pLocation: ISourceLocation): string {
 		var sLocation: string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";

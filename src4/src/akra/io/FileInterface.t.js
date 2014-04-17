@@ -79,8 +79,6 @@ onmessage = function (pEvent) {
     var pCommand = pEvent.data;
     var pFile;
 
-   
-
     pFile = file(pCommand);
 
     if (pFile == null) {

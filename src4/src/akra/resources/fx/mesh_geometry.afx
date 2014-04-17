@@ -56,7 +56,7 @@ void computePositionNormal(float4x4 world_mat, inout float4 position, inout floa
 
 VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
     VS_OUT_1 Out;
-
+    
 	float4 pos = float4(IN.pos.xyz, 1.);
     float3 norm = float3(IN.norm);
 
@@ -172,6 +172,9 @@ VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
 
 technique mesh_geometry{
     pass p0 {
+		//CULLFACEENABLE = TRUE;
+		//CULLFACE = BACK;
+
         if(engine.mesh.isSkinned){
             if(engine.mesh.isOptimizedSkinned){
                 VertexShader = compile vs_mesh_optimized_skinning();

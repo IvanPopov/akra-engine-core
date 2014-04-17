@@ -18,7 +18,7 @@ html
       body {
         margin: 0;
         padding: 0;
-        background-color: black;
+        background-color: gray;
       }
       #progress {
         position: absolute; 
@@ -34,7 +34,7 @@ html
       .modal-dialog(style='width: 800px;')
         .modal-content(style='width: 800px;')
           .modal-header
-            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+            button.close(type='button', data-dismiss='modal', aria-hidden='true') &times;
             h4#CfgLabel.modal-title Config
           .modal-body
             #gamepad-info.alert.alert-danger Gamepad not founded.
@@ -78,7 +78,13 @@ html
     script(src=demo.src)
     script(type='text/javascript').
       $('#useMegaTexture').change(function(){
-        akra.self.terrain.megaTexture.enableStreaming(this.checked);
+        var megaTexture = akra.self.terrain.getMegaTexture();
+        if (this.checked) {
+          megaTexture.connectToServer("ws://odserve.org:6112");
+        }
+      else {
+        megaTexture.disconnectFromServer();
+      }
       });
       $('#terrainDisplayMode').on('change', function() {
       
@@ -91,8 +97,8 @@ html
         var pTerrain = akra.self.terrain;
 
         pEngine.getComposer().bShowTriangles = T;
-        pTerrain.megaTexture._bColored = C;
-        pTerrain.showMegaTexture = N || C;
+        pTerrain.getMegaTexture()._bColored = C;
+        pTerrain.setShowMegaTexture(N || C);
       });
 
       $('#cfg').on('show.bs.modal', function (e) {

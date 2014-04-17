@@ -8,24 +8,36 @@
 
 module akra {
 	export interface IMeshSubset extends IEventProvider, IRenderableObject {
-		getName(): string;
+		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin): void; }>;
+		skinRemoved: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin): void; }>;
 
+		/**
+	     * Emit when mesh geometry transformated by skin.
+		 */
+		transformed: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin): void; }>;
+
+		/**
+		 * @return False - if persisted geometry.
+	     */
+		update(): boolean;
+
+		getName(): string;
 		getMesh(): IMesh;
 		getSkin(): ISkin;
+
 		getBoundingBox(): IRect3d;
 		getBoundingSphere(): ISphere;
 
-		createBoundingBox(): boolean;
-		deleteBoundingBox(): boolean;
-		showBoundingBox(): boolean;
-		hideBoundingBox(): boolean;
-		isBoundingBoxVisible(): boolean;
+		/**
+		 * @copydoc Skin::getTotalBones()
+		 * Alias for Skin::getTotalBones()
+		 */
+		getTotalBones(): uint;
+		getBoneLocalBound(sBone: string): IRect3d;
+		getBoneLocalBound(iBone: uint): IRect3d;
 
-		createBoundingSphere(): boolean;
-		deleteBoundingSphere(): boolean;
-		showBoundingSphere(): boolean;
-		hideBoundingSphere(): boolean;
-		isBoundingSphereVisible(): boolean;
+		getInitialGeometryBoundingBox(): IRect3d;
+		getInitialGeometryBoundingSphere(): ISphere;
 
 		computeNormals(): void;
 		computeTangents(): void;
@@ -35,15 +47,7 @@ module akra {
 		isOptimizedSkinned(): boolean;
 		setSkin(pSkin: ISkin): boolean;
 
-		show(): void;
-		hide(): void;
-		isRenderable(): boolean;
-
 		destroy(): void;
-
-		_calculateSkin(): boolean;
-
-		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }>;
 	}
 	
 }

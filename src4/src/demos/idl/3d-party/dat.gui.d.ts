@@ -1,7 +1,11 @@
 declare module dat {
 	class Controller {
+		__precision: number;
+
 		onChange(listener: (value: any) => void): Controller;
 		name(text: string): Controller;
+		listen(): Controller;
+		updateDisplay(): Controller;
 	}
 
 	export class NumberControllerSlider extends Controller {
@@ -15,6 +19,11 @@ declare module dat {
 	}
 
 	export class GUI {
+		__controllers: any;
+		autoListen: boolean;
+
+		listen();
+
 		//button
 		add(object: any, property: string): Controller;
 		//power bar

@@ -284,8 +284,10 @@ module akra.fx {
 
 			this._pUnifromInfoForStructFieldMap = <IUniformStructInfoMap>{};
 
-			this["sVertex"] = sVertex;
-			this["sPixel"] = sPixel;
+			if (config.DEBUG) {
+				this["sVertex"] = sVertex;
+				this["sPixel"] = sPixel;
+			}
 
 			// logger.log(sVertex, sPixel);
 

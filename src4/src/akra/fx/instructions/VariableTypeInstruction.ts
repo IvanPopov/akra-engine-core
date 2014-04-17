@@ -996,7 +996,7 @@ module akra.fx.instructions {
 			pClone._setPadding(this._getPadding());
 
 			if (this._bIsArray) {
-				this._setCloneArrayIndex(this._pArrayElementType._clone(pRelationMap),
+				pClone._setCloneArrayIndex(this._pArrayElementType._clone(pRelationMap),
 					this._pArrayIndexExpr._clone(pRelationMap),
 					this._iLength);
 			}
@@ -1022,7 +1022,7 @@ module akra.fx.instructions {
 					pClonePointerList[pClonePointerList.length - 1]._getType()._setUpDownPointers(null, pDownPointer);
 				}
 
-				this._setClonePointeIndexes(this._getPointDim(), pClonePointerList);
+				pClone._setClonePointeIndexes(this._getPointDim(), pClonePointerList);
 			}
 
 			if (!isNull(this._pFieldDeclMap)) {
@@ -1033,7 +1033,7 @@ module akra.fx.instructions {
 					pCloneFieldMap[sFieldName] = this._pFieldDeclMap[sFieldName]._clone(pRelationMap);
 				}
 
-				this._setCloneFields(pCloneFieldMap);
+				pClone._setCloneFields(pCloneFieldMap);
 			}
 
 			return pClone;

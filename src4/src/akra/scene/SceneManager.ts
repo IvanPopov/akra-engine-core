@@ -31,8 +31,6 @@ module akra.scene {
 			this._fUpdateTimeCount += this._pEngine.getElapsedTime();
 			// is there an update ready to happen?
 
-			// LOG(this._fUpdateTimeCount, this._pEngine.elapsedTime);
-
 			var fUpdateTime: float = this._fUpdateTimeCount;
 
 			while (this._fUpdateTimeCount > this._fMillisecondsPerTick) {

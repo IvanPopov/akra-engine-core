@@ -8,7 +8,7 @@ module akra.animation {
 		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }>;
 		durationUpdated: ISignal<{ (pBlend: IAnimationBlend, fDuration: float): void; }>;
 
-		public duration: float = 0;
+		//public duration: float = 0;
 
 		private _pAnimationList: IAnimationElement[] = [];
 
@@ -158,23 +158,24 @@ module akra.animation {
 			}
 
 			if (fWeight === 0) {
-				this.duration = 0;
+				this.setDuration(0);
 			}
 			else {
 
-				this.duration = fSumm / fWeight;
+				this.setDuration(fSumm / fWeight);
 
 				for (var i: int = 0; i < n; ++i) {
 					if (pAnimationList[i] === null) {
 						continue;
 					}
 
-					pAnimationList[i].acceleration = pAnimationList[i].animation.getDuration() / this.duration;
-					//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
+					debug.assert(!!this.getDuration(), "invalid duration used for acceleration calculation");
+					pAnimationList[i].acceleration = pAnimationList[i].animation.getDuration() / this.getDuration();
 				}
 			}
 
-			this.durationUpdated.emit(this.duration);
+
+			this.durationUpdated.emit(this.getDuration());
 		}
 
 		getAnimationIndex(sName: string): int {
@@ -349,6 +350,9 @@ module akra.animation {
 				}
 
 				fAcceleration = pPointer.acceleration;
+
+				debug.assert(!isNaN(fAcceleration) && isDef(fAcceleration), "invalid acceleration");
+
 				pMask = pPointer.mask;
 				fBoneWeight = 1.0;
 
@@ -360,6 +364,8 @@ module akra.animation {
 
 				pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
 				pPointer.realTime = fRealTime;
+
+				debug.assert(!isNaN(pPointer.time), "invalid time");
 
 				if (pMask) {
 					fBoneWeight = isDef(pMask[sName]) ? pMask[sName] : 1.0;
@@ -383,6 +389,27 @@ module akra.animation {
 			}
 
 			return <IPositionFrame>pResultFrame.normilize();
+		}
+
+		toString(): string {
+			if (config.DEBUG) {
+				var sDesc: string = "";
+
+				sDesc += ("BLEND NAME: " + this.getName()) + "\n";
+				sDesc += ("\t        duration: " + this.getDuration() + "ms") + "\n";
+				sDesc += ("\ttotal animations: " + this.getTotalAnimations()) + "\n";
+
+				var pList: IAnimationElement[] = this._pAnimationList;
+				pList.forEach((pElement: IAnimationElement) => {
+					sDesc += "\t        animation: " + pElement.animation.getName() +
+					", duration: " + pElement.animation.getDuration() + ", weight: " + pElement.weight.toFixed(2) +
+					", acceleration: " + pElement.acceleration.toFixed(2) + "\n";
+				});
+
+				return sDesc;
+			}
+
+			return null;
 		}
 
 		static isBlend(pAnimation: IAnimationBase): boolean {

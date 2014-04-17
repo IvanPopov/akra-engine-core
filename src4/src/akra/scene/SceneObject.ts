@@ -49,6 +49,8 @@ module akra.scene {
 		protected setupSignals(): void {
 			this.worldBoundsUpdated = this.worldBoundsUpdated || new Signal(this, EEventTypes.UNICAST);
 
+			this.worldBoundsUpdated.setForerunner(this._setWorldBoundsUpdated);
+
 			this.click = this.click || new Signal(this);
 
 			this.mousemove = this.mousemove || new Signal(this);
@@ -153,7 +155,7 @@ module akra.scene {
 			return this.recalcWorldBounds();
 		}
 
-		private recalcWorldBounds(): boolean {
+		protected recalcWorldBounds(): boolean {
 			// nodes only get their bounds updated
 			// as nessesary
 			if ((bf.testBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds)
@@ -163,21 +165,23 @@ module akra.scene {
 				this._pWorldBounds.set(this._pLocalBounds);
 				// make sure we have some degree of thickness
 				if (true) {
-					this._pWorldBounds.x1 = Math.max(this._pWorldBounds.x1, this._pWorldBounds.x0 + 0.01);
-					this._pWorldBounds.y1 = Math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
-					this._pWorldBounds.z1 = Math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
+					this._pWorldBounds.x1 = math.max(this._pWorldBounds.x1, this._pWorldBounds.x0 + 0.01);
+					this._pWorldBounds.y1 = math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
+					this._pWorldBounds.z1 = math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
 				}
+
 				this._pWorldBounds.transform(this.getWorldMatrix());
-
-				// set the flag that our bounding box has changed
-				this._iObjectFlags = bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
-
 				this.worldBoundsUpdated.emit();
 
 				return true;
 			}
 
 			return false;
+		}
+
+		_setWorldBoundsUpdated(): int {
+			// set the flag that our bounding box has changed
+			return bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
 		}
 
 		isBillboard(): boolean {

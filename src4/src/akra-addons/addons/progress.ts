@@ -61,6 +61,10 @@ module akra.addons {
 					"<div class='ae-complete'>" +
 					"</div>" +
 				"</div>" +
+				"<div class='ae-bar' style='margin-top: 3px;'>" +
+					"<div class='ae-complete'>" +
+					"</div>" +
+				"</div>" +
 			"</div>" +
 		"</div>"
 
@@ -72,6 +76,8 @@ module akra.addons {
 		private applying: HTMLDivElement;
 		private applyingTip: HTMLSpanElement;
 
+		constructor(pElement: HTMLElement, bRender?: boolean);
+		constructor(pCanvas: HTMLCanvasElement, bRender?: boolean);
 		constructor(private element: HTMLElement = null, bRender: boolean = true) {
 
 			if (bRender) {
@@ -80,13 +86,33 @@ module akra.addons {
 		}
 
 		render(): void {
-			var el = akra.conv.parseHTML(code)[0];
+			var el: HTMLUnknownElement = <HTMLUnknownElement>akra.conv.parseHTML(code)[0];
 			if (isNull(this.element)) {
 				this.element = <HTMLElement>el;
 				document.body.appendChild(this.element);
 			}
 			else {
-				this.element.appendChild(el);
+				if (this.element instanceof HTMLCanvasElement) {
+					this.element.parentNode.appendChild(el);
+
+					
+					var x = 0;
+					var y = 0;
+					var e = this.element;
+					while (e && !isNaN(e.offsetLeft) && !isNaN(e.offsetTop)) {
+						x += e.offsetLeft - e.scrollLeft;
+						y += e.offsetTop - e.scrollTop;
+						e = <HTMLElement>e.offsetParent;
+					}
+
+					el.setAttribute("style",
+						"position: absolute; z-index: 9999; left: " +
+						(x + this.element.offsetWidth / 2. - el.offsetWidth / 2.) + "px; top: " +
+						(y + this.element.offsetHeight / 2. - el.offsetHeight / 2.) + "px;");
+				}
+				else {
+					this.element.appendChild(el);
+				}
 			}
 
 
@@ -94,19 +120,21 @@ module akra.addons {
 			var pTips: HTMLSpanElement[] = <HTMLSpanElement[]><any>document.getElementsByClassName('ae-tip');
 
 			if (AE_DEBUG) {
-				this.acquiring = pBars[0];
 				this.acquiringTip = pTips[0];
+				this.acquiring = pBars[0];
 
 
 				this.applying = pBars[1];
 				this.applyingTip = pTips[1];
 			}
 			else {
-				this.applying = pBars[0];
+				this.acquiring = pBars[0];
+				this.applying = pBars[1];
 			}
 		}
 
 		destroy(): void {
+			
 			if (AE_DEBUG) {
 				this.element.className += " bounceOutRight";
 				setTimeout(() => {
@@ -119,14 +147,15 @@ module akra.addons {
 		}
 
 		getListener(): (e: IDepEvent) => void {
+			
 			return (e: IDepEvent): void => {
 
 				if (AE_DEBUG) {
-					this.setAcquiring(e.bytesLoaded / e.bytesTotal);
 					this.setAcquiringTip((e.bytesLoaded / 1000).toFixed(0) + ' / ' + (e.bytesTotal / 1000).toFixed(0) + ' kb');
 					this.setApplyingTip(e.loaded + ' / ' + e.total);
 				}
 
+				this.setAcquiring(e.bytesLoaded / e.bytesTotal);
 				this.setApplying(e.unpacked);
 
 				// if (e.loaded === e.total) {

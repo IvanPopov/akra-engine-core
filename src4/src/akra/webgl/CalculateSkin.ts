@@ -6,12 +6,11 @@
 module akra.webgl {
 	import Vec2 = math.Vec2;
 	export function calculateSkin(pMeshSubset: IMeshSubset): boolean {
-		return false;
 		var pRenderData: IRenderData = pMeshSubset.getData();
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");
 
-		if (true || !isOk) {
+		if (!isOk) {
 			return false;
 		}
 
@@ -45,18 +44,18 @@ module akra.webgl {
 																																				\n\
 				struct A_TextureHeader { float width; float height; float stepX; float stepY; };												\n\
 																																				\n\
-				void A_extractTextureHeader(const sampler2D src, out A_TextureHeader header){													\n\
+				void A_extractTextureHeader(sampler2D src, out A_TextureHeader header){															\n\
 					vec4 v = texture2D(src, vec2(0.00001));																						\n\
 					header = A_TextureHeader(v.r, v.g, v.b, v.a);																				\n\
 				}																																\n\
 																																				\n\
-				vec2 A_findPixel(const A_TextureHeader header, const float offset){																\n\
+				vec2 A_findPixel(A_TextureHeader header, float offset){																			\n\
 					float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE);																		\n\
 				return vec2(header.stepX * (mod(pixelNumber, header.width) + .5),																\n\
 					 header.stepY * (floor(pixelNumber / header.width) + .5));																	\n\
 				}																																\n\
 																																				\n\
-				vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset){									\n\
+				vec2 A_extractVec2(sampler2D sampler, A_TextureHeader header, float offset){													\n\
 					vec2 pPos = A_findPixel(header, offset);																					\n\
 					int shift = int(mod(offset, A_VB_ELEMENT_SIZE));																			\n\
 																																				\n\
@@ -79,7 +78,7 @@ module akra.webgl {
 					return vec2(0.);																											\n\
 				}																																\n\
 																																				\n\
-				vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset){									\n\
+				vec4 A_extractVec4(sampler2D sampler, A_TextureHeader header, float offset){													\n\
 					vec2 pPos = A_findPixel(header, offset);																					\n\
 					int shift = int(mod(offset, A_VB_ELEMENT_SIZE));																			\n\
 																																				\n\
@@ -122,7 +121,7 @@ module akra.webgl {
 					return vec4(0.);																											\n\
 				}																																\n\
 																																				\n\
-				mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset){									\n\
+				mat4 A_extractMat4(sampler2D sampler, A_TextureHeader header, float offset){													\n\
 					return mat4(A_tex2Dv(sampler, header, A_findPixel(header, offset)),															\n\
 								A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.)),													\n\
 								A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.)),													\n\

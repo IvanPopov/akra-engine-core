@@ -156,18 +156,20 @@ module akra.util {
 		}
 
 		explore(fn: IExplorerFunc, bWithSiblings: boolean = false): void {
-		   if (fn(this) === false) {
-		    return;
-		   }
 
-		   if (this._pSibling && bWithSiblings) {
-		    this._pSibling.explore(fn, true);
-		   }
+			if (fn(this) === false) {
+				return;
+			}
 
-		   if (this._pChild) {
-		    this._pChild.explore(fn, true);
-		   }
-		  }
+			if (this._pSibling && bWithSiblings) {
+				this._pSibling.explore(fn, true);
+			}
+
+			if (this._pChild) {
+				this._pChild.explore(fn, true);
+			}
+		}
+
 
 
 		childOf(pParent: IEntity): boolean {
