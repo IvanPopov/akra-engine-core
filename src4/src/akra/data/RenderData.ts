@@ -392,7 +392,7 @@ module akra.data {
 				//индекс, который подал юзер
 				pData = this._getData(sSemantics, true);
 
-				pData.applyModifier(sSemantics, function (pTypedData: Float32Array) {
+				pData.applyModifier(sSemantics, (pTypedData: Float32Array) => {
 					for (var i: int = 0; i < pTypedData.length; i++) {
 						pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
 					}

@@ -56,6 +56,18 @@ module.exports = function (grunt) {
 		return grunt.file.copy(from, to);
 	}
 
+	function copyDir(from, to) {
+		var files =
+			grunt.file.expand({ filter: 'isFile' }, [path.join(from, '**/*')]);
+
+		
+		//console.log(path.relative(to, from));
+
+		files.forEach(function (file) {
+			copy(file, path.join(to, path.relative(path.resolve(from), file)));
+		});
+	}
+
 	function exists(file) {
 		return grunt.file.exists(file);
 	}
@@ -1313,15 +1325,24 @@ module.exports = function (grunt) {
 			//		return path.relative(destFolder, script).replace(/\\/g, '/');
 			//	}));
 
+			//copy to parent dir, because all demos builds in demos/*
+			copyDir(path.join(__dirname, "css"), path.join(destFolder, "../css"));
+			copyDir(path.join(__dirname, "img"), path.join(destFolder, "../img"));
+
 			if (!exists(template)) {
-				code = read(path.join(__dirname, "demo.jade"));
+				template = path.join(__dirname, "demo.jade");
 			}
-			else {
-				code = read(template);
-			}
+			
+			code = read(template);
+			
 
 			// Compile a function
-			var fn = jade.compile(code, { pretty: true, debug: false, compileDebug: false });
+			var fn = jade.compile(code, {
+				pretty: true,
+				debug: false,
+				compileDebug: false,
+				filename: template
+			});
 
 			// Render the function
 			var html = fn({

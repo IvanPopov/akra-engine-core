@@ -1,17 +1,24 @@
 ﻿/// <reference path="../../../built/Lib/akra.d.ts" />
 
-module akra.addons {
+module akra.addons.compatibility {
 	interface IRequirement {
 		name: string;
 		desc: string;
 		done: boolean;
 		link: string;
+		flag?: int;
 	}
 
-	var pRequirements: IMap<IRequirement> = null
+	var pRequirements: IMap<IRequirement> = null;
+	var iTotal: int = 0;
 
 	function require(pReq: IRequirement) {
 		pRequirements[pReq.name.toUpperCase()] = pReq;
+		pReq.flag = 1 << iTotal++;
+	}
+
+	function or() {
+		iTotal--;
 	}
 
 	function check(sName: string): boolean {
@@ -19,13 +26,23 @@ module akra.addons {
 		return pRequirements[sName.toUpperCase()].done;
 	}
 
-	function checkAll(): boolean {
+	function isCompatible(): boolean {
+		var i = 0xFFFFFFFF;
+
 		for (var sName in pRequirements) {
-			if (!check(sName)) {
-				return false;
+			var pReq = pRequirements[sName];
+
+			if (!pReq.done) {
+				i &= ~pReq.flag;
+			}
+			else {
+				i |= pReq.flag;
 			}
 		}
+
+		return (i >>> 0) === 0xFFFFFFFF;
 	}
+
 
 	function checkWebGLExtension(extension) {
 		require({
@@ -37,8 +54,7 @@ module akra.addons {
 	}
 
 	function buildLog(): string {
-		if (AE_DEBUG) {
-			var s = "";
+			var s = "\n";
 
 			for (var sName in pRequirements) {
 				var pReq: IRequirement = pRequirements[sName];
@@ -50,17 +66,33 @@ module akra.addons {
 					s += ".";
 				}
 
-				s += check(sName) ? "[   OK   ]" : "[ FAILED ]";
+				s += check(sName) ? "[   OK   ]" : "[ FAILED ] \t" + (pReq.link || "");
 				s += "\n";
 			}
 
 			return s;
-		}
-
-		return null;
 	}
 
-	export function checkCompatibility(): boolean {
+	function throwError(sMesg: string , id?: string) {
+		if (isString(id)) {
+			var e: HTMLElement = document.getElementById(id);
+			e.style.display = "block";
+			(<HTMLUnknownElement>e.getElementsByClassName("error")[0]).innerHTML = sMesg +
+			"<br /><small>See console log for details.</small>";
+		}
+
+		throw new Error(sMesg);
+	}
+
+	var ERRORS = {
+		NO_WEBGL: "WebGL not supported.",
+		NON_COMPATIBLE: "Your browser is not compatible with Akra Engine."
+	}
+
+	/**
+	 * @param id View element with @id if compatibility tests failed.
+	 */
+	export function verify(id: string = null): boolean {
 
 		pRequirements = <any>{};
 
@@ -72,7 +104,7 @@ module akra.addons {
 		});
 
 		if (!check("webgl")) {
-			throw new Error("WebGL not supported.");
+			throwError(ERRORS.NO_WEBGL, id);
 			return false;
 		}
 
@@ -84,17 +116,19 @@ module akra.addons {
 		checkWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 
 		require({
-			name: "Webstorage",
-			desc: "Webstorage API",
-			link: "https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage",
-			done: info.api.getLocalStorage()
-		});
-
-		require({
 			name: "LocalFileSystem",
 			desc: "LocalFileSystem API",
 			link: "https://developer.mozilla.org/en-US/docs/Web/API/LocalFileSystem",
 			done: info.api.getFileSystem()
+		});
+
+		or();
+
+		require({
+			name: "Webstorage",
+			desc: "Webstorage API",
+			link: "https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage",
+			done: info.api.getLocalStorage()
 		});
 
 		require({
@@ -104,10 +138,16 @@ module akra.addons {
 			done: info.api.getWebWorker()
 		});
 
-		return checkAll();
+		if (!isCompatible()) {
+			logger.log(buildLog());
+			throwError(ERRORS.NON_COMPATIBLE, id);
+			return false;
+		}
+
+		return true;
 	} 
 
-	export function buildCompatibilityLog(): string {
+	export function log(): string {
 		return buildLog();
 	}
 }

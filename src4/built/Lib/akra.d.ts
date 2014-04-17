@@ -6649,6 +6649,7 @@ declare module akra.uri {
     function resolve(sFrom: string, sTo?: string): string;
     function parseDataURI(sUri: string): IDataURI;
     function parse(sUri: string): IURI;
+    function currentScript(): HTMLScriptElement;
     function currentPath(): string;
     function here(): IURI;
 }
@@ -8172,15 +8173,20 @@ declare module akra {
         getAspect(): number;
         getPixelDepth(): number;
         getColorDepth(): number;
+        getAvailHeight(): number;
+        getAvailWidth(): number;
     }
 }
 declare module akra.info {
     class ScreenInfo implements IScreenInfo {
+        private _pScreen;
         public getWidth(): number;
         public getHeight(): number;
         public getAspect(): number;
         public getPixelDepth(): number;
         public getColorDepth(): number;
+        public getAvailHeight(): number;
+        public getAvailWidth(): number;
     }
 }
 declare module akra.info {

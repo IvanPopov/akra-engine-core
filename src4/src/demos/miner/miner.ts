@@ -12,8 +12,7 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
-	addons.checkCompatibility();
-	console.log(addons.buildCompatibilityLog());
+	addons.compatibility.verify("non-compatible");
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
