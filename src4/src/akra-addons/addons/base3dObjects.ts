@@ -166,7 +166,7 @@ module akra.addons {
 		pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 		pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
 		pMatrial.emissive = new Color(0., 0., 0., 1.);
-		pMatrial.shininess = 30.;
+		pMatrial.shininess = 30./128.;
 
 		var pSceneModel: ISceneModel = pScene.createModel("quad");
 		pSceneModel.setMesh(pMesh);

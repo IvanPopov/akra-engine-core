@@ -240,23 +240,23 @@ module akra {
 				pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
 
 				//////////////////////////
-				var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
+				//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-				for (var i = 0; i < pSubset.getTotalBones(); ++i) {
-					if (!pSubset.getBoneLocalBound(i)) {
-						continue;
-					}
+				//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
+				//	if (!pSubset.getBoneLocalBound(i)) {
+				//		continue;
+				//	}
 
-					var pBox = pSubset.getBoneLocalBound(i);
-					var pBone = pSubset.getSkin().getAffectedNode(i);
+				//	var pBox = pSubset.getBoneLocalBound(i);
+				//	var pBone = pSubset.getSkin().getAffectedNode(i);
 
-					var pCube = addons.lineCube(pScene);
-					pCube.attachToParent(pBone);
-					pCube.setInheritance(ENodeInheritance.ALL);
-					pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
-					pCube.setPosition(pBox.midPoint(Vec3.temp()));
-					(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
-				}
+				//	var pCube = addons.lineCube(pScene);
+				//	pCube.attachToParent(pBone);
+				//	pCube.setInheritance(ENodeInheritance.ALL);
+				//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
+				//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
+				//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
+				//}
 			}
 
 			return true;

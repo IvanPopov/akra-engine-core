@@ -9,6 +9,11 @@
 /// <reference path="IVertexData.ts" />
 
 module akra {
+	export enum ERenderDataAttributeTypes {
+		STATIC = 0,
+		DYNAMIC
+	};
+
 	export enum ERenderDataTypes {
 		ISOLATED = 0, /*<! положить данные в текстуру, и больше ничего не делать.*/
 		INDEXED,	  /*<! обычные даннае из текстуры, доступные по индексу.*/
@@ -43,10 +48,10 @@ module akra {
 		 */
 		releaseData(iDataLocation: int): void;
 
-		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
-		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
+		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
 
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;

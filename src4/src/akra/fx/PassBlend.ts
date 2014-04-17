@@ -1251,8 +1251,8 @@ module akra.fx {
 
 						if (iBufferSlot > nPreparedBufferSlots) {
 							var pBufferVar: IAFXVariableDeclInstruction = pAttributes[0]._getType()._getVideoBuffer();
-							this._sAttrBufferDeclCode = pBufferVar._toFinalCode() + ";\n";
-							this._sAttrBufferInitCode = pBufferVar._getVideoBufferInitExpr()._toFinalCode() + ";\n";
+							this._sAttrBufferDeclCode += pBufferVar._toFinalCode() + ";\n";
+							this._sAttrBufferInitCode += pBufferVar._getVideoBufferInitExpr()._toFinalCode() + ";\n";
 							nPreparedBufferSlots++;
 						}
 					}

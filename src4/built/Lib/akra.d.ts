@@ -4243,6 +4243,10 @@ declare module akra {
     }
 }
 declare module akra {
+    enum ERenderDataAttributeTypes {
+        STATIC = 0,
+        DYNAMIC = 1,
+    }
     enum ERenderDataTypes {
         ISOLATED = 0,
         INDEXED = 1,
@@ -4270,10 +4274,10 @@ declare module akra {
         * Remove data from this render data.
         */
         releaseData(iDataLocation: number): void;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
@@ -5868,7 +5872,7 @@ declare module akra {
         getTexturePool(): IResourcePool<ITexture>;
         getSurfaceMaterialPool(): IResourcePool<ISurfaceMaterial>;
         getVertexBufferPool(): IResourcePool<IVertexBuffer>;
-        getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+        getVideoBufferPool(): IResourcePool<IVertexBuffer>;
         getIndexBufferPool(): IResourcePool<IIndexBuffer>;
         getTextureBufferPool(): IResourcePool<IPixelBuffer>;
         getRenderMethodPool(): IResourcePool<IRenderMethod>;
@@ -14412,6 +14416,10 @@ declare module akra.data {
         */
         private _pAttribBuffer;
         /**
+        * VextexTextureBuffer with attributes
+        */
+        private _pAttribVideoBuffer;
+        /**
         * Data with indices.
         * If _pIndexBuffer has type IndexBuffer, indices data
         * has type IndexData, otherwise VertexData.
@@ -14453,10 +14461,10 @@ declare module akra.data {
         * Allocate attribute.
         * Attribute - data without index.
         */
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
         /**
         * Allocate index.
         */
@@ -17012,7 +17020,7 @@ declare module akra.pool {
         public getObjPool(): IResourcePool<IObj>;
         public getImagePool(): IResourcePool<IImg>;
         public getTexturePool(): IResourcePool<ITexture>;
-        public getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+        public getVideoBufferPool(): IResourcePool<IVertexBuffer>;
         public getShaderProgramPool(): IResourcePool<IShaderProgram>;
         public getComponentPool(): IResourcePool<IAFXComponent>;
         public getTextureBufferPool(): IResourcePool<IPixelBuffer>;

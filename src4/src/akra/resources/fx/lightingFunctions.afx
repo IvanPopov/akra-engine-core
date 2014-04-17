@@ -101,7 +101,7 @@ calc_light_Params prepareBaseLightParams(pixel_data pixelData, light_data lightD
 	        float3 view_dir = normalize(-pixelData.position);
 	        float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
 
-	        light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess);
+	        light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess * 128.);
 	    }
 
 	    lightParams.diffuse = lightData.diffuse.xyz * max(dot(pixelData.normal, light_dir), .0) * attenuation;
@@ -127,7 +127,7 @@ calc_light_Params prepareBaseLightParamsSun(pixel_data pixelData, float3 light_d
 			float3 view_dir = normalize(-pixelData.position);
 			float3 reflect_dir = normalize(reflect(-light_dir, fixNormal));
 
-			light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess);
+			light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess * 128.);
 		}
 
 		lightParams.diffuse = diffuse.xyz * max(dot(fixNormal, light_dir), .0);
