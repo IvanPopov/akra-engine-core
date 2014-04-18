@@ -383,69 +383,154 @@ module akra.webgl {
                     return vec4(0.);                            \n\
                 }                               \n\
                 vec4 getCubeLod(samplerCube sampler, float texel_size, vec3 v, int side, int lod) {                                   \n\
-                    lod = int(min(float(lod),7.));                              \n\
-                    float sum_size = pow(2.,float(lod));                              \n\
-                    float local_texel_size = texel_size * sum_size;                                                \n\
-                    vec3 min_pixel;                                                \n\
-                    vec3 max_pixel;                                                \n\
-                    vec4 color = vec4(0.,0.,0.,1.);                                           \n\
-                    if(side==1) {                                      \n\
-                        vec2 pixel_num = vec2( (v.x+1.-texel_size)*0.5, (v.y+1.-texel_size)*0.5 );      \n\
-                        min_pixel = vec3( ((floor((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((floor((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), 1.);                                        \n\
-                        max_pixel = vec3( ((ceil((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((ceil((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), 1.);                                        \n\
-                    }                                           \n\
-                    else if(side==2) {                                      \n\
-                        vec2 pixel_num = vec2( (v.y+1.-texel_size)*0.5, (v.z+1.-texel_size)*0.5 );      \n\
-                        min_pixel = vec3(1.,  ((floor((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((floor((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                        max_pixel = vec3(1.,  ((ceil((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((ceil((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                    }                                           \n\
-                    else if(side==3) {                                      \n\
-                        vec2 pixel_num = vec2( (v.x+1.-texel_size)*0.5, (v.z+1.-texel_size)*0.5 );      \n\
-                        min_pixel = vec3( ((floor((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), 1.,  ((floor((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                        max_pixel = vec3( ((ceil((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), 1.,  ((ceil((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                    }                                           \n\
-                    else if(side==4) {                                      \n\
-                        vec2 pixel_num = vec2( (v.x+1.-texel_size)*0.5, (v.y+1.-texel_size)*0.5 );      \n\
-                        min_pixel = vec3( ((floor((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((floor((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), -1.);                                        \n\
-                        max_pixel = vec3( ((ceil((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((ceil((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), -1.);                                        \n\
-                    }                                           \n\
-                    else if(side==5) {                                      \n\
-                        vec2 pixel_num = vec2( (v.y+1.-texel_size)*0.5, (v.z+1.-texel_size)*0.5 );      \n\
-                        min_pixel = vec3(-1.,  ((floor((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((floor((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                        max_pixel = vec3(-1.,  ((ceil((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.),  ((ceil((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                    }                                           \n\
-                    else {                                      \n\
-                        vec2 pixel_num = vec2( (v.x+1.-texel_size)*0.5, (v.z+1.-texel_size)*0.5 );      \n\
-                        min_pixel = vec3( ((floor((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), -1.,  ((floor((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                        max_pixel = vec3( ((ceil((pixel_num.x)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.), -1.,  ((ceil((pixel_num.y)/local_texel_size)*local_texel_size)*2.-1.)*(1./texel_size)/(1./texel_size-1.));                                        \n\
-                    }                                         \n\
-                    for(int i=0;i<128;i++) {                  \n\
-                        if(float(i)>=sum_size) {             \n\
-                            break;                                \n\
-                        }                                         \n\
+                    if(lod>6) {                                   \n\
+                        return vec4(0.,0.,0.,1.);                \n\
+                    }           \n\
+                    else {                             \n\
+                        vec4 color = vec4(0.,0.,0.,1.);                                           \n\
+                        /* float sum_size = pow(2.,float(lod));                              \n\
+                        float local_texel_size = texel_size * sum_size;                                                \n\
+                        vec3 min_pixel;                                                \n\
+                        vec3 max_pixel;                                                \n\
+                        if(side==1) {                                      \n\
+                            vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.y+1.-local_texel_size)*0.5 );      \n\
+                            min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.), 1.);                                        \n\
+                            max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.), 1.);                                        \n\
+                        }                                           \n\
+                        else if(side==2) {                                      \n\
+                            vec2 pixel_num = vec2( (v.y+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+                            min_pixel = vec3(-1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+                            max_pixel = vec3(-1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+                        }                                           \n\
+                        else if(side==3) {                                      \n\
+                            vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+                            min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.), 1.,  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+                            max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.), 1.,  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+                        }                                           \n\
+                        else if(side==4) {                                      \n\
+                            vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.y+1.-local_texel_size)*0.5 );      \n\
+                            min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.), -1.);                                        \n\
+                            max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.), -1.);                                        \n\
+                        }                                           \n\
+                        else if(side==5) {                                      \n\
+                            vec2 pixel_num = vec2( (v.y+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+                            min_pixel = vec3(1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+                            max_pixel = vec3(1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+                        }                                           \n\
                         else {                                      \n\
-                            for(int j=0;j<128;j++) {                    \n\
-                                if(float(j)>=sum_size) {             \n\
-                                    break;                                \n\
-                                }                                         \n\
-                                else {                                      \n\
-                                    if(side == 1 || side == 4) {                 \n\
-                                        color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(float(i)/sum_size, float(j)/sum_size, 1.)) / sum_size / sum_size;                    \n\
-                                    }                                   \n\
-                                    else if(side == 2 || side == 5) {                 \n\
-                                        color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(1., float(i)/sum_size, float(j)/sum_size)) / sum_size / sum_size;                    \n\
-                                    }                                   \n\
-                                    else if(side == 3 || side == 6) {                 \n\
-                                        color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(float(i)/sum_size, 1., float(j)/sum_size)) / sum_size / sum_size;                    \n\
-                                    }                                   \n\
-                                    else {                 \n\
-                                        \n\
-                                    }                                   \n\
+                            vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+                            min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.), -1.,  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+                            max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.), -1.,  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+                        }                                         \n\
+                        for(int i=0;i<64;i++) {                  \n\
+                            if(float(i)>=sum_size) {             \n\
+                                break;                                \n\
+                            }                                         \n\
+                            else {                                      \n\
+                                for(int j=0;j<64;j++) {                    \n\
+                                    if(float(j)>=sum_size) {             \n\
+                                        break;                                \n\
+                                    }                                         \n\
+                                    else {                                      \n\
+                                        if(side == 1 || side == 4) {                 \n\
+                                            color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(float(i)/sum_size, float(j)/sum_size, 1.)) / sum_size / sum_size;                    \n\
+                                        }                                   \n\
+                                        else if(side == 2 || side == 5) {                 \n\
+                                            color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(1., float(i)/sum_size, float(j)/sum_size)) / sum_size / sum_size;                    \n\
+                                        }                                   \n\
+                                        else if(side == 3 || side == 6) {                 \n\
+                                            color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(float(i)/sum_size, 1., float(j)/sum_size)) / sum_size / sum_size;                    \n\
+                                        }                                   \n\
+                                        else {                 \n\
+                                            \n\
+                                        }                                   \n\
+                                    }                                           \n\
                                 }                                           \n\
                             }                                           \n\
+                        }*/                                               \n\
+                                                                       \n\
+                        float power = pow(2.,float(lod));                        \n\
+                        float local_texel_size = texel_size * power;                \n\
+                                                                       \n\
+                        if(side==1 || side == 4) {                                      \n\
+                            v.x = (v.x)/(1.-local_texel_size);                           \n\
+                            v.y = (v.y)/(1.-local_texel_size);                           \n\
+                            if(abs(1.-v.x)<0.5*texel_size) {          \n\
+                                v.x = 1.;                        \n\
+                            }                                     \n\
+                            else if(abs(1.+v.x)<0.5*texel_size) {          \n\
+                                v.x = -1.;                        \n\
+                            }                                     \n\
+                            if(abs(1.-v.y)<0.5*texel_size) {          \n\
+                                v.y = 1.;                        \n\
+                            }                                     \n\
+                            else if(abs(1.+v.y)<0.5*texel_size) {          \n\
+                                v.y = -1.;                        \n\
+                            }                                     \n\
                         }                                           \n\
+                        else if(side==2 || side==5) {                                      \n\
+                            v.y = (v.y)/(1.-local_texel_size);                           \n\
+                            v.z = (v.z)/(1.-local_texel_size);                           \n\
+                            if(abs(1.-v.z)<0.5*texel_size) {          \n\
+                                v.z = 1.;                        \n\
+                            }                                     \n\
+                            else if(abs(1.+v.z)<0.5*texel_size) {          \n\
+                                v.z = -1.;                        \n\
+                            }                                     \n\
+                            if(abs(1.-v.y)<0.5*texel_size) {          \n\
+                                v.y = 1.;                        \n\
+                            }                                     \n\
+                            else if(abs(1.+v.y)<0.5*texel_size) {          \n\
+                                v.y = -1.;                        \n\
+                            }                                     \n\
+                        }                                           \n\
+                        else if(side==3 || side==6) {                                      \n\
+                            v.x = (v.x)/(1.-local_texel_size);                           \n\
+                            v.z = (v.z)/(1.-local_texel_size);                           \n\
+                            if(abs(1.-v.x)<0.5*texel_size) {          \n\
+                                v.x = 1.;                        \n\
+                            }                                     \n\
+                            else if(abs(1.+v.x)<0.5*texel_size) {          \n\
+                                v.x = -1.;                        \n\
+                            }                                     \n\
+                            if(abs(1.-v.z)<0.5*texel_size) {          \n\
+                                v.z = 1.;                        \n\
+                            }                                     \n\
+                            else if(abs(1.+v.z)<0.5*texel_size) {          \n\
+                                v.z = -1.;                        \n\
+                            }                                     \n\
+                        }                                           \n\
+                        vec3 forward = normalize(v);                                  \n\
+                        vec3 right = normalize(cross(forward,vec3(0.,1.,0.)));                \n\
+                        if(abs(length(right))<0.95) {                             \n\
+                            right = vec3(1.,0.,0.);                                \n\
+                        }                                                            \n\
+                        vec3 up = cross(forward,right);                      \n\
+                        float steps = power*2.;                              \n\
+                        float angle = asin(texel_size*steps)*0.5*float(lod);                              \n\
+                        for(int i=0;i<128;i++) {                                                                           \n\
+                            if(float(i)>=steps) {                                                                           \n\
+                                break;                                                                                       \n\
+                            }                                                                                                 \n\
+                            else {                                                                                             \n\
+                                for(int j=0;j<128;j++) {                                                                        \n\
+                                    if(float(j)>=steps) {                                                                        \n\
+                                        break;                                                                                    \n\
+                                    }                                                                                              \n\
+                                    else {                                                                                          \n\
+                                        float phi = angle*(-0.5+(float(i)+0.5)/steps);                                               \n\
+                                        float theta = angle*(-0.5+(float(j)+0.5)/steps);                                              \n\
+                                        vec3 dir = forward*cos(theta)*cos(phi) + right*cos(theta)*sin(phi) + up*sin(theta);                  \n\
+                                        color += textureCube(sampler, dir) / steps / steps;                    \n\
+                                    }                                           \n\
+                                }                                           \n\
+                            }                                           \n\
+                        }                                               \n\
+                        /* if(abs(v.x)==1.&&abs(v.y)==1.||abs(v.z)==1.&&abs(v.y)==1.||abs(v.x)==1.&&abs(v.z)==1.) {         \n\
+                            color=vec4(1.,0.,0.,1.);                           \n\
+                        }  */                                                     \n\
+                        return color;                                               \n\
                     }                                               \n\
-                    return color;                                               \n\
                 }                                                   \n\
                                                                     \n\
                 void main(void) {                                   \n\
@@ -512,32 +597,32 @@ module akra.webgl {
                     } \n\
                     vec3 dir;               \n\
                     if(pos.z == 1.) {        \n\
-                        dir.x = pos.x;                        \n\
+                        dir.x = -pos.x;                        \n\
                         dir.y = pos.y;                        \n\
                         dir.z = 1.;                        \n\
                     }                        \n\
                     else if(pos.z == 2.) {        \n\
-                        dir.x = 1.;                        \n\
+                        dir.x = -1.;                        \n\
                         dir.y = pos.y;                        \n\
                         dir.z = -pos.x;                        \n\
                     }                        \n\
                     else if(pos.z == 3.) {        \n\
-                        dir.x = pos.x;                        \n\
+                        dir.x = -pos.x;                        \n\
                         dir.y = 1.;                        \n\
                         dir.z = -pos.y;                        \n\
                     }                        \n\
                     else if(pos.z == 4.) {        \n\
-                        dir.x = -pos.x;                        \n\
+                        dir.x = pos.x;                        \n\
                         dir.y = pos.y;                        \n\
                         dir.z = -1.;                        \n\
                     }                        \n\
                     else if(pos.z == 5.) {        \n\
-                        dir.x = -1.;                        \n\
+                        dir.x = 1.;                        \n\
                         dir.y = pos.y;                        \n\
                         dir.z = pos.x;                        \n\
                     }                        \n\
                     else {                    \n\
-                        dir.x = -pos.x;                        \n\
+                        dir.x = pos.x;                        \n\
                         dir.y = -1.;                        \n\
                         dir.z = -pos.y;                        \n\
                     }                        \n\
