@@ -35,6 +35,7 @@ module akra {
     export var pDofData = null;
     export var pPBSData = null;
     export var pSkyboxTexture = null;
+    export var pSkyboxTextures = null;
     export var pEnvTexture = null;
 
 	var pState = {
@@ -116,37 +117,25 @@ module akra {
 
         pGUI.add(pState, 'animate');
 
-        var pMaterialPresets = {
-            Gold: {
-                _F0: new math.Vec3(1.00, 0.71, 0.29),
-                _Diffuse: new math.Vec3(1.00, 0.86, 0.57),
-            },
-            Copper: {
-                _F0: new math.Vec3(0.95, 0.64, 0.54),
-                _Diffuse: new math.Vec3(0.98, 0.82, 0.76),
-            },
-            Plastic: {
-                _F0: new math.Vec3(0.03, 0.03, 0.03),
-                _Diffuse: new math.Vec3(0.21, 0.21, 0.21),
-            },
-            Iron: {
-                _F0: new math.Vec3(0.56, 0.57, 0.58),
-                _Diffuse: new math.Vec3(0.77, 0.78, 0.78),
-            },
-            Aluminium: {
-                _F0: new math.Vec3(0.91, 0.92, 0.92),
-                _Diffuse: new math.Vec3(0.96, 0.96, 0.97),
-            },
-            Silver: {
-                _F0: new math.Vec3(0.95, 0.93, 0.88),
-                _Diffuse: new math.Vec3(0.98, 0.97, 0.95),
-            }
+        var pSkyboxTexturesKeys = [
+        	'desert',
+        	'nature',
+        	'colosseum',
+        	'beach',
+        	'plains',
+        	'church',
+        	'basilica',
+        ];
+        pSkyboxTextures = { };
+        for(var i=0; i<pSkyboxTexturesKeys.length; i++) {
+        	// console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
+        	pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-"+pSkyboxTexturesKeys[i]);
+        	(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_"+pSkyboxTexturesKeys[i].toUpperCase());
+        	// console.log("Done!");
         };
 
         pPBSData = {
-            isUsePBS: true,
-            _Material: pMaterialPresets.Aluminium,
-            _Gloss: 0,
+            isUsePBS: true
         }
 
 		pGUI.add(pState, 'lensFlare').name('lensFlare').onChange((bEnabled) => {
@@ -222,9 +211,11 @@ module akra {
 
         var pPBSFolder = pGUI.addFolder("pbs");
         (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
-        (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData, '_Gloss')).step(0.01).min(0).max(1).name("gloss");
-        (<dat.OptionController>pPBSFolder.add({Material:"Plastic"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
-            pPBSData._Material = pMaterialPresets[sKey];
+        (<dat.OptionController>pPBSFolder.add({Material:"desert"}, 'Skybox', Object.keys(pSkyboxTextures))).name("Material").onChange((sKey) => {
+	        if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+	            (<render.DSViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+	        }
+	        pEnvTexture.unwrapCubeTexture(pSkyboxTextures[sKey]);
         });
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
@@ -243,9 +234,9 @@ module akra {
 
             if (iPass == 0) {
                 pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
-                pPass.setUniform('PBS_GLOSS', pPBSData._Gloss );
-                pPass.setUniform('PBS_F0', pPBSData._Material._F0);
-                pPass.setUniform('PBS_DIFFUSE', pPBSData._Material._Diffuse);
+                // pPass.setUniform('PBS_GLOSS', pPBSData._Gloss );
+                // pPass.setUniform('PBS_F0', pPBSData._Material._F0);
+                // pPass.setUniform('PBS_DIFFUSE', pPBSData._Material._Diffuse);
                 pPass.setTexture('ENVMAP', pEnvTexture);
             }
 
@@ -363,8 +354,7 @@ module akra {
     }
 
     function createSkyBox(): void {
-        pSkyboxTexture = pRmgr.createTexture(".sky-box-texture");
-        <ITexture>pSkyboxTexture.loadResource("SKYBOX");
+        pSkyboxTexture = pSkyboxTextures['desert'];
 
         if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
             (<render.DSViewport>pViewport).setSkybox(pSkyboxTexture);
