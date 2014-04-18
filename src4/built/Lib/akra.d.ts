@@ -4263,6 +4263,7 @@ declare module akra {
     }
     interface IRenderData extends IReferenceCounter {
         getBuffer(): IRenderDataCollection;
+        _getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
         /**
         * Allocate data for rendering.
         */
@@ -14444,6 +14445,7 @@ declare module akra.data {
         private _iRenderable;
         private _pComposer;
         public getBuffer(): IRenderDataCollection;
+        public _getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
         private getCurrentIndexSet();
         constructor(pCollection?: IRenderDataCollection);
         /**

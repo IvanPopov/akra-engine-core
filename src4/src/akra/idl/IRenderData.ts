@@ -34,6 +34,7 @@ module akra {
 	
 	export interface IRenderData extends IReferenceCounter {
 		getBuffer(): IRenderDataCollection;
+		_getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
 
 		/**
 		 * Allocate data for rendering.

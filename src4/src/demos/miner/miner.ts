@@ -79,7 +79,7 @@ module akra {
 
 		pViewport.setFXAA(true);
 		
-		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
+		//pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
 		pViewport.setFXAA(false);

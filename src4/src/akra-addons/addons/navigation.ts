@@ -51,7 +51,7 @@ module akra.addons {
 		pParams.specular.set(.1);
 		pParams.attenuation.set(0.5, 0, 0);
 
-		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.LPPViewport(pCamera, 0.7, .05, .25, .25, 100)));
+		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.DSViewport(pCamera, 0.7, .05, .25, .25, 100)));
 
 		pViewport.setFXAA(true);
 		pViewport.setClearEveryFrame(false);

@@ -24,6 +24,7 @@ module akra.webgl {
 
 		var pWebGLVertexTexture: webgl.WebGLVertexTexture = <webgl.WebGLVertexTexture>pRenderData.getBuffer().getBuffer();
 		var pWebGLTexture: WebGLTexture = pWebGLVertexTexture.getWebGLTexture();
+		var pWebGLSkinVertexTexture: webgl.WebGLVertexTexture = <webgl.WebGLVertexTexture>pRenderData._getAttribBuffer(ERenderDataAttributeTypes.DYNAMIC);
 
 		/*update skinned position program*/
 		
@@ -233,28 +234,13 @@ module akra.webgl {
 		pWebGLRenderer.disableAllWebGLVertexAttribs();
 
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pWebGLFramebuffer);
-		//pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
+		pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pWebGLSkinVertexTexture.getWebGLTexture(), 0);
 
 		pWebGLRenderer.disable(gl.DEPTH_TEST);
 		pWebGLRenderer.disable(gl.SCISSOR_TEST);
 		pWebGLRenderer.disable(gl.BLEND);
 		pWebGLRenderer.disable(gl.CULL_FACE);
-
-		//var pBackupWebglTexture: WebGLTexture = pWebGLRenderer.createWebGLTexture();
-
-		//pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pBackupWebglTexture);
-		//pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, pWebGLVertexTexture["_eWebGLFormat"],
-		//	pWebGLVertexTexture._getWidth(), pWebGLVertexTexture._getWidth(), 0, pWebGLVertexTexture["_eWebGLFormat"], pWebGLVertexTexture["_eWebGLType"], null);
-
-		//pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MAG_FILTER, pWebGLContext.NEAREST);
-		//pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MIN_FILTER, pWebGLContext.NEAREST);
-		//pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
-		//pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
-
-		//pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);
-
-		pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-			gl.TEXTURE_2D, pRenderData["_pAttribVideoBuffer"].getWebGLTexture(), 0);
+		
 
 		//pWebGLRenderer.useWebGLProgram(pWebGLScreenTextureProgram.getWebGLProgram());
 		//pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pWebGLScreenBuffer);
@@ -281,9 +267,6 @@ module akra.webgl {
 		pWebGLContext.enableVertexAttribArray(iNormalAttribLocation);
 		pWebGLContext.enableVertexAttribArray(iDestinationAttribLocation);
 
-		//pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-		//	gl.TEXTURE_2D, pWebGLTexture, 0);
-
 		//get data from renderData for position update
 		pRenderData.selectIndexSet(".update_skinned_position");
 		var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
@@ -307,11 +290,11 @@ module akra.webgl {
 		//
 		/////////////////////////////////////////////////////////////////////////
 
-		//pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
-		//pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLTexture);
+		pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
+		pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLTexture);
 
-		var iWidth: uint = pWebGLVertexTexture._getWidth();
-		var iHeight: uint = pWebGLVertexTexture._getHeight();
+		var iWidth: uint = pWebGLSkinVertexTexture._getWidth();
+		var iHeight: uint = pWebGLSkinVertexTexture._getHeight();
 
 		pWebGLProgram.setInt("videoBuffer", 0);
 		pWebGLProgram.setVec2("frameBufferSize", Vec2.temp(iWidth, iHeight));
@@ -349,8 +332,7 @@ module akra.webgl {
 		pWebGLContext.drawArrays(gl.POINTS, pIndexData.getByteOffset() / iStride, pIndexData.getLength());
 		///////////////////////////////////////////////
 
-		pWebGLContext.flush();
-		pWebGLContext.finish();
+		//pWebGLContext.flush();
 		
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFrameBuffer);
 		pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -362,9 +344,6 @@ module akra.webgl {
 		pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, null);
 		pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);
 		pWebGLRenderer._setViewport(null);
-
-		//pWebGLVertexTexture["_pWebGLTexture"] = pBackupWebglTexture;
-		//pWebGLContext.deleteTexture(pWebGLTexture);
 
 		return true;
 	}

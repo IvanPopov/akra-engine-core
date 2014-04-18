@@ -85,6 +85,10 @@ module akra.data {
 			return this._pBuffer;
 		}
 
+		_getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer {
+			return eType === ERenderDataAttributeTypes.STATIC ? this._pAttribBuffer : this._pAttribVideoBuffer;
+		}
+
 		private getCurrentIndexSet(): IIndexSet {
 			return this._pIndicesArray[this._iIndexSet];
 		}
