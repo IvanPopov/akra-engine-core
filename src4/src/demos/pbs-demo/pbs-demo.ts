@@ -340,9 +340,11 @@ module akra {
 
         //pLight = pOmniLight;
 
-        pScene.postUpdate.connect(() => {
+        pScene.beforeUpdate.connect(() => {
             var t = akra.time() * 0.001 * 0.3;
             pOmniLights.setLocalPosition(math.Vec3.temp(10.*math.sin(t), 0., 4.*math.cos(t)));
+
+            //pOmniLight.addRelRotationByXYZAxis(0.,0.,0.);
         });
 
         //loadModel(data + "models/cube.DAE", null, 'camera').setPosition(1, 5, 3).scale(0.1);
