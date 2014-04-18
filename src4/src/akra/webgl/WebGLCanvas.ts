@@ -37,17 +37,17 @@ module akra.webgl {
 
 		//last viewport, that can be finded by mouse event
 		//needed for simulating mouseover/mouseout events
-		protected _p3DEventViewportLast: IViewport = null;
-		protected _p3DEventDragTarget: IViewport = null;
-		protected _p3DEventMouseDownPos: IPoint = { x: 0, y: 0 };
+		protected _pUserEventViewportLast: IViewport = null;
+		protected _pUserEventDragTarget: IViewport = null;
+		protected _pUserEventMouseDownPos: IPoint = { x: 0, y: 0 };
 		//на сколько пикселей надо протащить курсор, чтобы сработал dragging
-		protected _i3DEventDragDeadZone: uint = 2;
-		protected _b3DEventDragging: boolean = false;
-		protected _e3DEventDragBtn: EMouseButton = EMouseButton.UNKNOWN;
+		protected _iUserEventDragDeadZone: uint = 2;
+		protected _bUserEventDragging: boolean = false;
+		protected _eUserEventDragBtn: EMouseButton = EMouseButton.UNKNOWN;
 		//переменная нужна, для того чтобы пропустить событие клика приходящее после окончания драггинга
 		//так как драггинг заканчивается вместе с событием отжатия мыши, которое в свою очередь всегда приходит раньше 
 		//клика
-		protected _b3DEventSkipNextClick: boolean = false;
+		protected _bUserEventSkipNextClick: boolean = false;
 
 		constructor(pRenderer: IRenderer) {
 			super(pRenderer);
@@ -132,11 +132,11 @@ module akra.webgl {
 		}
 
 
-		enableSupportFor3DEvent(iType: int): int {
+		enableSupportForUserEvent(iType: int): int {
 
-			var iActivated: int = super.enableSupportFor3DEvent(iType);
+			var iActivated: int = super.enableSupportForUserEvent(iType);
 			var pEl: HTMLCanvasElement = this.getElement();
-			if (iActivated & E3DEventTypes.CLICK) {
+			if (iActivated & EUserEvents.CLICK) {
 				debug.log("WebGLCanvas activate <CLICK> event handing.");
 				pEl.addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -147,7 +147,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & E3DEventTypes.MOUSEMOVE) {
+			if (iActivated & EUserEvents.MOUSEMOVE) {
 				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing.");
 				pEl.addEventListener("mousemove", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -156,7 +156,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & E3DEventTypes.MOUSEDOWN) {
+			if (iActivated & EUserEvents.MOUSEDOWN) {
 				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing.");
 				pEl.addEventListener("mousedown", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -165,7 +165,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & E3DEventTypes.MOUSEUP) {
+			if (iActivated & EUserEvents.MOUSEUP) {
 				debug.log("WebGLCanvas activate <MOUSEUP> event handing.");
 				pEl.addEventListener("mouseup", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -174,7 +174,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & E3DEventTypes.MOUSEOVER) {
+			if (iActivated & EUserEvents.MOUSEOVER) {
 				debug.log("WebGLCanvas activate <MOUSEOVER> event handing.");
 				pEl.addEventListener("mouseover", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -183,7 +183,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & E3DEventTypes.MOUSEOUT) {
+			if (iActivated & EUserEvents.MOUSEOUT) {
 				debug.log("WebGLCanvas activate <MOUSEOUT> event handing.");
 				pEl.addEventListener("mouseout", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -192,7 +192,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & E3DEventTypes.MOUSEWHEEL) {
+			if (iActivated & EUserEvents.MOUSEWHEEL) {
 				debug.log("WebGLCanvas activate <MOUSEWHEEL> event handing.");
 				pEl.addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
 					absorbEvent(e);
@@ -373,12 +373,18 @@ module akra.webgl {
 			//propagation of click event to all viewports, that can be handle it
 			var pViewport: IViewport = null;
 
-			//finding top viewport, taht contains (x, y) point.
+			//finding top viewport, that contains (x, y) point.
 			for (var z in this._pViewportList) {
 				var pVp: IViewport = this._pViewportList[z];
 				if (pVp.getActualLeft() <= x && pVp.getActualTop() <= y &&
 					pVp.getActualLeft() + pVp.getActualWidth() > x && pVp.getActualTop() + pVp.getActualHeight() > y) {
 					if (isNull(pViewport) || pVp.getZIndex() > pViewport.getZIndex()) {
+
+						if (!pVp.isUserEventSupported(EUserEvents.ANY)) {
+							debug.log("Dropping the viewport, by virtue of his lack of support for 3D events.", pViewport);
+							continue;
+						}
+
 						pViewport = pVp;
 					}
 				}
@@ -389,32 +395,32 @@ module akra.webgl {
 
 		private getViewportByMouseEvent(x: uint, y: uint): IViewport {
 			var pViewportCurr: IViewport = this.findViewportByPosition(x, y);
-			var pViewportPrev: IViewport = this._p3DEventViewportLast;
+			var pViewportPrev: IViewport = this._pUserEventViewportLast;
 
 			if (pViewportPrev !== pViewportCurr) {
-				if (!isNull(pViewportPrev)) {
+				if (!isNull(pViewportPrev) && pViewportPrev.isUserEventSupported(EUserEvents.MOUSEOUT)) {
 					pViewportPrev.mouseout.emit(x - pViewportPrev.getActualLeft(), y - pViewportPrev.getActualTop());
 				}
 
-				if (!isNull(pViewportCurr)) {
+				if (!isNull(pViewportCurr) && pViewportCurr.isUserEventSupported(EUserEvents.MOUSEOVER)) {
 					pViewportCurr.mouseover.emit(x - pViewportCurr.getActualLeft(), y - pViewportCurr.getActualTop());
 				}
 			}
 
-			this._p3DEventViewportLast = pViewportCurr;
+			this._pUserEventViewportLast = pViewportCurr;
 
 			return pViewportCurr;
 		}
 
 		protected _onClick(x: uint, y: uint): void {
-			if (this._b3DEventSkipNextClick) {
-				this._b3DEventSkipNextClick = false;
+			if (this._bUserEventSkipNextClick) {
+				this._bUserEventSkipNextClick = false;
 				return;
 			}
 
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			if (!isNull(pViewport)) {
+			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.CLICK)) {
 				pViewport.click.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 		}
@@ -422,21 +428,21 @@ module akra.webgl {
 		protected _onMousemove(x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			if (!isNull(pViewport)) {
+			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEMOVE)) {
 				pViewport.mousemove.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP)) {
+			if (this.isUserEventSupported(EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP)) {
 				//dragging enabled
-				if (!isNull(this._p3DEventDragTarget)) {
+				if (!isNull(this._pUserEventDragTarget)) {
 					//drag start event not emitted
-					if (!this._b3DEventDragging &&
+					if (!this._bUserEventDragging &&
 						//mouse shift from mousedown point greather than drag dead zone constant
-						math.Vec2.temp(x - this._p3DEventMouseDownPos.x, y - this._p3DEventMouseDownPos.y).length() > this._i3DEventDragDeadZone) {
-						this.dragstart.emit(this._e3DEventDragBtn, x, y);
+						math.Vec2.temp(x - this._pUserEventMouseDownPos.x, y - this._pUserEventMouseDownPos.y).length() > this._iUserEventDragDeadZone) {
+						this.dragstart.emit(this._eUserEventDragBtn, x, y);
 					}
-					else if (this._b3DEventDragging) {
-						this.dragging.emit(this._e3DEventDragBtn, x, y);
+					else if (this._bUserEventDragging) {
+						this.dragging.emit(this._eUserEventDragBtn, x, y);
 					}
 				}
 			}
@@ -445,18 +451,19 @@ module akra.webgl {
 		protected _onMousedown(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			this._p3DEventMouseDownPos.x = x;
-			this._p3DEventMouseDownPos.y = y;
+			this._pUserEventMouseDownPos.x = x;
+			this._pUserEventMouseDownPos.y = y;
 
-			if (!isNull(pViewport)) {
+			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEDOWN)) {
 				pViewport.mousedown.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART)
-				&& this._e3DEventDragBtn === EMouseButton.UNKNOWN) {
-				this._p3DEventDragTarget = pViewport;
-				this._e3DEventDragBtn = eBtn;
 
-				if (this._i3DEventDragDeadZone === 0) {
+			if (this.isUserEventSupported(EUserEvents.DRAGSTART)
+				&& this._eUserEventDragBtn === EMouseButton.UNKNOWN) {
+				this._pUserEventDragTarget = pViewport;
+				this._eUserEventDragBtn = eBtn;
+
+				if (this._iUserEventDragDeadZone === 0) {
 					this.dragstart.emit(eBtn, x, y);
 				}
 			}
@@ -465,83 +472,77 @@ module akra.webgl {
 		protected _onMouseup(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			if (!isNull(pViewport)) {
+			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEUP)) {
 				pViewport.mouseup.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP) &&
-				this._e3DEventDragBtn === eBtn) {
+			if (this.isUserEventSupported(EUserEvents.DRAGSTOP) &&
+				this._eUserEventDragBtn === eBtn) {
 
-				if (this._b3DEventDragging) {
+				if (this._bUserEventDragging) {
 					this.dragstop.emit(eBtn, x, y);
 				}
 
-				this._p3DEventDragTarget = null;
-				this._e3DEventDragBtn = EMouseButton.UNKNOWN;
+				this._pUserEventDragTarget = null;
+				this._eUserEventDragBtn = EMouseButton.UNKNOWN;
 			}
 		}
 
 		protected _onMouseover(x: uint, y: uint): void {
+			//mouseover event will be sended automaticli insine getViewportByMouseEvent() function.
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
-
-			//if (!isNull(pViewport)) {
-			//	pViewport.mouseover.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
-			//}
 		}
 
 		protected _onMouseout(x: uint, y: uint): void {
+			//mouseout event will be sended automaticli insine getViewportByMouseEvent() function.
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			//if (!isNull(pViewport)) {
-			//	pViewport.mouseout.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
-			//}
-
 			//stop dragging if mouse goes out of target
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP)) {
-				this.dragstop.emit(this._e3DEventDragBtn, x, y);
+			if (this.isUserEventSupported(EUserEvents.DRAGSTOP)) {
+				this.dragstop.emit(this._eUserEventDragBtn, x, y);
 
-				this._p3DEventDragTarget = null;
-				this._e3DEventDragBtn = EMouseButton.UNKNOWN;
+				this._pUserEventDragTarget = null;
+				this._eUserEventDragBtn = EMouseButton.UNKNOWN;
 			}
 		}
 
 		protected _onMousewheel(x: uint, y: uint, fDelta: float): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			if (!isNull(pViewport)) {
+			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEWHEEL)) {
 				pViewport.mousewheel.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop(), fDelta);
 			}
 		}
 
 		protected _onDragstart(eBtn: EMouseButton, x: uint, y: uint): void {
-			this._b3DEventDragging = true;
+			this._bUserEventDragging = true;
 
-			if (!isNull(this._p3DEventDragTarget)) {
-				this._p3DEventDragTarget.dragstart.emit(
+			if (!isNull(this._pUserEventDragTarget)) {
+				this._pUserEventDragTarget.dragstart.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.getActualLeft(),
-					y - this._p3DEventDragTarget.getActualTop());
+					x - this._pUserEventDragTarget.getActualLeft(),
+					y - this._pUserEventDragTarget.getActualTop());
 			}
 		}
 
 		protected _onDragstop(eBtn: EMouseButton, x: uint, y: uint): void {
-			this._b3DEventSkipNextClick = true;
-			this._b3DEventDragging = false;
+			this._bUserEventSkipNextClick = true;
+			this._bUserEventDragging = false;
 
-			if (!isNull(this._p3DEventDragTarget)) {
-				this._p3DEventDragTarget.dragstop.emit(
+			if (!isNull(this._pUserEventDragTarget)) {
+				this._pUserEventDragTarget.dragstop.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.getActualLeft(),
-					y - this._p3DEventDragTarget.getActualTop());
+					x - this._pUserEventDragTarget.getActualLeft(),
+					y - this._pUserEventDragTarget.getActualTop());
 			}
 		}
 
 		protected _onDragging(eBtn: EMouseButton, x: uint, y: uint): void {
-			if (!isNull(this._p3DEventDragTarget)) {
-				this._p3DEventDragTarget.dragging.emit(
+			if (!isNull(this._pUserEventDragTarget)) {
+				this._pUserEventDragTarget.dragging.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.getActualLeft(),
-					y - this._p3DEventDragTarget.getActualTop());
+					x - this._pUserEventDragTarget.getActualLeft(),
+					y - this._pUserEventDragTarget.getActualTop());
 			}
 		}
 

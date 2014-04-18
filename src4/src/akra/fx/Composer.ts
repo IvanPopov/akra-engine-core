@@ -884,7 +884,7 @@ module akra.fx {
 			pPassInput.setUniform("isBillboard", this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard());
 
 			if (this._pCurrentViewport.getType() === EViewportTypes.DSVIEWPORT || this._pCurrentViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-				pPassInput.setForeign("isUsedPhong", (<I3DViewport>this._pCurrentViewport).getShadingModel() === EShadingModel.PHONG);
+				pPassInput.setForeign("isUsedPhong", (<IShadedViewport>this._pCurrentViewport).getShadingModel() === EShadingModel.PHONG);
 			}
 		}
 

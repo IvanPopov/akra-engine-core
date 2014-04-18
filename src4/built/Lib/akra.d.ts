@@ -4049,6 +4049,25 @@ declare module akra {
     }
 }
 declare module akra {
+    enum EUserEvents {
+        CLICK = 1,
+        MOUSEMOVE = 2,
+        MOUSEDOWN = 4,
+        MOUSEUP = 8,
+        MOUSEOVER = 16,
+        MOUSEOUT = 32,
+        DRAGSTART = 64,
+        DRAGSTOP = 128,
+        DRAGGING = 256,
+        MOUSEWHEEL = 512,
+        ANY = 1023,
+    }
+    interface IControllable {
+        enableSupportForUserEvent(iType: number): number;
+        isUserEventSupported(eType: EUserEvents): boolean;
+    }
+}
+declare module akra {
     enum EFramebuffer {
         FRONT = 0,
         BACK = 1,
@@ -4063,19 +4082,7 @@ declare module akra {
         TRIANGLE_COUNT = 16,
         ALL = 65535,
     }
-    enum E3DEventTypes {
-        CLICK = 1,
-        MOUSEMOVE = 2,
-        MOUSEDOWN = 4,
-        MOUSEUP = 8,
-        MOUSEOVER = 16,
-        MOUSEOUT = 32,
-        DRAGSTART = 64,
-        DRAGSTOP = 128,
-        DRAGGING = 256,
-        MOUSEWHEEL = 512,
-    }
-    interface IRenderTarget extends IEventProvider {
+    interface IRenderTarget extends IEventProvider, IControllable {
         getName(): string;
         setName(sName: string): void;
         getWidth(): number;
@@ -4091,8 +4098,6 @@ declare module akra {
         detachDepthBuffer(): void;
         detachDepthTexture(): void;
         detachDepthPixelBuffer(): void;
-        enableSupportFor3DEvent(iType: number): number;
-        is3DEventSupported(eType: E3DEventTypes): boolean;
         destroy(): void;
         update(): void;
         updateStats(): void;
@@ -4528,7 +4533,7 @@ declare module akra {
         TEXTUREVIEWPORT = 4,
         LPPVIEWPORT = 5,
     }
-    interface IViewport extends IEventProvider, IClickable {
+    interface IViewport extends IEventProvider, IClickable, IControllable {
         getLeft(): number;
         getTop(): number;
         getWidth(): number;
@@ -4553,23 +4558,12 @@ declare module akra {
         renderObject(pRenderable: IRenderableObject): void;
         endFrame(): void;
         clear(iBuffers?: number, cColor?: IColor, fDepth?: number, iStencil?: number): void;
-        enableSupportFor3DEvent(iType: number): number;
-        is3DEventSupported(eType: E3DEventTypes): boolean;
-        touch(): void;
-        pick(x: number, y: number): IRIDPair;
-        getObject(x: number, y: number): ISceneObject;
-        getRenderable(x: number, y: number): IRenderableObject;
         getTarget(): IRenderTarget;
         getCamera(): ICamera;
         setCamera(pCamera: ICamera): boolean;
-        getDepth(x: number, y: number): number;
-        getDepthRange(): IDepthRange;
         setDimensions(fLeft: number, fTop: number, fWidth: number, fHeight: number): boolean;
         setDimensions(pRect: IRect2d): boolean;
         getActualDimensions(): IRect2d;
-        projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
-        unprojectPoint(x: number, y: number, v3fDestination?: IVec3): IVec3;
-        unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
         setClearEveryFrame(isClear: boolean, iBuffers?: number): void;
         getClearEveryFrame(): boolean;
         getClearBuffers(): number;
@@ -4578,22 +4572,13 @@ declare module akra {
         setAutoUpdated(bValue?: boolean): void;
         isAutoUpdated(): boolean;
         isUpdated(): boolean;
-        /**
-        * Is mouse under the viewport?
-        */
-        isMouseCaptured(): boolean;
         _clearUpdatedFlag(): void;
         _updateImpl(): void;
         _getNumRenderedPolygons(): number;
         _updateDimensions(bEmitEvent?: boolean): void;
         _getViewportState(): IViewportState;
         _setTarget(pTarget: IRenderTarget): void;
-        _getLastMousePosition(): IPoint;
-        _keepLastMousePosition(x: number, y: number): void;
-        _handleMouseInout(pCurr: IRIDPair, x: number, y: number): IRIDPair;
-        _set3DEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
-        _get3DEventDragTarget(): IRIDPair;
-        _setMouseCaptured(bValue: boolean): void;
+        _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
     }
 }
 declare module akra {
@@ -13361,13 +13346,7 @@ declare module akra.render {
         public _csDefaultRenderMethod: string;
         public _isDepthRangeUpdated: boolean;
         public _bHidden: boolean;
-        public _pMousePositionLast: IPoint;
-        public _bMouseIsCaptured: boolean;
-        public _i3DEvents: number;
-        public _b3DRequirePick: boolean;
-        public _p3DEventPickLast: IRIDPair;
-        public _p3DEventPickPrev: IRIDPair;
-        public _p3DEventDragTarget: IRIDPair;
+        public _iUserEvents: number;
         /**
         * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
         */
@@ -13389,13 +13368,8 @@ declare module akra.render {
         public setDepthClear(fDepthClearValue: number): void;
         public destroy(): void;
         public clear(iBuffers?: number, cColor?: IColor, fDepth?: number, iStencil?: number): void;
-        public enableSupportFor3DEvent(iType: number): number;
-        public is3DEventSupported(eType: E3DEventTypes): boolean;
         public getTarget(): IRenderTarget;
         public getCamera(): ICamera;
-        public getDepth(x: number, y: number): number;
-        public getDepthRange(): IDepthRange;
-        public _getDepthRangeImpl(): IDepthRange;
         public setCamera(pCamera: ICamera): boolean;
         public _setCamera(pCamera: ICamera): void;
         public setDimensions(fLeft: number, fTop: number, fWidth: number, fHeight: number): boolean;
@@ -13417,36 +13391,14 @@ declare module akra.render {
         public endFrame(): void;
         public renderAsNormal(csMethod: string, pCamera: ICamera): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-        public projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
-        public unprojectPoint(x: number, y: number, v3fDestination?: IVec3): IVec3;
-        public unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
         public _setTarget(pTarget: IRenderTarget): void;
         public isUpdated(): boolean;
-        public isMouseCaptured(): boolean;
-        public _setMouseCaptured(bValue: boolean): void;
+        public enableSupportForUserEvent(iType: number): number;
+        public isUserEventSupported(eType: EUserEvents): boolean;
         public _clearUpdatedFlag(): void;
         public _getNumRenderedPolygons(): number;
         public _getViewportState(): IViewportState;
-        public pick(x: number, y: number): IRIDPair;
-        public getObject(x: number, y: number): ISceneObject;
-        public getRenderable(x: number, y: number): IRenderableObject;
-        public touch(): void;
-        public _handleMouseInout(pCurr: IRIDPair, x: number, y: number): IRIDPair;
-        public _keepLastMousePosition(x: number, y: number): void;
-        public _getLastMousePosition(): IPoint;
-        public _set3DEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
-        public _get3DEventDragTarget(): IRIDPair;
         static RenderSignal: any;
-        static DraggingSignal: typeof Signal;
-        static DragstartSignal: typeof Signal;
-        static DragstopSignal: typeof Signal;
-        static MousedownSignal: typeof Signal;
-        static MouseupSignal: typeof Signal;
-        static MouseoverSignal: typeof Signal;
-        static MouseoutSignal: typeof Signal;
-        static MousewheelSignal: typeof Signal;
-        static MousemoveSignal: typeof Signal;
-        static ClickSignal: typeof Signal;
     }
 }
 declare module akra.render {
@@ -13469,29 +13421,56 @@ declare module akra {
         BLINNPHONG = 0,
         PHONG = 1,
     }
-    interface I3DViewport extends IViewport {
+    interface IViewport3D extends IViewport {
         getEffect(): IEffect;
-        getDepthTexture(): ITexture;
-        getLightSources(): IObjectArray<ILightPoint>;
-        getTextureWithObjectID(): ITexture;
-        getView(): IRenderableObject;
+        touch(): void;
+        pick(x: number, y: number): IRIDPair;
+        getObject(x: number, y: number): ISceneObject;
+        getRenderable(x: number, y: number): IRenderableObject;
+        getDepth(x: number, y: number): number;
+        getDepthRange(): IDepthRange;
+        /**
+        * Is mouse under the viewport?
+        */
+        isMouseCaptured(): boolean;
+        projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+        unprojectPoint(x: number, y: number, v3fDestination?: IVec3): IVec3;
+        unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
+        _getRenderId(x: number, y: number): number;
+        _getLastMousePosition(): IPoint;
+        _keepLastMousePosition(x: number, y: number): void;
+        _handleMouseInout(pCurr: IRIDPair, x: number, y: number): IRIDPair;
+        _setUserEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
+        _getUserEventDragTarget(): IRIDPair;
+        _setMouseCaptured(bValue: boolean): void;
+    }
+    interface IViewportSkybox extends IViewport3D {
         getSkybox(): ITexture;
         setSkybox(pSkyTexture: ITexture): void;
-        setFXAA(bValue?: boolean): void;
-        isFXAA(): boolean;
+        addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+    }
+    interface IViewportAntialising extends IViewport3D {
+        setAntialiasing(bEnabled?: boolean): void;
+        isAntialiased(): boolean;
+    }
+    interface IViewportHighlighting extends IViewport3D {
         highlight(iRid: number): void;
         highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         highlight(pPair: IRIDPair): void;
-        _getRenderId(x: number, y: number): number;
-        addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+    }
+    interface IShadedViewport extends IViewport3D {
         setShadingModel(eModel: EShadingModel): any;
         getShadingModel(): EShadingModel;
+        getLightSources(): IObjectArray<ILightPoint>;
     }
 }
 declare module akra {
-    interface IDSViewport extends I3DViewport {
+    interface IDSViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
         getColorTextures(): ITexture[];
         _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
+        getDepthTexture(): ITexture;
+        getTextureWithObjectID(): ITexture;
+        getView(): IRenderableObject;
     }
 }
 declare module akra {
@@ -13522,6 +13501,48 @@ declare module akra {
         getDepthTexture(): ITexture;
         getRenderTarget(): IRenderTarget;
         _prepareForLighting(pCamera: ICamera): boolean;
+    }
+}
+declare module akra.render {
+    class Viewport3D extends Viewport implements IViewport3D {
+        public _pMousePositionLast: IPoint;
+        public _bMouseIsCaptured: boolean;
+        public _b3DRequirePick: boolean;
+        public _p3DEventPickLast: IRIDPair;
+        public _p3DEventPickPrev: IRIDPair;
+        public _p3DEventDragTarget: IRIDPair;
+        public setupSignals(): void;
+        public getDepth(x: number, y: number): number;
+        public update(): void;
+        public _getDepthRangeImpl(): IDepthRange;
+        public getDepthRange(): IDepthRange;
+        public projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+        public unprojectPoint(x: number, y: number, v3fDestination?: IVec3): IVec3;
+        public unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
+        public getObject(x: number, y: number): ISceneObject;
+        public getRenderable(x: number, y: number): IRenderableObject;
+        public touch(): void;
+        public getEffect(): IEffect;
+        public isMouseCaptured(): boolean;
+        public pick(x: number, y: number): IRIDPair;
+        public _handleMouseInout(pCurr: IRIDPair, x: number, y: number): IRIDPair;
+        public _keepLastMousePosition(x: number, y: number): void;
+        public _getLastMousePosition(): IPoint;
+        public _setUserEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
+        public _getUserEventDragTarget(): IRIDPair;
+        public _setMouseCaptured(bValue: boolean): void;
+        public _getRenderId(x: number, y: number): number;
+        public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        static DraggingSignal: typeof Signal;
+        static DragstartSignal: typeof Signal;
+        static DragstopSignal: typeof Signal;
+        static MousedownSignal: typeof Signal;
+        static MouseupSignal: typeof Signal;
+        static MouseoverSignal: typeof Signal;
+        static MouseoutSignal: typeof Signal;
+        static MousewheelSignal: typeof Signal;
+        static MousemoveSignal: typeof Signal;
+        static ClickSignal: typeof Signal;
     }
 }
 declare module akra {
@@ -15282,7 +15303,7 @@ declare module akra.scene {
     }
 }
 declare module akra.render {
-    class DSViewport extends Viewport implements IDSViewport {
+    class DSViewport extends Viewport3D implements IDSViewport {
         public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
         public addedBackground: ISignal<(pViewport: IViewport, pTexture: ITexture) => void>;
         private _pDeferredEffect;
@@ -15315,7 +15336,6 @@ declare module akra.render {
         public getSkybox(): ITexture;
         public getObject(x: number, y: number): ISceneObject;
         public getRenderable(x: number, y: number): IRenderableObject;
-        public pick(x: number, y: number): IRIDPair;
         public _getRenderId(x: number, y: number): number;
         public _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
         public getDepth(x: number, y: number): number;
@@ -15325,6 +15345,8 @@ declare module akra.render {
         public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         public highlight(pPair: IRIDPair): void;
         public isFXAA(): boolean;
+        public isAntialiased(): boolean;
+        public setAntialiasing(bEnabled?: boolean): void;
         public destroy(): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
@@ -15332,11 +15354,14 @@ declare module akra.render {
     }
 }
 declare module akra {
-    interface ILPPViewport extends I3DViewport {
+    interface ILPPViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
+        getDepthTexture(): ITexture;
+        getTextureWithObjectID(): ITexture;
+        getView(): IRenderableObject;
     }
 }
 declare module akra.render {
-    class LPPViewport extends Viewport implements ILPPViewport {
+    class LPPViewport extends Viewport3D implements ILPPViewport {
         public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
         /** Buffer with normal, shininess and objectID */
         private _pNormalBufferTexture;
@@ -15372,13 +15397,14 @@ declare module akra.render {
         public setCamera(pCamera: ICamera): boolean;
         public getObject(x: number, y: number): ISceneObject;
         public getRenderable(x: number, y: number): IRenderableObject;
-        public pick(x: number, y: number): IRIDPair;
         public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;
         public _updateImpl(): void;
         public setSkybox(pSkyTexture: ITexture): boolean;
         public setFXAA(bValue?: boolean): void;
         public isFXAA(): boolean;
+        public setAntialiasing(bEnabled?: boolean): void;
+        public isAntialiased(): boolean;
         public highlight(iRid: number): void;
         public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         public highlight(pPair: IRIDPair): void;
@@ -15449,7 +15475,7 @@ declare module akra.render {
         public _isAutoUpdate: boolean;
         public _bHwGamma: boolean;
         public _pViewportList: IViewport[];
-        private _i3DEvents;
+        private _iUserEvents;
         constructor(pRenderer: IRenderer);
         public setupSignals(): void;
         public getWidth(): number;
@@ -15460,8 +15486,8 @@ declare module akra.render {
         public getPriority(): number;
         public getName(): string;
         public setName(sName: string): void;
-        public enableSupportFor3DEvent(iType: number): number;
-        public is3DEventSupported(eType: E3DEventTypes): boolean;
+        public enableSupportForUserEvent(iType: number): number;
+        public isUserEventSupported(eType: EUserEvents): boolean;
         public getRenderer(): IRenderer;
         public destroy(): void;
         public getDepthBuffer(): IDepthBuffer;
@@ -15669,13 +15695,13 @@ declare module akra.webgl {
         public _pCanvasCreationInfo: ICanvasInfo;
         public _iRealWidth: number;
         public _iRealHeight: number;
-        public _p3DEventViewportLast: IViewport;
-        public _p3DEventDragTarget: IViewport;
-        public _p3DEventMouseDownPos: IPoint;
-        public _i3DEventDragDeadZone: number;
-        public _b3DEventDragging: boolean;
-        public _e3DEventDragBtn: EMouseButton;
-        public _b3DEventSkipNextClick: boolean;
+        public _pUserEventViewportLast: IViewport;
+        public _pUserEventDragTarget: IViewport;
+        public _pUserEventMouseDownPos: IPoint;
+        public _iUserEventDragDeadZone: number;
+        public _bUserEventDragging: boolean;
+        public _eUserEventDragBtn: EMouseButton;
+        public _bUserEventSkipNextClick: boolean;
         constructor(pRenderer: IRenderer);
         public setupSignals(): void;
         public getLeft(): number;
@@ -15686,7 +15712,7 @@ declare module akra.webgl {
         public hideCursor(bHide?: boolean): void;
         public setCursor(sType: string): void;
         public create(sName?: string, iWidth?: number, iHeight?: number, isFullscreen?: boolean): boolean;
-        public enableSupportFor3DEvent(iType: number): number;
+        public enableSupportForUserEvent(iType: number): number;
         public destroy(): void;
         public getCustomAttribute(sName: string): any;
         public setFullscreen(isFullscreen?: boolean): void;

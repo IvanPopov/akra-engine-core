@@ -94,7 +94,7 @@ module akra {
 	}
 
 	function createViewport(): IViewport {
-		var pViewport: I3DViewport = new render.LPPViewport(pCamera);
+		var pViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -104,7 +104,7 @@ module akra {
 
 		// (<render.DSViewport>pViewport).setFXAA(false);
 		var counter = 0;
-		var pEffect = (<render.DSViewport>pViewport).getEffect();
+		var pEffect = pViewport.getEffect();
 		pEffect.addComponent("akra.system.sunshaft");
 		pEffect.addComponent("akra.system.blur");
 		pEffect.addComponent("akra.system.lensflare");
@@ -210,7 +210,7 @@ module akra {
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
 
-		pViewport.render.connect((pViewport: I3DViewport, pTechnique: IRenderTechnique,
+		pViewport.render.connect((pViewport: ILPPViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
 			var pIDTexture: ITexture = pViewport.getTextureWithObjectID();//(<render.DSViewport>pViewport).getColorTextures()[0];

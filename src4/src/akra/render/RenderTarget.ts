@@ -60,7 +60,7 @@ module akra.render {
 		protected _pViewportList: IViewport[] = [];
 
 		//3d event handing
-		private _i3DEvents: int = 0;
+		private _iUserEvents: int = 0;
 
 		constructor(pRenderer: IRenderer) {
 			this.setupSignals();
@@ -128,27 +128,27 @@ module akra.render {
 			this._sName = sName;
 		}
 
-		enableSupportFor3DEvent(iType: int): int {
-			if (bf.testAny(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
-				iType = bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
-					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
+		enableSupportForUserEvent(iType: int): int {
+			if (bf.testAny(iType, EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP | EUserEvents.DRAGGING)) {
+				iType = bf.setAll(iType, EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP | EUserEvents.DRAGGING |
+					EUserEvents.MOUSEDOWN | EUserEvents.MOUSEUP | EUserEvents.MOUSEMOVE);
 			}
 
 			//mouse over and mouse out events require mouse move
-			if (bf.testAny(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
-				iType = bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
+			if (bf.testAny(iType, EUserEvents.MOUSEOVER | EUserEvents.MOUSEOUT)) {
+				iType = bf.setAll(iType, EUserEvents.MOUSEMOVE);
 			}
 
 			//get events that have not yet been activated
-			var iNotActivate: int = (this._i3DEvents ^ 0x7fffffff) & iType;
+			var iNotActivate: int = (this._iUserEvents ^ 0x7fffffff) & iType;
 
-			this._i3DEvents = bf.setAll(this._i3DEvents, iNotActivate);
+			this._iUserEvents = bf.setAll(this._iUserEvents, iNotActivate);
 
 			return iNotActivate;
 		}
 
-		is3DEventSupported(eType: E3DEventTypes): boolean {
-			return bf.testAny(this._i3DEvents, <int>eType);
+		isUserEventSupported(eType: EUserEvents): boolean {
+			return bf.testAny(this._iUserEvents, <int>eType);
 		}
 
 		getRenderer(): IRenderer { return this._pRenderer; }

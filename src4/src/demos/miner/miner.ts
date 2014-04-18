@@ -33,7 +33,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport: I3DViewport = null;
+	export var pViewport: IDSViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pScene: IScene3d = pEngine.getScene();
 
@@ -69,19 +69,18 @@ module akra {
 
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
 		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
-		pViewport = new render.LPPViewport(pCamera);
+		pViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 
 		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
 		//pCanvas.addViewport(pLPPViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
-		pViewport.setFXAA(true);
 		
-		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
+		//pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
-		pViewport.setFXAA(false);
+		pViewport.setAntialiasing(false);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 

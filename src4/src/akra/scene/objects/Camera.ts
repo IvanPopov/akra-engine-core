@@ -470,7 +470,7 @@ module akra.scene.objects {
 
 
 		getDepthRange(): IDepthRange {
-			var pDepthRange: IDepthRange = this._pLastViewport.getDepthRange();
+			var pDepthRange: IDepthRange = (<IViewport3D>this._pLastViewport).getDepthRange();
 
 			var zNear: float = this._m4fProj.unprojZ(pDepthRange.min);
 			var zFar: float = this._m4fProj.unprojZ(pDepthRange.max);

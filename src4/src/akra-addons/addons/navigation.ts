@@ -19,7 +19,7 @@ module akra.addons {
 	}
 
 	function _navigation(
-		pGeneralViewport: IViewport,
+		pGeneralViewport: IViewport3D,
 		pParameters: INavigationsParameters,
 		pCallback: (e: Error) => void): void {
 
@@ -53,14 +53,14 @@ module akra.addons {
 
 		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.LPPViewport(pCamera, 0.7, .05, .25, .25, 100)));
 
-		pViewport.setFXAA(true);
+		pViewport.setAntialiasing(true);
 		pViewport.setClearEveryFrame(false);
 		//detection of center point
 
 		var pPlaneXZ: IPlane3d = new geometry.Plane3d(Vec3.temp(1., 0., 0.), Vec3.temp(0.), Vec3.temp(0., 0., 1.));
 		var pCameraDir: IRay3d = new geometry.Ray3d;
 
-		function detectCenterPoint(pGeneralViewport: IViewport): IVec3 {
+		function detectCenterPoint(pGeneralViewport: IViewport3D): IVec3 {
 			var vDest: IVec3 = Vec3.temp(0.);
 			var fDistXY: float;
 			var fUnprojDist: float;
@@ -97,7 +97,7 @@ module akra.addons {
 			return vDest;
 		}
 
-		function detectSpeedRation(pGeneralViewport: IViewport): float {
+		function detectSpeedRation(pGeneralViewport: IViewport3D): float {
 			var pCamera: ICamera = pGeneralViewport.getCamera();
 			var fLength: float = detectCenterPoint(pGeneralViewport).subtract(pCamera.getWorldPosition()).length();
 			var fSpeedRation: float = detectCenterPoint(pGeneralViewport).subtract(pCamera.getWorldPosition()).length() / 5.;
@@ -110,7 +110,7 @@ module akra.addons {
 		});
 
 		//movemenet backend!
-		pGeneralViewport.enableSupportFor3DEvent(E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP);
+		pGeneralViewport.enableSupportForUserEvent(EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP);
 
 		var vWorldPosition: IVec3 = new Vec3;
 		var pStartPos: IPoint = { x: 0, y: 0 };
@@ -170,9 +170,10 @@ module akra.addons {
 			}
 		});
 
-		pViewport.enableSupportFor3DEvent(
-			E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER |
-			E3DEventTypes.MOUSEOUT | E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.MOUSEWHEEL);
+		pViewport.enableSupportForUserEvent(
+			EUserEvents.CLICK | EUserEvents.MOUSEOVER |
+			EUserEvents.MOUSEOUT | EUserEvents.DRAGSTART |
+			EUserEvents.DRAGSTOP | EUserEvents.MOUSEWHEEL);
 
 		//cube scene synchronization backend
 
@@ -210,7 +211,6 @@ module akra.addons {
 
 		syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
 
-
 		pCubeModel.dragstart.connect((pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
 			var pCamera: ICamera = pGeneralViewport.getCamera();
 
@@ -237,9 +237,13 @@ module akra.addons {
 			eSrcBlend = ERenderStateValues.SRCALPHA;
 			eDestBlend = ERenderStateValues.DESTALPHA;
 			pViewport.highlight(null, null);
+			console.log("dragstop");
 			pViewport.touch();
 		});
 
+		pCubeModel.mouseout.connect(() => {
+			console.log("navigation::viewport::cube::mouseout()");
+		});
 
 		function orbitRotation2(pNode: INode, vCenter, vFrom: IVec3, fX, fY, bLookAt: boolean = true): void {
 			if (isNull(vFrom)) {
@@ -329,12 +333,14 @@ module akra.addons {
 			});
 
 			pSubset.mouseout.connect((pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
+				console.log("navigation::cube::subset::mouseout() common");
 				if (bDragStarted) {
 					pViewport.highlight(pCubeModel, null);
 					eSrcBlend = ERenderStateValues.ONE;
 					eDestBlend = ERenderStateValues.INVSRCALPHA;
 				}
 				else {
+					console.log("navigation::cube::subset::mouseout()");
 					pViewport.highlight(null, null);
 					eSrcBlend = ERenderStateValues.SRCALPHA;
 					eDestBlend = ERenderStateValues.DESTALPHA;
@@ -395,7 +401,7 @@ module akra.addons {
 	 * @param pCallback Loading callback.
 	 */
 	export function navigation(
-		pGeneralViewport: IViewport,
+		pGeneralViewport: IViewport3D,
 		pParameters: INavigationsParameters = null,
 		pCallback: (e: Error) => void = null): void {
 
