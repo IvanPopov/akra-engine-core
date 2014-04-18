@@ -5,7 +5,8 @@
 module akra {
 	export enum EShadingModel {
 		BLINNPHONG,
-		PHONG
+		PHONG,
+		PBS_SIMPLE
 	};
 
 	export interface I3DViewport extends IViewport {
@@ -29,7 +30,10 @@ module akra {
 
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
 
-		setShadingModel(eModel: EShadingModel);
+		setShadingModel(eModel: EShadingModel): void;
 		getShadingModel(): EShadingModel;
+
+		setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+		getDefaultEnvironmentMap(): ITexture;
 	}
 }

@@ -156,6 +156,7 @@ module akra.util {
 		}
 
 		explore(fn: IExplorerFunc, bWithSiblings: boolean = false): void {
+
 			if (fn(this) === false) {
 				return;
 			}
@@ -168,6 +169,7 @@ module akra.util {
 				this._pChild.explore(fn, true);
 			}
 		}
+
 
 
 		childOf(pParent: IEntity): boolean {

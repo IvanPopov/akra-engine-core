@@ -13467,6 +13467,7 @@ declare module akra {
     enum EShadingModel {
         BLINNPHONG = 0,
         PHONG = 1,
+        PBS_SIMPLE = 2,
     }
     interface I3DViewport extends IViewport {
         getEffect(): IEffect;
@@ -13483,8 +13484,10 @@ declare module akra {
         highlight(pPair: IRIDPair): void;
         _getRenderId(x: number, y: number): number;
         addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
-        setShadingModel(eModel: EShadingModel): any;
+        setShadingModel(eModel: EShadingModel): void;
         getShadingModel(): EShadingModel;
+        setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        getDefaultEnvironmentMap(): ITexture;
     }
 }
 declare module akra {
@@ -15299,6 +15302,7 @@ declare module akra.render {
         private _pLightingUnifoms;
         private _pHighlightedObject;
         private _eShadingModel;
+        private _pDefaultEnvMap;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15310,6 +15314,8 @@ declare module akra.render {
         public getTextureWithObjectID(): ITexture;
         public setShadingModel(eModel: EShadingModel): void;
         public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15361,6 +15367,7 @@ declare module akra.render {
         private _pHighlightedObject;
         private _pSkyboxTexture;
         private _eShadingModel;
+        private _pDefaultEnvMap;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15372,6 +15379,8 @@ declare module akra.render {
         public getLightSources(): IObjectArray<ILightPoint>;
         public setShadingModel(eModel: EShadingModel): void;
         public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public getObject(x: number, y: number): ISceneObject;

@@ -52,6 +52,7 @@ module akra.render {
 		private _pSkyboxTexture: ITexture = null;
 
 		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
+		private _pDefaultEnvMap: ITexture = null;
 		
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -97,6 +98,14 @@ module akra.render {
 
 		getShadingModel(): EShadingModel {
 			return this._eShadingModel;
+		}
+
+		setDefaultEnvironmentMap(pEnvMap: ITexture): void {
+			this._pDefaultEnvMap = pEnvMap;
+		}
+
+		getDefaultEnvironmentMap(): ITexture {
+			return this._pDefaultEnvMap;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -232,7 +241,7 @@ module akra.render {
 			//render deferred
 			this._pViewScreen.render(this._pLightBufferTextures[0].getBuffer().getRenderTarget().getViewport(0), "passA");
 			//pRenderer.executeQueue(false);
-			if (this.getShadingModel() === EShadingModel.PHONG) {
+			if (this.getShadingModel() === EShadingModel.PHONG || this.getShadingModel() === EShadingModel.PBS_SIMPLE) {
 				this._pViewScreen.render(this._pLightBufferTextures[1].getBuffer().getRenderTarget().getViewport(0), "passB");
 			}
 
@@ -365,6 +374,10 @@ module akra.render {
 			pPass.setTexture("LPP_DEPTH_BUFFER_TEXTURE", this._pDepthBufferTexture);
 			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
 			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
+
+			pPass.setForeign("isUsedPhong", this.getShadingModel() === EShadingModel.PHONG);
+			pPass.setForeign("isUsedBlinnPhong", this.getShadingModel() === EShadingModel.BLINNPHONG);
+			pPass.setForeign("isUsedPBSSimple", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
 		}
 
 		_onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -375,6 +388,18 @@ module akra.render {
 			pPass.setTexture("LPP_LIGHT_BUFFER_B", this._pLightBufferTextures[1]);
 			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
 			pPass.setForeign("optimizeForLPPApply", true);
+
+			pPass.setForeign("isUsedPhong", this.getShadingModel() === EShadingModel.PHONG);
+			pPass.setForeign("isUsedBlinnPhong", this.getShadingModel() === EShadingModel.BLINNPHONG);
+			pPass.setForeign("isUsedPBSSimple", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+
+			if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
+				pPass.setForeign("isUsedPBSReflections", true);
+				pPass.setTexture("ENVMAP", this.getDefaultEnvironmentMap());
+			}
+			else {
+				pPass.setForeign("isUsedPBSReflections", false);
+			}
 		}
 
 		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -558,7 +583,6 @@ module akra.render {
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
-
 						//var iTotalPasses = pTechnique.getTotalPasses();
 						//for (var i: uint = 0; i < iTotalPasses; i++) {
 						//	pTechnique.getPass(i).setForeign("optimizeForLPPPrepare", true);
@@ -575,6 +599,7 @@ module akra.render {
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.apply_lpp_shading");
+						pTechnique.addComponent("akra.system.pbsReflection");
 					}
 				}
 			}

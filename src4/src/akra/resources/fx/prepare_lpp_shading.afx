@@ -147,11 +147,11 @@ foreign bool prepareOnlyPosition;
 technique prepare_lpp_lights_base {
     pass p1{
         VertexShader = compile vs_prepare_lpp_data_base();
-        if(prepareOnlyPosition) {
-            PixelShader = compile fs_prepare_lpp_data_positionOnly();            
-        }
-        else {
+        //if(prepareOnlyPosition) {
+        //    PixelShader = compile fs_prepare_lpp_data_positionOnly();            
+        //}
+        //else {
             PixelShader = compile fs_prepare_lpp_data_base();
-        }
+        //}
     }
 }

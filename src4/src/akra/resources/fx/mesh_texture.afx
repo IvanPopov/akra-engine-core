@@ -203,9 +203,9 @@ technique mesh_texture {
         else if(optimizeForLPPPrepare) {
             PixelShader = compile fs_mesh_texture_normal_shininess();
         }
-        else if(optimizeForLPPApply) {
-            PixelShader = compile fs_mesh_texture_material();
-        }
+        //else if(optimizeForLPPApply) {
+        //    PixelShader = compile fs_mesh_texture_material();
+        //}
         else {
             PixelShader = compile fs_mesh_texture_full();
         }

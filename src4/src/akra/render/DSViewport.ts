@@ -62,6 +62,7 @@ module akra.render {
 		//highligting
 		private _pHighlightedObject: IRIDPair = { object: null, renderable: null };
 		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
+		private _pDefaultEnvMap: ITexture = null;
 
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
@@ -109,6 +110,14 @@ module akra.render {
 
 		getShadingModel(): EShadingModel {
 			return this._eShadingModel;
+		}
+
+		setDefaultEnvironmentMap(pEnvMap: ITexture): void {
+			this._pDefaultEnvMap = pEnvMap;
+		}
+
+		getDefaultEnvironmentMap(): ITexture {
+			return this._pDefaultEnvMap;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -181,6 +190,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
+			pDSEffect.addComponent("akra.system.pbsReflection");
 
 			pDSMethod.setEffect(pDSEffect);
 
@@ -533,6 +543,18 @@ module akra.render {
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
 					pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
+
+					pPass.setForeign("isUsedPhong", this.getShadingModel() === EShadingModel.PHONG);
+					pPass.setForeign("isUsedBlinnPhong", this.getShadingModel() === EShadingModel.BLINNPHONG);
+					pPass.setForeign("isUsedPBSSimple", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+
+					if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
+						pPass.setForeign("isUsedPBSReflections", true);
+						pPass.setTexture("ENVMAP", this.getDefaultEnvironmentMap());
+					}
+					else {
+						pPass.setForeign("isUsedPBSReflections", false);
+					}
 
 					break;
 

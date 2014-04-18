@@ -9,6 +9,16 @@ foreign int nProject;
 foreign int nSun;
 foreign int nSunShadows;
 
+texture envTex0 : ENVMAP;
+
+sampler2D envSampler0 : ENV_SAMPLER_0 = sampler_state
+{
+	Texture = <envTex0>;
+	MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
 sampler project_shadow_sampler[nProjectShadows] : PROJECT_SHADOW_SAMPLER;
 sampler omni_shadow_sampler[nOmniShadows * 6] : OMNI_SHADOW_SAMPLER;
 sampler sun_shadow_sampler[nSunShadows] : SUN_SHADOW_SAMPLER;
@@ -28,6 +38,7 @@ float4 apply_light_omni() : COLOR {
 		result_color += applyBaseLightParams(pixelData, points_omni[i].lightData);
 	}
 	
+	//result_color = float4(pixelData.normal, 1.);
 	return returnColor(result_color);
 }
 
@@ -166,6 +177,16 @@ float4 apply_sun_light_shadows() : COLOR {
 	return returnColor(result_color);
 };
 
+float4 apply_pbs_reflection(): COLOR {
+	float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
+			pixelData.specular.xyz, pixelData.shininess, envSampler0);
+	// lowering reflection brightness if we have a strong lighting already
+	float4 color = resultAFXColor;
+	reflection *= float4(1.) - color;
+	color += reflection;
+	return color;
+};
+
 technique omniLighting{
 	pass applyOmniLighting{
 		if(nOmni > 0){
@@ -210,6 +231,14 @@ technique sunShadowsLighting{
 	pass applySunShadowsLighting{
 		if(nSunShadows > 0){
 			PixelShader = compile apply_sun_light_shadows();
+		}
+	}
+};
+
+technique pbsReflection{
+	pass applyPbsReflection{
+		if(isUsedPBSReflections && isUsedPBSSimple){
+			PixelShader = compile apply_pbs_reflection();
 		}
 	}
 };
