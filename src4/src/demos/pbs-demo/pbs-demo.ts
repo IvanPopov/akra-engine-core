@@ -211,7 +211,7 @@ module akra {
 
         var pPBSFolder = pGUI.addFolder("pbs");
         (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
-        (<dat.OptionController>pPBSFolder.add({Material:"desert"}, 'Skybox', Object.keys(pSkyboxTextures))).name("Material").onChange((sKey) => {
+        (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', Object.keys(pSkyboxTextures))).name("Skybox").onChange((sKey) => {
 	        if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
 	            (<render.DSViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 	        }
