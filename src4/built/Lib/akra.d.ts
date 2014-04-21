@@ -2326,6 +2326,188 @@ declare module akra {
     }
 }
 declare module akra {
+    /** User events. */
+    enum EUserEvents {
+        CLICK = 1,
+        MOUSEMOVE = 2,
+        MOUSEDOWN = 4,
+        MOUSEUP = 8,
+        MOUSEOVER = 16,
+        MOUSEOUT = 32,
+        DRAGSTART = 64,
+        DRAGSTOP = 128,
+        DRAGGING = 256,
+        MOUSEWHEEL = 512,
+        ANY = 1023,
+    }
+    /** Object that can receive user events. */
+    interface IControllable {
+        /**
+        * @param iType Flags of events,
+        *	like: akra.EUserEvents.CLICK | akraEUserEvents.MOUSEWHEEL
+        *
+        * @return Activated events.
+        */
+        enableSupportForUserEvent(iType: number): number;
+        /** @return TRUE if event supported for this object. */
+        isUserEventSupported(iEvents: number): boolean;
+        isUserEventSupported(eType: EUserEvents): boolean;
+    }
+}
+declare module akra {
+    interface IPoint {
+        x: number;
+        y: number;
+    }
+}
+declare module akra {
+    interface IOffset {
+        x: number;
+        y: number;
+    }
+}
+declare module akra {
+    enum EKeyCodes {
+        BACKSPACE = 8,
+        TAB = 9,
+        ENTER = 13,
+        SHIFT = 16,
+        CTRL = 17,
+        ALT = 18,
+        PAUSE = 19,
+        BREAK = 19,
+        CAPSLOCK = 20,
+        ESCAPE = 27,
+        SPACE = 32,
+        PAGEUP = 33,
+        PAGEDOWN = 34,
+        END = 35,
+        HOME = 36,
+        LEFT = 37,
+        UP = 38,
+        RIGHT = 39,
+        DOWN = 40,
+        INSERT = 45,
+        DELETE = 46,
+        N0 = 48,
+        N1 = 49,
+        N2 = 50,
+        N3 = 51,
+        N4 = 52,
+        N5 = 53,
+        N6 = 54,
+        N7 = 55,
+        N8 = 56,
+        N9 = 57,
+        A = 65,
+        B = 66,
+        C = 67,
+        D = 68,
+        E = 69,
+        F = 70,
+        G = 71,
+        H = 72,
+        I = 73,
+        J = 74,
+        K = 75,
+        L = 76,
+        M = 77,
+        N = 78,
+        O = 79,
+        P = 80,
+        Q = 81,
+        R = 82,
+        S = 83,
+        T = 84,
+        U = 85,
+        V = 86,
+        W = 87,
+        X = 88,
+        Y = 89,
+        Z = 90,
+        LEFTWINDOWKEY = 91,
+        RIGHTWINDOWKEY = 92,
+        SELECTKEY = 93,
+        NUMPAD0 = 96,
+        NUMPAD1 = 97,
+        NUMPAD2 = 98,
+        NUMPAD3 = 99,
+        NUMPAD4 = 100,
+        NUMPAD5 = 101,
+        NUMPAD6 = 102,
+        NUMPAD7 = 103,
+        NUMPAD8 = 104,
+        NUMPAD9 = 105,
+        MULTIPLY = 106,
+        ADD = 107,
+        SUBTRACT = 109,
+        DECIMALPOINT = 110,
+        DIVIDE = 111,
+        F1 = 112,
+        F2 = 113,
+        F3 = 114,
+        F4 = 115,
+        F5 = 116,
+        F6 = 117,
+        F7 = 118,
+        F8 = 119,
+        F9 = 120,
+        F10 = 121,
+        F11 = 122,
+        F12 = 123,
+        NUMLOCK = 144,
+        SCROLLLOCK = 145,
+        SEMICOLON = 186,
+        EQUALSIGN = 187,
+        COMMA = 188,
+        DASH = 189,
+        PERIOD = 190,
+        FORWARDSLASH = 191,
+        GRAVEACCENT = 192,
+        OPENBRACKET = 219,
+        BACKSLASH = 220,
+        CLOSEBRACKET = 221,
+        SINGLEQUOTE = 222,
+        TOTAL = 256,
+    }
+    enum EMouseButton {
+        UNKNOWN = 0,
+        LEFT = 1,
+        MIDDLE = 2,
+        RIGHT = 3,
+    }
+    interface IKeyMap {
+        isKeyPress(iCode: number): any;
+        isKeyPress(eCode: EKeyCodes): any;
+        getMouse(): IPoint;
+        getMouseShift(): IOffset;
+        isMouseMoved(): boolean;
+        isMousePress(): boolean;
+        bind(sCombination: string, fn: Function): boolean;
+        captureMouse(pMouseTarget: Node): void;
+        captureMouse(pMouseTarget: Document): void;
+        captureKeyboard(pKeyboardTarget: Node): void;
+        captureKeyboard(pKeyboardTarget: Document): void;
+        capture(pTarget: Node): void;
+        capture(pTarget: Document): void;
+        update(): void;
+    }
+}
+declare module akra {
+    interface IClickable extends IEventProvider {
+        dragstart: ISignal<any>;
+        dragstop: ISignal<any>;
+        dragging: ISignal<any>;
+        click: ISignal<any>;
+        mousemove: ISignal<any>;
+        mousedown: ISignal<any>;
+        mouseup: ISignal<any>;
+        mouseover: ISignal<any>;
+        mouseout: ISignal<any>;
+        mousewheel: ISignal<any>;
+    }
+}
+declare module akra {
     interface ICircle {
         radius: number;
         center: IVec2;
@@ -3781,6 +3963,10 @@ declare module akra {
     interface IRIDMap {
         [rid: number]: IRIDPair;
     }
+    interface IPickedObject extends IRIDPair {
+        x: number;
+        y: number;
+    }
 }
 declare module akra {
     interface IAFXComposer {
@@ -4049,25 +4235,6 @@ declare module akra {
     }
 }
 declare module akra {
-    enum EUserEvents {
-        CLICK = 1,
-        MOUSEMOVE = 2,
-        MOUSEDOWN = 4,
-        MOUSEUP = 8,
-        MOUSEOVER = 16,
-        MOUSEOUT = 32,
-        DRAGSTART = 64,
-        DRAGSTOP = 128,
-        DRAGGING = 256,
-        MOUSEWHEEL = 512,
-        ANY = 1023,
-    }
-    interface IControllable {
-        enableSupportForUserEvent(iType: number): number;
-        isUserEventSupported(eType: EUserEvents): boolean;
-    }
-}
-declare module akra {
     enum EFramebuffer {
         FRONT = 0,
         BACK = 1,
@@ -4248,6 +4415,10 @@ declare module akra {
     }
 }
 declare module akra {
+    enum ERenderDataAttributeTypes {
+        STATIC = 0,
+        DYNAMIC = 1,
+    }
     enum ERenderDataTypes {
         ISOLATED = 0,
         INDEXED = 1,
@@ -4264,6 +4435,7 @@ declare module akra {
     }
     interface IRenderData extends IReferenceCounter {
         getBuffer(): IRenderDataCollection;
+        _getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
         /**
         * Allocate data for rendering.
         */
@@ -4275,10 +4447,10 @@ declare module akra {
         * Remove data from this render data.
         */
         releaseData(iDataLocation: number): void;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
@@ -4358,169 +4530,6 @@ declare module akra {
     }
 }
 declare module akra {
-    interface IPoint {
-        x: number;
-        y: number;
-    }
-}
-declare module akra {
-    interface IOffset {
-        x: number;
-        y: number;
-    }
-}
-declare module akra {
-    enum EKeyCodes {
-        BACKSPACE = 8,
-        TAB = 9,
-        ENTER = 13,
-        SHIFT = 16,
-        CTRL = 17,
-        ALT = 18,
-        PAUSE = 19,
-        BREAK = 19,
-        CAPSLOCK = 20,
-        ESCAPE = 27,
-        SPACE = 32,
-        PAGEUP = 33,
-        PAGEDOWN = 34,
-        END = 35,
-        HOME = 36,
-        LEFT = 37,
-        UP = 38,
-        RIGHT = 39,
-        DOWN = 40,
-        INSERT = 45,
-        DELETE = 46,
-        N0 = 48,
-        N1 = 49,
-        N2 = 50,
-        N3 = 51,
-        N4 = 52,
-        N5 = 53,
-        N6 = 54,
-        N7 = 55,
-        N8 = 56,
-        N9 = 57,
-        A = 65,
-        B = 66,
-        C = 67,
-        D = 68,
-        E = 69,
-        F = 70,
-        G = 71,
-        H = 72,
-        I = 73,
-        J = 74,
-        K = 75,
-        L = 76,
-        M = 77,
-        N = 78,
-        O = 79,
-        P = 80,
-        Q = 81,
-        R = 82,
-        S = 83,
-        T = 84,
-        U = 85,
-        V = 86,
-        W = 87,
-        X = 88,
-        Y = 89,
-        Z = 90,
-        LEFTWINDOWKEY = 91,
-        RIGHTWINDOWKEY = 92,
-        SELECTKEY = 93,
-        NUMPAD0 = 96,
-        NUMPAD1 = 97,
-        NUMPAD2 = 98,
-        NUMPAD3 = 99,
-        NUMPAD4 = 100,
-        NUMPAD5 = 101,
-        NUMPAD6 = 102,
-        NUMPAD7 = 103,
-        NUMPAD8 = 104,
-        NUMPAD9 = 105,
-        MULTIPLY = 106,
-        ADD = 107,
-        SUBTRACT = 109,
-        DECIMALPOINT = 110,
-        DIVIDE = 111,
-        F1 = 112,
-        F2 = 113,
-        F3 = 114,
-        F4 = 115,
-        F5 = 116,
-        F6 = 117,
-        F7 = 118,
-        F8 = 119,
-        F9 = 120,
-        F10 = 121,
-        F11 = 122,
-        F12 = 123,
-        NUMLOCK = 144,
-        SCROLLLOCK = 145,
-        SEMICOLON = 186,
-        EQUALSIGN = 187,
-        COMMA = 188,
-        DASH = 189,
-        PERIOD = 190,
-        FORWARDSLASH = 191,
-        GRAVEACCENT = 192,
-        OPENBRACKET = 219,
-        BACKSLASH = 220,
-        CLOSEBRACKET = 221,
-        SINGLEQUOTE = 222,
-        TOTAL = 256,
-    }
-    enum EMouseButton {
-        UNKNOWN = 0,
-        LEFT = 1,
-        MIDDLE = 2,
-        RIGHT = 3,
-    }
-    interface IKeyMap {
-        isKeyPress(iCode: number): any;
-        isKeyPress(eCode: EKeyCodes): any;
-        getMouse(): IPoint;
-        getMouseShift(): IOffset;
-        isMouseMoved(): boolean;
-        isMousePress(): boolean;
-        bind(sCombination: string, fn: Function): boolean;
-        captureMouse(pMouseTarget: Node): void;
-        captureMouse(pMouseTarget: Document): void;
-        captureKeyboard(pKeyboardTarget: Node): void;
-        captureKeyboard(pKeyboardTarget: Document): void;
-        capture(pTarget: Node): void;
-        capture(pTarget: Document): void;
-        update(): void;
-    }
-}
-declare module akra {
-    interface IClickable extends IEventProvider {
-        setOnClick? (fnCallbak: (target: any, x: number, y: number) => void): void;
-        setOnMouseMove? (fnCallbak: (target: any, x: number, y: number) => void): void;
-        setOnMouseDown? (fnCallbak: (target: any, eBtn: EMouseButton, x: number, y: number) => void): void;
-        setOnMouseUp? (fnCallbak: (target: any, eBtn: EMouseButton, x: number, y: number) => void): void;
-        setOnMouseOver? (fnCallbak: (target: any, x: number, y: number) => void): void;
-        setOnMouseOut? (fnCallbak: (target: any, x: number, y: number) => void): void;
-        setOnMouseWheel? (fnCallbak: (target: any, x: number, y: number, delta: number) => void): void;
-        setOnDragStart? (fnCallbak: (target: any, eBtn: EMouseButton, x: number, y: number) => void): void;
-        setOnDragStop? (fnCallbak: (target: any, eBtn: EMouseButton, x: number, y: number) => void): void;
-        setOnDragging? (fnCallbak: (target: any, eBtn: EMouseButton, x: number, y: number) => void): void;
-        dragstart: ISignal<(pTarget: any, eBtn: EMouseButton, x: number, y: number) => void>;
-        dragstop: ISignal<(pTarget: any, eBtn: EMouseButton, x: number, y: number) => void>;
-        dragging: ISignal<(pTarget: any, eBtn: EMouseButton, x: number, y: number) => void>;
-        click: ISignal<(pTarget: any, x: number, y: number) => void>;
-        mousemove: ISignal<(pTarget: any, x: number, y: number) => void>;
-        mousedown: ISignal<(pTarget: any, eBtn: EMouseButton, x: number, y: number) => void>;
-        mouseup: ISignal<(pTarget: any, eBtn: EMouseButton, x: number, y: number) => void>;
-        mouseover: ISignal<(pTarget: any, x: number, y: number) => void>;
-        mouseout: ISignal<(pTarget: any, x: number, y: number) => void>;
-        mousewheel: ISignal<(pTarget: any, x: number, y: number, fDelta: number) => void>;
-    }
-}
-declare module akra {
     interface IDepthRange {
         min: number;
         max: number;
@@ -4588,7 +4597,7 @@ declare module akra {
         SCREEN = 2,
         SPRITE = 3,
     }
-    interface IRenderableObject extends IEventProvider {
+    interface IRenderableObject extends IEventProvider, IClickable {
         getRenderMethod(): IRenderMethod;
         setRenderMethod(pMethod: IRenderMethod): void;
         getShadow(): boolean;
@@ -4635,7 +4644,7 @@ declare module akra {
     }
 }
 declare module akra {
-    interface ISceneObject extends ISceneNode {
+    interface ISceneObject extends ISceneNode, IControllable, IClickable {
         getTotalRenderable(): number;
         getWorldBounds(): IRect3d;
         getLocalBounds(): IRect3d;
@@ -5853,7 +5862,7 @@ declare module akra {
         getTexturePool(): IResourcePool<ITexture>;
         getSurfaceMaterialPool(): IResourcePool<ISurfaceMaterial>;
         getVertexBufferPool(): IResourcePool<IVertexBuffer>;
-        getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+        getVideoBufferPool(): IResourcePool<IVertexBuffer>;
         getIndexBufferPool(): IResourcePool<IIndexBuffer>;
         getTextureBufferPool(): IResourcePool<IPixelBuffer>;
         getRenderMethodPool(): IResourcePool<IRenderMethod>;
@@ -12748,6 +12757,7 @@ declare module akra.render {
         public mouseup: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any) => void>;
         public mouseover: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any) => void>;
         public mouseout: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any) => void>;
+        public mousewheel: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any, fDelta: any) => void>;
         public dragstart: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any) => void>;
         public dragstop: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any) => void>;
         public dragging: ISignal<(pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: any, y: any) => void>;
@@ -13417,56 +13427,79 @@ declare module akra.render {
     }
 }
 declare module akra {
-    enum EShadingModel {
-        BLINNPHONG = 0,
-        PHONG = 1,
-    }
+    /** Viewport that can supports 3D events, depth range, object picking. */
     interface IViewport3D extends IViewport {
+        /** Get global post effects. */
         getEffect(): IEffect;
-        touch(): void;
-        /**
-        * Pick 3D object by screen position.
-        */
-        pick(x: number, y: number): IRIDPair;
         /**
         * Propagate or not propagate viewport events to 3D objects.
         * @param bEnable Enable or Disable 3D events propagation.
         */
         enable3DEvents(bEnable?: boolean): void;
-        /** @return TRUE - if events apply to objects in this vyuporte. */
+        /** @return TRUE - if events apply to objects in this viewport. */
         is3DEventsSupported(): boolean;
+        /**
+        * Manual call mouseout event for last focused object/renderable.
+        */
+        touch(): void;
+        /**
+        * Pick 3D object by screen position.
+        *
+        * @param pDept Pick results.
+        * @return Picked object.
+        */
+        pick(x: number, y: number, pDest?: IPickedObject): IPickedObject;
+        /** @return Scene object with screen postion (x, y); */
         getObject(x: number, y: number): ISceneObject;
+        /** @return Renderable with screen postion (x, y); */
         getRenderable(x: number, y: number): IRenderableObject;
+        /** Get screen depth for (x, y) postion. */
         getDepth(x: number, y: number): number;
+        /** Get depth range for viewport. */
         getDepthRange(): IDepthRange;
         /**
-        * Is mouse under the viewport?
+        * Indicates whether the mouse is over the viewport.
         */
         isMouseCaptured(): boolean;
+        /** Project point from world space to screen. */
         projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+        /** Unproject point fron screen to world space. */
         unprojectPoint(x: number, y: number, v3fDestination?: IVec3): IVec3;
         unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
+        /** Get render ID for (@x, @y) position. */
         _getRenderId(x: number, y: number): number;
-        _getLastMousePosition(): IPoint;
-        _keepLastMousePosition(x: number, y: number): void;
-        _handleMouseInout(pCurr: IRIDPair, x: number, y: number): IRIDPair;
-        _setUserEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
-        _getUserEventDragTarget(): IRIDPair;
-        _setMouseCaptured(bValue: boolean): void;
     }
+    /**  Viewport that can display skyboxes. */
     interface IViewportSkybox extends IViewport3D {
-        getSkybox(): ITexture;
-        setSkybox(pSkyTexture: ITexture): void;
+        /** Events occurring after the viewport changed skybox. */
         addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        /** Get current skybox texture. */
+        getSkybox(): ITexture;
+        /** Set new skybox. */
+        setSkybox(pSkyTexture: ITexture): void;
     }
+    /** Viewport that can support antialiasing. */
     interface IViewportAntialising extends IViewport3D {
+        /** Enable antialiasing. */
         setAntialiasing(bEnabled?: boolean): void;
+        /** Is antaliasing enabled?
+        * @return TRUE if anttialiasing enabled.
+        */
         isAntialiased(): boolean;
     }
+    /** Viewport that can highligh objects. */
     interface IViewportHighlighting extends IViewport3D {
+        /** Highlight object by render id. */
         highlight(iRid: number): void;
+        /** Hightlight ISceneObject or/and IRenderableObject. */
         highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        /** Hightlight render pair. */
         highlight(pPair: IRIDPair): void;
+    }
+    enum EShadingModel {
+        BLINNPHONG = 0,
+        PHONG = 1,
+        PBS_SIMPLE = 2,
     }
     interface IShadedViewport extends IViewport3D {
         setShadingModel(eModel: EShadingModel): any;
@@ -13523,21 +13556,35 @@ declare module akra.render {
         private _p3DEventDragTarget;
         private _b3DEventsSupport;
         public setupSignals(): void;
-        public getDepth(x: number, y: number): number;
+        /** @copydoc IViewport3D::getEffect() */
+        public getEffect(): IEffect;
         public update(): void;
+        /** @copydoc IViewport3D::enable3DEvents() */
         public enable3DEvents(bEnable?: boolean): void;
+        /** @copydoc IViewport3D::is3DEventsSupported() */
         public is3DEventsSupported(): boolean;
+        /** @copydoc IViewport3D::touch() */
+        public touch(): void;
+        /** @copydoc IViewport3D::pick() */
+        public pick(x: number, y: number, pDest?: IPickedObject): IPickedObject;
+        /** @copydoc IViewport3D::getObject() */
+        public getObject(x: number, y: number): ISceneObject;
+        /** @copydoc IViewport3D::getRenderable() */
+        public getRenderable(x: number, y: number): IRenderableObject;
         public _getDepthRangeImpl(): IDepthRange;
+        /** @copydoc IViewport3D::getDepth() */
+        public getDepth(x: number, y: number): number;
+        /** @copydoc IViewport3D::getDepthRange() */
         public getDepthRange(): IDepthRange;
+        /** @copydoc IViewport3D::isMouseCaptured() */
+        public isMouseCaptured(): boolean;
         public projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
         public unprojectPoint(x: number, y: number, v3fDestination?: IVec3): IVec3;
         public unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
-        public getObject(x: number, y: number): ISceneObject;
-        public getRenderable(x: number, y: number): IRenderableObject;
-        public touch(): void;
-        public getEffect(): IEffect;
-        public isMouseCaptured(): boolean;
-        public pick(x: number, y: number): IRIDPair;
+        /** @return Cached pick result, limited - one pick per frame maximum. */
+        public _pick(x: number, y: number): IPickedObject;
+        /** @return Is pick required for current frame? */
+        private isPickResultRecalcNeeded();
         public _handleMouseInout(pCurr: IRIDPair, x: number, y: number): IRIDPair;
         public _keepLastMousePosition(x: number, y: number): void;
         public _getLastMousePosition(): IPoint;
@@ -13556,6 +13603,7 @@ declare module akra.render {
         static MousewheelSignal: typeof Signal;
         static MousemoveSignal: typeof Signal;
         static ClickSignal: typeof Signal;
+        private static PICK_CONTAINER;
     }
 }
 declare module akra {
@@ -13978,15 +14026,19 @@ declare module akra.scene {
         public mouseup: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number) => void>;
         public mouseover: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number) => void>;
         public mouseout: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number) => void>;
+        public mousewheel: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number, fDelta: number) => void>;
         public dragstart: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number) => void>;
         public dragstop: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number) => void>;
         public dragging: ISignal<(pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: number, y: number) => void>;
         public _iObjectFlags: number;
+        public _iViewModes: number;
         public _pLocalBounds: IRect3d;
         public _pWorldBounds: IRect3d;
-        public _iViewModes: number;
+        private _iUserEvents;
         constructor(pScene: IScene3d, eType?: EEntityTypes);
         public setupSignals(): void;
+        public enableSupportForUserEvent(iType: number): number;
+        public isUserEventSupported(eType: EUserEvents): boolean;
         public getTotalRenderable(): number;
         public getWorldBounds(): IRect3d;
         public getLocalBounds(): IRect3d;
@@ -13995,6 +14047,7 @@ declare module akra.scene {
         public setShadow(bValue: boolean): void;
         public setBillboard(bValue: boolean): void;
         public getBillboard(): boolean;
+        public isBillboard(): boolean;
         public getRenderable(i?: number): IRenderableObject;
         public getRenderID(): number;
         /**
@@ -14004,12 +14057,10 @@ declare module akra.scene {
         */
         public getRenderID(iRenderable: number): number;
         public isWorldBoundsNew(): boolean;
-        public destroy(): void;
         public prepareForUpdate(): void;
         public update(): boolean;
         public recalcWorldBounds(): boolean;
         public _setWorldBoundsUpdated(): number;
-        public isBillboard(): boolean;
         public getObjectFlags(): number;
         public prepareForRender(pViewport: IViewport): void;
         public toString(isRecursive?: boolean, iDepth?: number): string;
@@ -14452,6 +14503,10 @@ declare module akra.data {
         */
         private _pAttribBuffer;
         /**
+        * VextexTextureBuffer with attributes
+        */
+        private _pAttribVideoBuffer;
+        /**
         * Data with indices.
         * If _pIndexBuffer has type IndexBuffer, indices data
         * has type IndexData, otherwise VertexData.
@@ -14476,6 +14531,7 @@ declare module akra.data {
         private _iRenderable;
         private _pComposer;
         public getBuffer(): IRenderDataCollection;
+        public _getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
         private getCurrentIndexSet();
         constructor(pCollection?: IRenderDataCollection);
         /**
@@ -14493,10 +14549,10 @@ declare module akra.data {
         * Allocate attribute.
         * Attribute - data without index.
         */
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
         /**
         * Allocate index.
         */
@@ -15329,6 +15385,7 @@ declare module akra.render {
         private _pLightingUnifoms;
         private _pHighlightedObject;
         private _eShadingModel;
+        private _pDefaultEnvMap;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15340,6 +15397,8 @@ declare module akra.render {
         public getTextureWithObjectID(): ITexture;
         public setShadingModel(eModel: EShadingModel): void;
         public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15393,6 +15452,7 @@ declare module akra.render {
         private _pHighlightedObject;
         private _pSkyboxTexture;
         private _eShadingModel;
+        private _pDefaultEnvMap;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15404,6 +15464,8 @@ declare module akra.render {
         public getLightSources(): IObjectArray<ILightPoint>;
         public setShadingModel(eModel: EShadingModel): void;
         public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _getRenderId(x: number, y: number): number;
@@ -17056,7 +17118,7 @@ declare module akra.pool {
         public getObjPool(): IResourcePool<IObj>;
         public getImagePool(): IResourcePool<IImg>;
         public getTexturePool(): IResourcePool<ITexture>;
-        public getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+        public getVideoBufferPool(): IResourcePool<IVertexBuffer>;
         public getShaderProgramPool(): IResourcePool<IShaderProgram>;
         public getComponentPool(): IResourcePool<IAFXComponent>;
         public getTextureBufferPool(): IResourcePool<IPixelBuffer>;

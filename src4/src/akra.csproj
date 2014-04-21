@@ -518,6 +518,7 @@
     <TypeScriptCompile Include="akra\fx\instructions\VariableTypeInstruction.ts" />
     <TypeScriptCompile Include="akra\fx\instructions\WhileStmtInstruction.ts" />
     <TypeScriptCompile Include="akra\idl\3d-party\es6-promises.d.ts" />
+    <TypeScriptCompile Include="akra\idl\IControllable.ts" />
     <TypeScriptCompile Include="akra\idl\IViewport3D.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />

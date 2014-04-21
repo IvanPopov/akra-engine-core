@@ -9,20 +9,22 @@ struct VS_OUT_1{
 bool useNormal;
 
 sampler sampler_normal:S_NORMAL;
-struct Material {
+
+struct base_material {
     float shininess:SHININESS;
 };
 
-Material defaultMaterial:MATERIAL;
-int objectId : RENDER_OBJECT_ID;
+shared base_material Fragment_material;
 shared float3 Normal;
-const float MAX_SHININESS = 30000.;
+
+int objectId : RENDER_OBJECT_ID;
+const float MAX_SHININESS = 1.;
 
 float4 fs_prepare_lpp_geometry(VS_OUT_1 IN) : COLOR {   
     float3 normalAndShininess = float3(Normal.xy, 0.);
-    normalAndShininess.z = min(defaultMaterial.shininess, MAX_SHININESS - 1.);
-    if(Normal.z < 0.){
-        normalAndShininess.z += MAX_SHININESS;
+    normalAndShininess.z = min(Fragment_material.shininess, MAX_SHININESS);
+    if(Normal.z < 0.) {
+        normalAndShininess.z += MAX_SHININESS + 0.1;
     }
     return float4(normalAndShininess, float(objectId));
 }
@@ -116,12 +118,16 @@ shared pixel_data pixelData;
 shared float4 result_color = float4(0.);
 
 void fs_prepare_lpp_data_base(float2 texCoords: TEXCOORD0, float2 screenPosition : SCREEN_POSITION) {
-    fs_prepare_lpp_data_positionOnly(texCoords, screenPosition);
-    float4 bufferData = tex2D(normalBuffer, texCoords);    
-    float3 normal = float3(bufferData.xy, sqrt(1. - dot(bufferData.xy, bufferData.xy)));
-    float shininess = bufferData.z >= MAX_SHININESS ? (bufferData.z - MAX_SHININESS) : bufferData.z;
+    float4 bufferData = tex2D(normalBuffer, texCoords);
+    //if(bufferData.w == 0.){
+    //    discard;
+    //}
 
-    if(bufferData.z >= MAX_SHININESS){
+    fs_prepare_lpp_data_positionOnly(texCoords, screenPosition);
+    float3 normal = float3(bufferData.xy, sqrt(1. - dot(bufferData.xy, bufferData.xy)));
+    float shininess = bufferData.z > MAX_SHININESS ? (bufferData.z - MAX_SHININESS - 0.1) : bufferData.z;
+
+    if(bufferData.z > MAX_SHININESS){
         normal.z *= -1.;
     }
     
@@ -137,83 +143,15 @@ void fs_prepare_lpp_data_positionOnly(float2 texCoords: TEXCOORD0, float2 screen
     pixelData.position = pixelPos;
 }
 
-
-// float4 prepare_lpp_lights_omni() : COLOR {
-//     for(int i = 0; i < nOmni; i++){
-//         result_color += calculateLight(pixelData, points_omni[i].lightData);
-//     }
-
-//     return result_color;
-// }
-
-// float4 prepare_lpp_lights_omni_ambient() : COLOR {
-//     for(int i = 0; i < nOmni; i++){
-//         result_color += calculateAbmientLight(pixelData, points_omni[i].lightData);
-//     }
-
-//     result_color.w = 1.;
-
-//     return result_color;
-// }
-
-// float4 calculateLight(pixel_data pixelData, light_data lightData){
-//     float3 light_dir = lightData.position - pixelData.position;
-//     float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
-
-//     light_dir = normalize(light_dir);
-//     float light_distancedotVpow = 0.;
-
-//     if(pixelData.shininess != 0.){
-//         float3 view_dir = normalize(-pixelData.position);
-//         float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
-
-//         light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess);
-//     }
-    
-//     float specular = lightData.specular.x * light_distancedotVpow * attenuation;
-
-//     float diffuseMultiplier =  max(dot(pixelData.normal, light_dir), .0) * attenuation;
-
-//     return float4(lightData.diffuse.xyz * diffuseMultiplier, specular);
-// }
-
-// float calcAttenuation(float light_dir_length, float3 attenuation) {
-//     return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
-// }
-
-// float4 calculateAbmientLight(pixel_data pixelData, light_data lightData){
-//     float3 light_dir = lightData.position - pixelData.position;
-//     float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
-
-//     return float4(lightData.ambient.xyz * attenuation, 0.);
-// }
-
 foreign bool prepareOnlyPosition;
 technique prepare_lpp_lights_base {
     pass p1{
         VertexShader = compile vs_prepare_lpp_data_base();
-        if(prepareOnlyPosition) {
-            PixelShader = compile fs_prepare_lpp_data_positionOnly();            
-        }
-        else {
+        //if(prepareOnlyPosition) {
+        //    PixelShader = compile fs_prepare_lpp_data_positionOnly();            
+        //}
+        //else {
             PixelShader = compile fs_prepare_lpp_data_base();
-        }
+        //}
     }
 }
-
-// technique prepare_lpp_lights_omni{
-//     pass p1{
-//         if(nOmni > 0){
-//             PixelShader = compile prepare_lpp_lights_omni();
-//         }
-//     }
-// }
-
-// technique prepare_lpp_lights_omni_ambient{
-//     pass p1{
-//         if(nOmni > 0){
-//             PixelShader = compile prepare_lpp_lights_omni_ambient();
-//         }
-//     };
-// };
-

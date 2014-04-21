@@ -16,38 +16,35 @@ module akra.render {
 	import Vec3 = math.Vec3;
 	import Vec4 = math.Vec4;
 
-	interface IPickedObject extends IRIDPair {
-		x: int;
-		y: int;
-	}
-
 	//3D events 
 
-	class DragstartSignal extends Signal<IViewport3D> {
+	class DragstartSignal extends Signal<Viewport3D> {
 
 		emit(eBtn: EMouseButton, x: uint, y: uint): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
 			if (!pViewport.isUserEventSupported(EUserEvents.DRAGSTART)) {
 				return;
 			}
 
-			var p = pViewport.pick(x, y);
+			var p = pViewport._pick(x, y);
 
 			pViewport._setUserEventDragTarget(p.object, p.renderable);
 
-			p.object && p.object.dragstart.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.dragstart.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.DRAGSTART))) {
+				p.object && p.object.dragstart.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.dragstart.emit(pViewport, p.object, x, y);
+			}
 
 			super.emit(eBtn, x, y);
 		}
 	}
 
-	class DragstopSignal extends Signal<IViewport3D> {
+	class DragstopSignal extends Signal<Viewport3D> {
 
 		emit(eBtn: EMouseButton, x: uint, y: uint): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
 			if (!pViewport.isUserEventSupported(EUserEvents.DRAGSTOP)) {
@@ -56,17 +53,19 @@ module akra.render {
 
 			var p = pViewport._getUserEventDragTarget();
 
-			p.object && p.object.dragstop.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.dragstop.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.DRAGSTOP))) {
+				p.object && p.object.dragstop.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.dragstop.emit(pViewport, p.object, x, y);
+			}
 
 			super.emit(eBtn, x, y);
 		}
 	}
 
-	class DraggingSignal extends Signal<IViewport3D> {
+	class DraggingSignal extends Signal<Viewport3D> {
 
 		emit(eBtn: EMouseButton, x: uint, y: uint): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 
@@ -76,17 +75,19 @@ module akra.render {
 
 			var p = pViewport._getUserEventDragTarget();
 
-			p.object && p.object.dragging.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.dragging.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.DRAGGING))) {
+				p.object && p.object.dragging.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.dragging.emit(pViewport, p.object, x, y);
+			}
 
 			super.emit(eBtn, x, y);
 		}
 	}
 
-	class ClickSignal extends Signal<IViewport3D> {
+	class ClickSignal extends Signal<Viewport3D> {
 
 		emit(x: int, y: int): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 			super.emit(x, y);
@@ -95,17 +96,20 @@ module akra.render {
 				return;
 			}
 
-			var p = pViewport.pick(x, y);
+			var p = pViewport._pick(x, y);
 
-			p.object && p.object.click.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.click.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.CLICK))) {
+				p.object && p.object.click.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.click.emit(pViewport, p.object, x, y);
+			}
+
 		}
 	}
 
-	class MousemoveSignal extends Signal<IViewport3D> {
+	class MousemoveSignal extends Signal<Viewport3D> {
 
 		emit(x: int, y: int): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 			super.emit(x, y);
@@ -114,18 +118,21 @@ module akra.render {
 				return;
 			}
 
-			var p = pViewport.pick(x, y);
+			var p = pViewport._pick(x, y);
 
-			p.object && p.object.mousemove.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.mousemove.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.MOUSEMOVE))) {
+				p.object && p.object.mousemove.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.mousemove.emit(pViewport, p.object, x, y);
+			}
+
 
 		}
 	}
 
-	class MousedownSignal extends Signal<IViewport3D> {
+	class MousedownSignal extends Signal<Viewport3D> {
 
 		emit(eBtn: EMouseButton, x: uint, y: uint): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 			super.emit(eBtn, x, y);
@@ -134,17 +141,20 @@ module akra.render {
 				return;
 			}
 
-			var p = pViewport.pick(x, y);
+			var p = pViewport._pick(x, y);
 
-			p.object && p.object.mousedown.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.mousedown.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.MOUSEDOWN))) {
+				p.object && p.object.mousedown.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.mousedown.emit(pViewport, p.object, x, y);
+			}
+
 		}
 	}
 
-	class MouseupSignal extends Signal<IViewport3D> {
+	class MouseupSignal extends Signal<Viewport3D> {
 
 		emit(eBtn: EMouseButton, x: uint, y: uint): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
 			super.emit(eBtn, x, y);
@@ -153,18 +163,20 @@ module akra.render {
 				return;
 			}
 
-			var p = pViewport.pick(x, y);
+			var p = pViewport._pick(x, y);
 
-			p.object && p.object.mouseup.emit(pViewport, p.renderable, x, y);
-			p.renderable && p.renderable.mouseup.emit(pViewport, p.object, x, y);
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.MOUSEUP))) {
+				p.object && p.object.mouseup.emit(pViewport, p.renderable, x, y);
+				p.renderable && p.renderable.mouseup.emit(pViewport, p.object, x, y);
+			}
+
 		}
 	}
 
-
-	class MouseoverSignal extends Signal<IViewport3D> {
+	class MouseoverSignal extends Signal<Viewport3D> {
 
 		emit(x: int, y: int): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 			pViewport._setMouseCaptured(true);
@@ -172,10 +184,10 @@ module akra.render {
 		}
 	}
 
-	class MouseoutSignal extends Signal<IViewport3D> {
+	class MouseoutSignal extends Signal<Viewport3D> {
 
 		emit(x: int, y: int): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 			pViewport._setMouseCaptured(false);
@@ -186,13 +198,26 @@ module akra.render {
 		}
 	}
 
-	class MousewheelSignal extends Signal<IViewport3D> {
+	class MousewheelSignal extends Signal<Viewport3D> {
 
 		emit(x: int, y: int, fDelta: float): void {
-			var pViewport: IViewport3D = this.getSender();
+			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
 			super.emit(x, y, fDelta);
+
+
+			if (!pViewport.isUserEventSupported(EUserEvents.MOUSEWHEEL)) {
+				return;
+			}
+
+			var p = pViewport._pick(x, y);
+
+			if (isNull(p.object) || (p.object.isUserEventSupported(EUserEvents.MOUSEWHEEL))) {
+				p.object && p.object.mousewheel.emit(pViewport, p.renderable, x, y, fDelta);
+				p.renderable && p.renderable.mousewheel.emit(pViewport, p.object, x, y, fDelta);
+			}
+
 		}
 	}
 
@@ -207,9 +232,9 @@ module akra.render {
 		private _p3DEventPickLast: IPickedObject = { object: null, renderable: null, x: -1, y: -1 }
 		private _p3DEventPickPrev: IPickedObject = { object: null, renderable: null, x: -1, y: -1 }
 		private _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
-		
+
 		private _b3DEventsSupport: boolean = true;
-		
+
 
 		protected setupSignals(): void {
 			this.dragstart = this.dragstart || new DragstartSignal(this);
@@ -229,33 +254,77 @@ module akra.render {
 			super.setupSignals();
 		}
 
-		
-
-		getDepth(x: uint, y: uint): float {
-			return 1.0;
+		/** @copydoc IViewport3D::getEffect() */
+		getEffect(): IEffect {
+			return null;
 		}
 
 		update(): void {
 			super.update();
 
-			//framde updated, pick required, if needed
+			//frame updated, pick required, if needed
 			this._b3DRequirePick = true;
 		}
 
+		/** @copydoc IViewport3D::enable3DEvents() */
 		final enable3DEvents(bEnable: boolean = true): void {
 			this._b3DEventsSupport = bEnable;
 		}
 
+		/** @copydoc IViewport3D::is3DEventsSupported() */
 		final is3DEventsSupported(): boolean {
 			return this._b3DEventsSupport;
+		}
+
+		/** @copydoc IViewport3D::touch() */
+		touch(): void {
+			this._handleMouseInout(null, 0, 0);
+		}
+
+		/** @copydoc IViewport3D::pick() */
+		pick(x: uint, y: uint, pDest: IPickedObject = { object: null, renderable: null, x: 0, y: 0 }): IPickedObject {
+			debug.log("pick();");
+			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
+			var iRid: int = this._getRenderId(x, y);
+			var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
+			var pRenderable: IRenderableObject = null;
+
+			if (isNull(pObject) || !pObject.isFrozen()) {
+				pRenderable = pComposer._getRenderableByRid(iRid);
+			}
+			else {
+				pObject = null;
+			}
+
+			pDest.renderable = pRenderable;
+			pDest.object = pObject;
+			pDest.x = x;
+			pDest.y = y;
+
+			return pDest;
+		}
+
+		/** @copydoc IViewport3D::getObject() */
+		getObject(x: uint, y: uint): ISceneObject {
+			return this.pick(x, y, Viewport3D.PICK_CONTAINER).object;
+		}
+
+		/** @copydoc IViewport3D::getRenderable() */
+		getRenderable(x: uint, y: uint): IRenderableObject {
+			return this.pick(x, y, Viewport3D.PICK_CONTAINER).renderable;
 		}
 
 		protected _getDepthRangeImpl(): IDepthRange {
 			return <IDepthRange>{ min: -1, max: 1 }
 		}
 
+		/** @copydoc IViewport3D::getDepth() */
+		getDepth(x: uint, y: uint): float {
+			return 1.0;
+		}
 
-		getDepthRange(): IDepthRange {
+		/** @copydoc IViewport3D::getDepthRange() */
+		final getDepthRange(): IDepthRange {
 
 			if (!this._isDepthRangeUpdated) {
 				this._isDepthRangeUpdated = true;
@@ -266,6 +335,11 @@ module akra.render {
 			}
 
 			return this._pDepthRange;
+		}
+
+		/** @copydoc IViewport3D::isMouseCaptured() */
+		final isMouseCaptured(): boolean {
+			return this._bMouseIsCaptured;
 		}
 
 		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3 {
@@ -329,45 +403,10 @@ module akra.render {
 			return v3fDestination;
 		}
 
-		getObject(x: uint, y: uint): ISceneObject {
-			return this.pick(x, y).object;
-		}
 
-		getRenderable(x: uint, y: uint): IRenderableObject {
-			return this.pick(x, y).renderable;
-		}
-
-		//manual recall over/out events for objects
-		touch(): void {
-			this._handleMouseInout(null, 0, 0);
-		}
-
-		getEffect(): IEffect {
-			return null;
-		}
-
-		isMouseCaptured(): boolean {
-			return this._bMouseIsCaptured;
-		}
-
-		pick(x: uint, y: uint): IRIDPair {
-			if (this._p3DEventPickLast.x !== x || this._p3DEventPickLast.y !== y) {
-				this._b3DRequirePick = true;
-			}
-
-			if (this._b3DRequirePick && this._b3DEventsSupport) {
-				var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
-				var iRid: int = this._getRenderId(x, y);
-				var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
-				var pRenderable: IRenderableObject = null;
-
-				if (isNull(pObject) || !pObject.isFrozen()) {
-					pRenderable = pComposer._getRenderableByRid(iRid);
-				}
-				else {
-					pObject = null;
-				}
-
+		/** @return Cached pick result, limited - one pick per frame maximum. */
+		_pick(x: uint, y: uint): IPickedObject {
+			if (this.isPickResultRecalcNeeded()) {
 				//save last pick result
 				this._p3DEventPickPrev.renderable = this._p3DEventPickLast.renderable;
 				this._p3DEventPickPrev.object = this._p3DEventPickLast.object;
@@ -375,15 +414,17 @@ module akra.render {
 				this._p3DEventPickPrev.y = this._p3DEventPickLast.y;
 
 				//save new pick result
-				this._p3DEventPickLast.renderable = pRenderable;
-				this._p3DEventPickLast.object = pObject;
-				this._p3DEventPickLast.x = x;
-				this._p3DEventPickLast.y = y;
+				<IPickedObject>this.pick(x, y, this._p3DEventPickLast);
 
 				this._b3DRequirePick = false;
 			}
-			
+
 			return this._p3DEventPickLast;
+		}
+
+		/** @return Is pick required for current frame? */
+		private isPickResultRecalcNeeded(): boolean {
+			return this._b3DRequirePick && this._b3DEventsSupport;
 		}
 
 		//friends for RenderSignal.
@@ -399,21 +440,21 @@ module akra.render {
 			}
 
 			if (pCurrObject !== pPrev.object) {
-				if (!isNull(pPrev.object)) {
+				if (!isNull(pPrev.object) && pPrev.object.isUserEventSupported(EUserEvents.MOUSEOUT)) {
 					pPrev.object.mouseout.emit(this, pPrev.renderable, x, y);
 				}
 
-				if (!isNull(pCurrObject)) {
+				if (!isNull(pCurrObject) && pCurrObject.isUserEventSupported(EUserEvents.MOUSEOVER)) {
 					pCurrObject.mouseover.emit(this, pCurrRenderable, x, y);
 				}
 			}
 
 			if (pCurrRenderable !== pPrev.renderable) {
-				if (!isNull(pPrev.renderable)) {
+				if (!isNull(pPrev.renderable) && (isNull(pPrev.object) || pPrev.object.isUserEventSupported(EUserEvents.MOUSEOUT))) {
 					pPrev.renderable.mouseout.emit(this, pPrev.object, x, y);
 				}
 
-				if (!isNull(pCurrRenderable)) {
+				if (!isNull(pCurrRenderable) && (isNull(pCurrObject) || pCurrObject.isUserEventSupported(EUserEvents.MOUSEOUT))) {
 					pCurrRenderable.mouseover.emit(this, pCurrObject, x, y);
 				}
 			}
@@ -449,7 +490,7 @@ module akra.render {
 
 		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			if (this.isMouseCaptured() &&
-				// ... and pass is last
+				// ... and pass is last/first
 				iPass === 0 &&
 				// ... and mouseover or mouse out events are supported
 				(this.isUserEventSupported(EUserEvents.MOUSEOVER) ||
@@ -460,7 +501,8 @@ module akra.render {
 				var x: int = pPos.x;
 				var y: int = pPos.y;
 
-				this._handleMouseInout(this.pick(x, y), x, y);
+
+				this._handleMouseInout(this._pick(x, y), x, y);
 			}
 		}
 
@@ -478,7 +520,8 @@ module akra.render {
 		static MousemoveSignal = <typeof Signal><any>MousemoveSignal;
 
 		static ClickSignal = <typeof Signal><any>ClickSignal;
+
+		private static PICK_CONTAINER: IPickedObject = { x: 0, y: 0, renderable: null, object: null };
 	}
 }
 
- 

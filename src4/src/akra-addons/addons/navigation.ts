@@ -51,7 +51,7 @@ module akra.addons {
 		pParams.specular.set(.1);
 		pParams.attenuation.set(0.5, 0, 0);
 
-		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.LPPViewport(pCamera, 0.7, .05, .25, .25, 100)));
+		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.DSViewport(pCamera, 0.7, .05, .25, .25, 100)));
 
 		pViewport.setAntialiasing(true);
 		pViewport.setClearEveryFrame(false);
@@ -330,14 +330,12 @@ module akra.addons {
 			});
 
 			pSubset.mouseout.connect((pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
-				console.log("navigation::cube::subset::mouseout() common");
 				if (bDragStarted) {
 					pViewport.highlight(pCubeModel, null);
 					eSrcBlend = ERenderStateValues.ONE;
 					eDestBlend = ERenderStateValues.INVSRCALPHA;
 				}
 				else {
-					console.log("navigation::cube::subset::mouseout()");
 					pViewport.highlight(null, null);
 					eSrcBlend = ERenderStateValues.SRCALPHA;
 					eDestBlend = ERenderStateValues.DESTALPHA;
@@ -350,28 +348,28 @@ module akra.addons {
 				switch (pSubset.getName()) {
 					case "submesh-0":
 						alignTo(Vec3.temp(0., -1., 0.), Vec3.temp(0., 0., 1.));
-						console.log("bottom");
+						//console.log("bottom");
 						break;
 					case "submesh-1":
 						alignTo(Vec3.temp(1., 0., 0.), Vec3.temp(0., 1., 0.));
-						console.log("right");
+						//console.log("right");
 						break;
 					case "submesh-2":
-						console.log("left");
+						//console.log("left");
 						alignTo(Vec3.temp(-1., 0., 0.), Vec3.temp(0., 1., 0.));
 						break;
 					case "submesh-3":
-						console.log("top");
+						//console.log("top");
 						alignTo(Vec3.temp(0., 1., 0.), Vec3.temp(0., 0., -1.));
 						break;
 					case "submesh-4":
-						console.log("front");
+						//console.log("front");
 						alignTo(Vec3.temp(0., 0., 1.), Vec3.temp(0., 1., 0.));
 						break;
 
 					case "submesh-5":
 						alignTo(Vec3.temp(0., 0., -1.), Vec3.temp(0., 1., 0.));
-						console.log("back");
+						//console.log("back");
 						break;
 				}
 

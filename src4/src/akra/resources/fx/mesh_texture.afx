@@ -114,7 +114,7 @@ void fs_mesh_texture_deferre_pass_1(VS_OUT_2 IN){
     Fragment_material.diffuse = clamp(defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy)), 0., 1.);
     
     if(!normalFix){
-        Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)), 0., 1.).r;
+        Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     }
 }
 
@@ -123,13 +123,15 @@ void fs_mesh_texture_deferre_pass_2(VS_OUT_2 IN){
     Fragment_material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
 	if(normalFix){
-		Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)), 0., 1.).r;
+		Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
 	}
 }
 
-void fs_mesh_texture_normal(VS_OUT_2 IN){
+void fs_mesh_texture_normal_shininess(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;    
     Normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy);
+
+    Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
 }
 
 void fs_mesh_texture_material(VS_OUT_2 IN){
@@ -138,7 +140,7 @@ void fs_mesh_texture_material(VS_OUT_2 IN){
     Fragment_material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
     Fragment_material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
-    Fragment_material.shininess = defaultMaterial.shininess;
+    Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
 }
 
 void fs_mesh_texture_full(VS_OUT_2 IN){
@@ -151,7 +153,7 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
     Fragment_material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
     Fragment_material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
-    Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)), 0., 1.).r;
+    Fragment_material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
 }
 
 float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
@@ -199,11 +201,11 @@ technique mesh_texture {
             PixelShader = compile fs_mesh_texture_deferre_pass_2();
         }
         else if(optimizeForLPPPrepare) {
-            PixelShader = compile fs_mesh_texture_normal();
+            PixelShader = compile fs_mesh_texture_normal_shininess();
         }
-        else if(optimizeForLPPApply) {
-            PixelShader = compile fs_mesh_texture_material();
-        }
+        //else if(optimizeForLPPApply) {
+        //    PixelShader = compile fs_mesh_texture_material();
+        //}
         else {
             PixelShader = compile fs_mesh_texture_full();
         }

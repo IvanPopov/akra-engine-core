@@ -70,7 +70,7 @@ module akra.webgl {
 			var pTextureData: Uint8Array = null;
 			var pDataU8: Uint8Array = pData;
 
-			var iAdditionalHeaderSize: uint = (isDefAndNotNull(pData)) ? 32 /*header size*/ : 0;
+			var iAdditionalHeaderSize: uint = 32;//(isDefAndNotNull(pData)) ? 32 /*header size*/ : 0;
 
 			iByteSize = math.max(iByteSize + iAdditionalHeaderSize, pixelUtil.getMemorySize(iMinWidth, iMinWidth, 1, this._ePixelFormat));
 

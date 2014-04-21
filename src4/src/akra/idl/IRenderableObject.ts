@@ -4,7 +4,7 @@
 /// <reference path="ISceneObject.ts" />
 /// <reference path="IRenderData.ts" />
 /// <reference path="IViewport.ts" />
-
+/// <reference path="IClickable.ts" />
 
 module akra {
 	export enum ERenderableTypes {
@@ -15,7 +15,7 @@ module akra {
 		SPRITE
 	}
 
-	export interface IRenderableObject extends IEventProvider {
+	export interface IRenderableObject extends IEventProvider, IClickable {
 		getRenderMethod(): IRenderMethod;
 		setRenderMethod(pMethod: IRenderMethod): void;
 

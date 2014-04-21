@@ -59,7 +59,7 @@ module akra.render {
 
 		protected _pViewportList: IViewport[] = [];
 
-		//3d event handing
+		//user event handing
 		private _iUserEvents: int = 0;
 
 		constructor(pRenderer: IRenderer) {
@@ -129,11 +129,6 @@ module akra.render {
 		}
 
 		enableSupportForUserEvent(iType: int): int {
-			////mouse over and mouse out events require mouse move
-			//if (bf.testAny(iType, EUserEvents.MOUSEOVER | EUserEvents.MOUSEOUT)) {
-			//	iType = bf.setAll(iType, EUserEvents.MOUSEMOVE);
-			//}
-
 			//get events that have not yet been activated
 			var iNotActivate: int = (this._iUserEvents ^ 0x7fffffff) & iType;
 

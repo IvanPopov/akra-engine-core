@@ -112,10 +112,10 @@ module akra {
 		pCamera.setPosition(Vec3.temp(0., 7., 10.));
 		pCamera.lookAt(Vec3.temp(0, 0.8, -15));
 
-		pViewport = new render.LPPViewport(pCamera, 0., 0., 0.5, 1., 1);
+		pViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 1);
 
 		pCanvas.addViewport(pViewport);
-		pCanvas.addViewport(new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 2));
+		//pCanvas.addViewport(new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 2));
 
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -168,8 +168,8 @@ module akra {
 		//});
 
 
-		//var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
-		//pLight.setShadowCaster(true);
+		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
+		pLight.setShadowCaster(false);
 
 		//var pLight2: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 6, 3));
 		//pLight2.setShadowCaster(false);

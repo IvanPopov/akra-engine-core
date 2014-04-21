@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Typescript build task for Akra 3D engine.
  */
 
@@ -13,6 +13,7 @@ var Zip = require('node-native-zip');
 var jade = require('jade');
 var temp = require('temporary');
 var shell = require('shelljs');
+
 
 require('shelljs/global');
 

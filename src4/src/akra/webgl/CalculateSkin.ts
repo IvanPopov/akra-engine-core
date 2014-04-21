@@ -5,6 +5,9 @@
 
 module akra.webgl {
 	import Vec2 = math.Vec2;
+
+	var pWebGLScreenBuffer: WebGLBuffer = null;
+
 	export function calculateSkin(pMeshSubset: IMeshSubset): boolean {
 		var pRenderData: IRenderData = pMeshSubset.getData();
 
@@ -21,15 +24,15 @@ module akra.webgl {
 
 		var pWebGLVertexTexture: webgl.WebGLVertexTexture = <webgl.WebGLVertexTexture>pRenderData.getBuffer().getBuffer();
 		var pWebGLTexture: WebGLTexture = pWebGLVertexTexture.getWebGLTexture();
+		var pWebGLSkinVertexTexture: webgl.WebGLVertexTexture = <webgl.WebGLVertexTexture>pRenderData._getAttribBuffer(ERenderDataAttributeTypes.DYNAMIC);
 
 		/*update skinned position program*/
 		
 		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().findResource(".WEBGL_skinning_update");
+		var pWebGLScreenTextureProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().findResource(".WEBGL_debug_screen_texture");
 		if (isNull(pWebGLProgram)) {
 			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().createResource(".WEBGL_skinning_update");
-			pWebGLProgram.create(
-
-				"																																\n\
+			pWebGLProgram.create("																												\n\
 				#ifndef A_VB_COMPONENT3																											\n\
 				#define A_VB_COMPONENT4																											\n\
 				#endif																															\n\
@@ -198,6 +201,30 @@ module akra.webgl {
 				}                                   																							\n\
 				"
 				);
+				
+			pWebGLScreenTextureProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().createResource(".WEBGL_debug_screen_texture");
+			pWebGLScreenTextureProgram.create("				\n\
+				attribute vec2 aVertexPosition;						\n\
+				varying vec2 vTexcoord;								\n\
+																	\n\
+				void main(void ) {									\n\
+					gl_Position = vec4(aVertexPosition, 0., 1.0);	\n\
+					vTexcoord = (aVertexPosition + 1.)/2.;			\n\
+				}",
+				"													\n\
+				#ifdef GL_ES										\n\
+					precision highp float;							\n\
+				#endif												\n\
+				uniform sampler2D videoBuffer;						\n\
+				varying vec2 vTexcoord;								\n\
+				void main(void) {									\n\
+					gl_FragColor = vec4(texture2D(videoBuffer, vTexcoord));			\n\
+				}");
+
+			pWebGLScreenBuffer = pWebGLContext.createBuffer();
+			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pWebGLScreenBuffer);
+			pWebGLContext.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, null);
 		}
 
 		var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(gl.FRAMEBUFFER_BINDING);
@@ -207,12 +234,30 @@ module akra.webgl {
 		pWebGLRenderer.disableAllWebGLVertexAttribs();
 
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pWebGLFramebuffer);
-		pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
+		pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pWebGLSkinVertexTexture.getWebGLTexture(), 0);
 
 		pWebGLRenderer.disable(gl.DEPTH_TEST);
 		pWebGLRenderer.disable(gl.SCISSOR_TEST);
 		pWebGLRenderer.disable(gl.BLEND);
 		pWebGLRenderer.disable(gl.CULL_FACE);
+		
+
+		//pWebGLRenderer.useWebGLProgram(pWebGLScreenTextureProgram.getWebGLProgram());
+		//pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pWebGLScreenBuffer);
+		//var iPositionAttribLocation: uint = pWebGLScreenTextureProgram.getWebGLAttributeLocation("aVertexPosition");
+		//pWebGLContext.enableVertexAttribArray(iPositionAttribLocation);
+		//pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 2, gl.FLOAT, false, 0, 0);
+
+		//pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
+		//pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLTexture);
+
+		//pWebGLScreenTextureProgram.setInt("videoBuffer", 0);
+		//pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pWebGLFramebuffer);
+		//pWebGLContext.viewport(0, 0, pWebGLVertexTexture._getWidth(), pWebGLVertexTexture._getHeight());
+
+		//pWebGLContext.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+		pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
 		var iPositionAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("positionIndex");
 		var iNormalAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("normalIndex");
@@ -221,9 +266,6 @@ module akra.webgl {
 		pWebGLContext.enableVertexAttribArray(iPositionAttribLocation);
 		pWebGLContext.enableVertexAttribArray(iNormalAttribLocation);
 		pWebGLContext.enableVertexAttribArray(iDestinationAttribLocation);
-
-		pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-			gl.TEXTURE_2D, pWebGLTexture, 0);
 
 		//get data from renderData for position update
 		pRenderData.selectIndexSet(".update_skinned_position");
@@ -251,8 +293,8 @@ module akra.webgl {
 		pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
 		pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLTexture);
 
-		var iWidth: uint = pWebGLVertexTexture._getWidth();
-		var iHeight: uint = pWebGLVertexTexture._getHeight();
+		var iWidth: uint = pWebGLSkinVertexTexture._getWidth();
+		var iHeight: uint = pWebGLSkinVertexTexture._getHeight();
 
 		pWebGLProgram.setInt("videoBuffer", 0);
 		pWebGLProgram.setVec2("frameBufferSize", Vec2.temp(iWidth, iHeight));
@@ -290,7 +332,7 @@ module akra.webgl {
 		pWebGLContext.drawArrays(gl.POINTS, pIndexData.getByteOffset() / iStride, pIndexData.getLength());
 		///////////////////////////////////////////////
 
-		pWebGLContext.flush();
+		//pWebGLContext.flush();
 		
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFrameBuffer);
 		pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);

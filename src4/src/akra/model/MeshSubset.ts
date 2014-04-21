@@ -485,9 +485,7 @@ module akra.model {
 
 			//debug.time("\t\t\tMesh::setSkin allocations");
 
-			var iSkinnedPos: uint = pRenderData.allocateData(
-				[VE.float3("SKINNED_POSITION"), VE.end(16)],
-				new Float32Array(pPosData.getLength() * 4));
+			pRenderData.allocateAttribute([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.getLength() * 4), ERenderDataAttributeTypes.DYNAMIC);
 
 			// skinned vertices uses same index as vertices
 			//FIXME: call VertexData resize...
@@ -495,10 +493,10 @@ module akra.model {
 			// skinned normals uses new index
 			pRenderData.allocateIndex([VE.float("SN_INDEX")], new Float32Array(pSkinnedNormalIndex));
 
-			var iSkinnedNorm: uint = pRenderData.allocateData([VE.float3("SKINNED_NORMAL"), VE.end(16)], new Float32Array(pUNNormalIndex.length * 4));
+			pRenderData.allocateAttribute([VE.float3("SKINNED_NORMAL"), VE.end(16)], new Float32Array(pUNNormalIndex.length * 4), ERenderDataAttributeTypes.DYNAMIC);
 
-			pRenderData.index(iSkinnedPos, "SP_INDEX");
-			pRenderData.index(iSkinnedNorm, "SN_INDEX");
+			pRenderData.index("SKINNED_POSITION", "SP_INDEX");
+			pRenderData.index("SKINNED_NORMAL", "SN_INDEX");
 
 			var iPreviousSet: uint = pRenderData.getIndexSet();
 
@@ -511,7 +509,7 @@ module akra.model {
 			pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);	//FIXME: call VertexData resize...
 
 			pRenderData.index(pPosData.getByteOffset(), "UPP_INDEX");
-			pRenderData.index(iSkinnedPos, "DESTINATION_SP");
+			pRenderData.index("SKINNED_POSITION", "DESTINATION_SP");
 
 			//////////////////////////////////////////////////////////////////// [iUNIndexSet]
 
@@ -522,7 +520,7 @@ module akra.model {
 
 			pRenderData.index(pPosData.getByteOffset(), "UNP_INDEX");
 			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.getByteOffset(), "UNN_INDEX");
-			pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
+			pRenderData.index("SKINNED_NORMAL", "DESTINATION_SN");
 			//debug.timeEnd("\t\t\tMesh::setSkin allocations");
 			//////////////////////////
 

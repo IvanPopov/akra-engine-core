@@ -55,7 +55,7 @@ module akra {
 		getTexturePool(): IResourcePool<ITexture>;
 		getSurfaceMaterialPool(): IResourcePool<ISurfaceMaterial>;
 		getVertexBufferPool(): IResourcePool<IVertexBuffer>;
-		getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+		getVideoBufferPool(): IResourcePool<IVertexBuffer>;
 		getIndexBufferPool(): IResourcePool<IIndexBuffer>;
 		getTextureBufferPool(): IResourcePool<IPixelBuffer>;
 		getRenderMethodPool(): IResourcePool<IRenderMethod>;
