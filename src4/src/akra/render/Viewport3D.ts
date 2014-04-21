@@ -16,6 +16,10 @@ module akra.render {
 	import Vec3 = math.Vec3;
 	import Vec4 = math.Vec4;
 
+	interface IPickedObject extends IRIDPair {
+		x: int;
+		y: int;
+	}
 
 	//3D events 
 
@@ -194,15 +198,18 @@ module akra.render {
 
 	export class Viewport3D extends Viewport implements IViewport3D {
 		//get last mouse postion backend
-		protected _pMousePositionLast: IPoint = { x: 0, y: 0 }
+		private _pMousePositionLast: IPoint = { x: 0, y: 0 }
 		//is mouse under the viewport?
-		protected _bMouseIsCaptured: boolean = false;
+		private _bMouseIsCaptured: boolean = false;
 
 		//Specifies whether the object is perfect choice in a given frame
-		protected _b3DRequirePick = true;
-		protected _p3DEventPickLast: IRIDPair = { object: null, renderable: null }
-		protected _p3DEventPickPrev: IRIDPair = { object: null, renderable: null }
-		protected _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
+		private _b3DRequirePick = true;
+		private _p3DEventPickLast: IPickedObject = { object: null, renderable: null, x: -1, y: -1 }
+		private _p3DEventPickPrev: IPickedObject = { object: null, renderable: null, x: -1, y: -1 }
+		private _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
+		
+		private _b3DEventsSupport: boolean = true;
+		
 
 		protected setupSignals(): void {
 			this.dragstart = this.dragstart || new DragstartSignal(this);
@@ -235,9 +242,18 @@ module akra.render {
 			this._b3DRequirePick = true;
 		}
 
+		final enable3DEvents(bEnable: boolean = true): void {
+			this._b3DEventsSupport = bEnable;
+		}
+
+		final is3DEventsSupported(): boolean {
+			return this._b3DEventsSupport;
+		}
+
 		protected _getDepthRangeImpl(): IDepthRange {
 			return <IDepthRange>{ min: -1, max: 1 }
 		}
+
 
 		getDepthRange(): IDepthRange {
 
@@ -314,11 +330,11 @@ module akra.render {
 		}
 
 		getObject(x: uint, y: uint): ISceneObject {
-			return null;
+			return this.pick(x, y).object;
 		}
 
 		getRenderable(x: uint, y: uint): IRenderableObject {
-			return null;
+			return this.pick(x, y).renderable;
 		}
 
 		//manual recall over/out events for objects
@@ -335,7 +351,11 @@ module akra.render {
 		}
 
 		pick(x: uint, y: uint): IRIDPair {
-			if (this._b3DRequirePick) {
+			if (this._p3DEventPickLast.x !== x || this._p3DEventPickLast.y !== y) {
+				this._b3DRequirePick = true;
+			}
+
+			if (this._b3DRequirePick && this._b3DEventsSupport) {
 				var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
 				var iRid: int = this._getRenderId(x, y);
 				var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
@@ -351,14 +371,18 @@ module akra.render {
 				//save last pick result
 				this._p3DEventPickPrev.renderable = this._p3DEventPickLast.renderable;
 				this._p3DEventPickPrev.object = this._p3DEventPickLast.object;
+				this._p3DEventPickPrev.x = this._p3DEventPickLast.x;
+				this._p3DEventPickPrev.y = this._p3DEventPickLast.y;
 
 				//save new pick result
 				this._p3DEventPickLast.renderable = pRenderable;
 				this._p3DEventPickLast.object = pObject;
+				this._p3DEventPickLast.x = x;
+				this._p3DEventPickLast.y = y;
 
 				this._b3DRequirePick = false;
 			}
-
+			
 			return this._p3DEventPickLast;
 		}
 
@@ -397,25 +421,25 @@ module akra.render {
 			return pCurr;
 		}
 
-		_keepLastMousePosition(x: uint, y: uint): void {
+		final _keepLastMousePosition(x: uint, y: uint): void {
 			this._pMousePositionLast.x = x;
 			this._pMousePositionLast.y = y;
 		}
 
-		_getLastMousePosition(): IPoint {
+		final _getLastMousePosition(): IPoint {
 			return this._pMousePositionLast;
 		}
 
-		_setUserEventDragTarget(pObject: ISceneObject = null, pRenderable: IRenderableObject = null): void {
+		final _setUserEventDragTarget(pObject: ISceneObject = null, pRenderable: IRenderableObject = null): void {
 			this._p3DEventDragTarget.object = pObject;
 			this._p3DEventDragTarget.renderable = pRenderable;
 		}
 
-		_getUserEventDragTarget(): IRIDPair {
+		final _getUserEventDragTarget(): IRIDPair {
 			return this._p3DEventDragTarget;
 		}
 
-		_setMouseCaptured(bValue: boolean): void {
+		final _setMouseCaptured(bValue: boolean): void {
 			this._bMouseIsCaptured = bValue;
 		}
 

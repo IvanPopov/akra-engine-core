@@ -13424,7 +13424,17 @@ declare module akra {
     interface IViewport3D extends IViewport {
         getEffect(): IEffect;
         touch(): void;
+        /**
+        * Pick 3D object by screen position.
+        */
         pick(x: number, y: number): IRIDPair;
+        /**
+        * Propagate or not propagate viewport events to 3D objects.
+        * @param bEnable Enable or Disable 3D events propagation.
+        */
+        enable3DEvents(bEnable?: boolean): void;
+        /** @return TRUE - if events apply to objects in this vyuporte. */
+        is3DEventsSupported(): boolean;
         getObject(x: number, y: number): ISceneObject;
         getRenderable(x: number, y: number): IRenderableObject;
         getDepth(x: number, y: number): number;
@@ -13505,15 +13515,18 @@ declare module akra {
 }
 declare module akra.render {
     class Viewport3D extends Viewport implements IViewport3D {
-        public _pMousePositionLast: IPoint;
-        public _bMouseIsCaptured: boolean;
-        public _b3DRequirePick: boolean;
-        public _p3DEventPickLast: IRIDPair;
-        public _p3DEventPickPrev: IRIDPair;
-        public _p3DEventDragTarget: IRIDPair;
+        private _pMousePositionLast;
+        private _bMouseIsCaptured;
+        private _b3DRequirePick;
+        private _p3DEventPickLast;
+        private _p3DEventPickPrev;
+        private _p3DEventDragTarget;
+        private _b3DEventsSupport;
         public setupSignals(): void;
         public getDepth(x: number, y: number): number;
         public update(): void;
+        public enable3DEvents(bEnable?: boolean): void;
+        public is3DEventsSupported(): boolean;
         public _getDepthRangeImpl(): IDepthRange;
         public getDepthRange(): IDepthRange;
         public projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
@@ -15334,8 +15347,6 @@ declare module akra.render {
         public endFrame(): void;
         public prepareForDeferredShading(): void;
         public getSkybox(): ITexture;
-        public getObject(x: number, y: number): ISceneObject;
-        public getRenderable(x: number, y: number): IRenderableObject;
         public _getRenderId(x: number, y: number): number;
         public _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
         public getDepth(x: number, y: number): number;
@@ -15395,8 +15406,6 @@ declare module akra.render {
         public getShadingModel(): EShadingModel;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
-        public getObject(x: number, y: number): ISceneObject;
-        public getRenderable(x: number, y: number): IRenderableObject;
         public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;
         public _updateImpl(): void;
@@ -15702,6 +15711,7 @@ declare module akra.webgl {
         public _bUserEventDragging: boolean;
         public _eUserEventDragBtn: EMouseButton;
         public _bUserEventSkipNextClick: boolean;
+        public _iUserHandledEvents: number;
         constructor(pRenderer: IRenderer);
         public setupSignals(): void;
         public getLeft(): number;
@@ -15712,6 +15722,8 @@ declare module akra.webgl {
         public hideCursor(bHide?: boolean): void;
         public setCursor(sType: string): void;
         public create(sName?: string, iWidth?: number, iHeight?: number, isFullscreen?: boolean): boolean;
+        /** @return TRUE if event already handled, FALSE if not handled */
+        private checkOrSaveEventHandler(eType);
         public enableSupportForUserEvent(iType: number): number;
         public destroy(): void;
         public getCustomAttribute(sName: string): any;

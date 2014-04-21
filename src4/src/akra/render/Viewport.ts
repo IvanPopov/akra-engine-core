@@ -440,16 +440,6 @@ module akra.render {
 				return 0;
 			}
 
-			if (bf.testAny(iType, EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP | EUserEvents.DRAGGING)) {
-				iType = bf.setAll(iType, EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP | EUserEvents.DRAGGING |
-					EUserEvents.MOUSEDOWN | EUserEvents.MOUSEUP | EUserEvents.MOUSEMOVE);
-			}
-
-			//mouse over and mouse out events require mouse move
-			if (bf.testAny(iType, EUserEvents.MOUSEOVER | EUserEvents.MOUSEOUT)) {
-				iType = bf.setAll(iType, EUserEvents.MOUSEMOVE);
-			}
-
 			//get events that have not yet been activated
 			var iNotActivate: int = (this._iUserEvents ^ MAX_INT32) & iType;
 

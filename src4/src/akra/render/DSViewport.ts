@@ -311,16 +311,6 @@ module akra.render {
 		//}
 
 
-
-		getObject(x: uint, y: uint): ISceneObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
-		}
-
-		getRenderable(x: uint, y: uint): IRenderableObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
-		}
-
-
 		_getRenderId(x: int, y: int): int {
 			return this._getDeferredTexValue(0, x, y).a;
 		}

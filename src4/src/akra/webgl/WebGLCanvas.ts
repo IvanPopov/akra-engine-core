@@ -8,6 +8,8 @@
 
 module akra.webgl {
 
+	import Vec2 = math.Vec2;
+
 	function absorbEvent(e) {
 		e.preventDefault && e.preventDefault();
 		e.stopPropagation && e.stopPropagation();
@@ -48,6 +50,8 @@ module akra.webgl {
 		//так как драггинг заканчивается вместе с событием отжатия мыши, которое в свою очередь всегда приходит раньше 
 		//клика
 		protected _bUserEventSkipNextClick: boolean = false;
+		//events, that already has listeners via EventTarget.addEventListener()
+		protected _iUserHandledEvents: int = 0;
 
 		constructor(pRenderer: IRenderer) {
 			super(pRenderer);
@@ -131,12 +135,18 @@ module akra.webgl {
 			return true;
 		}
 
+		/** @return TRUE if event already handled, FALSE if not handled */
+		private checkOrSaveEventHandler(eType: EUserEvents): boolean {
+			if (this._iUserHandledEvents & eType) return true;
+			this._iUserHandledEvents = bf.setAll(this._iUserHandledEvents, eType);
+			return false;
+		}
 
 		enableSupportForUserEvent(iType: int): int {
 
 			var iActivated: int = super.enableSupportForUserEvent(iType);
 			var pEl: HTMLCanvasElement = this.getElement();
-			if (iActivated & EUserEvents.CLICK) {
+			if ((iActivated & EUserEvents.CLICK) && !this.checkOrSaveEventHandler(EUserEvents.CLICK)) {
 				debug.log("WebGLCanvas activate <CLICK> event handing.");
 				pEl.addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -147,7 +157,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & EUserEvents.MOUSEMOVE) {
+			if (bf.testAny(iActivated, EUserEvents.MOUSEMOVE | EUserEvents.MOUSEOVER | EUserEvents.MOUSEOUT | EUserEvents.DRAGGING) && !this.checkOrSaveEventHandler(EUserEvents.MOUSEMOVE)) {
 				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing.");
 				pEl.addEventListener("mousemove", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -156,7 +166,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & EUserEvents.MOUSEDOWN) {
+			if (bf.testAny(iActivated, EUserEvents.MOUSEDOWN | EUserEvents.DRAGSTART) && !this.checkOrSaveEventHandler(EUserEvents.MOUSEDOWN)) {
 				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing.");
 				pEl.addEventListener("mousedown", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -165,7 +175,8 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & EUserEvents.MOUSEUP) {
+			if (bf.testAny(iActivated, EUserEvents.MOUSEUP | EUserEvents.DRAGSTOP) &&
+				!this.checkOrSaveEventHandler(EUserEvents.MOUSEUP)) {
 				debug.log("WebGLCanvas activate <MOUSEUP> event handing.");
 				pEl.addEventListener("mouseup", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -174,7 +185,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & EUserEvents.MOUSEOVER) {
+			if ((iActivated & EUserEvents.MOUSEOVER) && !this.checkOrSaveEventHandler(EUserEvents.MOUSEOVER)) {
 				debug.log("WebGLCanvas activate <MOUSEOVER> event handing.");
 				pEl.addEventListener("mouseover", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -183,7 +194,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & EUserEvents.MOUSEOUT) {
+			if ((iActivated & EUserEvents.MOUSEOUT) && !this.checkOrSaveEventHandler(EUserEvents.MOUSEOUT)) {
 				debug.log("WebGLCanvas activate <MOUSEOUT> event handing.");
 				pEl.addEventListener("mouseout", (e: MouseEvent): boolean => {
 					absorbEvent(e);
@@ -192,7 +203,7 @@ module akra.webgl {
 				}, true);
 			}
 
-			if (iActivated & EUserEvents.MOUSEWHEEL) {
+			if ((iActivated & EUserEvents.MOUSEWHEEL) && !this.checkOrSaveEventHandler(EUserEvents.MOUSEWHEEL)) {
 				debug.log("WebGLCanvas activate <MOUSEWHEEL> event handing.");
 				pEl.addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
 					absorbEvent(e);
@@ -427,25 +438,31 @@ module akra.webgl {
 
 		protected _onMousemove(x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
-
-			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEMOVE)) {
-				pViewport.mousemove.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
+			if (this.isUserEventSupported(EUserEvents.MOUSEMOVE | EUserEvents.MOUSEOVER | EUserEvents.MOUSEOUT)) {
+				if (!isNull(pViewport) &&
+					pViewport.isUserEventSupported(EUserEvents.MOUSEMOVE | EUserEvents.MOUSEOUT | EUserEvents.MOUSEOVER)) {
+					pViewport.mousemove.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
+				}
 			}
 
-			if (this.isUserEventSupported(EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP)) {
-				//dragging enabled
-				if (!isNull(this._pUserEventDragTarget)) {
-					//drag start event not emitted
-					if (!this._bUserEventDragging &&
-						//mouse shift from mousedown point greather than drag dead zone constant
-						math.Vec2.temp(x - this._pUserEventMouseDownPos.x, y - this._pUserEventMouseDownPos.y).length() > this._iUserEventDragDeadZone) {
-						this.dragstart.emit(this._eUserEventDragBtn, x, y);
-					}
-					else if (this._bUserEventDragging) {
+			//dragging enabled
+			if (!isNull(this._pUserEventDragTarget)) {
+				if (this._bUserEventDragging) {
+					if (this.isUserEventSupported(EUserEvents.DRAGGING)) {
 						this.dragging.emit(this._eUserEventDragBtn, x, y);
 					}
 				}
+				else 
+				//drag start event not emitted
+				if (
+					//mouse shift from mousedown point greather than drag dead zone constant
+					Vec2.temp(x - this._pUserEventMouseDownPos.x, y - this._pUserEventMouseDownPos.y).length() > this._iUserEventDragDeadZone) {
+					if (this.isUserEventSupported(EUserEvents.DRAGSTART)) {
+						this.dragstart.emit(this._eUserEventDragBtn, x, y);
+					}
+				}
 			}
+
 		}
 
 		protected _onMousedown(eBtn: EMouseButton, x: uint, y: uint): void {
@@ -454,13 +471,22 @@ module akra.webgl {
 			this._pUserEventMouseDownPos.x = x;
 			this._pUserEventMouseDownPos.y = y;
 
-			if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEDOWN)) {
-				pViewport.mousedown.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
+			if (this.isUserEventSupported(EUserEvents.MOUSEDOWN)) {
+				if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.MOUSEDOWN)) {
+					pViewport.mousedown.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
+				}
 			}
 
 			if (this.isUserEventSupported(EUserEvents.DRAGSTART)
 				&& this._eUserEventDragBtn === EMouseButton.UNKNOWN) {
-				this._pUserEventDragTarget = pViewport;
+				//only for viewport with drag events
+				if (pViewport.isUserEventSupported(EUserEvents.DRAGSTART)) {
+					this._pUserEventDragTarget = pViewport;
+				}
+				else {
+					this._pUserEventDragTarget = null;
+				}
+
 				this._eUserEventDragBtn = eBtn;
 
 				if (this._iUserEventDragDeadZone === 0) {
@@ -538,7 +564,8 @@ module akra.webgl {
 		}
 
 		protected _onDragging(eBtn: EMouseButton, x: uint, y: uint): void {
-			if (!isNull(this._pUserEventDragTarget)) {
+			if (!isNull(this._pUserEventDragTarget) &&
+				this._pUserEventDragTarget.isUserEventSupported(EUserEvents.DRAGGING)) {
 				this._pUserEventDragTarget.dragging.emit(
 					eBtn,
 					x - this._pUserEventDragTarget.getActualLeft(),

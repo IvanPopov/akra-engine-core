@@ -13,7 +13,18 @@ module akra {
 
 		touch(): void;
 
+		/**
+		 * Pick 3D object by screen position.
+		 */
 		pick(x: uint, y: uint): IRIDPair;
+		
+		/** 
+		 * Propagate or not propagate viewport events to 3D objects.
+		 * @param bEnable Enable or Disable 3D events propagation.
+		 */
+		enable3DEvents(bEnable?: boolean): void;
+		/** @return TRUE - if events apply to objects in this vyuporte. */
+		is3DEventsSupported(): boolean;
 
 		getObject(x: uint, y: uint): ISceneObject;
 		getRenderable(x: uint, y: uint): IRenderableObject;

@@ -110,7 +110,7 @@ module akra.addons {
 		});
 
 		//movemenet backend!
-		pGeneralViewport.enableSupportForUserEvent(EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP);
+		pGeneralViewport.enableSupportForUserEvent(EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP | EUserEvents.DRAGGING);
 
 		var vWorldPosition: IVec3 = new Vec3;
 		var pStartPos: IPoint = { x: 0, y: 0 };
@@ -173,7 +173,7 @@ module akra.addons {
 		pViewport.enableSupportForUserEvent(
 			EUserEvents.CLICK | EUserEvents.MOUSEOVER |
 			EUserEvents.MOUSEOUT | EUserEvents.DRAGSTART |
-			EUserEvents.DRAGSTOP | EUserEvents.MOUSEWHEEL);
+			EUserEvents.DRAGSTOP | EUserEvents.DRAGGING | EUserEvents.MOUSEWHEEL);
 
 		//cube scene synchronization backend
 
@@ -237,13 +237,10 @@ module akra.addons {
 			eSrcBlend = ERenderStateValues.SRCALPHA;
 			eDestBlend = ERenderStateValues.DESTALPHA;
 			pViewport.highlight(null, null);
-			console.log("dragstop");
 			pViewport.touch();
 		});
 
-		pCubeModel.mouseout.connect(() => {
-			console.log("navigation::viewport::cube::mouseout()");
-		});
+
 
 		function orbitRotation2(pNode: INode, vCenter, vFrom: IVec3, fX, fY, bLookAt: boolean = true): void {
 			if (isNull(vFrom)) {

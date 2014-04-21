@@ -147,14 +147,6 @@ module akra.render {
 			return isOk;
 		}
 
-		getObject(x: uint, y: uint): ISceneObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
-		}
-
-		getRenderable(x: uint, y: uint): IRenderableObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
-		}
-
 		_getRenderId(x: int, y: int): int {
 			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(),
 				"invalid pixel: {" + x + "(" + this.getActualWidth() + ")" + ", " + y + "(" + this.getActualHeight() + ")" + "}");
