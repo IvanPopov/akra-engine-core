@@ -103,7 +103,7 @@ module akra {
 	}
 
 	function createViewport(): I3DViewport {
-		var pViewport: IDSViewport = new render.DSViewport(pCamera);
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -111,9 +111,9 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		// (<render.DSViewport>pViewport).setFXAA(false);
+		// (<render.LPPViewport>pViewport).setFXAA(false);
 		var counter = 0;
-		var pEffect = (<render.DSViewport>pViewport).getEffect();
+		var pEffect = (<render.LPPViewport>pViewport).getEffect();
 		//pEffect.addComponent("akra.system.dof");
 		//pEffect.addComponent("akra.system.blur");
 		// pEffect.addComponent("akra.system.lensflare");
@@ -249,11 +249,13 @@ module akra {
 
 		pViewport.setDefaultEnvironmentMap(pEnvTexture);
 
+        (<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
 			var pDeferredTexture: ITexture = (<I3DViewport>pViewport).getTextureWithObjectID();
-			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
+			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			var v3fLightDir: IVec3 = math.Vec3.temp( math.Vec3.temp(pLight.getWorldPosition()).subtract(pCamera.getWorldPosition()).normalize() );
@@ -261,15 +263,20 @@ module akra {
 			pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
 
 			if (iPass == 0) {
-				if (pPBSData.isUsePBS) {
-					(<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
-				}
 				//pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
 				pPass.setUniform('PBS_GLOSS', pPBSData._Gloss );
 				pPass.setUniform('PBS_F0', pPBSData._Material._F0);
 				pPass.setUniform('PBS_DIFFUSE', pPBSData._Material._Diffuse);
 				//pPass.setTexture('ENVMAP', pEnvTexture);
 			}
+                if (pPBSData.isUsePBS) {
+                    pPass.setForeign('isUsedPBSReflections', true);
+                    // (<I3DViewport>pViewport).setShadingModel(EShadingModel.isUsedPBSReflections);
+                }
+                else {
+                    pPass.setForeign('isUsedPBSReflections', false);
+                    // (<I3DViewport>pViewport).setShadingModel(EShadingModel.isUsedPBSReflections);
+                }
 
 
 			pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
@@ -394,8 +401,8 @@ module akra {
 		pSkyboxTexture = pRmgr.createTexture(".sky-box-texture");
 		<ITexture>pSkyboxTexture.loadResource("SKYBOX");
 
-		if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			(<render.DSViewport>pViewport).setSkybox(pSkyboxTexture);
+		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		}
 	}
 
@@ -568,8 +575,8 @@ module akra {
 				model.explore( function(node) {
 					if(akra.scene.SceneModel.isModel(node)) {
 						node.getMesh().getSubset(0).getMaterial().shininess=0.75;
-						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.99, 0.99, 1.0);
-						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0., 0., 1.0);
+						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
+						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
 						}
 					});
 				}, 'teapot-02', pScene.getRootNode()).scale(3.0).addRelPosition( -6., 8., 20. );

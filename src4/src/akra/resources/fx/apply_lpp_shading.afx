@@ -44,8 +44,8 @@ float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 float2 screenSize: SCREEN_SIZE;
 
 foreign bool isUsedBlinnPhong = false;
-foreign bool isUsedPhong = true;
-foreign bool isUsedPBSSimple = false;
+foreign bool isUsedPhong = false;//true;
+foreign bool isUsedPBSSimple = true;//false;
 
 float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
 	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;

@@ -558,7 +558,7 @@ float4 applyPBSLightParams(pixel_data pixelData,
 	float NoL = dot_saturate(pixelData.normal, light_dir);
 
 	// multiplicator for better visibility REMOVED(bill-phong is much more shiny)
-	float attenuation = 3.0 / (lightAttenuation.x +
+	float attenuation = 10.0 / (lightAttenuation.x +
 							   lightAttenuation.y * light_dir_length + 
 							   lightAttenuation.z * light_dir_length * light_dir_length);
 
@@ -572,6 +572,8 @@ float4 applyPBSLightParams(pixel_data pixelData,
 		view_dir = normalize(pixelData.position);
 	}
 	float3 halfVector = normalize(view_dir + light_dir);
+	
+	float HoN = dot_saturate(halfVector, pixelData.normal);
 
 	float3 computedLightDiff;
 	float k1;
@@ -582,13 +584,13 @@ float4 applyPBSLightParams(pixel_data pixelData,
 	if(isPrepareAll || isForLPPPass0){
 		//Prepare light diffuse and k1
 		// Blinn-Phong BRDF
-		computedLightDiff = lightDiffOrig * NoL;//* (alpha_p + 2.) / 2. / 3.14159265359;// pow(NoL, alpha_p);
+		//computedLightDiff = lightDiffOrig * NoL;//* (alpha_p + 2.) / 2. / 3.14159265359;// pow(NoL, alpha_p);
+		computedLightDiff = lightDiffOrig * (alpha_p + 2.) / 2. / 3.14159265359 * pow(NoL, alpha_p);
 		// GGX (Trowbridge and Reitz) BRDF
-		//float4 computedLightDiff = lightDiffOrig * pow(pixelData.shininess, 4.) / pow(3.14159265359 * (
+		//computedLightDiff = lightDiffOrig * pow(pixelData.shininess, 4.) / pow(3.14159265359 * (
 		//				   	pow(max(dot(pixelData.normal, light_dir), 0.000001), 2.) *
 		//				   	(pow(pixelData.shininess, 4.) - 1.) + 1.), 2.);
 
-		float HoN = dot_saturate(halfVector, pixelData.normal);
 
 		computedLightDiff = computedLightDiff.xyz * attenuation;
 		k1 = (alpha_p+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
@@ -606,7 +608,7 @@ float4 applyPBSLightParams(pixel_data pixelData,
 		computedLightDiff *= (float3(1.) - lightSpec);
 
 		// // Cook-Torrance Kelemen approximation of visibility term (geometry included)
-		// float visibilityFunction = pow(HoN, 2.);
+		//float visibilityFunction = pow(HoN, 2.);
 		// Implicit visibility term
 		float visibilityFunction = 1.;
 
