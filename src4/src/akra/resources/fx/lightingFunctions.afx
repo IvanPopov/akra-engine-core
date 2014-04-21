@@ -529,9 +529,9 @@ float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float 
 
 	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
 	// HACK: get maximum level of detail from size of texture
-	int lod1 = int(floor(glossToQualityConverter(Gloss, 7.)));
-	int lod2 = int(ceil(glossToQualityConverter(Gloss, 7.)));
-	float alpha = glossToQualityConverter(Gloss, 7.) - float(lod1);
+	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
+	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
+	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
 
     //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
     float3 Envcolor = getEnvLod(envSampler, R, lod1).rgb * (1. - alpha)

@@ -252,31 +252,30 @@ module akra {
 		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
 		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
 
-		var pPBSFolder = pGUI.addFolder("pbs");
-		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
-		(<dat.NumberControllerSlider>pPBSFolder.add(pPBSData, '_Gloss')).step(0.01).min(0).max(1).name("gloss");
-		(<dat.OptionController>pPBSFolder.add({Material:"Plastic"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
-			pPBSData._Material = pMaterialPresets[sKey];
-		});
+		// var pPBSFolder = pGUI.addFolder("pbs");
+		// (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
+		// (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData, '_Gloss')).step(0.01).min(0).max(1).name("gloss");
+		// (<dat.OptionController>pPBSFolder.add({Material:"Plastic"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
+		// 	pPBSData._Material = pMaterialPresets[sKey];
+		// });
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
 
-<<<<<<< HEAD
+// <<<<<<< HEAD
         var pPBSFolder = pGUI.addFolder("pbs");
         (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
         (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', Object.keys(pSkyboxTextures))).name("Skybox").onChange((sKey) => {
-	        if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-	            (<render.DSViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+	        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+	            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 	        }
-	        pEnvTexture.unwrapCubeTexture(pSkyboxTextures[sKey]);
+            console.log("Unwrapping cubemap: ", (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]));
         });
-=======
-		pEnvTexture = pRmgr.createTexture(".env-texture-01");
-		(<ITexture>pEnvTexture).loadResource("ENVMAP");
->>>>>>> origin/lpp-sading
-
-		pViewport.setDefaultEnvironmentMap(pEnvTexture);
+        //pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 0.1, 0.1, 0.3, 0.3, 10));
+// =======
+// 		pEnvTexture = pRmgr.createTexture(".env-texture-01");
+// 		(<ITexture>pEnvTexture).loadResource("ENVMAP");
+// >>>>>>> origin/lpp-sading
 
         (<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
@@ -291,21 +290,21 @@ module akra {
 			//var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
             //pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
 
-            if (iPass == 0) {
-                pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
+            // if (iPass == 0) {
+                // pPass.setForeign('IS_USE_PBS_SIMPLE', pPBSData.isUsePBS ? 2 : 1 );
                 // pPass.setUniform('PBS_GLOSS', pPBSData._Gloss );
                 // pPass.setUniform('PBS_F0', pPBSData._Material._F0);
                 // pPass.setUniform('PBS_DIFFUSE', pPBSData._Material._Diffuse);
-                pPass.setTexture('ENVMAP', pEnvTexture);
-            }
-                if (pPBSData.isUsePBS) {
-                    pPass.setForeign('isUsedPBSReflections', true);
-                    // (<I3DViewport>pViewport).setShadingModel(EShadingModel.isUsedPBSReflections);
-                }
-                else {
-                    pPass.setForeign('isUsedPBSReflections', false);
-                    // (<I3DViewport>pViewport).setShadingModel(EShadingModel.isUsedPBSReflections);
-                }
+            // }
+       		// pPass.setTexture('ENVMAP', pEnvTexture);
+                // if (pPBSData.isUsePBS) {
+                //     pPass.setForeign('isUsedPBSReflections', true);
+                //     (<I3DViewport>pViewport).setShadingModel(EShadingModel.isUsedPBSReflections);
+                // }
+                // else {
+                //     pPass.setForeign('isUsedPBSReflections', false);
+                //     (<I3DViewport>pViewport).setShadingModel(EShadingModel.isUsedPBSReflections);
+                // }
 
 
 			//pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
@@ -440,8 +439,8 @@ module akra {
     function createSkyBox(): void {
         pSkyboxTexture = pSkyboxTextures['desert'];
 
-        if (pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-            (<render.DSViewport>pViewport).setSkybox(pSkyboxTexture);
+        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
         }
 
         pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
@@ -449,7 +448,9 @@ module akra {
             ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
         pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
         
-        //pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), pEnvTexture.getWidth() / pViewport.getActualWidth(), pEnvTexture.getHeight() / pViewport.getActualHeight(),10));
+        // pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), pEnvTexture.getWidth() / pViewport.getActualWidth(), pEnvTexture.getHeight() / pViewport.getActualHeight(),10));
+
+		(<I3DViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
     }
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
