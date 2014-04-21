@@ -38,7 +38,8 @@ module.exports = function (grunt) {
 			"addon-navigation": { config: "src/akra-addons/addons/navigation.xml" },
 			"addon-filedrop": { config: "src/akra-addons/addons/filedrop.xml" },
 			"addon-base3dObjects": { config: "src/akra-addons/addons/base3dObjects.xml" },
-			"addon-progress": { config: "src/akra-addons/addons/progress.xml" }
+			"addon-progress": { config: "src/akra-addons/addons/progress.xml" },
+			"addon-compatibility": { config: "src/akra-addons/addons/compatibility.xml" }
 		},
 		clean: {
 			build: {
@@ -118,6 +119,7 @@ module.exports = function (grunt) {
 	grunt.registerTask("all", [
 		"build:core",
 		"build:parser",
+		"build:addon-compatibility",
 		"build:addon-navigation",
 		"build:addon-filedrop",
 		"build:addon-base3dObjects",

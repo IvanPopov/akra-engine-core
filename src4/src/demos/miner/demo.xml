@@ -15,14 +15,16 @@
         <OutDir>js</OutDir>
         <Type>javascript</Type>
       </Attachment>
-      
+
+      <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-navigation" />
       <Module Name="addon-base3dObjects" />
     </Dependencies>
     <Resource Name="AE_RESOURCES">
       <Filename>data</Filename>
-      <Archive>False</Archive>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="models" />

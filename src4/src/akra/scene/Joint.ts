@@ -33,18 +33,12 @@ module akra.scene {
 		// }
 
 		create(): boolean {
-			this._m4fLocalMatrix = new Mat4(1);
-			this._m4fWorldMatrix = new Mat4(1);
-
-			this._v3fWorldPosition = new Vec3();
-			this._v3fTranslation = new Vec3(0, 0, 0);
-			this._v3fScale = new Vec3(1);
-			this._qRotation = new Quat4(0, 1);
+			var isOk = super.create();
 
 
 			//maybe custom
 			this.setInheritance(ENodeInheritance.ALL);
-			return true;
+			return isOk;
 		}
 
 		toString(isRecursive: boolean = false, iDepth: int = 0): string {

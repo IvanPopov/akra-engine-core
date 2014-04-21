@@ -7,7 +7,8 @@ declare module akra.addons {
         private acquiringTip;
         private applying;
         private applyingTip;
-        constructor(element?: HTMLElement, bRender?: boolean);
+        constructor(pElement: HTMLElement, bRender?: boolean);
+        constructor(pCanvas: HTMLCanvasElement, bRender?: boolean);
         public render(): void;
         public destroy(): void;
         public getListener(): (e: IDepEvent) => void;

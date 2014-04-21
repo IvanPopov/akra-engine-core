@@ -17,6 +17,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="akra\core.xml" />
+    <Content Include="akra\io\FileInterface.t.js" />
+    <Content Include="akra\io\LocalFile.t.js" />
+    <Content Include="akra\io\RemoteFile.t.js" />
     <Content Include="akra\parser.xml" />
     <None Include="akra\resources\fx\apply_lights_and_shadows.afx" />
     <Content Include="akra\resources\fx\color_maps.afx" />
@@ -43,6 +46,9 @@
     <Content Include="akra\resources\fx\TextureToScreen.afx" />
     <Content Include="akra\resources\fx\wireframe.afx" />
     <Content Include="akra\resources\HLSL.gr" />
+    <Content Include="akra\resources\js\FileSaver\FileSaver.js" />
+    <Content Include="akra\resources\js\FileSaver\FileSaver.min.js" />
+    <Content Include="akra\resources\js\promise-0.1.1.min.js" />
     <Content Include="akra\resources\js\webgl-debug.js" />
     <Content Include="akra\resources\js\zip.js\deflate.js" />
     <Content Include="akra\resources\js\zip.js\inflate.js" />
@@ -512,11 +518,12 @@
     <TypeScriptCompile Include="akra\fx\instructions\VariableTypeInstruction.ts" />
     <TypeScriptCompile Include="akra\fx\instructions\WhileStmtInstruction.ts" />
     <TypeScriptCompile Include="akra\idl\3d-party\es6-promises.d.ts" />
+    <TypeScriptCompile Include="akra\idl\I3DViewport.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
-    <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
+    <TypeScriptCompile Include="akra\render\LightingUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
     <TypeScriptCompile Include="akra\render\LPPViewport.ts" />
     <TypeScriptCompile Include="akra\render\Renderer.ts" />

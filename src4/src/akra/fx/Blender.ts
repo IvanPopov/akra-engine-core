@@ -55,7 +55,7 @@ module akra.fx {
 				}
 			}
 
-				var sBlendPartHash: string = isDefAndNotNull(pComponentBlend) ? pComponentBlend.guid.toString() : "";
+			var sBlendPartHash: string = isDefAndNotNull(pComponentBlend) ? pComponentBlend.guid.toString() : "";
 			var sComponentPartHash: string = pComponent.getHash(iShift, iPass);
 			var sShortHash: string = sBlendPartHash + "+" + sComponentPartHash;
 
@@ -117,7 +117,7 @@ module akra.fx {
 				return null;
 			}
 
-			var pComponentInfo: IAFXComponentInfo = pComponentBlend.findAddedComponentInfo(pComponent, iShift, iPass);
+			var pComponentInfo: IAFXComponentInfo = pComponentBlend.findAnyAddedComponentInfo(pComponent, iShift, iPass);
 			if (isNull(pComponentInfo)) {
 				logger.warn("You try to remove component '" + pComponent.getName() +
 					"' with shift " + iShift.toString() + " from blend that not contain it.");

@@ -63,7 +63,7 @@ module akra.pool {
 		private pObjPool: IResourcePool<IObj>;
 		private pImagePool: IResourcePool<IImg>;
 		private pTexturePool: IResourcePool<ITexture>;
-		private pVideoBufferPool: IResourcePool<IResourcePoolItem>;
+		private pVideoBufferPool: IResourcePool<IVertexBuffer>;
 		private pShaderProgramPool: IResourcePool<IShaderProgram>;
 		private pComponentPool: IResourcePool<IAFXComponent>;
 		private pTextureBufferPool: IResourcePool<IPixelBuffer>;
@@ -114,7 +114,7 @@ module akra.pool {
 			return this.pTexturePool;
 		}
 
-		getVideoBufferPool(): IResourcePool<IResourcePoolItem> {
+		getVideoBufferPool(): IResourcePool<IVertexBuffer> {
 			return this.pVideoBufferPool;
 		}
 
@@ -481,7 +481,7 @@ module akra.pool {
 				this.pVertexBufferPool = new ResourcePool<IVertexBuffer>(this, webgl.WebGLVertexBuffer);
 				this.pVertexBufferPool.initialize(16);
 
-				this.pVideoBufferPool = new ResourcePool<IResourcePoolItem>(this, webgl.WebGLVertexTexture);
+				this.pVideoBufferPool = new ResourcePool<IVertexBuffer>(this, webgl.WebGLVertexTexture);
 				this.pVideoBufferPool.initialize(16);
 
 				this.pTextureBufferPool = new ResourcePool<IPixelBuffer>(this, webgl.WebGLTextureBuffer);

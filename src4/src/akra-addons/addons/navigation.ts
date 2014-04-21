@@ -51,9 +51,10 @@ module akra.addons {
 		pParams.specular.set(.1);
 		pParams.attenuation.set(0.5, 0, 0);
 
+		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.DSViewport(pCamera, 0.7, .05, .25, .25, 100)));
 
-		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
-
+		pViewport.setFXAA(true);
+		pViewport.setClearEveryFrame(false);
 		//detection of center point
 
 		var pPlaneXZ: IPlane3d = new geometry.Plane3d(Vec3.temp(1., 0., 0.), Vec3.temp(0.), Vec3.temp(0., 0., 1.));

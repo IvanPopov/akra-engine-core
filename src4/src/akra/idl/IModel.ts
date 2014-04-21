@@ -24,7 +24,8 @@ module akra {
 		getModelFormat(): EModelFormats;
 	
 		loadResource(sFilename?: string, pOptions?: IModelLoadOptions): boolean;
-		attachToScene(pNode: ISceneNode): IModelEntry;
-		attachToScene(pScene: IScene3d): IModelEntry;
+
+		//attachToScene(pNode: ISceneNode): IModelEntry;
+		//attachToScene(pScene: IScene3d): IModelEntry;
 	}
 }

@@ -13,6 +13,7 @@ interface Array<T> {
 	el(i: int): any;
 	clear(): any[];
 	swap(i: int, j: int): any[];
+	/** Insert array as elements sequens or just push single element. */
 	insert(elements: any[]): any[];
 	find(pElement: any): boolean;
 }

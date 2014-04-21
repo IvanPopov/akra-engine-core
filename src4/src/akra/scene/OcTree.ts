@@ -164,9 +164,11 @@ module akra.scene {
 			// if(pRect.x0 == 128 && pRect.x1 == 160 && pRect.y0 == 480 && pRect.y1 == 512){
 			//     console.error(iX0, iX1, iY0, iY1, iZ0, iZ1);
 			// }
-
+			
 			var pNode: IOcTreeNode = this.findTreeNodeByRect(iX0, iX1, iY0, iY1, iZ0, iZ1);
-
+			//if (pNode == null) {
+			//	console.log(pNode);
+			//}
 			return pNode;
 		}
 
@@ -376,7 +378,7 @@ module akra.scene {
 			pNode.rearNodeLink = pParentNode;
 			pNode.worldBounds.set(iIndexX, iIndexX + iSize, iIndexY, iIndexY + iSize, iIndexZ, iIndexZ + iSize);
 			pNode.worldBounds.divSelf(this._v3fWorldScale);
-			pNode.worldBounds.subSelf(this._v3fWorldOffset)
+			pNode.worldBounds.subSelf(this._v3fWorldOffset);
 
 			return pNode;
 		}

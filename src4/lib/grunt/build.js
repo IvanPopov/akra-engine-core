@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Typescript build task for Akra 3D engine.
  */
 
@@ -11,11 +11,32 @@ var xmldom = require('xmldom');
 var domain = require('domain');
 var Zip = require('node-native-zip');
 var jade = require('jade');
+var temp = require('temporary');
+var shell = require('shelljs');
+
+
+require('shelljs/global');
 
 var TYPESCRIPT = "typescript-1.0";
 
 
 module.exports = function (grunt) {
+
+	function rmdir(path) {
+		var files = [];
+		if (fs.existsSync(path)) {
+			files = fs.readdirSync(path);
+			files.forEach(function (file, index) {
+				var curPath = path + "/" + file;
+				if (fs.lstatSync(curPath).isDirectory()) { // recurse
+					rmdir(curPath);
+				} else { // delete file
+					fs.unlinkSync(curPath);
+				}
+			});
+			fs.rmdirSync(path);
+		}
+	};
 
 	function isDev() {
 		return cfg('BuildType') == "Dev";
@@ -29,7 +50,7 @@ module.exports = function (grunt) {
 	}
 
 	function rm(file) {
-		return grunt.file.delete(file);
+		return fs.unlinkSync(file);
 	}
 
 	function copy(from, to) {
@@ -332,12 +353,13 @@ module.exports = function (grunt) {
 				argv = argv.concat(prepareSystemVariables(config.get("//TypeScriptAdditionalFlags").textContent).split(/\s+/));
 			}
 
-			forceRebuild = !exists(dest) || forceRebuild;
+
+			forceRebuild = !(exists(dest) || exists(dest.replace(/\.js$/, ".min.js"))) || forceRebuild;
 
 			if (forceRebuild) {
 				log(cmd + " " + argv.join(" "));
 			}
-			
+
 			function spawnCallback(code) {
 				if (forceRebuild)
 					stopAnimation(anim);
@@ -399,10 +421,14 @@ module.exports = function (grunt) {
 		}, modulesInfo);
 	}
 
-	function generateExterns(src) {
+	function generateExterns(src, forceRebuild) {
 
 		var dest = src.replace(/\.min\.js|\.js$/, ".externs.js");
 		if (src === dest) dest += ".externs";
+
+		if (!forceRebuild) {
+			return dest;
+		}
 
 		var externs = [];
 		var data = read(src, "utf8");
@@ -457,8 +483,10 @@ module.exports = function (grunt) {
 
 		var src = path.join(config.getAttribute("Path"), prepareSystemVariables(config.get("//TypeScriptOutFile").textContent));
 
-		externsPath = generateExterns(src);
+
+		externsPath = generateExterns(src, forceRebuild);
 		debug("@EXTERNS", externsPath);
+
 
 		if (compilerOptions.get("//OutFile")) {
 			var outFile = prepareSystemVariables(compilerOptions.get("//OutFile").textContent);
@@ -469,7 +497,7 @@ module.exports = function (grunt) {
 			if (src === dest) dest += ".min";
 		}
 
-		if (!src || !exists(src)) {
+		if ((!src || !exists(src)) && forceRebuild) {
 			warn('Source file for minimizing "' + src + '" not found.');
 			return null;
 		}
@@ -479,7 +507,7 @@ module.exports = function (grunt) {
 		var closureJar = path.join(__dirname, '/closure/compiler.jar');
 		var compilationLevel = compilerOptions.get("//CompilationLevel").textContent;
 		var cmd = "java";
-		
+
 		var argv = [
 			"-jar", closureJar,
 			"--compilation_level", compilationLevel,
@@ -494,7 +522,7 @@ module.exports = function (grunt) {
 
 		for (var moduleName in modulesInfo) {
 			var module = modulesInfo[moduleName];
-			
+
 			if (moduleName !== name) {
 				argv.push("--externs", module.destinationFile.replace(/\.min\.js$/ig, ".js.externs"));
 			}
@@ -520,8 +548,12 @@ module.exports = function (grunt) {
 
 		function spawnCallback(code) {
 			stopAnimation(anim);
-			if (argv.indexOf("--externs") != -1) {
-				rm(externsPath);
+
+			if (forceRebuild) rm(src);
+
+			if (argv.indexOf("--externs") != -1 && forceRebuild) {
+				if (externsPath) rm(externsPath);
+
 				rm(tmpExternsFile);
 			}
 			if (code === 0) {
@@ -659,7 +691,7 @@ module.exports = function (grunt) {
 				}
 			}
 		});
-		
+
 		if (Object.keys(variables).length === 0 || !info.forceRebuild) {
 			return cb(true, modulesInfo);
 		}
@@ -679,7 +711,7 @@ module.exports = function (grunt) {
 			}
 
 		} while (i < list.length);
-		
+
 		write(outFile, data);
 		console.timeEnd("Build project " + config.getAttribute("Name"));
 
@@ -778,7 +810,7 @@ module.exports = function (grunt) {
 		}
 
 		var additionalFiles = [];
-		
+
 		if (resource.get("Data")) {
 			var data = resource.get("Data");
 
@@ -818,9 +850,15 @@ module.exports = function (grunt) {
 
 
 		if (isArchive) {
-			var archive = packResourcesArchive(config, map, additionalFiles);
+			var archiveData = packResourcesArchive(config, map, additionalFiles);
 
 			if (useInlining) {
+				//work with  archive
+				var archive = new Zip();
+
+				archiveData.forEach(function (node) {
+					archive.add(node.name, node.data);
+				});
 
 				var content = archive.toBuffer().toString('base64');
 
@@ -828,12 +866,65 @@ module.exports = function (grunt) {
 					path: "data:application/octet-stream;base64," + content,
 					type: "ara"
 				};
+
+				//end of work
 			}
 			else {
 				var outputFile = path.join(buildDir, outDir, resourceName + ".ara");
-				var content = archive.toBuffer();
 
-				fs.writeFileSync(outputFile, content);
+				if (true) {
+					var cmd7za = which('7za') ? "7za" : path.normalize("./lib/grunt/7za/7za.exe");
+
+					var tempDir = new temp.Dir();
+
+					archiveData.forEach(function (node) {
+						copy(node.path, path.join(tempDir.path, node.name));
+					});
+
+
+					var compressionKey = "-mx5";
+					if (resource.get("CompressionLevel")) {
+						var compressionLevel = resource.get("CompressionLevel").textContent;
+
+						switch (compressionLevel) {
+							case "Store":
+								compressionKey = "-mx0";
+								break;
+							case "Fastest":
+								compressionKey = "-mx1";
+								break;
+							case "Fast":
+								compressionKey = "-mx3";
+								break;
+							case "Normal":
+								compressionKey = "-mx5";
+								break;
+							case "Maximum":
+								compressionKey = "-mx7";
+								break;
+							case "Ultra":
+								compressionKey = "-mx9";
+						}
+					}
+
+					var cmd = cmd7za + ' a -tzip -aoa ' + compressionKey + ' -mmt "' + path.resolve(outputFile) + '" "' + path.resolve(path.join(tempDir.path, "*")) + '"';
+
+					log(cmd);
+
+					if (shell.exec(cmd).code !== 0) {
+						fail("7za commpression failed.");
+					}
+
+					//console.log(path.join(path.resolve(tempDir.path), "*"));
+					rmdir(path.resolve(tempDir.path));
+				}
+				else {
+					//work with archive
+					var archive = new Zip();
+					archiveData.forEach(function (node) { archive.add(node.name, node.data); });
+					fs.writeFileSync(outputFile, archive.toBuffer());
+					//end of work
+				}
 
 				return {
 					path: path.relative(buildDir, outputFile).replace(/\\/ig, "/"),
@@ -894,16 +985,21 @@ module.exports = function (grunt) {
 			var excludes = folders[i].find("Exclude");
 
 			if (excludes) {
-				for (var f = 0; f < files.length; ++f) {
+
+				for (var f = 0; f < files.length; f++) {
 					for (var n = 0; n < excludes.length; ++n) {
-						//console.log("exclude:", path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path'))));
-						//console.log("file:", path.resolve(files[f]));
-						if (path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path'))) ==
-							path.resolve(files[f])) {
+						// console.log("exclude:", path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path'))));
+						// console.log("file:", path.resolve(files[f]));
+
+						var x = path.resolve(path.join(currentFolder, excludes[n].getAttribute('Path')));
+						var y = path.resolve(files[f]);
+
+						if (x == y) {
 							//Removing Exclude from files.
 							debug("@EXCLUDE", excludes[n].getAttribute('Path'));
 							files.splice(f, 1);
 							f--;
+							break;
 						}
 					}
 				}
@@ -913,17 +1009,20 @@ module.exports = function (grunt) {
 				result.push(path.relative(srcDir, file));
 			});
 		}
-		
+
 		return result;
 	}
 
 	function packResourcesArchive(config, map, additionalData) {
-		var archive = new Zip();
+		var archive = [];//new Zip();
 		var configDir = config.getAttribute("Path");
 		var files = [];
 
+		var mapFile = new temp.File();
+		var mapBuffer = new Buffer(JSON.stringify(map, null, '\t'), "utf8");
+		mapFile.writeFileSync(mapBuffer);
 
-		archive.add(".map", new Buffer(JSON.stringify(map, null, '\t'), "utf8"));
+		archive.push({ name: ".map", data: mapBuffer, path: mapFile.path });
 
 		debug("@RESOURCE", ".map");
 
@@ -932,8 +1031,8 @@ module.exports = function (grunt) {
 				for (var i = 0; i < map.files.length; i++) {
 					var file = map.files[i].path;
 					var res = file.replace(/\\/ig, "/");
-
-					archive.add(res, fs.readFileSync(path.join(configDir, file)));
+					var pathToFile = path.join(configDir, file);
+					archive.push({ name: res, data: fs.readFileSync(pathToFile), path: pathToFile });
 					files.push(res);
 
 					debug("@RESOURCE", res);
@@ -956,7 +1055,7 @@ module.exports = function (grunt) {
 					}
 					else if (files.indexOf(name) === -1) {
 
-						archive.add(name, fs.readFileSync(value));
+						archive.push({ name: name, data: fs.readFileSync(value), path: value });
 						files.push(name);
 
 						debug("@RESOURCE", name);
@@ -1105,14 +1204,14 @@ module.exports = function (grunt) {
 		if (format === "Enclosure") {
 			var data = [];
 			files.forEach(function (file) {
-				
+
 				if (collapsePath) {
 					var dest = path.join(buildDir, outDir, path.basename(file));
 				}
 				else {
 					var dest = path.join(buildDir, outDir, path.relative(config.getAttribute("Path"), file));
 				}
-				
+
 				if (isDev()) {
 					dest = file;
 				}
@@ -1259,15 +1358,49 @@ module.exports = function (grunt) {
 
 		if (!demo) {
 			log("\nAvailable demos:");
-
 			var i = 0;
+
+			var all = [];
+			var demos = [];
+
 			grunt.file.expand({ filter: 'isDirectory' }, path.join(cfg('DemosSourceDir'), "*")).forEach(function (dir) {
 				var configFile = path.join(dir, "demo.xml");
 				if (exists(configFile)) {
 					var config = loadConfig(configFile);
-					log("\t" + (i++) + ". " + config.getAttribute("Name") + "\t\t'" + "grunt demo:" + path.basename(dir) + "' " + "\t\t" + config.get("Description").textContent)
+					var name = config.getAttribute("Name");
+					var description = config.get("Description").textContent;
+					var link = path.basename(dir);
+
+					if (config.get("PropertyGroup/DestFolder")) {
+						var destFolder = path.join(config.getAttribute("Path"), config.get("PropertyGroup/DestFolder").textContent);
+						link = path.basename(destFolder);
+					}
+
+					all.push("demo:" + path.basename(dir));
+					demos.push({ name: name, description: description, link: link });
+
+					log("\t" + (i++) + ". " + name + "\t\t'" + "grunt demo:" + path.basename(dir) + "' " + "\t\t" + description)
 				}
 			});
+
+			grunt.task.run(all);
+
+			// Compile a function
+			var fn = jade.compile(read(path.join(__dirname, "demo.index.jade")), {
+				pretty: true,
+				debug: false,
+				compileDebug: false
+			});
+
+			// Render the function
+			var html = fn({
+				index: demos
+			});
+
+			debug(html);
+			var indexPath = path.join(prepareSystemVariables("$(BuiltDir)/demos"), "index.html");
+
+			write(indexPath, html);
 
 			return done(true);
 		}

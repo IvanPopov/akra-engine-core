@@ -176,6 +176,9 @@ module akra.animation {
 		}
 
 		protected calcTime(fRealTime: float): void{
+			debug.assert(!isNaN(fRealTime), "invalid time");
+			
+
 			if (this._bPause) {
 		    	return;
 		    }
@@ -191,17 +194,21 @@ module akra.animation {
 
 		    var fTime = this._fTime;
 
-		    if (this._bLoop) {
+			if (this._bLoop) {
+				debug.assert(!!this._pAnimation.getDuration(), "invalid animation duration:\n" + this._pAnimation.toString());
+
 		    	fTime = math.mod(fTime, (this._pAnimation.getDuration()));
 		    	if (this._bReverse) {
 		    		fTime = this._pAnimation.getDuration() - fTime; 
 		    	}
 		    }
 
-		    this._fTrueTime = fTime;
+			this._fTrueTime = fTime;
 		}
 
 		frame(sName: string, fRealTime: float): IPositionFrame {
+			debug.assert(!isNaN(fRealTime), "invalid time");
+
 			if (!this._bEnable) {
 		    	return null;
 		    }

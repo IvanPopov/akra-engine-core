@@ -48,6 +48,12 @@ module akra.data {
 		 * Buffer with attributes.
 		 */
 		private _pAttribBuffer: IVertexBuffer = null;
+
+		/**
+		* VextexTextureBuffer with attributes
+		*/
+		private _pAttribVideoBuffer: IVertexBuffer = null;
+
 		/**
 		 * Data with indices.
 		 * If _pIndexBuffer has type IndexBuffer, indices data
@@ -77,6 +83,10 @@ module akra.data {
 
 		getBuffer(): IRenderDataCollection {
 			return this._pBuffer;
+		}
+
+		_getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer {
+			return eType === ERenderDataAttributeTypes.STATIC ? this._pAttribBuffer : this._pAttribVideoBuffer;
 		}
 
 		private getCurrentIndexSet(): IIndexSet {
@@ -121,25 +131,34 @@ module akra.data {
 		 * Allocate attribute.
 		 * Attribute - data without index.
 		 */
-		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
-		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
-		allocateAttribute(pDecl: any, pData: any): boolean {
+		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pDecl: any, pData: any, eType: ERenderDataAttributeTypes = ERenderDataAttributeTypes.STATIC): boolean {
 			var pAttrDecl: IVertexDeclaration = VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
 			var pIndexData = this._pIndexData;
 			var pAttribData: IVertexData = this._pAttribData;
-			var pAttribBuffer: IVertexBuffer = this._pAttribBuffer;
+			var pAttribBuffer: IVertexBuffer = eType === ERenderDataAttributeTypes.STATIC ? this._pAttribBuffer : this._pAttribVideoBuffer;
 			var pBuffer: IRenderDataCollection = this._pBuffer;
 
-			if (!pAttribData) {
+			if (!pAttribData || eType === ERenderDataAttributeTypes.DYNAMIC) {
 				if (!pAttribBuffer) {
-					pAttribBuffer = pBuffer.getEngine().getResourceManager().createVertexBuffer('render_data_attrs_' + guid());
-					pAttribBuffer.create((<ArrayBufferView>pData).byteLength, EHardwareBufferFlags.BACKUP_COPY);
-					this._pAttribBuffer = pAttribBuffer;
+					if (eType === ERenderDataAttributeTypes.STATIC) {
+						pAttribBuffer = pBuffer.getEngine().getResourceManager().createVertexBuffer('render_data_attrs_' + guid());
+						pAttribBuffer.create((<ArrayBufferView>pData).byteLength, EHardwareBufferFlags.BACKUP_COPY);
+						this._pAttribBuffer = pAttribBuffer;
+					}
+					else {
+						pAttribBuffer = pBuffer.getEngine().getResourceManager().createVideoBuffer('render_data_dynamic_attrs_' + guid());
+						pAttribBuffer.create((<ArrayBufferView>pData).byteLength, EHardwareBufferFlags.BACKUP_COPY);
+						this._pAttribVideoBuffer = pAttribBuffer;
+					}
+
+					
 				}
 
-				this._pAttribData = this._pAttribBuffer.allocateData(pAttrDecl, pData);
+				this._pAttribData = pAttribBuffer.allocateData(pAttrDecl, pData);
 				this._pIndicesArray[this._iIndexSet].pAttribData = this._pAttribData;
 				this._pMap.flow(this._pAttribData);
 				return this._pAttribData !== null;
@@ -404,15 +423,20 @@ module akra.data {
 			else if (isString(arguments[0])) {
 				if (arguments[0] === "TEXCOORD") {
 					iData = this.getDataLocation("TEXCOORD0");
+					pFlow = this._getFlow("TEXCOORD0", false);
 				}
 				else {
 					iData = this.getDataLocation(<string>arguments[0]);
+					pFlow = this._getFlow(<string>arguments[0], false);
 				}
 
 				debug.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
 			}
 
-			pFlow = this._getFlow(iData);
+			
+			if (!pFlow) {
+				pFlow = this._getFlow(iData);
+			}
 
 			if (pFlow === null) {
 				//поищем эти данные в общем буфере
@@ -433,6 +457,8 @@ module akra.data {
 			iAddition = iData;
 
 			if (!pFloat32Array) {
+				debug.log((<IVertexData>pIndexData).toString());
+				debug.error("RenderData.index() fail! Couldn`t find indeces");
 				return false;
 			}
 
@@ -461,6 +487,7 @@ module akra.data {
 				this.getCurrentIndexSet().pAdditionCache[iIndexOffset] = iAddition;
 
 				if (!(<IVertexData>pIndexData).setData(pFloat32Array, sSemantics)) {
+					debug.error("RenderData.index() fail! Couldn`t update indeces");
 					return false;
 				}
 			}

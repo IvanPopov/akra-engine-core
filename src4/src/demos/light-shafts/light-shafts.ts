@@ -95,7 +95,7 @@ module akra {
 	}
 
 	function createViewport(): IViewport {
-		var pViewport: IDSViewport = new render.DSViewport(pCamera);
+		var pViewport: I3DViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -106,10 +106,10 @@ module akra {
 		// (<render.DSViewport>pViewport).setFXAA(false);
 		var counter = 0;
 		var pEffect = (<render.DSViewport>pViewport).getEffect();
-        pEffect.addComponent("akra.system.sunshaft");
-        pEffect.addComponent("akra.system.dof");
+		pEffect.addComponent("akra.system.sunshaft");
+		pEffect.addComponent("akra.system.dof");
 		pEffect.addComponent("akra.system.blur");
-        pEffect.addComponent("akra.system.lensflare");
+		pEffect.addComponent("akra.system.lensflare");
 
 		pSunshaftData = {
 			SUNSHAFT_ANGLE: null,
@@ -118,6 +118,7 @@ module akra {
 			SUNSHAFT_INTENSITY: 0.25,
 			SUNSHAFT_DECAY: 1.2,
 			SUNSHAFT_SHARPNESS: 2,
+			SUNSHAFT_EXPOSURE: .9
 		};
 
 		var pGUI = new dat.GUI();
@@ -128,7 +129,7 @@ module akra {
 				pEffect.addComponent("akra.system.sunshaft");
 			}
 			else {
-				pEffect.delComponent("akra.system.sunshaft", fx.ANY_SHIFT, fx.ANY_PASS);
+				pEffect.delComponent("akra.system.sunshaft");
 			}
 		});
 
@@ -138,7 +139,7 @@ module akra {
 				pEffect.addComponent("akra.system.lensflare");
 			}
 			else {
-				pEffect.delComponent("akra.system.lensflare", fx.ANY_SHIFT, fx.ANY_PASS);
+				pEffect.delComponent("akra.system.lensflare");
 			}
 		});
 
@@ -160,6 +161,8 @@ module akra {
 			.min(0.0).max(30).step(0.1).name("sharpness");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_INTENSITY'))
 			.min(0.0).max(1.).step(0.1).name("intensity");
+		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_EXPOSURE'))
+			.min(0.0).max(1.).step(0.01).name("exposure");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_DECAY'))
 			.min(0.0).max(10.).step(0.1).name("decay");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_SAMPLES'))
@@ -214,31 +217,31 @@ module akra {
 
 		pBlurData = {
 			BLUR_RADIUS: 0,
-        };
+		};
 
-        pDofData = {
-            DOF_RADIUS: 0,
-            DOF_FOCAL_PLANE: 10.,
-            DOF_FOCUS_POWER: 0.6,
-            DOF_QUALITY: 0.7,
-        };
+		pDofData = {
+			DOF_RADIUS: 0,
+			DOF_FOCAL_PLANE: 10.,
+			DOF_FOCUS_POWER: 0.6,
+			DOF_QUALITY: 0.7,
+		};
 
 		var pBlurFolder = pGUI.addFolder("blur");
-        (<dat.NumberControllerSlider>pBlurFolder.add(pBlurData, 'BLUR_RADIUS')).min(0.).max(250.).name("radius");
+		(<dat.NumberControllerSlider>pBlurFolder.add(pBlurData, 'BLUR_RADIUS')).min(0.).max(250.).name("radius");
 
-        var pDofFolder = pGUI.addFolder("dof");
-        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
-        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_POWER')).min(0.1).max(1.2).name("focus power");
-        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
-        (<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
+		var pDofFolder = pGUI.addFolder("dof");
+		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
+		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_POWER')).min(0.1).max(1.2).name("focus power");
+		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
+		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
 
-		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+		pViewport.render.connect((pViewport: I3DViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			var pDeferredTexture: ITexture = (<render.DSViewport>pViewport).getColorTextures()[0];
+			var pIDTexture: ITexture = pViewport.getTextureWithObjectID();//(<render.DSViewport>pViewport).getColorTextures()[0];
 			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
@@ -251,9 +254,9 @@ module akra {
 			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
 			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
-            pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
+			pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
 
-            pDofData.DOF_FOCAL_PLANE = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth()/2., pViewport.getActualHeight()/2., 1.)).subtract(pCamera.getWorldPosition()).z;
+			pDofData.DOF_FOCAL_PLANE = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth()/2., pViewport.getActualHeight()/2., 1.)).subtract(pCamera.getWorldPosition()).z;
 
 			pPass.setUniform('SUNSHAFT_ANGLE', pSunshaftData.SUNSHAFT_ANGLE);
 			pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
@@ -263,9 +266,10 @@ module akra {
 			pPass.setUniform('SUNSHAFT_INTENSITY', pSunshaftData.SUNSHAFT_INTENSITY);
 			pPass.setUniform('SUNSHAFT_DECAY', pSunshaftData.SUNSHAFT_DECAY);
 			pPass.setUniform('SUNSHAFT_SHARPNESS', pSunshaftData.SUNSHAFT_SHARPNESS);
+			pPass.setUniform('SUNSHAFT_EXPOSURE', pSunshaftData.SUNSHAFT_EXPOSURE);
 			pPass.setUniform('SUNSHAFT_POSITION', pLightInDeviceSpace.clone("xy"));
 
-			pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
+			pPass.setTexture('OBJECT_ID_TEXTURE', pIDTexture);
 			pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
 			pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
 			pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
@@ -278,19 +282,19 @@ module akra {
 			pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
 			pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
-            pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
+			pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
 
-            pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
-            pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
-            pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
-            pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
+			pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
+			pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
+			pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
+			pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
 
 			//if (iCounter++%240 === 0) {
 			//console.log('sunshaft isVisible: ', pSunshaftData.SUNSHAFT_ANGLE, pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).toString());
 			//}
 
-			pPass.setUniform("INPUT_TEXTURE_RATIO",
-				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
+			pPass.setUniform("DEPTH_TEXTURE_RATIO",
+				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
 		});
@@ -392,11 +396,11 @@ module akra {
 		//loadModel("ROCK.DAE", null, 'Rock-02').addPosition(2, 1, -4);
 		//loadModel("ROCK.DAE", null, 'Rock-03').addPosition(2, 5, -4);
 		//loadModel("ROCK.DAE", null, 'Rock-04', pCamera).scale(0.2).setPosition(0.4, -0.2, -2);
-        var pTorus: ISceneNode = loadModel("TORUSKNOT.DAE", null, 'TorusKnot-01', pScene.getRootNode());
-        var pRock1: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-01', pScene.getRootNode());
-        pRock1.setPosition(-3., 0., 10.);
-        var pRock2: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-02', pScene.getRootNode());
-        pRock2.setPosition(5., 0., -10.);
+		var pTorus: ISceneNode = loadModel("TORUSKNOT.DAE", null, 'TorusKnot-01', pScene.getRootNode());
+		var pRock1: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-01', pScene.getRootNode());
+		pRock1.setPosition(-3., 0., 10.);
+		var pRock2: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-02', pScene.getRootNode());
+		pRock2.setPosition(5., 0., -10.);
 
 		var x = 0;
 

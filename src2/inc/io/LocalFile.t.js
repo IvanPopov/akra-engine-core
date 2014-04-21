@@ -70,11 +70,11 @@ function clear (pFile) {
 }
 
 function meta (pFile) {
-    var pLFile = pFile.entry.file();
+    var pMeta = pFile.entry.getMetadata();
     return {
-        lastModifiedDate: pLFile.lastModifiedDate,
-        size:             pLFile.size
-    }
+        lastModifiedDate: pMeta.modificationTime,
+        size: pMeta.size
+    };
 }
 
 

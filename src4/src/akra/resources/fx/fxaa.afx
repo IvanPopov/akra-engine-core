@@ -38,7 +38,7 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	color.w = 1.0;
 
 	float2 texCoords = IN.textureCoords;
-	float2 invScreenSize = float2(1./screenSize.x, 1./screenSize.y);
+	float2 invScreenSize = 1. / screenSize;
 	
 //	float FXAA_SPAN_MAX = 4.0;
 //	float FXAA_REDUCE_MUL = 1.0/8.0;

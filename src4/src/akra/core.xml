@@ -15,11 +15,11 @@
     <Variable Name="AE_WEBGL_DEBUG">$(WebGLDebug)</Variable>
     <Dependencies>
       <Attachment>
+        <File Path="resources/js/promise-0.1.1.min.js"/>
         <File Path="resources/js/zip.js/zip.js"/>
         <File Path="resources/js/zip.js/zip-ext.js"/>
         <File Path="resources/js/zip.js/mime-types.js"/>
         <File Path="resources/js/zip.js/inflate.js"/>
-        <File Path="resources/js/promise-0.1.1.min.js"/>
         <File Path="resources/js/FileSaver/FileSaver.min.js"/>
         <CollapsePath>True</CollapsePath>
         <Format>Enclosure</Format>
@@ -89,6 +89,7 @@
       <UseInlining>False</UseInlining>
       <Data>
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
+        <File Path="resources/fx/lightingFunctions.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>
@@ -96,9 +97,10 @@
           <ResourceFile Path="resources/fx/skybox.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
-            <ResourceFile Path="resources/fx/mesh_texture.afx"/>
-            <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
-              <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+            <ResourceFile Path="resources/fx/mesh_texture.afx">
+              <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+                <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
+              </ResourceFile>
             </ResourceFile>
           </ResourceFile>
           <ResourceFile Path="resources/fx/prepare_shadows.afx"/>
@@ -125,6 +127,7 @@
       <UseInlining>True</UseInlining>
       <Data>
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
+        <File Path="resources/fx/lightingFunctions.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>

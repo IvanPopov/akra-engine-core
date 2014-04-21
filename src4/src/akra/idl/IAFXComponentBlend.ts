@@ -50,7 +50,7 @@ module akra {
 		containComponent(pComponent: IAFXComponent, iShift: int, iPass: uint);
 		containComponentHash(sComponentHash: string): boolean;
 	
-		findAddedComponentInfo(pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentInfo;
+		findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentInfo;
 	
 		addComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void;
 		removeComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void;

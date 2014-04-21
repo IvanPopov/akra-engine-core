@@ -27,14 +27,20 @@ module akra {
 	}
 	
 	export interface IMesh extends IEventProvider {
+		/** notify, when one of substets added or removed shadow */
+		shadowed: ISignal<{ (pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void; }>;
+
 		getName(): string;
 		getData(): IRenderDataCollection;
 		getLength(): uint; /*<! number of submeshes in. */
 		getBoundingBox(): IRect3d;
 		getBoundingSphere(): ISphere;
 
-		getSkeleton(): ISkeleton;
-		setSkeleton(pSceleton: ISkeleton): void;
+		/**
+		 * Return TRUE if after last update mesh geometry was changed.
+		 */
+		isGeometryChanged(): boolean;
+		isSkinned(): boolean;
 
 		getShadow(): boolean;
 		setShadow(bValue: boolean): void;
@@ -42,7 +48,6 @@ module akra {
 		getOptions(): int;
 		getEngine(): IEngine;
 
-		//setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): boolean;
 		destroy(): void;
 		clone(iCloneOptions: int): IMesh;
 
@@ -55,33 +60,13 @@ module akra {
 		setSkin(pSkin: ISkin): void;
 		createSkin(): ISkin;
 
-		createBoundingBox(): boolean;
-		deleteBoundingBox(): boolean;
-		showBoundingBox(): boolean;
-		hideBoundingBox(): boolean;
-		isBoundingBoxVisible(): boolean;
-		createAndShowSubBoundingBox(): void;
-
-		createBoundingSphere(): boolean;
-		deleteBoundingSphere(): boolean;
-		showBoundingSphere(): boolean;
-		hideBoundingSphere(): boolean;
-		isBoundingSphereVisible(): boolean;
-		createAndShowSubBoundingSphere(): void;
+		calculateBoundingBox(): boolean;
+		calculateBoundingSphere(): boolean;
 
 		isReadyForRender(): boolean;
 
-
-		toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
-
 		/** Updtae all submeshes(apply bone matricie for skinned submeshes) */
 		update(): boolean;
-
-		_drawSubset(iSubset: int): void;
-		_draw(): void;
-
-		/** notify, when one of substets added or removed shadow */
-		shadowed: ISignal<{ (pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void; }>;
 	}
 	
 }

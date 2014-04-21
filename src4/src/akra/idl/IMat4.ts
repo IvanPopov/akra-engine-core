@@ -76,6 +76,10 @@ module akra {
 		multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
 		multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
 		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+		/** 
+		 * @copydoc Mat4::multiplyNumber()
+		 */
+		multiplyNumber(fValue: float, m4fDestination?: IMat4): IMat4;
 	
 		transpose(m4fDestination?: IMat4): IMat4;
 		determinant(): float;

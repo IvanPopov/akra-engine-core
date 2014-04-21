@@ -1,7 +1,7 @@
 {
   "name": "AkraEngine",
   "branchVersion": "0.4.*",
-  "cdnVersion": "0.4.1",
+  "cdnVersion": "0.4.3",
   "homepage": "http://odserve.org",
   "repository": {
     "type": "git",
@@ -34,7 +34,8 @@
     "marked": "~0.3.1",
     "grunt-cli": "^0.1.13",
     "xmldom": "~0.1.19",
-    "node-native-zip": "~1.1.0"
+    "node-native-zip": "~1.1.0",
+    "temporary": "0.0.8"
   },
   "dependencies": {}
 }

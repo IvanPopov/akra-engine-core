@@ -175,6 +175,7 @@ interface Array<T> {
     el(i: number): any;
     clear(): any[];
     swap(i: number, j: number): any[];
+    /** Insert array as elements sequens or just push single element. */
     insert(elements: any[]): any[];
     find(pElement: any): boolean;
 }
@@ -1838,6 +1839,10 @@ declare module akra {
         multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+        /**
+        * @copydoc Mat4::multiplyNumber()
+        */
+        multiplyNumber(fValue: number, m4fDestination?: IMat4): IMat4;
         transpose(m4fDestination?: IMat4): IMat4;
         determinant(): number;
         inverse(m4fDestination?: IMat4): IMat4;
@@ -3166,6 +3171,7 @@ declare module akra {
         _getFullTextureMap(): IAFXVariableDeclMap;
         _getVertexShader(): IAFXFunctionDeclInstruction;
         _getPixelShader(): IAFXFunctionDeclInstruction;
+        _addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
         _addShader(pShader: IAFXFunctionDeclInstruction): void;
         _setState(eType: ERenderStates, eValue: ERenderStateValues): void;
         _finalizePass(): void;
@@ -3462,6 +3468,7 @@ declare module akra {
         SPECULAR = 2,
         EMISSIVE = 3,
         NORMAL = 4,
+        SHININESS = 5,
         EMISSION = 3,
     }
     interface ISurfaceMaterial extends IResourcePoolItem {
@@ -3639,7 +3646,7 @@ declare module akra {
         getPostEffectStartPass(): number;
         containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): any;
         containComponentHash(sComponentHash: string): boolean;
-        findAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
+        findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
         addComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         removeComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         finalizeBlend(): boolean;
@@ -4130,6 +4137,7 @@ declare module akra {
 declare module akra {
     interface IRenderPass extends IUnique {
         setForeign(sName: string, fValue: number): void;
+        setForeign(sName: string, bValue: boolean): void;
         setTexture(sName: string, pTexture: ITexture): void;
         setUniform(sName: string, pValue: any): void;
         setStruct(sName: string, pValue: any): void;
@@ -4236,6 +4244,10 @@ declare module akra {
     }
 }
 declare module akra {
+    enum ERenderDataAttributeTypes {
+        STATIC = 0,
+        DYNAMIC = 1,
+    }
     enum ERenderDataTypes {
         ISOLATED = 0,
         INDEXED = 1,
@@ -4252,6 +4264,7 @@ declare module akra {
     }
     interface IRenderData extends IReferenceCounter {
         getBuffer(): IRenderDataCollection;
+        _getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
         /**
         * Allocate data for rendering.
         */
@@ -4263,10 +4276,10 @@ declare module akra {
         * Remove data from this render data.
         */
         releaseData(iDataLocation: number): void;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
@@ -4857,10 +4870,18 @@ declare module akra {
     }
 }
 declare module akra {
-    interface ISkin {
+    interface ISkin extends IEventProvider {
+        /**
+        * Event is sent when the skin transformed.
+        */
+        transformed: ISignal<(pSkin: ISkin) => void>;
         getData(): IRenderDataCollection;
         getSkeleton(): ISkeleton;
         getTotalBones(): number;
+        /**
+        * @copydoc Skin::getAffectedNode()
+        */
+        getAffectedNode(iNode: number): ISceneNode;
         /**
         * Set binding matrix.
         * @see <bind_shape_matrix> in Collada.
@@ -4870,13 +4891,16 @@ declare module akra {
         * @see <bind_shape_matrix> in Collada.
         */
         getBindMatrix(): IMat4;
+        getBoneName(iBone: number): string;
+        getBoneIndex(sBone: string): number;
         /**
         * Bone offset matrices.
         * @see Bone offset matrices in Collada.
         */
-        getBoneOffsetMatrices(): IMat4[];
+        getBoneOffsetMatrix(iBone: number): IMat4;
         getBoneOffsetMatrix(sBoneName: string): IMat4;
         setBoneOffsetMatrices(pMatrices: IMat4[]): void;
+        /** Set skeleton. */
         setSkeleton(pSkeleton: ISkeleton): boolean;
         /**
         * Make a skin dependent on scene node whose names match the
@@ -4908,6 +4932,7 @@ declare module akra {
         setVertexWeights(pInfluencesCount: number[], pInfluences: Float32Array, pWeights: Float32Array): boolean;
         /**
         * Recalculate skin matrices and fill it to video memory.
+        * @return Status showing if changed bone matrix with the last update.
         */
         applyBoneMatrices(bForce?: boolean): boolean;
         /**
@@ -4925,38 +4950,42 @@ declare module akra {
         /**
         * Add skin info to data with vertices.
         */
-        attach(pData: IVertexData): void;
+        _attach(pData: IVertexData): void;
     }
 }
 declare module akra {
     interface IMeshSubset extends IEventProvider, IRenderableObject {
+        skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        skinRemoved: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        /**
+        * Emit when mesh geometry transformated by skin.
+        */
+        transformed: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        /**
+        * @return False - if persisted geometry.
+        */
+        update(): boolean;
         getName(): string;
         getMesh(): IMesh;
         getSkin(): ISkin;
         getBoundingBox(): IRect3d;
         getBoundingSphere(): ISphere;
-        createBoundingBox(): boolean;
-        deleteBoundingBox(): boolean;
-        showBoundingBox(): boolean;
-        hideBoundingBox(): boolean;
-        isBoundingBoxVisible(): boolean;
-        createBoundingSphere(): boolean;
-        deleteBoundingSphere(): boolean;
-        showBoundingSphere(): boolean;
-        hideBoundingSphere(): boolean;
-        isBoundingSphereVisible(): boolean;
+        /**
+        * @copydoc Skin::getTotalBones()
+        * Alias for Skin::getTotalBones()
+        */
+        getTotalBones(): number;
+        getBoneLocalBound(sBone: string): IRect3d;
+        getBoneLocalBound(iBone: number): IRect3d;
+        getInitialGeometryBoundingBox(): IRect3d;
+        getInitialGeometryBoundingSphere(): ISphere;
         computeNormals(): void;
         computeTangents(): void;
         computeBinormals(): void;
         isSkinned(): boolean;
         isOptimizedSkinned(): boolean;
         setSkin(pSkin: ISkin): boolean;
-        show(): void;
-        hide(): void;
-        isRenderable(): boolean;
         destroy(): void;
-        _calculateSkin(): boolean;
-        skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => any>;
     }
 }
 declare module akra {
@@ -4972,13 +5001,18 @@ declare module akra {
         [name: string]: IMesh;
     }
     interface IMesh extends IEventProvider {
+        /** notify, when one of substets added or removed shadow */
+        shadowed: ISignal<(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean) => void>;
         getName(): string;
         getData(): IRenderDataCollection;
         getLength(): number;
         getBoundingBox(): IRect3d;
         getBoundingSphere(): ISphere;
-        getSkeleton(): ISkeleton;
-        setSkeleton(pSceleton: ISkeleton): void;
+        /**
+        * Return TRUE if after last update mesh geometry was changed.
+        */
+        isGeometryChanged(): boolean;
+        isSkinned(): boolean;
         getShadow(): boolean;
         setShadow(bValue: boolean): void;
         getOptions(): number;
@@ -4992,26 +5026,11 @@ declare module akra {
         appendSubset(sName: string, pData: IRenderData): IMeshSubset;
         setSkin(pSkin: ISkin): void;
         createSkin(): ISkin;
-        createBoundingBox(): boolean;
-        deleteBoundingBox(): boolean;
-        showBoundingBox(): boolean;
-        hideBoundingBox(): boolean;
-        isBoundingBoxVisible(): boolean;
-        createAndShowSubBoundingBox(): void;
-        createBoundingSphere(): boolean;
-        deleteBoundingSphere(): boolean;
-        showBoundingSphere(): boolean;
-        hideBoundingSphere(): boolean;
-        isBoundingSphereVisible(): boolean;
-        createAndShowSubBoundingSphere(): void;
+        calculateBoundingBox(): boolean;
+        calculateBoundingSphere(): boolean;
         isReadyForRender(): boolean;
-        toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
         /** Updtae all submeshes(apply bone matricie for skinned submeshes) */
         update(): boolean;
-        _drawSubset(iSubset: number): void;
-        _draw(): void;
-        /** notify, when one of substets added or removed shadow */
-        shadowed: ISignal<(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean) => void>;
     }
 }
 declare module akra {
@@ -5112,10 +5131,26 @@ declare module akra {
         getBasename(): string;
         isVisualSceneLoaded(): boolean;
         isAnimationLoaded(): boolean;
-        attachToScene(pNode: ISceneNode): IModelEntry;
-        attachToScene(pScene: IScene3d): IModelEntry;
+        extractFullScene(pScene: IScene3d): IModelEntry;
+        extractFullScene(pNode: ISceneNode): IModelEntry;
+        extractFullScene(): IModelEntry;
         extractAnimations(): IAnimation[];
         extractAnimation(i: number): IAnimation;
+        /**
+        * Works only for static geometry.
+        */
+        extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
+        extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;
+        extractModel(sMeshName?: string): ISceneModel;
+        /**
+        * Works only for static geometry.
+        */
+        extractMesh(sMeshName?: string): IMesh;
+        /**
+        * @deprecated Use Collada::extractFullScene() instead.
+        */
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(pScene: IScene3d): IModelEntry;
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
     }
@@ -5512,8 +5547,6 @@ declare module akra {
         getByteLength(): number;
         getModelFormat(): EModelFormats;
         loadResource(sFilename?: string, pOptions?: IModelLoadOptions): boolean;
-        attachToScene(pNode: ISceneNode): IModelEntry;
-        attachToScene(pScene: IScene3d): IModelEntry;
     }
 }
 declare module akra {
@@ -5841,7 +5874,7 @@ declare module akra {
         getTexturePool(): IResourcePool<ITexture>;
         getSurfaceMaterialPool(): IResourcePool<ISurfaceMaterial>;
         getVertexBufferPool(): IResourcePool<IVertexBuffer>;
-        getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+        getVideoBufferPool(): IResourcePool<IVertexBuffer>;
         getIndexBufferPool(): IResourcePool<IIndexBuffer>;
         getTextureBufferPool(): IResourcePool<IPixelBuffer>;
         getRenderMethodPool(): IResourcePool<IRenderMethod>;
@@ -5931,6 +5964,7 @@ declare module akra {
         EXTRACTION = 6,
         LOADED = 7,
         REJECTED = 8,
+        INTERNAL_UPDATE = 9,
     }
     interface IDepStats {
         status: EDependenceStatuses;
@@ -7275,6 +7309,10 @@ declare module akra.math {
         public multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         public multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
         public multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+        /**
+        * Multiply matrix by number. Per component multiply.
+        */
+        public multiplyNumber(fValue: number, m4fDestination?: IMat4): IMat4;
         public transpose(m4fDestination?: IMat4): IMat4;
         public determinant(): number;
         public inverse(m4fDestination?: IMat4): IMat4;
@@ -9382,7 +9420,6 @@ declare module akra.animation {
     class Blend extends Base implements IAnimationBlend {
         public weightUpdated: ISignal<(pBlend: IAnimationBlend, iAnim: number, fWeight: number) => void>;
         public durationUpdated: ISignal<(pBlend: IAnimationBlend, fDuration: number) => void>;
-        public duration: number;
         private _pAnimationList;
         constructor(sName?: string);
         public setupSignals(): void;
@@ -9414,6 +9451,7 @@ declare module akra.animation {
         public getAnimationAcceleration(sName: string): number;
         public createAnimationMask(iAnimation?: number): IMap<number>;
         public frame(sName: string, fRealTime: number): IPositionFrame;
+        public toString(): string;
         static isBlend(pAnimation: IAnimationBase): boolean;
     }
     function createBlend(sName?: string): IAnimationBlend;
@@ -10117,6 +10155,7 @@ declare module akra {
         BAD_USE_OF_ENGINE_VARIABLE = 2276,
         BAD_IMPORTED_COMPONENT_NOT_EXIST = 2277,
         CANNOT_ADD_SHARED_VARIABLE = 2278,
+        BAD_FUNCTION_DONT_HAVE_RETURN_STMT = 2279,
     }
     enum EEffectTempErrors {
         BAD_ARRAY_OF_POINTERS = 2300,
@@ -11054,6 +11093,7 @@ declare module akra.fx.instructions {
         private _pFullUniformVariableMap;
         private _pFullForeignVariableMap;
         private _pFullTextureVariableMap;
+        private _pOwnUsedForeignVariableMap;
         private _pComplexPassEvaluateOutput;
         constructor();
         public _addFoundFunction(pNode: parser.IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
@@ -11081,6 +11121,7 @@ declare module akra.fx.instructions {
         public _isComplexPass(): boolean;
         public _getVertexShader(): IAFXFunctionDeclInstruction;
         public _getPixelShader(): IAFXFunctionDeclInstruction;
+        public _addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
         public _addShader(pShader: IAFXFunctionDeclInstruction): void;
         public _setState(eType: ERenderStates, eValue: ERenderStateValues): void;
         public _finalizePass(): void;
@@ -11483,6 +11524,8 @@ declare module akra.fx {
         private _pEffectScope;
         private _pCurrentInstruction;
         private _pCurrentFunction;
+        private _pCurrentPass;
+        private _bHaveCurrentFunctionReturnOccur;
         private _pStatistics;
         private _sAnalyzedFileName;
         private _pSystemMacros;
@@ -11562,7 +11605,9 @@ declare module akra.fx {
         private endScope();
         private getScopeType();
         private setCurrentAnalyzedFunction(pFunction);
+        private setCurrentAnalyzedPass(pPass);
         private getCurrentAnalyzedFunction();
+        private getCurrentAnalyzedPass();
         private isAnalzeInPass();
         private setAnalyzeInPass(isInPass);
         private setOperator(sOperator);
@@ -11891,6 +11936,8 @@ declare module akra.fx {
         public hasVariableWithRealName(sName: string): boolean;
         public getVarByName(sName: string): IAFXVariableDeclInstruction;
         public getVarByRealName(sName: string): IAFXVariableDeclInstruction;
+        private static _pDefaultValuesForTypes;
+        static getVariableDefaultValue(pVar: IAFXVariableDeclInstruction): any;
         static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType;
     }
 }
@@ -11939,7 +11986,7 @@ declare module akra.fx {
         public getHash(): string;
         public containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): boolean;
         public containComponentHash(sComponentHash: string): boolean;
-        public findAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
+        public findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
         public addComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         public removeComponent(pComponent: IAFXComponent, iShift: number, iPass: number): void;
         public finalizeBlend(): boolean;
@@ -12626,6 +12673,7 @@ declare module akra.render {
         private _pInput;
         private _isActive;
         constructor(pTechnique: IRenderTechnique, iPass: number);
+        public setForeign(sName: string, bValue: boolean): void;
         public setForeign(sName: string, fValue: number): void;
         public setTexture(sName: string, pTexture: ITexture): void;
         public setUniform(sName: string, pValue: any): void;
@@ -13317,9 +13365,11 @@ declare module akra.render {
         public _bHidden: boolean;
         public _pMousePositionLast: IPoint;
         public _bMouseIsCaptured: boolean;
-        private _i3DEvents;
-        private _p3DEventPickLast;
-        private _p3DEventDragTarget;
+        public _i3DEvents: number;
+        public _b3DRequirePick: boolean;
+        public _p3DEventPickLast: IRIDPair;
+        public _p3DEventPickPrev: IRIDPair;
+        public _p3DEventDragTarget: IRIDPair;
         /**
         * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
         */
@@ -13417,11 +13467,16 @@ declare module akra.render {
     }
 }
 declare module akra {
-    interface IDSViewport extends IViewport {
+    enum EShadingModel {
+        BLINNPHONG = 0,
+        PHONG = 1,
+        PBS_SIMPLE = 2,
+    }
+    interface I3DViewport extends IViewport {
         getEffect(): IEffect;
         getDepthTexture(): ITexture;
         getLightSources(): IObjectArray<ILightPoint>;
-        getColorTextures(): ITexture[];
+        getTextureWithObjectID(): ITexture;
         getView(): IRenderableObject;
         getSkybox(): ITexture;
         setSkybox(pSkyTexture: ITexture): void;
@@ -13431,8 +13486,17 @@ declare module akra {
         highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         highlight(pPair: IRIDPair): void;
         _getRenderId(x: number, y: number): number;
-        _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
         addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        setShadingModel(eModel: EShadingModel): void;
+        getShadingModel(): EShadingModel;
+        setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        getDefaultEnvironmentMap(): ITexture;
+    }
+}
+declare module akra {
+    interface IDSViewport extends I3DViewport {
+        getColorTextures(): ITexture[];
+        _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
     }
 }
 declare module akra {
@@ -13493,6 +13557,15 @@ declare module akra.render {
         public ATTENUATION: IVec3;
         public set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData;
     }
+    class SunLightData {
+        public SUN_DIRECTION: IVec3;
+        public EYE_POSITION: IVec3;
+        public GROUNDC0: IVec3;
+        public GROUNDC1: IVec3;
+        public HG: IVec3;
+        public SKY_DOME_ID: number;
+        public set(pSunParam: ISunParameters, iSunDomeId: number): SunLightData;
+    }
     class UniformOmni implements IUniform {
         public LIGHT_DATA: LightData;
         public setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmni;
@@ -13535,24 +13608,14 @@ declare module akra.render {
         static temp(): IUniform;
     }
     class UniformSun implements IUniform {
-        public SUN_DIRECTION: IVec3;
-        public EYE_POSITION: IVec3;
-        public GROUNDC0: IVec3;
-        public GROUNDC1: IVec3;
-        public HG: IVec3;
-        public SKY_DOME_ID: number;
+        public LIGHT_DATA: SunLightData;
         public setLightData(pSunParam: ISunParameters, iSunDomeId: number): UniformSun;
         private static _pBuffer;
         private static _iElement;
         static temp(): IUniform;
     }
     class UniformSunShadow implements IUniform {
-        public SUN_DIRECTION: IVec3;
-        public EYE_POSITION: IVec3;
-        public GROUNDC0: IVec3;
-        public GROUNDC1: IVec3;
-        public HG: IVec3;
-        public SKY_DOME_ID: number;
+        public LIGHT_DATA: SunLightData;
         public SHADOW_SAMPLER: IAFXSamplerState;
         public TO_LIGHT_SPACE: IMat4;
         public OPTIMIZED_PROJECTION_MATRIX: IMat4;
@@ -13700,7 +13763,6 @@ declare module akra.webgl {
         public _iLevel: number;
         public _bSoftwareMipmap: boolean;
         public _pRTTList: IRenderTexture[];
-        constructor();
         public _clearRTT(iZOffset: number): void;
         public reset(): void;
         public reset(iSize: number): void;
@@ -13917,7 +13979,8 @@ declare module akra.scene {
         public destroy(): void;
         public prepareForUpdate(): void;
         public update(): boolean;
-        private recalcWorldBounds();
+        public recalcWorldBounds(): boolean;
+        public _setWorldBoundsUpdated(): number;
         public isBillboard(): boolean;
         public getObjectFlags(): number;
         public prepareForRender(pViewport: IViewport): void;
@@ -13927,6 +13990,11 @@ declare module akra.scene {
 }
 declare module akra.model {
     class Skin implements ISkin {
+        public guid: number;
+        /**
+        * @copydoc ISkin::transformed
+        */
+        public transformed: ISignal<(pSkin: ISkin) => void>;
         private _pMesh;
         private _pSkeleton;
         private _pNodeNames;
@@ -13967,13 +14035,22 @@ declare module akra.model {
         * Links to VertexData, that contain meta from this skin.
         */
         private _pTiedData;
+        constructor(pMesh: IMesh);
+        public setupSignals(): void;
         public getData(): IRenderDataCollection;
         public getTotalBones(): number;
+        public getBoneName(iBone: number): string;
+        public getBoneIndex(sBone: string): number;
         public getSkeleton(): ISkeleton;
-        constructor(pMesh: IMesh);
         public setBindMatrix(m4fMatrix: IMat4): void;
         public getBindMatrix(): IMat4;
-        public getBoneOffsetMatrices(): IMat4[];
+        /**
+        * Get scene node that are affected by this skin.
+        * Nodes are arranged in the order they are located in video memory.
+        * @param iNode Node index.
+        */
+        public getAffectedNode(iNode: number): ISceneNode;
+        public getBoneOffsetMatrix(iBone: number): IMat4;
         public getBoneOffsetMatrix(sBoneName: string): IMat4;
         public setSkeleton(pSkeleton: ISkeleton): boolean;
         public attachToScene(pRootNode: ISceneNode): boolean;
@@ -13988,7 +14065,7 @@ declare module akra.model {
         public isReady(): boolean;
         public getBoneTransforms(): IVertexData;
         public isAffect(pData: IVertexData): boolean;
-        public attach(pData: IVertexData): void;
+        public _attach(pData: IVertexData): void;
     }
     function createSkin(pMesh: IMesh): ISkin;
 }
@@ -14010,6 +14087,7 @@ declare module akra.scene {
         public setShadow(bValue: boolean): void;
         public isVisible(): boolean;
         public toString(isRecursive?: boolean, iDepth?: number): string;
+        public recalcWorldBounds(): boolean;
         static isModel(pEntity: IEntity): boolean;
     }
 }
@@ -14346,6 +14424,10 @@ declare module akra.data {
         */
         private _pAttribBuffer;
         /**
+        * VextexTextureBuffer with attributes
+        */
+        private _pAttribVideoBuffer;
+        /**
         * Data with indices.
         * If _pIndexBuffer has type IndexBuffer, indices data
         * has type IndexData, otherwise VertexData.
@@ -14370,6 +14452,7 @@ declare module akra.data {
         private _iRenderable;
         private _pComposer;
         public getBuffer(): IRenderDataCollection;
+        public _getAttribBuffer(eType: ERenderDataAttributeTypes): IVertexBuffer;
         private getCurrentIndexSet();
         constructor(pCollection?: IRenderDataCollection);
         /**
@@ -14387,10 +14470,10 @@ declare module akra.data {
         * Allocate attribute.
         * Attribute - data without index.
         */
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
         /**
         * Allocate index.
         */
@@ -14748,7 +14831,7 @@ declare module akra.terrain {
         public disconnectFromServer(): void;
         public prepareForRender(pViewport: IViewport): void;
         private _fThresHold;
-        private _bColored;
+        public _bColored: boolean;
         public applyForRender(pRenderPass: IRenderPass): void;
         public getWidthOrig(iLevel: number): number;
         public getHeightOrig(iLevel: number): number;
@@ -15222,6 +15305,8 @@ declare module akra.render {
         private _pLightPoints;
         private _pLightingUnifoms;
         private _pHighlightedObject;
+        private _eShadingModel;
+        private _pDefaultEnvMap;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15230,6 +15315,11 @@ declare module akra.render {
         public getColorTextures(): ITexture[];
         public getDepthTexture(): ITexture;
         public getView(): IRenderableObject;
+        public getTextureWithObjectID(): ITexture;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15256,33 +15346,71 @@ declare module akra.render {
     }
 }
 declare module akra {
-    interface ILPPViewport extends IViewport {
-        getDepthTexture(): ITexture;
-        getView(): IRenderableObject;
+    interface ILPPViewport extends I3DViewport {
     }
 }
 declare module akra.render {
     class LPPViewport extends Viewport implements ILPPViewport {
+        public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        /** Buffer with normal, shininess and objectID */
         private _pNormalBufferTexture;
-        private _pNormalDepthTexture;
-        private _pLightMapTexture;
+        /** Depth buffer of scene */
+        private _pDepthBufferTexture;
+        /**
+        * 0 - Diffuse and specular
+        * 1 - Ambient and shadow
+        */
+        private _pLightBufferTextures;
+        /** Resyult of LPP with out posteffects */
+        private _pResultLPPTexture;
         private _pViewScreen;
         private _pLightPoints;
-        private _v2fTExtureRatio;
+        private _v2fTextureRatio;
         private _v2fScreenSize;
         private _pLightingUnifoms;
+        private _pHighlightedObject;
+        private _pSkyboxTexture;
+        private _eShadingModel;
+        private _pDefaultEnvMap;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public setupSignals(): void;
         public getType(): EViewportTypes;
         public getView(): IRenderableObject;
         public getDepthTexture(): ITexture;
+        public getEffect(): IEffect;
+        public getSkybox(): ITexture;
+        public getTextureWithObjectID(): ITexture;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
+        public getObject(x: number, y: number): ISceneObject;
+        public getRenderable(x: number, y: number): IRenderableObject;
+        public pick(x: number, y: number): IRIDPair;
+        public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;
         public _updateImpl(): void;
-        private prepareForLPPShading();
+        public setSkybox(pSkyTexture: ITexture): boolean;
+        public setFXAA(bValue?: boolean): void;
+        public isFXAA(): boolean;
+        public highlight(iRid: number): void;
+        public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+        public highlight(pPair: IRIDPair): void;
+        public _onNormalBufferRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public _onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public endFrame(): void;
+        public getDepth(x: number, y: number): number;
+        private createNormalBufferRenderTarget(iWidth, iHeight);
+        private createLightBuffersRenderTargets(iWidth, iHeight);
+        private createResultLPPRenderTarget(iWidth, iHeight);
+        private prepareRenderMethods();
+        private updateRenderTextureDimensions(pTexture);
+        private prepareForLPPShading();
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
     }
@@ -15827,42 +15955,51 @@ declare module akra.webgl {
 }
 declare module akra.model {
     class MeshSubset extends render.RenderableObject implements IMeshSubset {
-        public skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => any>;
-        public _sName: string;
-        public _pMesh: IMesh;
-        public _pSkin: ISkin;
-        public _pBoundingBox: IRect3d;
-        public _pBoundingSphere: ISphere;
-        public _isOptimizedSkinned: boolean;
+        public skinAdded: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        public skinRemoved: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        public transformed: ISignal<(pSubset: IMeshSubset, pSkin: ISkin) => void>;
+        private _sName;
+        private _pMesh;
+        private _pSkin;
+        private _pBoundingBox;
+        private _pBoundingSphere;
+        private _isOptimizedSkinned;
+        private _pInitialGeometryBoundingBox;
+        private _pInitialGeometryBoundingSphere;
+        private _pSkinLocalBounds;
+        constructor(pMesh: IMesh, pRenderData: IRenderData, sName?: string);
         public getBoundingBox(): IRect3d;
         public getBoundingSphere(): ISphere;
+        public getInitialGeometryBoundingBox(): IRect3d;
+        public getInitialGeometryBoundingSphere(): ISphere;
         public getSkin(): ISkin;
         public getName(): string;
         public getMesh(): IMesh;
-        constructor(pMesh: IMesh, pRenderData: IRenderData, sName?: string);
         public setupSignals(): void;
         public setup(pMesh: IMesh, pRenderData: IRenderData, sName: string): void;
         public createBoundingBox(): boolean;
-        public deleteBoundingBox(): boolean;
-        public showBoundingBox(): boolean;
-        public isBoundingBoxVisible(): boolean;
-        public hideBoundingBox(): boolean;
         public createBoundingSphere(): boolean;
+        public deleteBoundingBox(): boolean;
         public deleteBoundingSphere(): boolean;
-        public showBoundingSphere(): boolean;
-        public isBoundingSphereVisible(): boolean;
-        public hideBoundingSphere(): boolean;
+        public _showBoundingBox(): boolean;
+        public _isBoundingBoxVisible(): boolean;
+        public _hideBoundingBox(): boolean;
+        public _showBoundingSphere(): boolean;
+        public _isBoundingSphereVisible(): boolean;
+        public _hideBoundingSphere(): boolean;
+        public getTotalBones(): number;
+        public getBoneLocalBound(sBone: string): IRect3d;
+        public getBoneLocalBound(iBone: number): IRect3d;
         public computeNormals(): void;
         public computeTangents(): void;
         public computeBinormals(): void;
         public isSkinned(): boolean;
         public isOptimizedSkinned(): boolean;
-        public _draw(): void;
-        public show(): void;
-        public hide(): void;
-        public isRenderable(): boolean;
         public setSkin(pSkin: ISkin): boolean;
-        public _calculateSkin(): boolean;
+        public update(): boolean;
+        private calculateBoneLocalBoundingBoxes();
+        private calculateSkin();
+        private calculateSkinBasedBoundingBox();
         static isMeshSubset(pObject: IRenderableObject): boolean;
     }
 }
@@ -16255,13 +16392,13 @@ declare module akra.fx {
     }
 }
 declare module akra.fx {
-    /** @const */
+    /** For addComponent/delComponent/hasComponent */
     var ALL_PASSES: number;
-    /** @const */
+    /** Only for hasComponent */
     var ANY_PASS: number;
-    /** @const */
+    /** For addComponent/delComponent/hasComponent */
     var ANY_SHIFT: number;
-    /** @const */
+    /** For addComponent/delComponent/hasComponent  */
     var DEFAULT_SHIFT: number;
     /** @const */
     var effectParser: EffectParser;
@@ -16430,6 +16567,7 @@ declare module akra.pool.resources {
         private buildSkinMesh(pControllerInstance);
         private buildSkinMeshInstance(pControllers, pSceneNode?);
         private buildMeshInstance(pGeometries, pSceneNode?);
+        private buildMeshByName(sName);
         private buildMeshes();
         private buildSceneNode(pNode, pParentNode);
         private buildJointNode(pNode, pParentNode);
@@ -16470,10 +16608,21 @@ declare module akra.pool.resources {
         private checkLibraries(pXML, pTemplates);
         public parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         public loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
-        public attachToScene(pScene: IScene3d): IModelEntry;
-        public attachToScene(pNode: ISceneNode): IModelEntry;
+        public extractMesh(sMeshName?: string): IMesh;
+        public extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
+        public extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;
+        public extractModel(sMeshName?: string): ISceneModel;
+        public extractFullScene(pScene: IScene3d): IModelEntry;
+        public extractFullScene(pNode: ISceneNode): IModelEntry;
+        public extractFullScene(): IModelEntry;
         public extractAnimation(i: number): IAnimation;
         public extractAnimations(): IAnimation[];
+        /**
+        * @deprecated Use Collada::extractFullScene() instead.
+        */
+        public attachToScene(pScene: IScene3d): IModelEntry;
+        public attachToScene(pNode: ISceneNode): IModelEntry;
+        private getNodeByParent(pScene);
         static isColladaResource(pItem: IResourcePoolItem): boolean;
     }
     function isModelResource(pItem: IResourcePoolItem): boolean;
@@ -16886,7 +17035,7 @@ declare module akra.pool {
         public getObjPool(): IResourcePool<IObj>;
         public getImagePool(): IResourcePool<IImg>;
         public getTexturePool(): IResourcePool<ITexture>;
-        public getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+        public getVideoBufferPool(): IResourcePool<IVertexBuffer>;
         public getShaderProgramPool(): IResourcePool<IShaderProgram>;
         public getComponentPool(): IResourcePool<IAFXComponent>;
         public getTextureBufferPool(): IResourcePool<IPixelBuffer>;
@@ -17180,6 +17329,12 @@ declare module akra.model {
         private _pSkyBackBuffer;
         private _pSkyBlitBox;
         constructor(_pEngine: IEngine, nCols: number, nRows: number, fR: number);
+        /** Number of sample rays to use in integral equation */
+        public getSize(): number;
+        public getSampler(): number;
+        public setWaveLength(x: number, y: number, z: number): Sky;
+        public setWaveLength(v3fLength: IVec3): Sky;
+        public getWaveLength(v3fDest?: IVec3): IVec3;
         public setupSignals(): void;
         public getEngine(): IEngine;
         public getSunDirection(): IVec3;

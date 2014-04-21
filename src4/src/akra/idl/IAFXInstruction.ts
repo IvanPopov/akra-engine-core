@@ -700,7 +700,8 @@ module akra {
 
 		_getVertexShader(): IAFXFunctionDeclInstruction;
 		_getPixelShader(): IAFXFunctionDeclInstruction;
-
+		
+		_addOwnUsedForignVariable(pVarDecl: IAFXVariableDeclInstruction): void;
 		_addShader(pShader: IAFXFunctionDeclInstruction): void;
 		_setState(eType: ERenderStates, eValue: ERenderStateValues): void;
 		_finalizePass(): void;

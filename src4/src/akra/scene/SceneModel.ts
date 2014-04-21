@@ -40,7 +40,6 @@ module akra.scene {
 				this._pMesh = pMesh;
 				//FIXME: event handing used out of object, bad practice..
 				this.getScene().postUpdate.connect(this._pMesh, this._pMesh.update);
-				//pMesh.connect(this.scene, SIGNAL(postUpdate), SLOT(update));
 			}
 		}
 
@@ -83,6 +82,32 @@ module akra.scene {
 			}
 
 			return null;
+		}
+
+		//update(): boolean {
+		//	if (this._pMesh.isGeometryChanged()) {
+		//		this.accessLocalBounds().set(this._pMesh.getBoundingBox());
+		//	}
+
+		//	return super.update();
+		//}
+
+		protected recalcWorldBounds(): boolean {
+			if (this._pMesh.isGeometryChanged()) {
+				// Mesh::isGeometryChanged() can be TRUE only for Skinned meshes.
+				// bounding boxes for skinned meshes always calculated in World Space,
+				// because, skin depends of skeleton, skeletom is part of scene.
+				this._pWorldBounds.set(this._pMesh.getBoundingBox());
+				this.worldBoundsUpdated.emit();
+
+				return true;
+			}
+
+			if (!this._pMesh.isSkinned()) {
+				return super.recalcWorldBounds();
+			}
+
+			return false;
 		}
 
 		static isModel(pEntity: IEntity): boolean {

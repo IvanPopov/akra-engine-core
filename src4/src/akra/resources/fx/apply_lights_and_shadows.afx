@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "lightingFunctions.afx";
+
 foreign int nOmniShadows;
 foreign int nOmni;
 foreign int nProjectShadows;
@@ -7,28 +9,7 @@ foreign int nProject;
 foreign int nSun;
 foreign int nSunShadows;
 
-texture tex0 : TEXTURE0;
-texture tex1 : TEXTURE1;
-texture tex2 : TEXTURE2;
-texture tex3 : TEXTURE3;
-texture tex4 : TEXTURE4;
-texture tex5 : TEXTURE5;
-texture tex6 : TEXTURE6;
-texture tex7 : TEXTURE7;
-texture tex8 : TEXTURE8;
-texture tex9 : TEXTURE9;
-texture tex10 : TEXTURE10;
-texture tex11 : TEXTURE11;
-texture tex12 : TEXTURE12;
-texture tex13 : TEXTURE13;
-texture tex14 : TEXTURE14;
-texture tex15 : TEXTURE15;
-
 texture envTex0 : ENVMAP;
-
-float4x4 projMat : PROJ_MATRIX;
-//float4x4 invView : INV_VIEW_CAMERA_MAT;
-//float3 cameraPos : CAMERA_POSITION;
 
 sampler2D envSampler0 : ENV_SAMPLER_0 = sampler_state
 {
@@ -36,68 +17,6 @@ sampler2D envSampler0 : ENV_SAMPLER_0 = sampler_state
 	MipFilter = LINEAR;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-};
-
-struct light_data {
-	float4 diffuse     : DIFFUSE;
-	float4 ambient     : AMBIENT;
-	float4 specular    : SPECULAR;
-	float3 attenuation : ATTENUATION;
-	float3 position    : POSITION; //in camera space
-};
-
-struct pixel_data{
-	float4 diffuse  : DIFFUSE;
-	float4 ambient  : AMBIENT;
-	float4 specular : SPECULAR;
-	float3 position : POSITION; //in camera space
-	float3 normal   : NORMAL;
-	float shininess : SHININESS;
-	float  depth    : DEPTH;
-	int    id       : RENDER_OBJECT_ID;
-};
-
-struct light_omni{
-	light_data lightData : LIGHT_DATA;
-};
-
-struct light_project{
-	light_data lightData   : LIGHT_DATA;
-	float4x4 shadow_matrix : SHADOW_MATRIX;
-};
-
-struct light_omni_shadows{
-	light_data lightData      : LIGHT_DATA;
-	float4x4 toLightSpace[6] : TO_LIGHT_SPACE;
-	float4x4 optimized_projection_matrix[6] : OPTIMIZED_PROJECTION_MATRIX;
-};
-
-struct light_project_shadows{
-	light_data lightData   : LIGHT_DATA;
-	float4x4 toLightSpace : TO_LIGHT_SPACE;
-	float4x4 real_projection_matrix : REAL_PROJECTION_MATRIX;
-	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
-};
-
-struct light_sun{
-	float3 sunDir: SUN_DIRECTION;
-	float3 eyePos: EYE_POSITION;
-	float3 ground0: GROUNDC0;
-	float3 ground1: GROUNDC1;
-	float3 hg: HG;
-	int skyDomeId: SKY_DOME_ID; 
-};
-
-struct light_sun_shadows{
-	float3 sunDir: SUN_DIRECTION;
-	float3 eyePos: EYE_POSITION;
-	float3 ground0: GROUNDC0;
-	float3 ground1: GROUNDC1;
-	float3 hg: HG;
-	int skyDomeId: SKY_DOME_ID; 
-
-	float4x4 toLightSpace : TO_LIGHT_SPACE;
-	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
 sampler project_shadow_sampler[nProjectShadows] : PROJECT_SHADOW_SAMPLER;
@@ -111,75 +30,51 @@ light_project points_project[nProject];
 light_sun points_sun[nSun];
 light_sun_shadows points_sun_shadows[nSunShadows];
 
-shared float4 result_color;
+shared float4 result_color = float4(0.);
 shared pixel_data pixelData;
 
-float4 apply_light_omni() : COLOR{
+float4 apply_light_omni() : COLOR {
 	for(int i = 0; i < nOmni; i++){
-		result_color += calculateLight(pixelData,points_omni[i].lightData);
+		result_color += applyBaseLightParams(pixelData, points_omni[i].lightData);
 	}
-
-	if(IS_USE_PBS_SIMPLE == 2){
-		// calculating reflection separately
-		float3 view_dir = normalize(-pixelData.position);
-		float3 normal_dir = pixelData.normal;
-		float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
-		// float3 reflect_dir = reflect(view_dir, normal_dir);
-		float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
-
-		float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace, pixelData.specular.xyz, pixelData.shininess),1.);
-		// lowering reflection brightness if we have a strong lighting already
-		reflection *= float4(1.) - result_color;
-
-		result_color += reflection;
-	}
-
-	return float4(result_color.xyz, 1.);
-};
+	
+	//result_color = float4(pixelData.normal, 1.);
+	return returnColor(result_color);
+}
 
 float4 apply_light_project() : COLOR{
 	for(int i = 0; i < nProject; i++){
-		float4 v4fTmp = points_project[i].shadow_matrix*float4(pixelData.position, 1.);
-		float3 v3fTest = abs(v4fTmp.xyz/v4fTmp.w);
-		//тест на попадание в область действия источника
-		//if(all(lessThanEqual(v3fTest,float3(1.)))){
-		if(length(v3fTest) <= sqrt(3.) && v4fTmp.w >= 0.){ //более приятно выглядит
-			float alpha = 0.05;
-			float lightAttenuation = (exp(-alpha*dot(v3fTest,v3fTest)) - exp(-alpha*3.))/(1. - exp(-alpha*3.));
-			result_color += calculateLight(pixelData,points_project[i].lightData) * lightAttenuation;
+		float lightAttenuation = calcProjectLightInfluence(points_project[i].shadow_matrix, pixelData.position);
+		if(lightAttenuation >= 0.) {
+			result_color += applyBaseLightParams(pixelData, points_project[i].lightData) * lightAttenuation;
 		}
 	}
 
-	return float4(result_color.xyz, 1.);
-};
+	return returnColor(result_color);
+}
 
 float4 apply_light_omni_shadow() : COLOR{
 	for(int i = 0; i < nOmniShadows; i++){
-		float4 tmpColor = calculateLight(pixelData, points_omni_shadows[i].lightData);
+		float4 tmpColor = applyBaseLightParams(pixelData, points_omni_shadows[i].lightData);
 		float shadowMultiplier = 1.;
 
 		bool isOk = true;
 		for(int j = 0; j < 6; j++){
+			float2 shadowTexCoords;
+			float realDepth;
 			if(isOk){
-				float4 v4fLightSpace = points_omni_shadows[i].toLightSpace[j]*float4(pixelData.position, 1.);
+				if(isUnderShadowInfluence(points_omni_shadows[i].toLightSpace[j], 
+										points_omni_shadows[i].optimized_projection_matrix[j],
+										pixelData.position,
+										shadowTexCoords, realDepth)){
 
-				float4 v4fTmp = points_omni_shadows[i].optimized_projection_matrix[j] * v4fLightSpace;
-				float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
-
-				float3 v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
-
-				//тест на попадание в область действия источника
-				//так как здесь происходит считывание из текстуру другой тест не корректен
-				if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
-					float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
-					//int samplerNumber = i * 6 + j;
-
-					shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[i * 6 + j], v2fShadowTextureCoords,
-																 points_omni_shadows[i].optimized_projection_matrix[j], v4fLightSpace.z);
+					shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[i * 6 + j], shadowTexCoords,
+																 points_omni_shadows[i].optimized_projection_matrix[j], realDepth);
 					isOk = false;
+					break;
 				}
 			}
-			else{
+			else {
 				break;
 			}
 		}
@@ -187,590 +82,116 @@ float4 apply_light_omni_shadow() : COLOR{
 		result_color += tmpColor * shadowMultiplier;
 	}
 
-	return float4(result_color.xyz, 1.);
-};
+	return returnColor(result_color);
+}
 
 float4 apply_light_project_shadows() : COLOR{
 	for(int i = 0; i < nProjectShadows; i++){
-		float4 v4fLightSpace = points_project_shadows[i].toLightSpace*float4(pixelData.position, 1.);
+		float lightAttenuation = calcProjectLightInfluence(points_project_shadows[i].real_projection_matrix * points_project_shadows[i].toLightSpace, pixelData.position);
 
-		float4 v4fTmp = points_project_shadows[i].real_projection_matrix * v4fLightSpace;
-
-		float3 v3fRealLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
-		float3 v3fTest = abs(v3fRealLightSpacePosition);
-
-		//тест на попадание в область действия источника
-		//if(all(lessThanEqual(v3fTest,float3(1.)))){
-			//float4 tmpColor = calculateLight(pixelData,points_project_shadows[i].lightData);
-		if(length(v3fTest) <= sqrt(3.) && v4fTmp.w >= 0.){//более приятно выглядит
-			float alpha = 0.05;
-			float lightAttenuation = (exp(-alpha*dot(v3fTest,v3fTest)) - exp(-alpha*3.))/(1. - exp(-alpha*3.));
-			float4 tmpColor = calculateLight(pixelData,points_project_shadows[i].lightData)*lightAttenuation;
-
+		if(lightAttenuation >= 0.){
+			float4 tmpColor = applyBaseLightParams(pixelData,points_project_shadows[i].lightData) * lightAttenuation;
 			float shadowMultiplier = 1.;
-		  
-			v4fTmp = points_project_shadows[i].optimized_projection_matrix * v4fLightSpace;
-			float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
+			float2 shadowTexCoords;
+			float realDepth;
 
-			v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
-
-			if(all(lessThanEqual(float2(v3fTest.xy),float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
-				float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
-				shadowMultiplier = calculateShadowMultiplier(project_shadow_sampler[i], v2fShadowTextureCoords,
-																points_project_shadows[i].optimized_projection_matrix, v4fLightSpace.z);
+			if(isUnderShadowInfluence(points_project_shadows[i].toLightSpace, 
+									points_project_shadows[i].optimized_projection_matrix,
+									pixelData.position,
+									shadowTexCoords, realDepth)) {
+				shadowMultiplier = calculateShadowMultiplier(project_shadow_sampler[i], shadowTexCoords,
+																points_project_shadows[i].optimized_projection_matrix, realDepth);
 			}
-			
+
 			result_color += tmpColor * shadowMultiplier;
 		}
 	}
 
-	return float4(result_color.xyz, 1.);
-};
-
-float dot_saturate (float3 a, float3 b) {
-	return clamp(dot(a,b),0.,1.);
+	return returnColor(result_color);
 }
 
-foreign int IS_USE_PBS_SIMPLE;
-//float PBS_gloss : PBS_GLOSS = 0.;
-//float3 PBS_F0 : PBS_F0 = float3(0.);
-//float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
-
-// @c http://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
-float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3 normalDir, float Gloss)
-{
-	// Canonical equation (from paper):
-    //return SpecularColor + (max(float3(Gloss), SpecularColor) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.);
-	// Other possible function (used by Treyarch, Black Ops 2, Dimitar Lazarov):
-	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-    return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.) / (4. - 3. * Gloss);
-}
-
-// Functions for getting pixel position from cubemap formatted as follows:
-// zone3	nextlvl	zone4	zone5
-// zone1	zone2	zone6	nextlvl
-float2 getZone1z(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
-	return uv;
-}
-
-float2 getZone2x(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
-	return uv;
-}
-
-float2 getZone3y(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = uv.y*pow(2.,-float(lod)-1.);
-	return uv;
-}
-float2 getZone4z(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
-	return uv;
-}
-
-float2 getZone5x(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
-	return uv;
-}
-
-float2 getZone6y(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
-	return uv;
-}
-
-float4 getEnvLod(sampler2D envSampler, float3 direction, int lod) {
-	float4 color = float4(0.);
-
-	float2 uv = float2(0.);
-
-	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
-
-	// HACK: fixed cubemap size
-	float2 local_texel = float2(pow(2.,-8.+float(lod)));
-	float2 texel = float2(pow(2.,-10.),pow(2.,-9.));
-
-	if(direction.z >= .99) { // calculations are not precise
-		uv.x = -direction.x;
-		uv.y = direction.y;
-		uv = getZone1z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
-	}
-	else if(direction.x <= -.99) {
-		uv.x = -direction.z;
-		uv.y = direction.y;
-		uv = getZone2x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
-	}
-	else if(direction.y >= .99) {
-		uv.x = -direction.x;
-		uv.y = -direction.z;
-		uv = getZone3y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
-	}
-	else if(direction.z <= -.99) {
-		uv.x = direction.x;
-		uv.y = direction.y;
-		uv = getZone4z(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
-	}
-	else if(direction.x >= .99) {
-		uv.x = direction.z;
-		uv.y = direction.y;
-		uv = getZone5x(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
-	}
-	else {//(direction.y <= -.99) {
-		uv.x = direction.x;
-		uv.y = -direction.z;
-		uv = getZone6y(float2((1.+uv.x)*0.5, (1.-uv.y)*0.5)*(float2(1.)-local_texel), lod);
-	}
-
-	color = tex2D(envSampler, uv+texel/2.);
-
-	return color;
-}
-
-float glossToQualityConverter(float Gloss, float MaxLod)
-{
-	return (1.-pow(Gloss,2.))*MaxLod;
-}
-
-float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float Gloss)
-{
-
-	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
-	// HACK: get maximum level of detail from size of texture
-	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
-	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
-	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
-
-    //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
-    float3 Envcolor = getEnvLod(envSampler0, R, lod1).rgb * (1. - alpha)
-    	+ getEnvLod(envSampler0, R, lod2).rgb * alpha;
-
-    return FresnelSchlickWithRoughness(SpecularColor, E, N, Gloss) * Envcolor;// * EnvMapScaleAndModulate; // EnvMapScaleAndModulate is used to decompress range
-}
-
-float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
-	// F0 = Fresnel reflectance at 0° (reflectance at normal incidence)
-	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
-}
-
-// @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
-float4 PBS(pixel_data pixelData, light_data lightData) {
-	float3 light_dir = lightData.position - pixelData.position;
-	float light_dir_length = length(light_dir);
-	light_dir = normalize(light_dir);
-
-	// multiplicator for better visibility now removed
-	float attenuation = 1.0 / (lightData.attenuation.x +
-							   lightData.attenuation.y * light_dir_length + 
-							   lightData.attenuation.z * light_dir_length * light_dir_length);
-
-	float3 view_dir = normalize(-pixelData.position);
-
-	// Specular power used in paper:
-	float alpha_p = pow(2., 10.*pixelData.shininess + 1.);
-	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
-	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	// float alpha_p = pow(8192., pixelData.shininess);
-
-	float4 incLightColor = attenuation * pixelData.diffuse;
-	//float4 incLightColor = float4(pixelData.diffuse.xyz, 1.) * attenuation;
-
-	float3 halfVector = normalize(view_dir + light_dir);
-
-	float4 lightDiff = lightData.diffuse *  dot_saturate(pixelData.normal, light_dir);
-
-	//float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
-	//	* pow(dot_saturate(halfVector,pixelData.normal), alpha_p ) * dot_saturate(pixelData.normal, light_dir), 1.);
-	float4 lightSpec = float4( func_Shlick(pixelData.specular.xyz, light_dir, halfVector) * (alpha_p+2.)/8.
-		* pow(dot_saturate(light_dir,pixelData.normal), alpha_p ), 1.);
-
-	lightDiff *= (float4(1.) - lightSpec);
-	lightDiff.a = 1.;
-
-	float4 color = incLightColor * ( lightDiff + lightSpec);
-	color.a = 1.;
-
-	// Testing which direction reflects better:
-//	color = float4(func_Shlick(PBS_F0, view_dir, pixelData.normal), 1.); //or this:
-//	if( func_Shlick(PBS_F0, view_dir, pixelData.normal).x < 0.5){
-//		color = float4(1., 0., 0., 1.);
-//	} 
-
-//	if( 0.5 <= func_Shlick(PBS_F0, view_dir, pixelData.normal).x && func_Shlick(PBS_F0, view_dir, pixelData.normal).x < 0.95){
-//		color = float4(0., 1., 0., 1.);
-//	} 
-
-//	if(func_Shlick(PBS_F0, view_dir, pixelData.normal).x >= 0.95) {
-//		color = float4(0., 0., 1., 1.);
-//	}
-
-	return color;
-}
-
-float4 calculateLight(pixel_data pixelData, light_data lightData){
-	/*if (pointCoord.x < .5)
-		return float4(1.,0.,0.,1.);*/
-
-	if(IS_USE_PBS_SIMPLE == 2){
-		return PBS(pixelData, lightData);
-	}
-
-	else {
-		float3 light_dir = lightData.position - pixelData.position;
-		float light_dir_length = length(light_dir);
-		light_dir = normalize(light_dir);
-
-			// attenuation
-		float attenuation = 1.0 / (lightData.attenuation.x +
-								   lightData.attenuation.y * light_dir_length + 
-								   lightData.attenuation.z * light_dir_length * light_dir_length);
-
-		
-		// direction from vert to observer (ViewDir) 
-		//observer is (0,0,0) in camera space
-		float3 view_dir = normalize(-pixelData.position);
-
-		// reflect direction
-		float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
-
-		float light_distancedotVpow = 0.;
-
-		if(pixelData.shininess != 0.){
-			light_distancedotVpow = pow(max(dot(reflect_dir, view_dir), 0.0), pixelData.shininess);
-		}
-		
-		float4 color = float4(0.);
-		//add ambient
-		color += pixelData.ambient * lightData.ambient * attenuation;//float4(float3(attenuation/40.), 1.);//pixelData.ambient * lightData.ambient * attenuation;
-		
-		//add diffuse
-		color += pixelData.diffuse * lightData.diffuse * max(dot(pixelData.normal, light_dir), .0) * attenuation;
-		
-		// add reflect lighting
-		color += pixelData.specular * lightData.specular * light_distancedotVpow * attenuation;
-		
-		//color = float4(pixelData.normal.xy/2. + 0.5, pixelData.normal.z, 1.);
-		return color;
-	}
-};
-
-float unprojZ(float4x4 projMat, float screenZ){
-	return -projMat[3][2]/(projMat[2][2] + screenZ);
-};
-
-float unprojOrthoZ(float4x4 projMat, float screenZ){
-	return (screenZ - projMat[3][2])/projMat[2][2];
-	//return -projMat[3][2]/(projMat[2][2] + screenZ);
-};
-
-float fMinShadow : MIN_SHADOW_VALUE = 0.5;
-float shadowConstant : SHADOW_CONSTANT = 5.e+2;
-float shadowAttenuationConstant: SHADOW_ATTENUATION_CONSTANT = 0.2;
-
-float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
-	float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
-	//float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
-	if(lightDepth == 1.){
-		return 1.;
-	}
-
-	float lightRealDepth = unprojZ(projMat, lightDepth); //negative
-
-	float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow, 1.);
-	fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - lightRealDepth));
-	return fShadowMultiplier;
-};
-
-float alpha = 3.;
-
-float4 blur(sampler Sampler,float2 texCoords, float2 invTexSize){
-	const int blurX = 2;
-	const int blurY = 2;
-
-	float4 value = float4(0.);
-	float totalWeight = 0.;
-	for(int i=-blurX;i<=blurX;i++){
-		for(int j=-blurY;j<=blurY;j++){
-			float fX = float(i);
-			float fY = float(j);
-			float weight = exp(-alpha*(fX*fX + fY*fY));
-			totalWeight += weight;
-			value += weight * tex2D(Sampler,texCoords + invTexSize*float2(fX,fY));
+bool isNeedLightFromSun(pixel_data pixelData){
+	for(int j = 0; j < nSun; j++) {
+		if(pixelData.id == points_sun[j].lightData.skyDomeId){
+			return false;
 		}
 	}
-	return value/totalWeight;
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-float Exposure = -2.0;
-float c = 0.002f; // height falloff
-float b = 0.002f; // global density
-
-float3 HDR( float3 LDR){
-	return 1.0f - exp( Exposure * LDR );
-}
-
-float getMiePhase(float fCos, float fCos2, float3 vHG){
-	//return 1.5 * ((1.0 - g2) / (2.0 + g2)) * (1.0 + fCos2) / pow(1.0 + g2 - 2.0*g*fCos, 1.5);
-	return vHG.x * (1.0 + fCos2) / pow(abs(vHG.y - vHG.z * fCos), 1.5);
-}
-
-// Calculates the Rayleigh phase function
-float getRayleighPhase(float fCos2){
-	return 0.75 + 0.75 * fCos2;
-}
-
-float cHeightFalloff = 0.002f; 
-float cGlobalDensity  = 0.002f;
-
-float3 camPos: CAMERA_POSITION;
-float4x4 invView: INV_VIEW_CAMERA_MAT;
-float4x4 view: VIEW_MATRIX;
-
-float ComputeVolumetricFog(float3 cameraToWorldPos) 
-{  
-  //float3 cameraToWorldPos = v3Pos - camPos;
-  float cVolFogHeightDensityAtViewer = exp(-cHeightFalloff * camPos.y); 
-  float fogInt = length( cameraToWorldPos ) * cVolFogHeightDensityAtViewer; 
-  const float cSlopeThreshold = 0.01; 
-  if(abs(cameraToWorldPos.y) > cSlopeThreshold) 
-  { 
-	float t = cHeightFalloff * cameraToWorldPos.y; 
-	fogInt *= (1.0 - exp(-t)) / t; 
-  } 
-  return exp(-cGlobalDensity * fogInt); 
-} 
-
-//float ComputeVolumetricFog( float3 cameraToWorldPos, float3 vEye ){ 
-//    float f = b * exp( -c * vEye.y );
-//    float l = length( cameraToWorldPos );
-//
-//    float fogInt = exp( -(f * l) );
-//
-//    const float cSlopeThreshold = 0.01;
-//    if( abs( cameraToWorldPos.y ) > cSlopeThreshold )
-//    {
-//      float t = c * cameraToWorldPos.y;
-//      fogInt *= ( 1.0 - exp( -t ) ) / t;
-//    }
-//
-//    return fogInt;
-//}
-
-float kFixNormal = 0.5;
-float fSunSpecular = 0.;
-float fSunAmbient = 0.;
-
-float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse, float4 ambient, float4 specular){
-
-	// direction from vert to observer (ViewDir) 
-	//observer is (0,0,0) in camera space
-	float3 view_dir = normalize(-pixelData.position);
-	light_dir = normalize(light_dir);
-	float3 fixNormal = lerp(light_dir, pixelData.normal, kFixNormal);
-
-	  // reflect direction
-	float3 reflect_dir = normalize(reflect(-light_dir, fixNormal));
-
-	float light_distancedotVpow = 0.;
-
-	if(pixelData.shininess != 0.){
-		light_distancedotVpow = pow(max(dot(reflect_dir, view_dir), 0.0), pixelData.shininess);
+	for(int j = 0; j < nSunShadows; j++) {
+		if(pixelData.id == points_sun_shadows[j].lightData.skyDomeId){
+			return false;
+		}
 	}
 
-	
-	float4 color = float4(0.);
-	//add ambient
-	color += pixelData.ambient * ambient;
-	
-	
-	//add diffuse
-	color += pixelData.diffuse * diffuse * max(dot(fixNormal, light_dir), .0);
-
-	 // add reflect lighting
-	color += pixelData.specular * specular * light_distancedotVpow;
-
-	//color.rgb = HDR(color.rgb);
-	return color;
-};
-
-
+	return true;
+}
 
 float4 apply_sun_light() : COLOR {
 	float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
 
-	for(int i = 0; i < nSun; i++){
-		bool isNeedLight = true;
+	if(isNeedLightFromSun(pixelData)) {
+		for(int i = 0; i < nSun; i++) {
+			float4 color = applyBaseLightParamsSun(pixelData, points_sun[i].lightData, worldPos);
 
-		for(int j = 0; j < nSun; j++){
-			if(pixelData.id == points_sun[j].skyDomeId){
-				isNeedLight = false;
-				break;
+			if(isPrepareAll){
+				float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+				color = float4(lerp(points_sun[i].lightData.ground0, color.rgb, fFogValue), 1.);
 			}
-		}
-
-		if(isNeedLight){
-			float3 v3Pos = points_sun[i].eyePos - pixelData.position.xyz;
-			float fCos = dot(points_sun[i].sunDir, v3Pos)/length(v3Pos);
-			float fCos2 = fCos * fCos;
-
-			float3 Mie = getMiePhase(fCos, fCos2, points_sun[i].hg) * points_sun[i].ground1;
-			float4 color = float4(0.);
-
-			color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
-			color.rgb = HDR(color.rgb);
-			float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-			//color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
 			
-			float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
-			result_color += float4(lerp(points_sun[i].ground0, colorWithLight.rgb, fFogValue), 1.);
-			//result_color += float4(colorWithLight.rgb, 1.);
-			//float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
-			//result_color += float4(float3(fCos), 0.);
-		}
-	}
-
-	return float4(result_color.xyz, 1.);
-};
-
-
-float calculateSunShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
-
-	float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
-	if(lightDepth == 1.){
-		return 1.;
-	}
-
-	float lightRealDepth = unprojOrthoZ(projMat, lightDepth); //negative
-
-	return clamp(exp(shadowConstant*(0.08 - lightRealDepth + realDepth)), fMinShadow, 1.);
-};
-
-float readRealLightDepth(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat){
-	float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
-	if(lightDepth == 1.){
-		return 1.;
-	}
-
-	return unprojOrthoZ(projMat, lightDepth); //negative
-};
-
-float2 v2fShadowTexSize = float2(2048.);
-
-float calculateSunShadowMultiplierUpgraded(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
-
-	float2 v2fTexPos = v2fShadowTextureCoords*v2fShadowTexSize - float2(0.5);
-	float2 v2fTmp = floor(v2fTexPos);
-	float2 alpha = v2fTexPos - v2fTmp;
-	float2 beta = float2(1.) - alpha;
-
-	float2 v2fTex1 = (v2fTmp + float2(0.5))/v2fShadowTexSize;
-	float2 v2fTex2 = v2fTex1 + float2(1.)/v2fShadowTexSize;
-
-	float lightDepth1 = readRealLightDepth(shadowSampler, float2(v2fTex1.x, v2fTex1.y), projMat);
-	float lightDepth2 = readRealLightDepth(shadowSampler, float2(v2fTex1.x, v2fTex2.y), projMat);
-	float lightDepth3 = readRealLightDepth(shadowSampler, float2(v2fTex2.x, v2fTex1.y), projMat);
-	float lightDepth4 = readRealLightDepth(shadowSampler, float2(v2fTex2.x, v2fTex2.y), projMat);
-
-	float lightRealDepth = 0.;
-	float quantity = 0.;
-	float minDepth = -1000000.;
-
-	if(lightDepth1 < 0.){lightRealDepth += lightDepth1; quantity++; minDepth = max(minDepth, lightDepth1);}
-	if(lightDepth2 < 0.){lightRealDepth += lightDepth2; quantity++; minDepth = max(minDepth, lightDepth2);}
-	if(lightDepth3 < 0.){lightRealDepth += lightDepth3; quantity++; minDepth = max(minDepth, lightDepth3);}
-	if(lightDepth4 < 0.){lightRealDepth += lightDepth4; quantity++; minDepth = max(minDepth, lightDepth4);}
-
-	if(quantity == 0.){
-		return 1.;
-	}
-	else{
-		lightRealDepth = lightRealDepth/quantity;
-	}
-
-	float fShadowMultiplier;
-	fShadowMultiplier = clamp(exp(shadowConstant*(0.08 - lightRealDepth + realDepth)), fMinShadow, 1.);
-	fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - minDepth));
-	return fShadowMultiplier;
-
-	/*
-	fShadowMultiplier = (shadowMult1 * alpha.y + shadowMult2 * beta.y) * alpha.x
-							+ (shadowMult3 * alpha.y + shadowMult4 * beta.y) * beta.x;
-
-   
-	return fShadowMultiplier;*/
-};
-
-float4 apply_sun_light_shadows() : COLOR {
-	float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
-
-	for(int i = 0; i < nSunShadows; i++){
-		bool isNeedLight = true;
-
-		for(int j = 0; j < nSunShadows; j++){
-			if(pixelData.id == points_sun_shadows[j].skyDomeId){
-				isNeedLight = false;
-				break;
-			}
-		}
-
-		if(isNeedLight){
-			float4 v4fLightSpace = points_sun_shadows[i].toLightSpace*float4(pixelData.position, 1.);
-
-			float3 v3Pos = points_sun_shadows[i].eyePos - pixelData.position.xyz;
-			float fCos = dot(points_sun_shadows[i].sunDir, v3Pos)/length(v3Pos);
-			float fCos2 = fCos * fCos;
-
-			float3 Mie = getMiePhase(fCos, fCos2, points_sun_shadows[i].hg) * points_sun_shadows[i].ground1;
-			float4 color = float4(0.);
-
-			color.rgb = getRayleighPhase(fCos2) * points_sun_shadows[i].ground0 + Mie;
-			color.rgb = HDR(color.rgb);
-			float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-			//color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
-			
-			float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun_shadows[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
-			//color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb, fFogValue), 1.);
-			//float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
-			//result_color += float4(float3(fCos), 0.);
-
-			float shadowMultiplier = 1.;
-			float4 v4fTmp = points_sun_shadows[i].optimized_projection_matrix * v4fLightSpace;
-			float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
-			float3 v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
-
-			if(all(lessThanEqual(float2(v3fTest.xy),float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
-				float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
-
-				shadowMultiplier = calculateSunShadowMultiplierUpgraded(sun_shadow_sampler[i], v2fShadowTextureCoords,
-																points_sun_shadows[i].optimized_projection_matrix, v4fLightSpace.z);
-			}
-			color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb* shadowMultiplier, fFogValue), 1.);
-			//result_color += color * shadowMultiplier;
 			result_color += color;
 		}
 	}
 
-	return float4(result_color.xyz, 1.);
+	return returnColor(result_color);
+}
+
+float4 apply_sun_light_shadows() : COLOR {
+	float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
+
+	if(isNeedLightFromSun(pixelData)) {
+		for(int i = 0; i < nSunShadows; i++){
+			float4 color = applyBaseLightParamsSun(pixelData, points_sun_shadows[i].lightData, worldPos);
+			float shadowMultiplier = 1.;
+			float2 shadowTexCoords;
+			float realDepth;
+
+			if(isUnderShadowInfluence(points_sun_shadows[i].toLightSpace,
+									points_sun_shadows[i].optimized_projection_matrix,
+									pixelData.position,
+									shadowTexCoords, realDepth)){
+
+				shadowMultiplier = calculateSunShadowMultiplierUpgraded(sun_shadow_sampler[i], shadowTexCoords,
+																points_sun_shadows[i].optimized_projection_matrix, realDepth);
+			}
+			color = color * shadowMultiplier;
+
+			if(isPrepareAll){
+				float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+				color = float4(lerp(points_sun_shadows[i].lightData.ground0, color.rgb, fFogValue), 1.);
+			}
+
+			result_color += color;
+		}
+	}
+
+	return returnColor(result_color);
 };
 
+float4 clampf4(float4 color){
+	return float4(clamp(color.x, 0., 1.),
+				  clamp(color.y, 0., 1.),
+				  clamp(color.z, 0., 1.), color.a);
+}
+
+float4 apply_pbs_reflection(): COLOR {
+	float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
+			pixelData.specular.xyz, pixelData.shininess, envSampler0);
+	// lowering reflection brightness if we have a strong lighting already
+	float4 color = resultAFXColor;
+	//reflection *= float4(1.) - color;
+	color += reflection;
+	return clampf4(color);
+};
 
 technique omniLighting{
 	pass applyOmniLighting{
@@ -816,6 +237,14 @@ technique sunShadowsLighting{
 	pass applySunShadowsLighting{
 		if(nSunShadows > 0){
 			PixelShader = compile apply_sun_light_shadows();
+		}
+	}
+};
+
+technique pbsReflection{
+	pass applyPbsReflection{
+		if(isUsedPBSReflections && isUsedPBSSimple){
+			PixelShader = compile apply_pbs_reflection();
 		}
 	}
 };

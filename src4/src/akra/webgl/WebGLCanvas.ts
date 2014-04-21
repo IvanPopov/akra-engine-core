@@ -484,17 +484,17 @@ module akra.webgl {
 		protected _onMouseover(x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			if (!isNull(pViewport)) {
-				pViewport.mouseover.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
-			}
+			//if (!isNull(pViewport)) {
+			//	pViewport.mouseover.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
+			//}
 		}
 
 		protected _onMouseout(x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
-			if (!isNull(pViewport)) {
-				pViewport.mouseout.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
-			}
+			//if (!isNull(pViewport)) {
+			//	pViewport.mouseout.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
+			//}
 
 			//stop dragging if mouse goes out of target
 			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP)) {

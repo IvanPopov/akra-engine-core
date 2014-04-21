@@ -3,6 +3,7 @@
 
 /// <reference path="../../../built/Lib/navigation.addon.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
+/// <reference path="../../../built/Lib/compatibility.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
@@ -11,6 +12,9 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
+	addons.checkCompatibility();
+	console.log(addons.buildCompatibilityLog());
+
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {
@@ -30,7 +34,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport: IDSViewport = null;
+	export var pViewport: I3DViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pScene: IScene3d = pEngine.getScene();
 
@@ -64,16 +68,29 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		pViewport = new render.DSViewport(pCamera);
-		
-
+		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
+		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
+		pViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
-		//pCanvas.addViewport(new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1));
+
+		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+		//pCanvas.addViewport(pLPPViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
-		pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
+		pViewport.setFXAA(true);
+		
+		//pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
+		pViewport.setFXAA(false);
+
+		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
+
+		//var pNormalViewport = new render.TextureViewport(pViewport["_pNormalBufferTexture"], 0.01, 0.17, 0.15, 0.15, 2);
+		//pCanvas.addViewport(pNormalViewport);
+		//pNormalViewport.getEffect().addComponent("akra.system.display_lpp_normals");
+
+		//pLPPViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -87,7 +104,7 @@ module akra {
 
 
 		for (var i = 0; i < 10; ++i) {
-			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, i == 0, 512);
+			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
 			pLightOmni.attachToParent(pScene.getRootNode());
 			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
 			var pSprite = pScene.createSprite();
@@ -95,21 +112,20 @@ module akra {
 			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
 			pSprite.setBillboard(true);
 			pSprite.setShadow(false);
-
-
-
-
 			pSprite.attachToParent(pLightOmni);
+
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
-			// pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
+			//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
 			pLightOmni.getParams().diffuse.set(math.random(), math.random(), math.random());
-			pLightOmni.getParams().specular.set(math.random(), math.random(), math.random());
+			pLightOmni.getParams().specular.set(math.random());
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
 			((pSprite: ISprite, pLightOmni: IOmniLight) => {
 				pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
 				pSprite.mouseout.connect(() => { pViewport.highlight(null); });
+				//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
+				//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
 				pSprite.click.connect(() => {
 					pLightOmni.setEnabled(!pLightOmni.isEnabled());
 					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
@@ -193,18 +209,80 @@ module akra {
 			'ANIM_MINER_WALK3',
 			'ANIM_MINER_WORK_GUN',
 			'ANIM_MINER_WORK_HAMMER'
-		]).onChange(function (sName: string) {
-				pController.play.emit(sName);
-			});
+		]).onChange((sName: string) => {
+			pController.play.emit(sName);
+		});
+
+
 
 		pMiner.getOptions().wireframe = true;
-		var pModel: ISceneNode = pMiner.attachToScene(pScene);
+		var pModel: ISceneNode = pMiner.extractFullScene(pScene);
 		pModel.addController(pController);
 		pModel.scale(.5);
 
 		pController.play.emit(0);
 
-		pGUI.add({ wireframe: true }, 'wireframe').onChange(function (bValue: boolean) {
+		var pBB: IRect3d;
+		var pLibeCube = addons.lineCube(pScene);
+		var pMinerBody: model.MeshSubset = null;
+		var pMinerMesh: IMesh = null;
+		var pMinerModel: ISceneModel = null;
+
+		pModel.explore((pEntity: IEntity): boolean => {
+			if (scene.SceneModel.isModel(pEntity)) {
+				var pNode = <ISceneModel>pEntity;
+				if (pNode.getMesh().getName() !== "geom-Object007") {
+					return;
+				}
+
+				pMinerModel = window["minerNode"] = pNode;
+				pMinerMesh = pNode.getMesh();
+				pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
+
+				//////////////////////////
+				//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
+
+				//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
+				//	if (!pSubset.getBoneLocalBound(i)) {
+				//		continue;
+				//	}
+
+				//	var pBox = pSubset.getBoneLocalBound(i);
+				//	var pBone = pSubset.getSkin().getAffectedNode(i);
+
+				//	var pCube = addons.lineCube(pScene);
+				//	pCube.attachToParent(pBone);
+				//	pCube.setInheritance(ENodeInheritance.ALL);
+				//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
+				//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
+				//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
+				//}
+			}
+
+			return true;
+		});
+
+		pLibeCube.attachToParent(pScene.getRootNode());
+
+
+		pScene.beforeUpdate.connect(() => {
+			if (!pLibeCube.isVisible()) return;
+			var pBB = geometry.Rect3d.temp(pMinerModel.getWorldBounds());
+
+			//pBB.transform((<INode>pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getParent()).getWorldMatrix());
+
+			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
+			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
+		});
+
+		//pLibeCube.setVisible(false);
+
+		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
+			pLibeCube.setVisible(bValue);
+		});
+
+
+		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
 			pModel.explore((pEntity: IEntity): boolean => {
 				if (scene.SceneModel.isModel(pEntity)) {
 					var pNode = <ISceneModel>pEntity;
@@ -216,6 +294,12 @@ module akra {
 				return true;
 			});
 		});
+
+
+		pGUI.add({ usePhong: true }, 'usePhong').onChange(function (bValue: boolean) {
+			pViewport.setShadingModel(bValue ? EShadingModel.PHONG : EShadingModel.BLINNPHONG);
+		});
+
 		pProgress.destroy();
 	}
 
