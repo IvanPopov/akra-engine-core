@@ -6066,8 +6066,8 @@ declare module akra {
         getSpriteManager(): ISpriteManager;
         getRenderer(): IRenderer;
         getComposer(): IAFXComposer;
-        pause(): boolean;
-        play(): boolean;
+        pause(): void;
+        play(): void;
         /** Render one frame. */
         renderFrame(): boolean;
         /** Start exucution(rendering loop). */
@@ -6076,7 +6076,6 @@ declare module akra {
         isActive(): boolean;
         isDepsLoaded(): boolean;
         ready(cb?: (pEngine: IEngine) => void): boolean;
-        getTimer(): IUtilTimer;
         enableGamepads(): boolean;
         getGamepads(): IGamepadMap;
         createMesh(sName?: string, eOptions?: number, pDataBuffer?: IRenderDataCollection): IMesh;
@@ -6806,7 +6805,7 @@ declare module akra.config {
 }
 declare module akra {
     /**
-    * Alias for Date.now();
+    * Get current time in milliseconds from the time the page is loaded.
     */
     var time: () => number;
 }
@@ -8183,16 +8182,6 @@ declare module akra.info {
         public getAvailWidth(): number;
     }
 }
-declare module akra.info {
-    function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;
-    function canvas(id: string): ICanvasInfo;
-    var browser: IBrowserInfo;
-    var api: IApiInfo;
-    var screen: IScreenInfo;
-    var uri: IURI;
-    module is {
-    }
-}
 declare module akra {
     interface ICallbackWithSender<S> {
         (sender: S, ...pArgs: any[]): void;
@@ -8242,6 +8231,36 @@ declare module akra {
     }
     class MuteSignal<S> extends Signal<S> {
         public emit(): void;
+    }
+}
+declare module akra.info {
+    /**
+    * @see https://developer.mozilla.org/en-US/docs/Web/Guide/User_experience/Using_the_Page_Visibility_API
+    */
+    class VisibilityInfo implements IEventProvider {
+        public guid: number;
+        public visibilityChanged: ISignal<(pInfo: VisibilityInfo, bVisible: boolean) => void>;
+        private _bDocumentVisible;
+        constructor();
+        public setupSignals(): void;
+        /** Is visibility api supported? */
+        public isSupported(): boolean;
+        /** Indicate, whether page visible. */
+        public isVisible(): boolean;
+        public _onVisibilityChange(bVisible: boolean): void;
+        /** Indicates whether the HTML element visible. */
+        static isHTMLElementVisible(pElement: HTMLElement): boolean;
+    }
+}
+declare module akra.info {
+    function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;
+    function canvas(id: string): ICanvasInfo;
+    var browser: IBrowserInfo;
+    var api: IApiInfo;
+    var screen: IScreenInfo;
+    var visibility: VisibilityInfo;
+    var uri: IURI;
+    module is {
     }
 }
 declare module akra.threading {
@@ -15538,7 +15557,6 @@ declare module akra.render {
         public _pDepthBuffer: IDepthBuffer;
         public _pDepthPixelBuffer: IPixelBuffer;
         public _pFrameStats: IFrameStats;
-        public _pTimer: IUtilTimer;
         public _fLastSecond: number;
         public _fLastTime: number;
         public _iFrameCount: number;
@@ -17460,17 +17478,12 @@ declare module akra.core {
         private _pComposer;
         /** stop render loop?*/
         private _pTimer;
-        /** is paused? */
-        private _isActive;
-        /** frame rendering sync / render next frame? */
-        private _isFrameMoving;
-        /** is all needed files loaded */
-        private _isDepsLoaded;
+        private _iStatus;
         private _pGamepads;
         private _fElapsedAppTime;
         constructor(pOptions?: IEngineOptions);
         public setupSignals(): void;
-        /** Get time */
+        /** Get app time */
         public getTime(): number;
         public getElapsedTime(): number;
         public enableGamepads(): boolean;
@@ -17485,11 +17498,15 @@ declare module akra.core {
         public getComposer(): IAFXComposer;
         public isActive(): boolean;
         public isDepsLoaded(): boolean;
+        public isHidden(): boolean;
+        public isFrozen(): boolean;
         public exec(bValue?: boolean): void;
-        public getTimer(): IUtilTimer;
         public renderFrame(): boolean;
-        public play(): boolean;
-        public pause(isPause?: boolean): boolean;
+        public play(): void;
+        public pause(): void;
+        public _stop(): void;
+        public _start(): void;
+        public _setHidden(bValue: boolean): void;
         public createMesh(sName?: string, eOptions?: number, pDataBuffer?: IRenderDataCollection): IMesh;
         public createRenderDataCollection(iOptions?: number): IRenderDataCollection;
         public createBufferMap(): IBufferMap;

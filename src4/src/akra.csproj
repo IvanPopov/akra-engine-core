@@ -521,6 +521,7 @@
     <TypeScriptCompile Include="akra\idl\IControllable.ts" />
     <TypeScriptCompile Include="akra\idl\IViewport3D.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
+    <Content Include="akra\info\VisibilityInfo.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />

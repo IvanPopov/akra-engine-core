@@ -41,6 +41,13 @@ module akra.core {
 
 	debug.log("config['data'] = " + config.data);
 
+	enum EEngineStatus {
+		ACTIVE = 0x1,  ///!< IF SETTED Engine not paused.
+		FROZEN = 0x2,  ///!< IF SETTED Scene will be update during the time.
+		LOADED = 0x4,  ///!< IF SETTED Engine dependencies loaded.
+		HIDDEN = 0x8   ///!< IF SETTED Engine will not render frame / update scene.
+	}
+
 	export class Engine implements IEngine {
 
 		frameStarted: ISignal<{ (pEngine: IEngine): void; }>;
@@ -61,16 +68,13 @@ module akra.core {
 		/** stop render loop?*/
 		private _pTimer: IUtilTimer;
 
-		/** is paused? */
-		private _isActive: boolean = false;
-		/** frame rendering sync / render next frame? */
-		private _isFrameMoving: boolean = true;
-		/** is all needed files loaded */
-		private _isDepsLoaded: boolean = false;
+		private _iStatus: uint = 0;
 
 		private _pGamepads: IGamepadMap = null;
 
 		private _fElapsedAppTime: float = 0.0;
+
+
 
 		constructor(pOptions: IEngineOptions = null) {
 			this.setupSignals();
@@ -97,7 +101,11 @@ module akra.core {
 
 			this._pComposer = new fx.Composer(this);
 
-			this.pause(false);
+			info.visibility.visibilityChanged.connect((pInfo, bVisible: boolean) => {
+				this._setHidden(!bVisible);
+			});
+
+			this.play();
 			this.parseOptions(pOptions);
 		}
 
@@ -112,7 +120,7 @@ module akra.core {
 			this.active.setForerunner(this._activate);
 		}
 
-		/** Get time */
+		/** Get app time */
 		getTime(): float {
 			return this._pTimer.getAppTime();
 		}
@@ -170,7 +178,7 @@ module akra.core {
 
 					debug.log("\t\tloaded / ", arguments);
 
-					this._isDepsLoaded = true;
+					this._iStatus = bf.setAll(this._iStatus, EEngineStatus.LOADED);
 
 					logger.info("%cEngine dependecies loaded.", "color: green;");
 					this.depsLoaded.emit(pDep);
@@ -206,14 +214,20 @@ module akra.core {
 		}
 
 		isActive(): boolean {
-			return this._isActive;
+			return (this._iStatus & EEngineStatus.ACTIVE) > 0;
 		}
 
 		isDepsLoaded(): boolean {
-			return this._isDepsLoaded;
+			return (this._iStatus & EEngineStatus.LOADED) > 0;
 		}
 
+		isHidden(): boolean {
+			return (this._iStatus & EEngineStatus.HIDDEN) > 0;
+		}
 
+		isFrozen(): boolean {
+			return (this._iStatus & EEngineStatus.FROZEN) > 0;
+		}
 
 		exec(bValue: boolean = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
@@ -235,7 +249,7 @@ module akra.core {
 			function render(iTime: uint): void {
 				debug.assert(!config.DEBUG || pRenderer.isValid(), pRenderer.getError());
 
-				if (pEngine.isActive() && pEngine.isDepsLoaded()) {
+				if (pEngine.isActive() && pEngine.isDepsLoaded() && !pEngine.isHidden()) {
 					if (!pEngine.renderFrame()) {
 						debug.error("Engine::exec() error.");
 						return;
@@ -248,17 +262,12 @@ module akra.core {
 			render(0);
 		}
 
-		getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): boolean {
 			this._fElapsedAppTime = this._pTimer.getElapsedTime();
 
-			if (0. == this._fElapsedAppTime && this._isFrameMoving) {
-				return true;
-			}
-
-			// FrameMove (animate) the scene
-			if (this._isFrameMoving) {
+			// FrameMove (animate) the scene 
+			if (!this.isFrozen()) {
 				if (!isNull(this._pGamepads)) {
 					this._pGamepads.update();
 				}
@@ -274,39 +283,40 @@ module akra.core {
 			return true;
 		}
 
-		play(): boolean {
+		play(): void {
 			if (!this.isActive()) {
 				this.active.emit();
-
-				if (this._isFrameMoving) {
-					this._pTimer.start();
-				}
+				this._start();
 			}
-
-			return this.isActive();
 		}
 
-		pause(isPause: boolean = true): boolean {
-			if (this.isActive() !== isPause) {
-				return !this.isActive();
-			}
-
-			if (isPause) {
+		pause(): void {
+			if (this.isActive()) {
 				this.inactive.emit();
-
-				if (this._isFrameMoving) {
-					this._pTimer.stop();
-				}
+				this._stop();
 			}
-			else {
-				this.active.emit();
+		}
 
-				if (this._isFrameMoving) {
-					this._pTimer.start();
-				}
+		_stop(): void {
+			this._pTimer.stop();
+		}
+
+		_start(): void {
+			if (!this.isHidden()) {
+				this._pTimer.start();
 			}
+		}
 
-			return !this.isActive();
+		//callback for visibility api
+		_setHidden(bValue: boolean): void {
+			this._iStatus = bf.setAll(this._iStatus, EEngineStatus.HIDDEN, bValue);
+
+			if (bValue) {
+				this._stop();
+			}
+			else if (this.isActive()) {
+				this._start();
+			}
 		}
 
 		createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
@@ -326,11 +336,11 @@ module akra.core {
 		}
 
 		final protected _inactivate(): void {
-			this._isActive = false;
+			this._iStatus = bf.clearAll(this._iStatus, EEngineStatus.ACTIVE);
 		}
 
 		final protected _activate(): void {
-			this._isActive = true;
+			this._iStatus = bf.setAll(this._iStatus, EEngineStatus.ACTIVE);
 		}
 
 		ready(cb?: (pEngine: IEngine) => void): boolean {

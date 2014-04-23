@@ -47,7 +47,7 @@ module akra.render {
 
 		protected _pFrameStats: IFrameStats;
 
-		protected _pTimer: IUtilTimer;
+		//protected _pTimer: IUtilTimer;
 		protected _fLastSecond: uint;
 		protected _fLastTime: uint;
 		protected _iFrameCount: uint;
@@ -65,7 +65,7 @@ module akra.render {
 		constructor(pRenderer: IRenderer) {
 			this.setupSignals();
 			this._pRenderer = pRenderer;
-			this._pTimer = pRenderer.getEngine().getTimer();
+			//this._pTimer = pRenderer.getEngine().getTimer();
 			this._pFrameStats = {
 				fps: {
 					last: 0.,
@@ -369,7 +369,7 @@ module akra.render {
 			pStats.time.worst = 0;
 
 			//FIXME: get right time!!!
-			this._fLastTime = this._pTimer.getAppTime();
+			this._fLastTime = this._pRenderer.getEngine().getTime();
 			this._fLastSecond = this._fLastTime;
 			this._iFrameCount = 0;
 		}
@@ -377,7 +377,7 @@ module akra.render {
 		updateStats(): void {
 			this._iFrameCount++;
 
-			var fThisTime: float = this._pTimer.getAppTime();
+			var fThisTime: float = this._pRenderer.getEngine().getTime();
 
 			var fFrameTime: float = fThisTime - this._fLastTime;
 

@@ -64,8 +64,8 @@ module akra {
 		getComposer(): IAFXComposer;
 		//getDepsManager(): AIDepsManager;
 	
-		pause(): boolean;
-		play(): boolean;
+		pause(): void;
+		play(): void;
 		
 		/** Render one frame. */
 		renderFrame(): boolean;
@@ -77,8 +77,7 @@ module akra {
 		isDepsLoaded(): boolean;
 	
 		ready(cb?: (pEngine: IEngine) => void): boolean;
-	
-		getTimer(): IUtilTimer;
+
 	
 		enableGamepads(): boolean;
 		getGamepads(): IGamepadMap;
