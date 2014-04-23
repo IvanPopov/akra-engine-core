@@ -1354,9 +1354,15 @@ module akra.pool.resources {
 					pMat.shininess = math.clamp(pMat.shininess, 0., 128.) / 128.;
 					break;
 				case "blinn":
-					debug.assert(pMat.shininess <= 1. && pMat.shininess >= 0., "Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
+					if (pMat.shininess <= 1. && pMat.shininess >= 0.) {
+						debug.warn("Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
+						pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
+					}
 					pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
 					break;
+					//debug.assert(pMat.shininess <= 1. && pMat.shininess >= 0., "Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
+					//pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
+					//break;
 			}
 
 			pTech.value = pMat;

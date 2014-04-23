@@ -63,7 +63,7 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
         float3 specular = F0 * k1 + ( float3(1.)-F0 ) * k1_k2;
         float visibilityFunction = 1.;
 
-        lightDif *= (float3(1.) - specular);
+        //lightDif *= (float3(1.) - specular);
         color += Fragment_material.diffuse * float4(lightDif + specular, 1.) * visibilityFunction;
         
         pixelData.position = vert;

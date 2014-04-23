@@ -300,6 +300,9 @@ module akra {
 			pViewport.setShadingModel(bValue ? EShadingModel.PHONG : EShadingModel.BLINNPHONG);
 		});
 
+		pGUI.add({ usePBS: true }, 'usePBS').onChange(function (bValue: boolean) {
+			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
+		});
 		pProgress.destroy();
 	}
 
