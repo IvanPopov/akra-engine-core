@@ -180,7 +180,7 @@ module akra.core {
 
 					this._iStatus = bf.setAll(this._iStatus, EEngineStatus.LOADED);
 
-					logger.info("%cEngine dependecies loaded.", "color: green;");
+					debug.info("%cEngine dependecies loaded.", "color: green;");
 					this.depsLoaded.emit(pDep);
 				}, pOptions.progress || null);
 		}

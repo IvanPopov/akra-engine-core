@@ -1,12 +1,12 @@
 ﻿doctype html
 html(lang="en")
   head            
+    meta(charset="UTF-8")
     title= demo.name
     meta(name='description', content=demo.description)
     
     link(href='//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css', rel='stylesheet')
     link(href='http://talkslab.com/metro-bootstrap/css/metro-bootstrap.css', rel='stylesheet')
-	link(href='../demo.css', rel='stylesheet')
       
     script(src='//code.jquery.com/jquery-1.10.2.min.js')
     script(src='//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js')
@@ -17,7 +17,10 @@ html(lang="en")
     - for (var i in demo.styles)
       link(href=demo.styles[i], rel='stylesheet')
                              
+
+    link(href='../css/demo.css', rel='stylesheet')
   body
+    include noncompatible
     button(type="button", class="btn btn-primary btn-lg", data-toggle="modal", data-target="#cfg", style="position: fixed; top: 25px; left: 25px; z-index: 100;")
       span(class="glyphicon glyphicon-info-sign")
 

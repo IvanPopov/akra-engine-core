@@ -9,7 +9,7 @@
     <TypeScriptOutFile>../../../$(BuiltDir)/demos/performance/performance.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
-      <Module Name="core" />
+      <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-base3dObjects" />
     </Dependencies>
@@ -18,7 +18,7 @@
       <Archive>False</Archive>
       <UseInlining>False</UseInlining>
       <Data>
-        <ResourceFile Path="../WoodSoldier/WoodSoldier.DAE" Name="WOODSOLDIER.DAE"/>
+        <!--<ResourceFile Path="../WoodSoldier/WoodSoldier.DAE" Name="WOODSOLDIER.DAE"/>-->
         <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
       </Data>
     </Resource>

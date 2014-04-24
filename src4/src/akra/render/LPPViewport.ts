@@ -223,6 +223,16 @@ module akra.render {
 
 			pRenderer.executeQueue(false);
 
+			var pRenderViewport: IViewport = this._pResultLPPTexture.getBuffer().getRenderTarget().getViewport(0);
+			var pState: IViewportState = this._getViewportState();
+
+			if ((pState.clearBuffers & EFrameBufferTypes.COLOR) !== 0 && this.getClearEveryFrame()) {
+				pRenderViewport.setBackgroundColor(pState.clearColor);
+			}
+			else {
+				pRenderViewport.setBackgroundColor(color.ZERO);
+			}
+
 			this._pResultLPPTexture.getBuffer().getRenderTarget().update();
 
 			this._pViewScreen.render(this);

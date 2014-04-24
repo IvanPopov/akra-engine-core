@@ -33,7 +33,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport: IDSViewport = null;
+	export var pViewport: ILPPViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pScene: IScene3d = pEngine.getScene();
 
@@ -67,9 +67,7 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
-		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
-		pViewport = new render.DSViewport(pCamera);
+		pViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 
 		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
