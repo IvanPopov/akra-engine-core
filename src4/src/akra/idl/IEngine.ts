@@ -60,9 +60,7 @@ module akra {
 		getSpriteManager(): ISpriteManager;
 	
 		getRenderer(): IRenderer;
-	
 		getComposer(): IAFXComposer;
-		//getDepsManager(): AIDepsManager;
 	
 		pause(): void;
 		play(): void;
@@ -72,9 +70,17 @@ module akra {
 		
 		/** Start exucution(rendering loop). */
 		exec(): void;
-		/** Определяет, находитсяли Engine в цикле рендеринга */
+
+		//is Engine rendering now
 		isActive(): boolean;
-		isDepsLoaded(): boolean;
+		//is engine paused
+		isPaused(): boolean;
+		//is all engine dependencies loaded
+		isLoaded(): boolean;
+		//is current window/canvas hidden
+		isHidden(): boolean;
+		//is scene frozen (do not recieve updates)
+		isFrozen(): boolean;
 	
 		ready(cb?: (pEngine: IEngine) => void): boolean;
 

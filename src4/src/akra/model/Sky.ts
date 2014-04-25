@@ -515,7 +515,7 @@ module akra.model {
 			pMatrial.emissive = new Color(0., 0., 0., 1.);
 			pMatrial.shininess = 30.;
 
-			if ((<core.Engine>this.getEngine()).isDepsLoaded()) {
+			if ((<core.Engine>this.getEngine()).isLoaded()) {
 				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.sky");
 			}
 			else {

@@ -42,10 +42,11 @@ module akra.core {
 	debug.log("config['data'] = " + config.data);
 
 	enum EEngineStatus {
-		ACTIVE = 0x1,  ///!< IF SETTED Engine not paused.
+		PAUSED = 0x1,  ///!< IF SETTED Engine not paused.
 		FROZEN = 0x2,  ///!< IF SETTED Scene will be update during the time.
 		LOADED = 0x4,  ///!< IF SETTED Engine dependencies loaded.
-		HIDDEN = 0x8   ///!< IF SETTED Engine will not render frame / update scene.
+		HIDDEN = 0x8,  ///!< IF SETTED Engine will not render frame / update scene.
+		LAUNCHED = 0x10 ///!< IF SETTED Engine in exec loop.
 	}
 
 	export class Engine implements IEngine {
@@ -115,9 +116,6 @@ module akra.core {
 			this.depsLoaded = this.depsLoaded || new Signal(this);
 			this.inactive = this.inactive || new Signal(this);
 			this.active = this.active || new Signal(this);
-
-			this.inactive.setForerunner(this._inactivate);
-			this.active.setForerunner(this._activate);
 		}
 
 		/** Get app time */
@@ -214,10 +212,14 @@ module akra.core {
 		}
 
 		isActive(): boolean {
-			return (this._iStatus & EEngineStatus.ACTIVE) > 0;
+			return this.isLaunched() && !this.isPaused() && !this.isHidden() && this.isLoaded();
 		}
 
-		isDepsLoaded(): boolean {
+		isPaused(): boolean {
+			return (this._iStatus & EEngineStatus.PAUSED) > 0;
+		}
+
+		isLoaded(): boolean {
 			return (this._iStatus & EEngineStatus.LOADED) > 0;
 		}
 
@@ -229,7 +231,15 @@ module akra.core {
 			return (this._iStatus & EEngineStatus.FROZEN) > 0;
 		}
 
+		isLaunched(): boolean {
+			return (this._iStatus & EEngineStatus.LAUNCHED) > 0;
+		}
+
 		exec(bValue: boolean = true): void {
+			if (bValue == this.isLaunched()) {
+				return;
+			}
+
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: Engine = this;
 
@@ -237,19 +247,14 @@ module akra.core {
 
 			pRenderer._initRenderTargets();
 
+			this._setLaunched(bValue);
+
 			// Infinite loop, until broken out of by frame listeners
 			// or break out by calling queueEndRendering()
-			if (bValue) {
-				this.active.emit();
-			}
-			else {
-				this.inactive.emit();
-			}
-
 			function render(iTime: uint): void {
 				debug.assert(!config.DEBUG || pRenderer.isValid(), pRenderer.getError());
 
-				if (pEngine.isActive() && pEngine.isDepsLoaded() && !pEngine.isHidden()) {
+				if (pEngine.isActive() && pEngine.isLoaded()) {
 					if (!pEngine.renderFrame()) {
 						debug.error("Engine::exec() error.");
 						return;
@@ -284,26 +289,39 @@ module akra.core {
 		}
 
 		play(): void {
-			if (!this.isActive()) {
-				this.active.emit();
-				this._start();
+			if (this.isPaused()) {
+				this._setPaused(false);
 			}
 		}
 
 		pause(): void {
-			if (this.isActive()) {
-				this.inactive.emit();
-				this._stop();
+			if (!this.isPaused()) {
+				this._setPaused(true);
 			}
 		}
 
 		_stop(): void {
-			this._pTimer.stop();
+			if (!this.isActive() && !this._pTimer.isStopped()) {
+				this._pTimer.stop();
+				this.inactive.emit();
+			}
 		}
 
 		_start(): void {
-			if (!this.isHidden()) {
+			if (this.isActive() && this._pTimer.isStopped()) {
 				this._pTimer.start();
+				this.active.emit();
+			}
+		}
+
+		_setPaused(bValue: boolean): void {
+			this._iStatus = bf.setAll(this._iStatus, EEngineStatus.PAUSED, bValue);
+
+			if (bValue) {
+				this._stop();
+			}
+			else {
+				this._start();
 			}
 		}
 
@@ -314,8 +332,19 @@ module akra.core {
 			if (bValue) {
 				this._stop();
 			}
-			else if (this.isActive()) {
+			else {
 				this._start();
+			}
+		}
+
+		_setLaunched(bValue: boolean): void {
+			this._iStatus = bf.setAll(this._iStatus, EEngineStatus.LAUNCHED, bValue);
+
+			if (bValue) {
+				this._start();
+			}
+			else {
+				this._stop();
 			}
 		}
 
@@ -335,16 +364,8 @@ module akra.core {
 			return animation.createController(this, sName, iOptions);
 		}
 
-		final protected _inactivate(): void {
-			this._iStatus = bf.clearAll(this._iStatus, EEngineStatus.ACTIVE);
-		}
-
-		final protected _activate(): void {
-			this._iStatus = bf.setAll(this._iStatus, EEngineStatus.ACTIVE);
-		}
-
 		ready(cb?: (pEngine: IEngine) => void): boolean {
-			if (this.isDepsLoaded()) {
+			if (this.isLoaded()) {
 				if (cb) {
 					cb(this);
 				}

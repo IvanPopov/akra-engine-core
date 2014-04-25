@@ -148,7 +148,7 @@ module akra.addons {
 		pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
 		pSubMesh.getData().index('NORMAL', 'INDEX1');
 
-		
+
 
 		pSubMesh.setShadow(false);
 
@@ -166,7 +166,7 @@ module akra.addons {
 		pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 		pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
 		pMatrial.emissive = new Color(0., 0., 0., 1.);
-		pMatrial.shininess = 30./128.;
+		pMatrial.shininess = 30. / 128.;
 
 		var pSceneModel: ISceneModel = pScene.createModel("quad");
 		pSceneModel.setMesh(pMesh);
@@ -317,7 +317,7 @@ module akra.addons {
 			-1, -1, 1,
 			-1, -1, -1,
 
-			//right
+		//right
 			1, -1, -1,
 			1, 1, -1,
 
@@ -352,5 +352,112 @@ module akra.addons {
 		pSceneModel.setMesh(pMesh);
 
 		return pSceneModel;
+	}
+
+	import Usage = data.Usages;
+
+	export function cube(pScene: IScene3d, eOptions: int = 0): ISceneModel {
+		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
+		var pEngine: IEngine = pScene.getManager().getEngine();
+
+		pMesh = model.createMesh(pEngine, "cube", eOptions);// || EMeshOptions.HB_READABLE
+		pSubMesh = pMesh.createSubset("cube", EPrimitiveTypes.TRIANGLELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
+
+		pSubMesh.getData().allocateData([VE.float3(Usage.POSITION)],
+			new Float32Array([
+				// Front face
+				-1.0, -1.0, 1.0,
+				1.0, -1.0, 1.0,
+				1.0, 1.0, 1.0,
+				-1.0, 1.0, 1.0,
+
+				// Back face
+				-1.0, -1.0, -1.0,
+				-1.0, 1.0, -1.0,
+				1.0, 1.0, -1.0,
+				1.0, -1.0, -1.0,
+
+				// Top face
+				-1.0, 1.0, -1.0,
+				-1.0, 1.0, 1.0,
+				1.0, 1.0, 1.0,
+				1.0, 1.0, -1.0,
+
+				// Bottom face
+				-1.0, -1.0, -1.0,
+				1.0, -1.0, -1.0,
+				1.0, -1.0, 1.0,
+				-1.0, -1.0, 1.0,
+
+			// Right face
+				1.0, -1.0, -1.0,
+				1.0, 1.0, -1.0,
+				1.0, 1.0, 1.0,
+				1.0, -1.0, 1.0,
+
+				// Left face
+				-1.0, -1.0, -1.0,
+				-1.0, -1.0, 1.0,
+				-1.0, 1.0, 1.0,
+				-1.0, 1.0, -1.0,
+			]));
+
+		pSubMesh.getData().allocateData([VE.float3(Usage.NORMAL)],
+			new Float32Array([
+			// Front face
+				0.0, 0.0, 1.0,
+				0.0, 0.0, 1.0,
+				0.0, 0.0, 1.0,
+				0.0, 0.0, 1.0,
+
+			// Back face
+				0.0, 0.0, -1.0,
+				0.0, 0.0, -1.0,
+				0.0, 0.0, -1.0,
+				0.0, 0.0, -1.0,
+
+			// Top face
+				0.0, 1.0, 0.0,
+				0.0, 1.0, 0.0,
+				0.0, 1.0, 0.0,
+				0.0, 1.0, 0.0,
+
+			// Bottom face
+				0.0, -1.0, 0.0,
+				0.0, -1.0, 0.0,
+				0.0, -1.0, 0.0,
+				0.0, -1.0, 0.0,
+
+			// Right face
+				1.0, 0.0, 0.0,
+				1.0, 0.0, 0.0,
+				1.0, 0.0, 0.0,
+				1.0, 0.0, 0.0,
+
+				// Left face
+				-1.0, 0.0, 0.0,
+				-1.0, 0.0, 0.0,
+				-1.0, 0.0, 0.0,
+				-1.0, 0.0, 0.0,
+			]));
+
+		pSubMesh.getData().allocateIndex(null, new Uint32Array([
+			0, 1, 2, 0, 2, 3,    // Front face
+			4, 5, 6, 4, 6, 7,    // Back face
+			8, 9, 10, 8, 10, 11,  // Top face
+			12, 13, 14, 12, 14, 15, // Bottom face
+			16, 17, 18, 16, 18, 19, // Right face
+			20, 21, 22, 20, 22, 23  // Left face
+		]));
+
+		pSubMesh.getEffect().addComponent("akra.system.mesh_texture");
+		(<IColor>pSubMesh.getMaterial().diffuse).set(1., 1., 1.);
+		pSubMesh.getMaterial().shininess = 1.;
+
+
+		var pSceneModel: ISceneModel = pScene.createModel();
+		pSceneModel.setMesh(pMesh);
+
+		return pSceneModel; 
 	}
 }

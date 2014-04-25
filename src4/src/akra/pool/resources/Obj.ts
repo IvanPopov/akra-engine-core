@@ -229,7 +229,7 @@ module akra.pool.resources {
 				return false;
 			}
 
-			logger.log("[OBJ [" + this.findResourceName() + "]]", "parsing started...");
+			debug.log("[OBJ [" + this.findResourceName() + "]]", "parsing started...");
 			this.setOptions(pOptions);
 
 			var pLines: string[] = sData.split("\n");
@@ -275,7 +275,7 @@ module akra.pool.resources {
 			}
 
 			if (!this._pNormals.length) {
-				logger.log("[OBJ [" + this.findResourceName() + "]]", "calculation normals....")
+				debug.log("[OBJ [" + this.findResourceName() + "]]", "calculation normals....")
 				this.calcNormals();
 			}
 		}
@@ -336,7 +336,6 @@ module akra.pool.resources {
 		}
 
 		static VERTEX_REGEXP: RegExp = /^v[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)([\s]+[-+]?[\d]*[\.|\,]?[\de-]*?)?[\s]*$/i;
-		
 		//provide only {U, V} pairs, 3D textures unsupported :(
 		static TEXCOORD_REGEXP: RegExp = /^vt[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]*.*$/i;
 
@@ -488,3 +487,18 @@ module akra.pool.resources {
 	}
 }
 
+module akra {
+	//var data1 = {
+	//	vertices: [],
+	//	normals: [],
+	//	texcoords: [],
+	//	indices: []
+	//};
+
+	//var data2 = {
+	//	vertices: { data: [], indices: [] },
+	//	normals: { data: [], indices: [] },
+	//	texcoords: { data: [], indices: [] },
+	//}
+
+}

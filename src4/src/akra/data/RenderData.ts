@@ -189,7 +189,7 @@ module akra.data {
 				return this._allocateAdvancedIndex(pAttrDecl, pData);
 			}
 
-			logger.assert(!this.useSingleIndex() || isNull(pAttrDecl),
+			logger.assert(!this.useSingleIndex() || isNull(pAttrDecl) || pAttrDecl.getLength() === 1,
 				"Index declaration(VertexDeclaration) will be ignored when SINGLE_INDEX mode used for render data");
 
 			return this._allocateIndex(pAttrDecl, pData);
@@ -413,11 +413,7 @@ module akra.data {
 			var iStride: int;
 			var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
-			if (this.useSingleIndex()) {
-				//TODO: выяснить у Сереги, надо ли тут пересчитывать индексы??
-				return;
-			}
-
+		
 			if (this.useAdvancedIndex()) {
 				pRealData = this._getData(<string>arguments[0]);
 				iAddition = pRealData.getByteOffset();
@@ -446,7 +442,6 @@ module akra.data {
 
 				debug.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
 			}
-
 
 			if (!pFlow) {
 				pFlow = this._getFlow(iData);
@@ -536,7 +531,7 @@ module akra.data {
 				pAdditionCache: <IMap<int>>null
 			});
 
-			debug.assert(this.useSingleIndex() === false, "single indexed data not implimented");
+			//debug.assert(this.useSingleIndex() === false, "single indexed data not implimented");
 
 			return true;
 		}
@@ -661,9 +656,9 @@ module akra.data {
 				this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
 			}
 			else {
-				debug.assert(isNull(pAttrDecl),
+				debug.assert(isNull(pAttrDecl) || pAttrDecl.getLength() === 1,
 					"Index declaration(VertexDeclaration) will be ignored when SINGLE_INDEX mode used for render data");
-				debug.assert(pData instanceof Uint16Array, "Indexes must be packed to Uint16Array");
+				logger.assert(pData instanceof Uint16Array || pData instanceof Uint32Array, "Indexes must be packed to Uint[16, 32]Array");
 
 				//SINGLE INDEX
 				if (!this._pIndexBuffer) {
@@ -672,11 +667,17 @@ module akra.data {
 						<int>EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.STATIC);
 				}
 
-				this._pIndexData = (<IIndexBuffer>this._pIndexBuffer).allocateData(this._pMap.getPrimType(), EDataTypes.UNSIGNED_SHORT, pData);
+				var eDataType: EDataTypes = EDataTypes.UNSIGNED_SHORT;
+
+				if (pData instanceof Uint32Array) {
+					eDataType = EDataTypes.UNSIGNED_INT;
+				}
+
+				this._pIndexData = (<IIndexBuffer>this._pIndexBuffer).allocateData(this._pMap.getPrimType(), eDataType, pData);
+
+				this._pMap.setIndex(<IIndexData>this._pIndexData);
 			}
 
-
-			
 			this.getCurrentIndexSet().pIndexData = this._pIndexData;
 			this.getCurrentIndexSet().pAdditionCache = <IMap<int>>{}
 			return this._pIndexData !== null;
@@ -699,7 +700,7 @@ module akra.data {
 			var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
 			var pBuffer: IRenderDataCollection = this._pBuffer;
 
-			if (config.DEBUG) {
+			if (config.DEBUG && !isNull(pDecl)) {
 				for (var i: int = 0; i < pAttrDecl.getLength(); i++) {
 					if (pAttrDecl.element(i).type !== EDataTypes.FLOAT) {
 						return false;
