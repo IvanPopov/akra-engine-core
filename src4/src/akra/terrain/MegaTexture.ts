@@ -423,7 +423,7 @@ module akra.terrain {
 		private _fThresHold: float = 0.1;
 		public _bColored: boolean = false;
 		applyForRender(pRenderPass: IRenderPass): void {
-			pRenderPass.setForeign("nTotalLevels", this._iMaxLevel - this._iMinLevel + 1);
+			pRenderPass.setForeign("NUM_TOTAL_LEVELS", this._iMaxLevel - this._iMinLevel + 1);
 			pRenderPass.setUniform("MIN_MEGATEXTURE_LEVEL", this._iMinLevel);
 			pRenderPass.setUniform("threshold", this._fThresHold);
 			pRenderPass.setUniform("bColored", this._bColored);

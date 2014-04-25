@@ -1,6 +1,7 @@
 provide akra.system;
 
 include "floatSpecialFunctions.afx";
+include "common.afx";
 
 texture tex0 : DEFERRED_TEXTURE0;
 texture tex1 : DEFERRED_TEXTURE1;
@@ -43,17 +44,6 @@ sampler sceneDepthTexture : SAMPLER_SCENE_DEPTH = sampler_state
 	MagFilter = LINEAR;
 };
 
-struct pixel_data{
-	float4 diffuse  : DIFFUSE;
-	float4 ambient  : AMBIENT;
-	float4 specular : SPECULAR;
-	float3 position : POSITION; //in camera space
-	float3 normal   : NORMAL;
-	float  shininess: SHININESS;
-	float  depth 	: DEPTH;
-	int    id 		: RENDER_OBJECT_ID;
-};
-
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 
 struct VS_IN{
@@ -83,73 +73,55 @@ VS_OUT vs_deferred_shading(VS_IN IN){
 
 float4x4 projMat : PROJ_MATRIX;
 
-float3 unproj(float4x4 projMat,float3 screenCoords){
-	
-	//mat4[i] - i-й столбец матрицы 
-	//не строка, а именно столбец
-  
-	float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
-	float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
-	float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
-  
-	return float3(x,y,z);
-};
-
-shared pixel_data pixelData;
+shared PixelData pixelData;
 shared float4 result_color;
 
 bool normalFix;
-float rand(float2 co){
-	return fract(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
-}
 
-foreign bool isUsedBlinnPhong = false;
-foreign bool isUsedPhong = true;
+foreign bool IS_USED_BLINN_PNONG = false;
+foreign bool IS_USED_PNONG = true;
+foreign bool IS_USED_PBS_SIMPLE = false;
 
 float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 	float2 textureCoords = IN.textureCoords;
-	pixelData.id = 0;
-
-	float sceneDepth = tex2D(sceneDepthTexture,textureCoords).x;
-	float depth = sceneDepth*2.-1.;
 	float4 data0 = tex2D(deferredTexture0,textureCoords);
-	float4 data1 = tex2D(deferredTexture1,textureCoords);
-	
-	pixelData.position = unproj(projMat, float3(IN.screenPosition.xy,depth));
-	pixelData.id = int(data0.w);
-	pixelData.depth = sceneDepth;
 
-	if (data0.w == 0.) {
+	pixelData.id = int(data0.w);
+
+	if(pixelData.id == 0){
 		discard;
 	}
+
+	float sceneDepth = tex2D(sceneDepthTexture,textureCoords).x;
+	float4 data1 = tex2D(deferredTexture1,textureCoords);
+	float depth = sceneDepth*2.-1.;
+	
+	pixelData.position = unproj(projMat, float3(IN.screenPosition.xy,depth));
+	pixelData.depth = sceneDepth;
 	
 	float4 emissive = float4(floatToFloat3(data0.x),1.);
-
 	float3 temp = floatToFloat3(data0.y);
 
 	if (normalFix) {
 		pixelData.normal = float3((temp.xyz * 2. - 1.) * 0.95);
-		pixelData.shininess = data1.z;
+		pixelData.material.shininess = data1.z;
 	}
 	else {
 		temp.xy = (temp.xy * 2. - 1.) * 0.95;//fix me
 		pixelData.normal = normalize(float3(temp.xy, sqrt(1. - clamp(dot(temp.xy,temp.xy),0.,1.))));
-		pixelData.shininess = temp.z;
+		pixelData.material.shininess = temp.z;
 	}    
 
-	pixelData.diffuse = float4(floatToFloat3(data0.z), 1.);
-	pixelData.specular = float4(floatToFloat3(data1.y), 1.);
+	pixelData.material.emissive = emissive;
+	pixelData.material.diffuse = float4(floatToFloat3(data0.z), 1.);
+	pixelData.material.specular = float4(floatToFloat3(data1.y), 1.);
 
-	if(isUsedPhong){
-		pixelData.ambient = float4(floatToFloat3(data1.x), 1.);
+	if(IS_USED_PNONG){
+		pixelData.material.ambient = float4(floatToFloat3(data1.x), 1.);
 	}
-	//pixelData.diffuse = float4(float3(rand(float2(data0.w))), 1.);
 
-	//result_color = pixelData.diffuse;
 	result_color = emissive;
 
-	//result_color = float4(float3(data0.w), 1.);
-	//result_color = float4(textureCoords,0., 1.);
 	return result_color;
 };	
 

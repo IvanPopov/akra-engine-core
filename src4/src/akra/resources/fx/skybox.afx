@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 texture tex0 : INPUT_TEXTURE;
 texture tex1 : OBJECT_ID_TEXTURE;
 texture skyBox : SKYBOX_TEXTURE;
@@ -51,18 +53,6 @@ struct VS_OUT{
 float4x4 projMat : PROJ_MATRIX;
 float4x4 invView : INV_VIEW_CAMERA_MAT;
 float3 cameraPos : CAMERA_POSITION;
-
-float3 unproj(float4x4 projMat,float3 screenCoords){
-	
-	//mat4[i] - i-й столбец матрицы 
-	//не строка, а именно столбец
-  
-	float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
-	float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
-	float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
-  
-	return float3(x,y,z);
-};
 
 VS_OUT vs_skybox(VS_IN IN){
 	VS_OUT Out;

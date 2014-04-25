@@ -295,10 +295,10 @@ module akra.render {
 							for (var k: uint = 0; k < iTotalPasses; k++) {
 								var pPass: IRenderPass = pTechnique.getPass(k);
 								if (j === 0) {
-									pPass.setForeign("optimeizeForDeferredPass1", true);
+									pPass.setForeign("OPTIMIZE_FOR_DEFERRED_PASS0", true);
 								}
 								else {
-									pPass.setForeign("optimeizeForDeferredPass2", true);
+									pPass.setForeign("OPTIMIZE_FOR_DEFERRED_PASS1", true);
 								}
 							}
 						}
@@ -512,12 +512,12 @@ module akra.render {
 
 					this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
-					pPass.setForeign("nOmni", pLightUniforms.omni.length);
-					pPass.setForeign("nProject", pLightUniforms.project.length);
-					pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
-					pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
-					pPass.setForeign("nSun", pLightUniforms.sun.length);
-					pPass.setForeign("nSunShadows", pLightUniforms.sunShadows.length);
+					pPass.setForeign("NUM_OMNI", pLightUniforms.omni.length);
+					pPass.setForeign("NUM_OMNI_SHADOWS", pLightUniforms.omniShadows.length);
+					pPass.setForeign("NUM_PROJECT", pLightUniforms.project.length);
+					pPass.setForeign("NUM_PROJECT_SHADOWS", pLightUniforms.projectShadows.length);
+					pPass.setForeign("NUM_SUN", pLightUniforms.sun.length);
+					pPass.setForeign("NUM_SUN_SHADOWS", pLightUniforms.sunShadows.length);
 
 					pPass.setStruct("points_omni", pLightUniforms.omni);
 					pPass.setStruct("points_project", pLightUniforms.project);
@@ -544,16 +544,16 @@ module akra.render {
 					pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
 					pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
 
-					pPass.setForeign("isUsedPhong", this.getShadingModel() === EShadingModel.PHONG);
-					pPass.setForeign("isUsedBlinnPhong", this.getShadingModel() === EShadingModel.BLINNPHONG);
-					pPass.setForeign("isUsedPBSSimple", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+					pPass.setForeign("IS_USED_PNONG", this.getShadingModel() === EShadingModel.PHONG);
+					pPass.setForeign("IS_USED_BLINN_PNONG", this.getShadingModel() === EShadingModel.BLINNPHONG);
+					pPass.setForeign("IS_USED_PBS_SIMPLE", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
 
 					if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
-						pPass.setForeign("isUsedPBSReflections", true);
+						pPass.setForeign("IS_USED_PBS_REFLECTIONS", true);
 						pPass.setTexture("ENVMAP", this.getDefaultEnvironmentMap());
 					}
 					else {
-						pPass.setForeign("isUsedPBSReflections", false);
+						pPass.setForeign("IS_USED_PBS_REFLECTIONS", false);
 					}
 
 					break;

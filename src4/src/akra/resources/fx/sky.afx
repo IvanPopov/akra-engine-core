@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 float3 vEye;
 float3 vSunPos;
 float3 vInvWavelength;
@@ -89,13 +91,7 @@ float getRayleighPhase(float fCos2)
 }
 
 //Pixel Shader
-  
-
-struct base_material{
-    float4 emissive:EMISSIVE;
-};
-
-shared base_material Fragment_material;
+shared PixelData pixelData;
 
 void SkyFromGround_PS( vertexOutput In)
 {
@@ -130,8 +126,8 @@ void SkyFromGround_PS( vertexOutput In)
 	//Out.color.rgba = vSamples;
 	//Out.color.rgba =0;
 	//Out.color.rgba = In.t0.x;
-	Fragment_material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
-	//Fragment_material.emissive = S00;
+	pixelData.material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
+	//pixelData.material.emissive = S00;
 }
 
 float ComputeVolumetricFog( float3 cameraToWorldPos )
@@ -231,8 +227,6 @@ float4 UpdateTexture_PS( pixel_IN In ) : COLOR
 
     return float4( v3FrontColor, 1);
 }
-
-foreign bool optimizeForLPPPrepare;
 
 technique sky {
 	pass {	 

@@ -56,6 +56,10 @@
     <Content Include="akra\resources\js\zip.js\zip-ext.js" />
     <Content Include="akra\resources\js\zip.js\zip-fs.js" />
     <Content Include="akra\resources\js\zip.js\zip.js" />
+    <Content Include="akra\resources\fx\apply_lpp_shading.afx" />
+    <Content Include="akra\resources\fx\common.afx" />
+    <Content Include="akra\resources\fx\lightingFunctions.afx" />
+    <Content Include="akra\resources\fx\prepare_lpp_shading.afx" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -519,10 +523,12 @@
     <TypeScriptCompile Include="akra\fx\instructions\WhileStmtInstruction.ts" />
     <TypeScriptCompile Include="akra\idl\3d-party\es6-promises.d.ts" />
     <TypeScriptCompile Include="akra\idl\I3DViewport.ts" />
+    <TypeScriptCompile Include="akra\idl\IForwardViewport.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
+    <TypeScriptCompile Include="akra\render\ForwardViewport.ts" />
     <TypeScriptCompile Include="akra\render\LightingUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
     <TypeScriptCompile Include="akra\render\LPPViewport.ts" />

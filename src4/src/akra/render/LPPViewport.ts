@@ -94,6 +94,10 @@ module akra.render {
 
 		setShadingModel(eModel: EShadingModel) {
 			this._eShadingModel = eModel;
+
+			if (this._eShadingModel === EShadingModel.PBS_SIMPLE) {
+				this._pViewScreen.getRenderMethodByName("passA").setForeign("PREPARE_ONLY_POSITION", false);
+			}
 		}
 
 		getShadingModel(): EShadingModel {
@@ -237,6 +241,7 @@ module akra.render {
 			}
 
 			this._pLightPoints = pLights;
+			this.createLightingUniforms(this.getCamera(), this._pLightPoints, this._pLightingUnifoms);
 
 			//render deferred
 			this._pViewScreen.render(this._pLightBufferTextures[0].getBuffer().getRenderTarget().getViewport(0), "passA");
@@ -343,7 +348,7 @@ module akra.render {
 		_onNormalBufferRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setForeign("optimizeForLPPPrepare", true);
+			pPass.setForeign("OPTIMIZE_FOR_LPP_PREPARE", true);
 		}
 
 		_onLightMapRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -353,14 +358,12 @@ module akra.render {
 			var pLightPoints: IObjectArray<ILightPoint> = this._pLightPoints;
 			var pCamera: ICamera = this.getCamera();
 
-			this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
-
-			pPass.setForeign("nOmni", pLightUniforms.omni.length);
-			pPass.setForeign("nProject", pLightUniforms.project.length);
-			pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
-			pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
-			pPass.setForeign("nSun", pLightUniforms.sun.length);
-			pPass.setForeign("nSunShadows", pLightUniforms.sunShadows.length);
+			pPass.setForeign("NUM_OMNI", pLightUniforms.omni.length);
+			pPass.setForeign("NUM_OMNI_SHADOWS", pLightUniforms.omniShadows.length);
+			pPass.setForeign("NUM_PROJECT", pLightUniforms.project.length);
+			pPass.setForeign("NUM_PROJECT_SHADOWS", pLightUniforms.projectShadows.length);
+			pPass.setForeign("NUM_SUN", pLightUniforms.sun.length);
+			pPass.setForeign("NUM_SUN_SHADOWS", pLightUniforms.sunShadows.length);
 
 			pPass.setStruct("points_omni", pLightUniforms.omni);
 			pPass.setStruct("points_project", pLightUniforms.project);
@@ -384,9 +387,9 @@ module akra.render {
 			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
 			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
 
-			pPass.setForeign("isUsedPhong", this.getShadingModel() === EShadingModel.PHONG);
-			pPass.setForeign("isUsedBlinnPhong", this.getShadingModel() === EShadingModel.BLINNPHONG);
-			pPass.setForeign("isUsedPBSSimple", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+			pPass.setForeign("IS_USED_PNONG", this.getShadingModel() === EShadingModel.PHONG);
+			pPass.setForeign("IS_USED_BLINN_PNONG", this.getShadingModel() === EShadingModel.BLINNPHONG);
+			pPass.setForeign("IS_USED_PBS_SIMPLE", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
 		}
 
 		_onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -395,19 +398,21 @@ module akra.render {
 			pPass.setUniform("SCREEN_TEXTURE_RATIO", this._v2fTextureRatio);
 			pPass.setTexture("LPP_LIGHT_BUFFER_A", this._pLightBufferTextures[0]);
 			pPass.setTexture("LPP_LIGHT_BUFFER_B", this._pLightBufferTextures[1]);
-			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
-			pPass.setForeign("optimizeForLPPApply", true);
+			pPass.setTexture("LPP_NORMAL_BUFFER_TEXTURE", this._pNormalBufferTexture);
 
-			pPass.setForeign("isUsedPhong", this.getShadingModel() === EShadingModel.PHONG);
-			pPass.setForeign("isUsedBlinnPhong", this.getShadingModel() === EShadingModel.BLINNPHONG);
-			pPass.setForeign("isUsedPBSSimple", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+			pPass.setUniform("SCREEN_SIZE", this._v2fScreenSize);
+			pPass.setForeign("OPTIMIZE_FOR_LPP_APPLY", true);
+
+			pPass.setForeign("IS_USED_PNONG", this.getShadingModel() === EShadingModel.PHONG);
+			pPass.setForeign("IS_USED_BLINN_PNONG", this.getShadingModel() === EShadingModel.BLINNPHONG);
+			pPass.setForeign("IS_USED_PBS_SIMPLE", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
 
 			if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
-				pPass.setForeign("isUsedPBSReflections", true);
+				pPass.setForeign("IS_USED_PBS_REFLECTIONS", true);
 				pPass.setTexture("ENVMAP", this.getDefaultEnvironmentMap());
 			}
 			else {
-				pPass.setForeign("isUsedPBSReflections", false);
+				pPass.setForeign("IS_USED_PBS_REFLECTIONS", false);
 			}
 		}
 
@@ -418,7 +423,7 @@ module akra.render {
 				case 0:
 					pPass.setUniform("VIEWPORT", math.Vec4.temp(0., 0., this._v2fTextureRatio.x, this._v2fTextureRatio.y));
 					pPass.setTexture("TEXTURE_FOR_SCREEN", this._pResultLPPTexture);
-					pPass.setForeign("saveAlpha", true);
+					pPass.setForeign("SAVE_ALPHA", true);
 					break;
 				case 1:
 					pPass.setTexture("OBJECT_ID_TEXTURE", this._pNormalBufferTexture);
@@ -554,10 +559,10 @@ module akra.render {
 					pLPPEffect.addComponent("akra.system.sunLighting");
 					pLPPEffect.addComponent("akra.system.sunShadowsLighting");
 
-					pLPPMethod.setForeign("prepareOnlyPosition", i === 1);
-					pLPPMethod.setForeign("isForLPPPass0", i === 0);
-					pLPPMethod.setForeign("isForLPPPass1", i === 1);
-					pLPPMethod.setForeign("isPrepareAll", false);
+					pLPPMethod.setForeign("PREPARE_ONLY_POSITION", this._eShadingModel !== EShadingModel.PBS_SIMPLE && i === 1);
+					pLPPMethod.setForeign("IS_FOR_LPP_PASS0", i === 0);
+					pLPPMethod.setForeign("IS_FOR_LPP_PASS1", i === 1);
+					pLPPMethod.setForeign("IS_FOR_REAL_SHADING", false);
 					pLPPMethod.setSurfaceMaterial(null);
 				}
 				else {
@@ -592,10 +597,6 @@ module akra.render {
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
-						//var iTotalPasses = pTechnique.getTotalPasses();
-						//for (var i: uint = 0; i < iTotalPasses; i++) {
-						//	pTechnique.getPass(i).setForeign("optimizeForLPPPrepare", true);
-						//}
 					}
 
 					sMethod = "apply_lpp_shading";

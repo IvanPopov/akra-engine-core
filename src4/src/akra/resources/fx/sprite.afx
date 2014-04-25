@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 texture tex0:SPRITE_TEXTURE;
 
 sampler sampler_sprite:S_SPRITE  = sampler_state
@@ -23,7 +25,7 @@ struct base_material{
     float4 emissive:EMISSIVE;
 };
 
-shared base_material Fragment_material;
+shared PixelData pixelData;
 
 float4x4 model_mat : MODEL_MATRIX;
 float4x4 view_mat : VIEW_MATRIX;
@@ -60,7 +62,7 @@ VS_OUT vs_base_sprite(VS_IN IN)
 
 void fs_base_sprite(VS_OUT IN): COLOR 
 {
-    Fragment_material.emissive = float4(IN.texture_position, 0., 1.) + tex2D(sampler_sprite, IN.texture_position);
+    pixelData.material.emissive = float4(IN.texture_position, 0., 1.) + tex2D(sampler_sprite, IN.texture_position);
 }
 
 technique base_sprite

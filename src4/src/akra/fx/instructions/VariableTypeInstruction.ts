@@ -66,6 +66,10 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}
 
+		toString(): string {
+			return this._getName() || this._getSubType().toString() || this._getHash();
+		}
+
 		_toFinalCode(): string {
 			var sCode: string = "";
 			if (!isNull(this._pUsageList)) {

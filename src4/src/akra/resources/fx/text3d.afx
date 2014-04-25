@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 texture tex0:FONT_TEXTURE;
 
 sampler sampler_font:S_FONT  = sampler_state
@@ -76,15 +78,7 @@ float4 v4fFontColor : FONT_COLOR;
 
 video_buffer text_data : TEXT_DATA;
 
-struct base_material{
-    float4 diffuse:DIFFUSE;
-    float4 ambient:AMBIENT;
-    float4 emissive:EMISSIVE;
-    float4 specular:SPECULAR;
-    float shininess:SHININESS;
-};;
-
-global base_material Fragment_material;
+shared PixelData pixelData;
 
 void fs_text3d(VS_OUT OUT){
     //return float4(0.,1.,0.,1.);
@@ -118,7 +112,7 @@ void fs_text3d(VS_OUT OUT){
         if(v4fBackgroundColor.w == 0.){
             discard;
         }
-        Fragment_material.emissive = v4fBackgroundColor;
+        pixelData.material.emissive = v4fBackgroundColor;
         return;
     }
 
@@ -170,7 +164,7 @@ void fs_text3d(VS_OUT OUT){
 
     color = float4(v3fEffectiveColor/fEffectiveTransperency,fEffectiveTransperency);
     
-    Fragment_material.emissive = color;
+    pixelData.material.emissive = color;
 
     //return color;
 }

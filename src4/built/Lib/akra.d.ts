@@ -4532,6 +4532,7 @@ declare module akra {
         COLORVIEWPORT = 3,
         TEXTUREVIEWPORT = 4,
         LPPVIEWPORT = 5,
+        FORWARDVIEWPORT = 6,
     }
     interface IViewport extends IEventProvider, IClickable {
         getLeft(): number;
@@ -10382,6 +10383,7 @@ declare module akra.fx.instructions {
         private _isContainPointer;
         private _isContainComplexType;
         constructor();
+        public toString(): string;
         public _toDeclString(): string;
         public _toFinalCode(): string;
         public _isBuiltIn(): boolean;
@@ -10795,6 +10797,7 @@ declare module akra.fx.instructions {
         private _bUnverifiable;
         private _bCollapsed;
         constructor();
+        public toString(): string;
         public _toFinalCode(): string;
         public _toDeclString(): string;
         public _isBuiltIn(): boolean;
@@ -11390,6 +11393,7 @@ declare module akra.fx.instructions {
         private _bIsBuiltIn;
         private _sDeclString;
         constructor();
+        public toString(): string;
         public _toDeclString(): string;
         public _toFinalCode(): string;
         public _isBuiltIn(): boolean;
@@ -15407,6 +15411,54 @@ declare module akra.render {
         private prepareRenderMethods();
         private updateRenderTextureDimensions(pTexture);
         private prepareForLPPShading();
+        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
+        private resetUniforms();
+    }
+}
+declare module akra {
+    interface IForwardViewport extends I3DViewport {
+    }
+}
+declare module akra.render {
+    class ForwardViewport extends Viewport implements IForwardViewport {
+        public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        /** Buffer with objectID */
+        private _pTextureWithObjectID;
+        /** Depth buffer of scene */
+        private _pDepthBufferTexture;
+        /** Texture with result of rendereingd(for global posteffects) */
+        private _pResultTexture;
+        private _pViewScreen;
+        private _pLightPoints;
+        private _v2fTextureRatio;
+        private _v2fScreenSize;
+        private _pLightingUnifoms;
+        private _pSkyboxTexture;
+        private _eShadingModel;
+        private _pDefaultEnvMap;
+        constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public setupSignals(): void;
+        public getType(): EViewportTypes;
+        public getView(): IRenderableObject;
+        public getDepthTexture(): ITexture;
+        public getEffect(): IEffect;
+        public getSkybox(): ITexture;
+        public getTextureWithObjectID(): ITexture;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
+        public _setTarget(pTarget: IRenderTarget): void;
+        public _getRenderId(x: number, y: number): number;
+        public _updateImpl(): void;
+        public endFrame(): void;
+        public setSkybox(pSkyTexture: ITexture): boolean;
+        public setFXAA(bValue?: boolean): void;
+        public isFXAA(): boolean;
+        public highlight(a: any): void;
+        public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        private prepareForForwardShading();
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
     }

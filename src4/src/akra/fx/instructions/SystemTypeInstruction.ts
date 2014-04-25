@@ -28,6 +28,10 @@ module akra.fx.instructions {
 			this._pWrapVariableType._pushType(this);
 		}
 
+		toString(): string {
+			return this._getName() || this._getHash();
+		}
+
 		_toDeclString(): string {
 			return this._sDeclString;
 		}

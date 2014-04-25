@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 struct VS_OUT {
     float3 tex : TEXCOORD0;
     float4 pos : POSITION;
@@ -9,15 +11,7 @@ float4x4 model_mat:MODEL_MATRIX;
 float4x4 view_mat:VIEW_MATRIX;
 float4x4 proj_mat:PROJ_MATRIX;
 
-struct base_material{
-    float4 diffuse:DIFFUSE;
-    float4 ambient:AMBIENT;
-    float4 emissive:EMISSIVE;
-    float4 specular:SPECULAR;
-    float shininess:SHININESS;
-};
-
-shared base_material Fragment_material;
+shared PixelData pixelData;
 
 VS_OUT vs_plain(float3 pos:POSITION){
     VS_OUT Out;
@@ -51,7 +45,7 @@ float4 fs_plain_1(VS_OUT IN) : COLOR {
         }
     }
 
-    Fragment_material.emissive = color;
+    pixelData.material.emissive = color;
     return color;
 }
 

@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
 float2 screenTextureSize : INPUT_TEXTURE_SIZE;
 float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
@@ -23,18 +25,6 @@ struct VS_OUT{
 	float2 screenPosition : SCREEN_POSITION;
 	float2 textureCoords : TEXCOORD0;
 	float2 blurBasis : BLUR_BASIS;
-};
-/*
-float3 unproj(float4x4 projMat,float3 screenCoords){
-	float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
-	float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
-	float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
-
-	return float3(x,y,z);
-};
-*/
-float unprojZ(float4x4 projMat, float screenZ){
-    return -projMat[3][2]/(projMat[2][2] + screenZ);
 };
 
 VS_OUT vs_dof_shading1(float2 pos: POSITION){
