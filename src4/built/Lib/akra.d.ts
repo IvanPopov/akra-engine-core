@@ -10795,6 +10795,7 @@ declare module akra.fx.instructions {
         private _bUnverifiable;
         private _bCollapsed;
         constructor();
+        public toString(): string;
         public _toFinalCode(): string;
         public _toDeclString(): string;
         public _isBuiltIn(): boolean;

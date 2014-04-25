@@ -438,37 +438,37 @@ float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3
 // zone3	nextlvl	zone4	zone5
 // zone1	zone2	zone6	nextlvl
 float2 getZone1z(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone2x(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = .5 - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone3y(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = uv.y*pow(2.,-float(lod)-1.);
+	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 float2 getZone4z(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone5x(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = 1. - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone6y(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = 1. - exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
@@ -480,8 +480,8 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, int lod) {
 	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
 
 	// HACK: fixed cubemap size
-	float2 local_texel = float2(pow(2.,-8.+float(lod)));
-	float2 texel = float2(pow(2.,-10.),pow(2.,-9.));
+	float2 local_texel = float2(exp2(-8.+float(lod)));
+	float2 texel = float2(exp2(-10.),exp2(-9.));
 
 	if(direction.z >= .99) { // calculations are not precise
 		uv.x = -direction.x;
@@ -546,76 +546,366 @@ float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
 	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
 }
 
-// @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
+float fixFloatPresision(float value){
+	//if(abs(value) < 0.01){
+	//	return sign(value) * 0.01;
+	//}
+
+	return value;
+}
+
+float GFunc(float3 l, float3 v, float3 n, float k){
+	//float divisor = fixFloatPresision(4. * dot_saturate(n, l) * dot_saturate(n, v));
+	//return G1Func(l, n, k) * G1Func(v, n, k) / divisor;
+
+	//return G1Func(l, n, k);// * G1Func(v, n, k) ;
+	//return 0.25 / (G1Func(l, n, k) * G1Func(v, n, k));
+	return 1. / (G1Func(l, n, k) * G1Func(v, n, k));
+}
+
+float G1Func(float3 v, float3 n, float k){
+	//return dot_saturate(n, v) / fixFloatPresision(dot_saturate(n, v) * (1. - k) + k);
+	float NoV = dot_saturate(n, v);
+	return NoV + sqrt( NoV * (NoV - NoV * k) + k );
+}
+
+
+float PI = 3.14159265359;
+float3 Squaref3( float3 x )
+{
+	return x*x;
+}
+//************************* DIFFUSE MODEL *********************************** */
+float3 Diffuse_Lambert( float3 DiffuseColor )
+{
+	return DiffuseColor / PI;
+}
+
+// [Burley 2012, "Physically-Based Shading at Disney"]
+float3 Diffuse_Burley( float3 DiffuseColor, float Roughness, float NoV,
+					   float NoL, float VoH )
+{
+	float FD90 = 0.5 + 2. * VoH * VoH * Roughness;
+	float FdV = 1. + (FD90 - 1.) * exp2((-5.55473 * NoV - 6.98316) * NoV );
+	float FdL = 1. + (FD90 - 1.) * exp2((-5.55473 * NoL - 6.98316) * NoL );
+	return DiffuseColor / PI * FdV * FdL;
+}
+
+// [Gotanda 2012, "Beyond a Simple Physically Based Blinn-Phong Model in Real-Time"]
+float3 Diffuse_OrenNayar( float3 DiffuseColor, float Roughness, float NoV,
+						  float NoL, float VoH )
+{
+	float VoL = 2. * VoH - 1.;
+	float m = Roughness * Roughness;
+	float m2 = m * m;
+	float C1 = 1. - 0.5 * m2 / (m2 + 0.33);
+	float Cosri = VoL - NoV * NoL;
+	float C2 = 0.45 * m2 / (m2 + 0.09) * Cosri * (
+		Cosri >= 0. ? min( 1., NoL / NoV ) : NoL );
+	return DiffuseColor / PI * ( NoL * C1 + C2 );
+}
+
+float3 Diffuse_Func( float3 DiffuseColor, float Roughness, float NoV,
+					float NoL, float VoH )
+{
+	// Diffuse model
+	// 0: Lambert -- default
+	// 1: Burley
+	// 2: Oren-Nayar
+	int PHYSICAL_DIFFUSE = 0;
+
+	if (PHYSICAL_DIFFUSE == 0){
+		return Diffuse_Lambert( DiffuseColor );
+	}
+	else if (PHYSICAL_DIFFUSE == 1){
+		return Diffuse_Burley( DiffuseColor, Roughness, NoV, NoL, VoH );
+	}
+	else if (PHYSICAL_DIFFUSE == 2){
+		return Diffuse_OrenNayar( DiffuseColor, Roughness, NoV, NoL, VoH );
+	}
+}
+
+//************************* D FUNCTIONS ************************************* */
+// [Blinn 1977, "Models of light reflection for computer synthesized pictures"]
+float D_Blinn( float Roughness, float NoH )
+{
+	float m = Roughness * Roughness;
+	float m2 = m * m;
+	float n = 2. / m2 - 2.;
+	return (n+2.)/ 2. * pow( saturate(NoH), n ); // 1 mad, 1 exp, 1 mul, 1 log
+}
+
+// [Beckmann 1963, "The scattering of electromagnetic waves from rough surfaces"]
+float D_Beckmann( float Roughness, float NoH )
+{
+	float m = Roughness * Roughness;
+	float m2 = m * m;
+	float NoH2 = NoH * NoH;
+	return exp( (NoH2 - 1.) / (m2 * NoH2) ) / ( m2 * NoH2 * NoH2 );
+}
+
+// GGX / Trowbridge-Reitz
+// [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
+float D_GGX( float Roughness, float NoH )
+{
+	float m = Roughness * Roughness;
+	float m2 = m * m;
+	float d = ( NoH * m2 - NoH ) * NoH + 1.;	// 2 mad
+	return m2 / ( d*d );					// 2 mul, 1 rcp
+}
+
+float D_Func( float Roughness, float NoH )
+{
+	// Microfacet distribution function
+	// 0: Blinn
+	// 1: Beckmann
+	// 2: GGX -- default
+	int PHYSICAL_SPEC_D = 2;
+
+	if (PHYSICAL_SPEC_D == 0){
+		return D_Blinn( Roughness, NoH );
+	}
+	else if (PHYSICAL_SPEC_D == 1){
+		return D_Beckmann( Roughness, NoH );
+	}
+	else if (PHYSICAL_SPEC_D == 2){
+		return D_GGX( Roughness, NoH );
+	}
+}
+
+
+//************************* GEOMETRIC FUNCTIONS ***************************** */
+float G_Implicit()
+{
+	return 0.25;
+}
+
+// [Neumann et al. 1999, "Compact metallic reflectance models"]
+float G_Neumann( float NoV, float NoL )
+{
+	return 1. / ( 4. * max( NoL, NoV ) );
+}
+
+// [Kelemen 2001, "A microfacet based coupled specular-matte brdf model with importance sampling"]
+float G_Kelemen( float3 L, float3 V )
+{
+	return 1. / ( 2. + 2. * dot(L, V) );
+}
+
+// Tuned to match behavior of G_Smith
+// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
+float G_Schlick( float Roughness, float NoV, float NoL )
+{
+	float k = Roughness * Roughness * 0.5;
+	float G_SchlickV = NoV * (1. - k) + k;
+	float G_SchlickL = NoL * (1. - k) + k;
+	return 0.25 / ( G_SchlickV * G_SchlickL);
+}
+
+// Smith term for GGX modified by Disney to be less "hot" for small roughness values
+// [Smith 1967, "Geometrical shadowing of a random rough surface"]
+// [Burley 2012, "Physically-Based Shading at Disney"]
+float G_Smith( float Roughness, float NoV, float NoL )
+{
+	float a = Roughness * Roughness;
+	float a2 = a*a;
+
+	float G_SmithV = NoV + sqrt( NoV * (NoV - NoV * a2) + a2 );
+	float G_SmithL = NoL + sqrt( NoL * (NoL - NoL * a2) + a2 );
+	return 1. / ( G_SmithV * G_SmithL );
+}
+
+float GeometricVisibility( float Roughness, float NoV, float NoL,
+							   float VoH, float3 L, float3 V )
+{
+	// Geometric attenuation or shadowing
+	// 0: Implicit
+	// 1: Neumann
+	// 2: Kelemen
+	// 3: Schlick -- default
+	// 4: Smith (matched to GGX)
+	int PHYSICAL_SPEC_G = 3;
+
+	if (PHYSICAL_SPEC_G == 0){
+		return G_Implicit();
+	}
+	else if (PHYSICAL_SPEC_G == 1){
+		return G_Neumann( NoV, NoL );
+	}
+	else if (PHYSICAL_SPEC_G == 2){
+		return G_Kelemen( L, V );
+	}
+	else if (PHYSICAL_SPEC_G == 3){
+		return G_Schlick( Roughness, NoV, NoL );
+	}
+	else if (PHYSICAL_SPEC_G == 4){
+		return G_Smith( Roughness, NoV, NoL );
+	}
+}
+
+//*********************** Fresnel ******************************************* */
+float3 F_None( float3 SpecularColor )
+{
+	return SpecularColor;
+}
+
+// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
+// [Lagarde 2012, "Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel"]
+float3 F_Schlick( float3 SpecularColor, float VoH )
+{
+	// Anything less than 2% is physically impossible and is instead considered to be shadowing 
+	return SpecularColor + ( saturate( 50.0 * SpecularColor.g ) - SpecularColor )
+							* exp2( (-5.55473 * VoH - 6.98316) * VoH );
+
+	//float Fc = exp2( (-5.55473 * VoH - 6.98316) * VoH );	// 1 mad, 1 mul, 1 exp
+	//return Fc + (1 - Fc) * SpecularColor;					// 1 add, 3 mad
+}
+
+float3 F_Fresnel( float3 SpecularColor, float VoH )
+{
+	float3 SpecularColorSqrt = sqrt( clamp( SpecularColor, 0., 0.99) );
+	float3 n = ( 1. + SpecularColorSqrt ) / ( 1. - SpecularColorSqrt );
+	float3 g = sqrt( n*n + VoH*VoH - 1. );
+	return 0.5 * Squaref3( (g - VoH) / (g + VoH) )
+			   * ( 1. + Squaref3( ((g+VoH)*VoH - 1.) / ((g-VoH)*VoH + 1.) ) );
+}
+
+float3 Fresnel( float3 SpecularColor, float VoH )
+{
+	// Fresnel
+	// 0: None
+	// 1: Schlick -- default
+	// 2: Fresnel
+	int PHYSICAL_SPEC_F = 1;
+
+	if (PHYSICAL_SPEC_F == 0){
+		return F_None( SpecularColor );
+	}
+	else if (PHYSICAL_SPEC_F == 1){
+		return F_Schlick( SpecularColor, VoH );
+	}
+	else if (PHYSICAL_SPEC_F == 2){
+		return F_Fresnel( SpecularColor, VoH );
+	}
+}
+
 float4 applyPBSLightParams(pixel_data pixelData, 
 						   float3 lightPosition, 
 						   float3 lightDiffOrig, 
 						   float3 lightAttenuation) {
 	float4 color = float4(0.);
-	float3 light_dir = lightPosition - pixelData.position;
-	float light_dir_length = length(light_dir);
-	light_dir = normalize(light_dir);
-	float NoL = dot_saturate(pixelData.normal, light_dir);
 
+	// Physically based shading model
+	// parameterized with the below options
+	
+	// ESSENTIAL CONSTANTS DEF
+	float3 light_dir = normalize(lightPosition - pixelData.position);
+	float3 view_dir = normalize(-pixelData.position);
+	float3 normal_dir = normalize(pixelData.normal);
+	float3 half_vector = normalize(view_dir + light_dir);
+	
+	float NoL = saturate(dot(normal_dir, light_dir));
+	float NoH = saturate(dot(normal_dir, half_vector));
+	float NoV = saturate(dot(normal_dir, view_dir));
+	float VoH = saturate(dot(view_dir, half_vector));
+
+	float Roughness = 1. - pixelData.shininess;
+	float3 DiffuseColor = pixelData.diffuse.xyz;
+	float3 SpecularColor = pixelData.specular.xyz;
+
+	// ATTENUATION
 	// multiplicator for better visibility REMOVED(bill-phong is much more shiny)
-	float attenuation = 10.0 / (lightAttenuation.x +
+	float light_dir_length = length(light_dir);
+	float attenuation = 1.0 / (lightAttenuation.x +
 							   lightAttenuation.y * light_dir_length + 
 							   lightAttenuation.z * light_dir_length * light_dir_length);
+	float ShadowedAttenuation = attenuation * saturate(dot(light_dir, normal_dir) * 100000.);
 
-	// Specular power used in paper:
-	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
-	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	// float alpha_p = pow(8192., pixelData.shininess);
-	float alpha_p = pow(2., 10.*pixelData.shininess + 1.);
-	float3 view_dir = normalize(-pixelData.position);
-	if(isForLPPPass0 || isForLPPPass1){
-		view_dir = normalize(pixelData.position);
-	}
-	float3 halfVector = normalize(view_dir + light_dir);
-	
-	float HoN = dot_saturate(halfVector, pixelData.normal);
-
-	float3 computedLightDiff;
-	float k1;
-	float k2;
-
-	//(k1)*F0 + ( float3(1.)-F0 ) * (k1) * (k2);
-
-	if(isPrepareAll || isForLPPPass0){
-		//Prepare light diffuse and k1
-		// Blinn-Phong BRDF
-		//computedLightDiff = lightDiffOrig * NoL;//* (alpha_p + 2.) / 2. / 3.14159265359;// pow(NoL, alpha_p);
-		computedLightDiff = lightDiffOrig * (alpha_p + 2.) / 2. / 3.14159265359 * pow(NoL, alpha_p);
-		// GGX (Trowbridge and Reitz) BRDF
-		//computedLightDiff = lightDiffOrig * pow(pixelData.shininess, 4.) / pow(3.14159265359 * (
-		//				   	pow(max(dot(pixelData.normal, light_dir), 0.000001), 2.) *
-		//				   	(pow(pixelData.shininess, 4.) - 1.) + 1.), 2.);
+	// ENERGY CONSERVATION
+	float Energy = 1.;
+	// additional conservation needed for prolonged light sources
 
 
-		computedLightDiff = computedLightDiff.xyz * attenuation;
-		k1 = (alpha_p+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
+	if (isPrepareAll) {
+		float D = D_Func( Roughness, NoH );
+		float Geom = GeometricVisibility( Roughness, NoV, NoL, VoH, light_dir, view_dir );
+		float3 Fres = Fresnel( SpecularColor, VoH );
+		float3 SpecularLighting = Energy * Fres * D * Geom;
 
-		color = float4(computedLightDiff, k1);
+		float3 DiffuseLighting = Diffuse_Func( DiffuseColor, Roughness, NoV, NoL, VoH );
+
+
+		color = float4( (SpecularLighting + DiffuseLighting)
+						* lightDiffOrig * ShadowedAttenuation * NoL, 1. );
 	}
 
-	if(isPrepareAll || isForLPPPass1){
-		k2 = pow((1.-(dot_saturate(light_dir, halfVector))), 5.);
-		color = float4(k1*k2, 0., 0., 0.);
-	}
 
-	if(isPrepareAll){
-		float3 lightSpec = lerp(pixelData.specular.xyz, float3(1.), k2) * k1;
-		computedLightDiff *= (float3(1.) - lightSpec);
 
-		// // Cook-Torrance Kelemen approximation of visibility term (geometry included)
-		//float visibilityFunction = pow(HoN, 2.);
-		// Implicit visibility term
-		float visibilityFunction = 1.;
-
-		color = pixelData.diffuse * float4(computedLightDiff + lightSpec, 1.) * visibilityFunction;
-		//color = float4(lightSpec, 1.);
-		color.a = 1.;
-	}
+//	// SPECULAR POWER (theoretical: (0., +infinity))
+//	// c@ http://seblagarde.wordpress.com/2011/08/17/hello-world/
+//	float alpha_p = 2. * pow(1024., pixelData.shininess);
+//	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
+//	// c@ http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
+//	float alpha_p = pow(8192., pixelData.shininess);
+//
+//	float3 view_dir = normalize(-pixelData.position);
+//	if(isForLPPPass0 || isForLPPPass1){
+//		view_dir = normalize(-pixelData.position);
+//	}
+//	float3 halfVector = normalize(view_dir + light_dir);
+//
+//	float HoN = dot_saturate(halfVector, pixelData.normal);
+//
+//	float3 computedLightDiff;
+//	float k1;
+//	float k2;
+//
+//	//(k1)*F0 + ( float3(1.)-F0 ) * (k1) * (k2);
+//
+//	if(isPrepareAll || isForLPPPass0){
+//		//Prepare light diffuse and k1
+//		// Blinn-Phong BRDF
+//		//computedLightDiff = lightDiffOrig * NoL;//* (alpha_p + 2.) / 2. / 3.14159265359;// pow(NoL, alpha_p);
+//		//computedLightDiff = lightDiffOrig * (alpha_p + 2.) / 2. / 3.14159265359 * pow(NoL, alpha_p);
+//		// GGX (Trowbridge and Reitz) BRDF
+//		float roughness = (1. - pixelData.shininess);
+//		float alpha_sq = pow(roughness, 4.);
+//		float HoN_sq = pow(HoN, 2.);
+//		float divisor = fixFloatPresision(3.1415926 * pow(HoN_sq * (alpha_sq - 1.) + 1., 2.));
+//		computedLightDiff = lightDiffOrig * alpha_sq / divisor;
+//
+//
+//		computedLightDiff = computedLightDiff.xyz * attenuation;
+//		//k1 = (alpha_p+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
+//		float k =  pow(roughness, 4.); //* 0.5;
+//
+//		//k1 = (pow(pixelData.shininess, 2.)+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
+//		k1 = GFunc(light_dir, view_dir, pixelData.normal, k);
+//
+//		color = float4(computedLightDiff, k1);
+//	}
+//
+//	if(isPrepareAll || isForLPPPass1){
+//		//k2 = pow((1.-(dot_saturate(light_dir, halfVector))), 5.);
+//		k2 = pow(2., (-5.55473 * dot_saturate(view_dir, pixelData.normal) - 6.98316 ) * dot_saturate(view_dir, pixelData.normal));
+//		color = float4(k1*k2, 0., 0., 0.);
+//	}
+//
+//	if(isPrepareAll){
+//		float3 lightSpec = lerp(pixelData.specular.xyz, float3(1.), k2) * k1;
+//		//computedLightDiff *= (float3(1.) - lightSpec);
+//
+//		// // Cook-Torrance Kelemen approximation of visibility term (geometry included)
+//		//float visibilityFunction = pow(HoN, 2.);
+//		// Implicit visibility term
+//		float visibilityFunction = 1.;
+//
+//		//color = pixelData.diffuse * float4(computedLightDiff + lightSpec, 1.) * visibilityFunction;
+//		//color = /*pixelData.diffuse * */float4(lightSpec/8., 1.) * visibilityFunction;
+//		//color = float4(lightSpec, 1.);
+//		color = pixelData.diffuse * float4(computedLightDiff * lightSpec/1., 1.) * visibilityFunction;
+//		color.a = 1.;
+//	}
 
 	return color;	
 }
