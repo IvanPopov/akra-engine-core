@@ -38,7 +38,9 @@ module akra {
 	var pState = {
 		animate: true,
 		lightShafts: true,
-		lensFlare: true
+		lensFlare: true,
+		dof: true,
+		blur: true
 	};
 
 	export var animateTimeOfDay = () => {
@@ -143,6 +145,24 @@ module akra {
 			}
 		});
 
+		pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
+			if (bEnabled) {
+				pEffect.addComponent("akra.system.dof");
+			}
+			else {
+				pEffect.delComponent("akra.system.dof");
+			}
+		});
+
+		pGUI.add(pState, 'blur').name('blur').onChange((bEnabled) => {
+			if (bEnabled) {
+				pEffect.addComponent("akra.system.blur");
+			}
+			else {
+				pEffect.delComponent("akra.system.blur");
+			}
+		});
+
 		var pShaftsFolder = pGUI.addFolder("light-shafts");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_SHARPNESS'))
 			.min(0.0).max(30).step(0.1).name("sharpness");
@@ -224,6 +244,7 @@ module akra {
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
+		var pDofFocalPlane: float = 0.;
 
 		pViewport.render.connect((pViewport: I3DViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -243,7 +264,10 @@ module akra {
 			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
 			pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
 
-			pDofData.DOF_FOCAL_PLANE = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth()/2., pViewport.getActualHeight()/2., 1.)).subtract(pCamera.getWorldPosition()).z;
+			if (iPass === 0 && pTechnique.hasComponent("akra.system.dof")) {
+				pDofFocalPlane = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth() / 2., pViewport.getActualHeight() / 2., 1.)).subtract(pCamera.getWorldPosition()).z;
+			}
+			pDofData.DOF_FOCAL_PLANE = pDofFocalPlane;
 
 			pPass.setUniform('SUNSHAFT_ANGLE', pSunshaftData.SUNSHAFT_ANGLE);
 			pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
