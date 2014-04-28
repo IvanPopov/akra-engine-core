@@ -67,8 +67,9 @@ float calcAttenuation(float light_dir_length, float3 attenuation) {
     return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
 }
 
+foreign bool SKIP_ALPHA = true;
 float4 returnColor(float4 color) {
-	if(IS_FOR_REAL_SHADING){
+	if(SKIP_ALPHA){
 		return float4(color.xyz, 1.);
 	}
 	else {

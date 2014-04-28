@@ -245,6 +245,7 @@ module akra.render {
 			pPass.setForeign("IS_USED_PNONG", this.getShadingModel() === EShadingModel.PHONG);
 			pPass.setForeign("IS_USED_BLINN_PNONG", this.getShadingModel() === EShadingModel.BLINNPHONG);
 			pPass.setForeign("IS_USED_PBS_SIMPLE", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+			pPass.setForeign("SKIP_ALPHA", false);
 
 			if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
 				pPass.setForeign("IS_USED_PBS_REFLECTIONS", true);
@@ -275,6 +276,7 @@ module akra.render {
 
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
+						pTechnique.addComponent("akra.system.applyForwardShading");
 						pTechnique.addComponent("akra.system.omniLighting");
 						pTechnique.addComponent("akra.system.projectLighting");
 						pTechnique.addComponent("akra.system.omniShadowsLighting");

@@ -563,6 +563,7 @@ module akra.render {
 					pLPPMethod.setForeign("IS_FOR_LPP_PASS0", i === 0);
 					pLPPMethod.setForeign("IS_FOR_LPP_PASS1", i === 1);
 					pLPPMethod.setForeign("IS_FOR_REAL_SHADING", false);
+					pLPPMethod.setForeign("SKIP_ALPHA", false);
 					pLPPMethod.setSurfaceMaterial(null);
 				}
 				else {

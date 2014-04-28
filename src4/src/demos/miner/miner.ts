@@ -18,7 +18,11 @@ module akra {
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {
-		premultipliedAlpha: false,
+		alpha: true,
+		depth: true,
+		premultipliedAlpha: true,
+		antialias : true,
+		//premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
 		//for black background & and avoiding composing with other html
@@ -69,20 +73,25 @@ module akra {
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
-		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
-		pViewport = new render.LPPViewport(pCamera);
+		var pDSViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 1);
+		pViewport = new render.ForwardViewport(pCamera, 0., 0., 0.5, 1., 0.);
 		pCanvas.addViewport(pViewport);
+		pCanvas.addViewport(pDSViewport);
 
 		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		//pCanvas.addViewport(pLPPViewport);
+		
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		pViewport.setFXAA(true);
 		
 		//pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
 		pViewport.setClearEveryFrame(true);
-		pViewport.setBackgroundColor(color.BLACK);
-		pViewport.setFXAA(false);
+		pViewport.setBackgroundColor(color.GRAY);
+		//pViewport.setFXAA(false);
+
+		pDSViewport.setClearEveryFrame(true);
+		pDSViewport.setBackgroundColor(color.GRAY);
+		pDSViewport.setFXAA(false);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -107,12 +116,12 @@ module akra {
 			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
 			pLightOmni.attachToParent(pScene.getRootNode());
 			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
-			var pSprite = pScene.createSprite();
-			pSprite.scale(.25);
-			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
-			pSprite.setBillboard(true);
-			pSprite.setShadow(false);
-			pSprite.attachToParent(pLightOmni);
+			//var pSprite = pScene.createSprite();
+			//pSprite.scale(.25);
+			//pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
+			//pSprite.setBillboard(true);
+			//pSprite.setShadow(false);
+			//pSprite.attachToParent(pLightOmni);
 
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
@@ -121,19 +130,20 @@ module akra {
 			pLightOmni.getParams().specular.set(math.random());
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
-			((pSprite: ISprite, pLightOmni: IOmniLight) => {
-				pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
-				pSprite.mouseout.connect(() => { pViewport.highlight(null); });
-				//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
-				//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
-				pSprite.click.connect(() => {
-					pLightOmni.setEnabled(!pLightOmni.isEnabled());
-					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
-					//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
-				});
-			})(pSprite, pLightOmni);
+			//((pSprite: ISprite, pLightOmni: IOmniLight) => {
+			//	pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
+			//	pSprite.mouseout.connect(() => { pViewport.highlight(null); });
+			//	//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
+			//	//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
+			//	pSprite.click.connect(() => {
+			//		pLightOmni.setEnabled(!pLightOmni.isEnabled());
+			//		(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
+			//		//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
+			//	});
+			//})(pSprite, pLightOmni);
 
-			animateLight(pLightOmni, pSprite);
+			//animateLight(pLightOmni, pSprite);
+			animateLight(pLightOmni, null);
 		}
 
 
@@ -216,9 +226,9 @@ module akra {
 
 
 		pMiner.getOptions().wireframe = true;
-		var pModel: ISceneNode = pMiner.extractFullScene(pScene);
-		pModel.addController(pController);
-		pModel.scale(.5);
+		//var pModel: ISceneNode = pMiner.extractFullScene(pScene);
+		//pModel.addController(pController);
+		//pModel.scale(.5);
 
 		pController.play.emit(0);
 
@@ -228,52 +238,52 @@ module akra {
 		var pMinerMesh: IMesh = null;
 		var pMinerModel: ISceneModel = null;
 
-		pModel.explore((pEntity: IEntity): boolean => {
-			if (scene.SceneModel.isModel(pEntity)) {
-				var pNode = <ISceneModel>pEntity;
-				if (pNode.getMesh().getName() !== "geom-Object007") {
-					return;
-				}
+		//pModel.explore((pEntity: IEntity): boolean => {
+		//	if (scene.SceneModel.isModel(pEntity)) {
+		//		var pNode = <ISceneModel>pEntity;
+		//		if (pNode.getMesh().getName() !== "geom-Object007") {
+		//			return;
+		//		}
 
-				pMinerModel = window["minerNode"] = pNode;
-				pMinerMesh = pNode.getMesh();
-				pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
+		//		pMinerModel = window["minerNode"] = pNode;
+		//		pMinerMesh = pNode.getMesh();
+		//		pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-				//////////////////////////
-				//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
+		//		//////////////////////////
+		//		//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-				//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
-				//	if (!pSubset.getBoneLocalBound(i)) {
-				//		continue;
-				//	}
+		//		//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
+		//		//	if (!pSubset.getBoneLocalBound(i)) {
+		//		//		continue;
+		//		//	}
 
-				//	var pBox = pSubset.getBoneLocalBound(i);
-				//	var pBone = pSubset.getSkin().getAffectedNode(i);
+		//		//	var pBox = pSubset.getBoneLocalBound(i);
+		//		//	var pBone = pSubset.getSkin().getAffectedNode(i);
 
-				//	var pCube = addons.lineCube(pScene);
-				//	pCube.attachToParent(pBone);
-				//	pCube.setInheritance(ENodeInheritance.ALL);
-				//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
-				//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
-				//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
-				//}
-			}
+		//		//	var pCube = addons.lineCube(pScene);
+		//		//	pCube.attachToParent(pBone);
+		//		//	pCube.setInheritance(ENodeInheritance.ALL);
+		//		//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
+		//		//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
+		//		//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
+		//		//}
+		//	}
 
-			return true;
-		});
+		//	return true;
+		//});
 
 		pLibeCube.attachToParent(pScene.getRootNode());
 
 
-		pScene.beforeUpdate.connect(() => {
-			if (!pLibeCube.isVisible()) return;
-			var pBB = geometry.Rect3d.temp(pMinerModel.getWorldBounds());
+		//pScene.beforeUpdate.connect(() => {
+		//	if (!pLibeCube.isVisible()) return;
+		//	var pBB = geometry.Rect3d.temp(pMinerModel.getWorldBounds());
 
-			//pBB.transform((<INode>pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getParent()).getWorldMatrix());
+		//	//pBB.transform((<INode>pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getParent()).getWorldMatrix());
 
-			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
-			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
-		});
+		//	pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
+		//	pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
+		//});
 
 		//pLibeCube.setVisible(false);
 
@@ -282,18 +292,18 @@ module akra {
 		});
 
 
-		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
-			pModel.explore((pEntity: IEntity): boolean => {
-				if (scene.SceneModel.isModel(pEntity)) {
-					var pNode = <ISceneModel>pEntity;
-					for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
-						pNode.getRenderable(i).wireframe(bValue);
-					}
-				}
+		//pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
+		//	pModel.explore((pEntity: IEntity): boolean => {
+		//		if (scene.SceneModel.isModel(pEntity)) {
+		//			var pNode = <ISceneModel>pEntity;
+		//			for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
+		//				pNode.getRenderable(i).wireframe(bValue);
+		//			}
+		//		}
 
-				return true;
-			});
-		});
+		//		return true;
+		//	});
+		//});
 
 
 		pGUI.add({ usePhong: true }, 'usePhong').onChange(function (bValue: boolean) {
@@ -303,6 +313,21 @@ module akra {
 		pGUI.add({ usePBS: true }, 'usePBS').onChange(function (bValue: boolean) {
 			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
 		});
+
+		var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");
+		var pCubeModel = pCubeCollada.extractModel();
+
+		pCubeModel.attachToParent(pScene.getRootNode());
+		pCubeModel.setPosition(0., 2., -2.).scale(50.);
+		pCubeModel.getRenderable().getMaterial().diffuse.a = 0.4;
+		pCubeModel.getRenderable().getMaterial().diffuse.r = 1.0;
+		pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
+		pCubeModel.getRenderable().getMaterial().specular.a = 0.2;
+		pCubeModel.getRenderable().getMaterial().ambient.a = 0.;
+		pCubeModel.getRenderable()["transperancy"] = true;
+		//var pGlass: ITexture = pRmgr.createTexture("GLASS");
+		//pGlass.loadImage(<IImg>pRmgr.getImagePool().findResource("GLASS"));
+		//pCubeModel.getRenderable().getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.DIFFUSE, pGlass);
 		pProgress.destroy();
 	}
 

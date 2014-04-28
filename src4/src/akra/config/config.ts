@@ -154,7 +154,7 @@ module akra.config {
 
 	export var material = {
 		"name": defaultName,
-		default: {
+		"default": {
 			"diffuse": .5, //any color view can be used, like "#888888" or {r: .5, g: .5, b: .5}
 			"ambient": .5,
 			"specular": .5,

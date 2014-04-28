@@ -1,0 +1,35 @@
+provide akra.system;
+include "common.afx";
+
+shared PixelData pixelData;
+shared float4 result_color = float4(0.);
+
+float4 fsForwardShading0(float3 vert: VERTEX) : COLOR {
+	pixelData.position = vert;
+	result_color += pixelData.material.emissive;
+
+	return result_color;
+}
+
+float4 fsForwardShading1(float3 vert: VERTEX) : COLOR {
+	pixelData.position = vert;
+	result_color += pixelData.material.emissive;
+
+	return result_color;
+}
+
+technique applyForwardShading {
+	pass {
+		if(engine.mesh.transperancy){
+			SRCBLEND = SRCALPHA;
+			DESTBLEND = ONE;
+			BLENDENABLE = TRUE;
+			//ZENABLE = FALSE;
+			ZWRITEENABLE = FALSE;
+			PixelShader = compile fsForwardShading0();
+		}
+		else {
+			PixelShader = compile fsForwardShading1();
+		}
+	}
+}

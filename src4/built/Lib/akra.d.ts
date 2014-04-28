@@ -6787,7 +6787,7 @@ declare module akra.config {
     };
     var material: {
         "name": string;
-        default: {
+        "default": {
             "diffuse": number;
             "ambient": number;
             "specular": number;

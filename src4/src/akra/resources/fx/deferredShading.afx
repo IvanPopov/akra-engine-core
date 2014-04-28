@@ -74,7 +74,7 @@ VS_OUT vs_deferred_shading(VS_IN IN){
 float4x4 projMat : PROJ_MATRIX;
 
 shared PixelData pixelData;
-shared float4 result_color;
+shared float4 result_color = float4(0.);
 
 bool normalFix;
 

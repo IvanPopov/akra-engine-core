@@ -92,6 +92,7 @@
         <File Path="resources/fx/lightingFunctions.afx"/>
         <File Path="resources/fx/common.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>
           <ResourceFile Path="resources/fx/fxaa.afx"/>
@@ -131,6 +132,7 @@
         <File Path="resources/fx/lightingFunctions.afx"/>
         <File Path="resources/fx/common.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>
           <ResourceFile Path="resources/fx/fxaa.afx"/>
