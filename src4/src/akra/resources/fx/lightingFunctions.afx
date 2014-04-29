@@ -596,9 +596,9 @@ float3 getEnvMapColor(float3 R, float Gloss, sampler2D envSampler)
 	// 		+ REFLECTION_CAPTURE_ROUGHNESS_MIP_SCALE * log2(Roughness)
 	// 7 - 1 - 1 
 	// 		+ 1.2 * log2(Roughness)
-	int lod1 = int(floor(glossToQualityConverter(Gloss, 7.)));
-	int lod2 = int(ceil(glossToQualityConverter(Gloss, 7.)));
-	float alpha = glossToQualityConverter(Gloss, 7.) - float(lod1);
+	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
+	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
+	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
 
     float3 Envcolor = getEnvLod(envSampler, R, lod1).rgb * (1. - alpha)
     	+ getEnvLod(envSampler, R, lod2).rgb * alpha;
