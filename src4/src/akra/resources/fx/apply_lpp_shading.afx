@@ -55,7 +55,7 @@ float3 schlick_specular_modifier(float3 SpecularColorMat){
 
 float3 Diffuse_Lambert( float3 DiffuseColor )
 {
-    return DiffuseColor / PI;
+    return DiffuseColor / PI; // 1 rcp 1 mul
 }
 
 float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
@@ -84,6 +84,7 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
                             SchliSpecMult * lightsDataA.rgb * lightsDataA.a;
 
         float3 diffuse = Diffuse_Lambert(Fragment_material.diffuse.rgb) * lightsDataB.rgb;
+        //diffuse *= (1. - specular);
 
         color += float4(specular + diffuse, 1.);
 
