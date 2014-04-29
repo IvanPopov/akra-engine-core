@@ -179,12 +179,6 @@ float4 applySunLightShadows() : COLOR {
 	return returnColor(result_color);
 };
 
-float4 clampf4(float4 color){
-	return float4(clamp(color.x, 0., 1.),
-				  clamp(color.y, 0., 1.),
-				  clamp(color.z, 0., 1.), color.a);
-}
-
 float4 applyPBSReflection(): COLOR {
 	float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
 			pixelData.material.specular.xyz, pixelData.material.shininess, envSampler0);
@@ -192,7 +186,7 @@ float4 applyPBSReflection(): COLOR {
 	float4 color = resultAFXColor;
 	//reflection *= float4(1.) - color;
 	color += reflection;
-	return clampf4(color);
+	return color;
 };
 
 technique omniLighting{
@@ -245,7 +239,7 @@ technique sunShadowsLighting{
 
 technique pbsReflection{
 	pass applyPbsReflection{
-		if(IS_USED_PBS_REFLECTIONS && IS_USED_PBS_SIMPLE){
+		if(false && IS_USED_PBS_REFLECTIONS && IS_USED_PBS_SIMPLE){
 			PixelShader = compile applyPBSReflection();
 		}
 	}

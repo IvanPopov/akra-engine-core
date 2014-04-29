@@ -153,18 +153,6 @@ module akra.webgl {
 			return this._getAkraTextureParameterValue(pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam)));
 		}
 
-		protected _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes {
-			if (!this.isValid()) {
-				return 0;
-			}
-			var iWebGLTarget: int = this._getWebGLTextureTarget();
-			var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
-			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
-			pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
-			return this._getAkraTextureParameterValue(pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam)));
-		}
-
-
 		protected _createInternalTextureImpl(cFillColor: IColor = null): boolean {
 			if (!isNull(cFillColor)) {
 				logger.warn("Texture can create with filled only by default(black) color");

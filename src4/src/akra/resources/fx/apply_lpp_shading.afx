@@ -1,6 +1,7 @@
 provide akra.system;
 
 include "common.afx";
+include "brdf.afx";
 
 shared PixelData pixelData;
 
@@ -35,6 +36,7 @@ float2 screenSize: SCREEN_SIZE;
 foreign bool IS_USED_BLINN_PNONG = false;
 foreign bool IS_USED_PNONG = true;
 foreign bool IS_USED_PBS_SIMPLE = false;
+foreign bool IS_USED_PBS_REFLECTIONS = false;
 
 const float MAX_SHININESS = 1.;
 
@@ -43,27 +45,41 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
 	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
 	float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
 
-	float4 color = pixelData.material.emissive;
+	float4 color = float4(0.);//pixelData.material.emissive;
 
     if(IS_USED_PBS_SIMPLE){
-    	float4 normalBufferData = tex2D(sampler_lpp_normal_buffer, texcoords);
-        float3 lightDif = lightsDataA.xyz;
-        float k1 = lightsDataA.w;
-        float k1_k2 = lightsDataB.x;
-
-        float3 F0 = pixelData.material.specular.xyz;
-        float3 specular = F0 * k1 + ( float3(1.)-F0 ) * k1_k2;
-        float visibilityFunction = 1.;
+        //float3 lightDif = lightsDataA.xyz;
+        //float k1 = lightsDataA.w;
+        //float k1_k2 = lightsDataB.x;
+//
+        //float3 F0 = pixelData.material.specular.xyz;
+        //float3 specular = F0 * k1 + ( float3(1.)-F0 ) * k1_k2;
+        //float visibilityFunction = 1.;
 
         //lightDif *= (float3(1.) - specular);
-        color += pixelData.material.diffuse * float4(lightDif + specular, 1.) * visibilityFunction;        
-        pixelData.position = vert;
+        //color += pixelData.material.diffuse * float4(lightDif * specular, 1.) * visibilityFunction;
+        //color += float4(float3(k1)/10., 1.); 
 
-        pixelData.normal = float3(normalBufferData.xy, sqrt(1. - dot(normalBufferData.xy, normalBufferData.xy)));
+        float3 SpecularColorMat = pixelData.material.specular.xyz;
+        float3 SchliSpecMult = schlick_specular_modifier(SpecularColorMat);
+        float3 specular = SpecularColorMat * lightsDataA.rgb + 
+                            SchliSpecMult * lightsDataA.rgb * lightsDataA.a;
 
-        if(normalBufferData.z > MAX_SHININESS){
-	        pixelData.normal.z *= -1.;
-	    }
+        float3 diffuse = Diffuse_Lambert(pixelData.material.diffuse.rgb) * lightsDataB.rgb;
+        //diffuse *= (1. - specular);
+
+        color += float4(specular + diffuse, 1.);
+
+        if(IS_USED_PBS_REFLECTIONS){
+        	float4 normalBufferData = tex2D(sampler_lpp_normal_buffer, texcoords);
+	        pixelData.position = vert;
+
+	        pixelData.normal = float3(normalBufferData.xy, sqrt(1. - dot(normalBufferData.xy, normalBufferData.xy)));
+
+	        if(normalBufferData.z > MAX_SHININESS){
+		        pixelData.normal.z *= -1.;
+		    }
+		}
     }
     else {
     	if(IS_USED_PNONG){

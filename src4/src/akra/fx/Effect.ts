@@ -717,6 +717,8 @@ module akra.fx {
 			this.generateSystemFunction("lerp", "mix($1,$2,$3)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 			this.generateSystemFunction("lerp", "mix($1,$2,$3)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE, "float"], ["float2", "float3", "float4"]);
 
+			this.generateSystemFunction("saturate", "max(0., min(1., $1))", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float","float2", "float3", "float4"]);
+			
 			//Extracts
 
 			this.generateNotBuiltInSystemFuction("extractHeader",

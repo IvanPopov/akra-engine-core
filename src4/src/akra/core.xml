@@ -91,6 +91,7 @@
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
         <File Path="resources/fx/lightingFunctions.afx"/>
         <File Path="resources/fx/common.afx"/>
+        <File Path="resources/fx/brdf.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
@@ -131,6 +132,7 @@
         <File Path="resources/fx/floatSpecialFunctions.afx"/>
         <File Path="resources/fx/lightingFunctions.afx"/>
         <File Path="resources/fx/common.afx"/>
+        <File Path="resources/fx/brdf.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>

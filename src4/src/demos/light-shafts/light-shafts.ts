@@ -163,6 +163,19 @@ module akra {
 			}
 		});
 
+        var pSkyBoxTexture: ITexture = pRmgr.createTexture(".sky-box-texture");
+        pSkyBoxTexture.loadResource("SKYBOX");
+
+        pGUI.add({
+            test: () => {
+                var pTexture = pRmgr.createTexture("redtexture");
+                pTexture.create(1024, 512, 1, null, 0, 0, 0,
+                    ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+                pTexture.unwrapCubeTexture(pSkyBoxTexture);
+                pCanvas.addViewport(new render.TextureViewport(pTexture,.1,.1,.5,.5*pViewport.getActualWidth()/pViewport.getActualHeight()*pTexture.getHeight()/pTexture.getWidth(),10));
+            }
+        }, "test").name("unwrap");
+
 		var pShaftsFolder = pGUI.addFolder("light-shafts");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_SHARPNESS'))
 			.min(0.0).max(30).step(0.1).name("sharpness");

@@ -1,3 +1,5 @@
+const float PI = 3.14159265359;
+
 struct FragmentMaterial {
 	float4 diffuse:DIFFUSE;
 	float4 ambient:AMBIENT;
@@ -7,7 +9,7 @@ struct FragmentMaterial {
 };
 
 struct PixelData {
-	FragmentMaterial material;
+	FragmentMaterial material: MATERIAL;
 
 	float3 normal   : NORMAL;
 	float3 position : POSITION; //in camera space
@@ -46,4 +48,8 @@ float unprojZ(float4x4 projMat, float screenZ){
 float unprojOrthoZ(float4x4 projMat, float screenZ){
 	return (screenZ - projMat[3][2])/projMat[2][2];
 	//return -projMat[3][2]/(projMat[2][2] + screenZ);
+}
+
+float dot_saturate (float3 a, float3 b) {
+	return clamp(dot(a,b),0.,1.);
 }

@@ -176,7 +176,7 @@ module akra.fx {
 						for (var i: uint = 0; i < pFunctionList.length; i++) {
 							var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
 							var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction._getArguments();
-
+							
 							if (isNull(pArgumentTypes)) {
 								if (pTestedFunction._getNumNeededArguments() === 0) {
 									if (!isNull(pFunction)) {

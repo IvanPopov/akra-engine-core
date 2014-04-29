@@ -32,6 +32,8 @@ sampler objectIDSampler : SAMPLER_TEXTURE0 = sampler_state
 samplerCUBE skyboxSampler : SAMPLER_SKYBOX = sampler_state
 {
 	Texture = <skyBox>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 };
 
 
@@ -60,7 +62,7 @@ VS_OUT vs_skybox(VS_IN IN){
 	float3 cubeVertex = float3(IN.position,1.);
 	float3 cubeVertexInCameraSpace = unproj(projMat,cubeVertex);
 	float3 cubeVertexInRealSpace = (invView * float4(cubeVertexInCameraSpace,1.)).xyz;
-	float3 skyboxVector = float3(1., 2., 1.) * (cubeVertexInRealSpace - cameraPos);
+	float3 skyboxVector = float3(1., 1., 1.) * (cubeVertexInRealSpace - cameraPos);
 
 	Out.position = float4(IN.position,0.,1.);
 	Out.texCoords = (IN.position+1.)/2. * inputTextureRatio;

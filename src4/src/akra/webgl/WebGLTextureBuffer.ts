@@ -65,10 +65,10 @@ module akra.webgl {
 
 			pWebGLContext.texImage2D(this._eFaceTarget,
 									 this._iLevel,
-									 getClosestWebGLInternalFormat(getSupportedAlternative(this._eFormat)),
+									 getClosestWebGLInternalFormat(getSupportedAlternative(this._eFormat)),                                         
 									 this._iWidth, this._iHeight, 0,
 									 getWebGLFormat(this._eFormat), getWebGLDataType(this._eFormat),
-									 null);	
+									 null); 
 
 			this._iByteSize = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
 			this._pBuffer.setPosition(0, 0, this._iWidth, this._iHeight, 0, this._iDepth);
@@ -157,107 +157,107 @@ module akra.webgl {
 			
 			var pProgram: IShaderProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.blit_texture_buffer"); 
 			var sFloatToVec4Func: string = "\
-				vec4 floatToVec4(float value){						\n\
-					float data = value;								\n\
-					vec4 result = vec4(0.);							\n\
+				vec4 floatToVec4(float value){                      \n\
+					float data = value;                             \n\
+					vec4 result = vec4(0.);                         \n\
 																	\n\
-					if(data == 0.){									\n\
-						float signedZeroTest = 1./value;			\n\
-						if(signedZeroTest < 0.){					\n\
-							result.x = 128.;						\n\
-						}											\n\
-						return result/255.;							\n\
-					}												\n\
+					if(data == 0.){                                 \n\
+						float signedZeroTest = 1./value;            \n\
+						if(signedZeroTest < 0.){                    \n\
+							result.x = 128.;                        \n\
+						}                                           \n\
+						return result/255.;                         \n\
+					}                                               \n\
 																	\n\
-					if(data < 0.){									\n\
-						result.x=128.;								\n\
-						data = -data;								\n\
-					}												\n\
+					if(data < 0.){                                  \n\
+						result.x=128.;                              \n\
+						data = -data;                               \n\
+					}                                               \n\
 																	\n\
-					float power = 0.;								\n\
-					bool isFinish = false;							\n\
-					for(int i=0;i<128;i++){							\n\
-						if(isFinish){								\n\
-							break;									\n\
-						}											\n\
+					float power = 0.;                               \n\
+					bool isFinish = false;                          \n\
+					for(int i=0;i<128;i++){                         \n\
+						if(isFinish){                               \n\
+							break;                                  \n\
+						}                                           \n\
 																	\n\
-						if(data >= 2.) {							\n\
-							if(!isFinish){							\n\
-								data = data * 0.5;					\n\
-								power += 1.;						\n\
-								if (power == 127.) {				\n\
-									isFinish = true;				\n\
-								}									\n\
-							}										\n\
-						}											\n\
-						else if(data < 1.) {						\n\
-							if(!isFinish){							\n\
-								data = data * 2.;					\n\
-								power -= 1.;						\n\
-								if (power == -126.) {				\n\
-									isFinish = true;				\n\
-								}									\n\
-							}										\n\
-						}											\n\
-						else {										\n\
-							isFinish = true;						\n\
-						}											\n\
-					}												\n\
+						if(data >= 2.) {                            \n\
+							if(!isFinish){                          \n\
+								data = data * 0.5;                  \n\
+								power += 1.;                        \n\
+								if (power == 127.) {                \n\
+									isFinish = true;                \n\
+								}                                   \n\
+							}                                       \n\
+						}                                           \n\
+						else if(data < 1.) {                        \n\
+							if(!isFinish){                          \n\
+								data = data * 2.;                   \n\
+								power -= 1.;                        \n\
+								if (power == -126.) {               \n\
+									isFinish = true;                \n\
+								}                                   \n\
+							}                                       \n\
+						}                                           \n\
+						else {                                      \n\
+							isFinish = true;                        \n\
+						}                                           \n\
+					}                                               \n\
 																	\n\
-					if(power == -126. && data < 1.){				\n\
-						power = 0.;									\n\
-					}												\n\
-					else{											\n\
-						power = power+127.;							\n\
-						data = data - 1.;							\n\
-					}												\n\
+					if(power == -126. && data < 1.){                \n\
+						power = 0.;                                 \n\
+					}                                               \n\
+					else{                                           \n\
+						power = power+127.;                         \n\
+						data = data - 1.;                           \n\
+					}                                               \n\
 																	\n\
-					result.x+=floor(power/2.);						\n\
-					result.y = mod(power,2.)*128.;					\n\
+					result.x+=floor(power/2.);                      \n\
+					result.y = mod(power,2.)*128.;                  \n\
 																	\n\
-					data *= 128.;									\n\
+					data *= 128.;                                   \n\
 																	\n\
-					result.y += floor(data);						\n\
+					result.y += floor(data);                        \n\
 																	\n\
-					data -= floor(data);							\n\
-					data *= 256.;									\n\
+					data -= floor(data);                            \n\
+					data *= 256.;                                   \n\
 																	\n\
-					result.z = floor(data);							\n\
+					result.z = floor(data);                         \n\
 																	\n\
-					data -= floor(data);							\n\
-					data *= 256.;									\n\
+					data -= floor(data);                            \n\
+					data *= 256.;                                   \n\
 																	\n\
-					result.w = floor(data);							\n\
+					result.w = floor(data);                         \n\
 																	\n\
-					return result/255.;								\n\
-				}													\n";
+					return result/255.;                             \n\
+				}                                                   \n";
 
 			if(isNull(pProgram)){
 				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.blit_texture_buffer");
 				pProgram.create(
-				"																									\n\
-				attribute vec2 POSITION;																			\n\
-				attribute vec3 TEXCOORD;																			\n\
+				"                                                                                                   \n\
+				attribute vec2 POSITION;                                                                            \n\
+				attribute vec3 TEXCOORD;                                                                            \n\
 																													\n\
-				varying vec3 texcoord;																				\n\
+				varying vec3 texcoord;                                                                              \n\
 																													\n\
-				void main(void){																					\n\
-					texcoord = TEXCOORD;																			\n\
-					gl_Position = vec4(POSITION, 0., 1.);															\n\
-				}																									\n\
+				void main(void){                                                                                    \n\
+					texcoord = TEXCOORD;                                                                            \n\
+					gl_Position = vec4(POSITION, 0., 1.);                                                           \n\
+				}                                                                                                   \n\
 				",
-				"													\n\
-				#ifdef GL_ES                        				\n\
-					precision highp float;          				\n\
-				#endif												\n\
-				varying vec3 texcoord;              				\n\
-				uniform sampler2D uSampler;        					\n\
+				"                                                   \n\
+				#ifdef GL_ES                                        \n\
+					precision highp float;                          \n\
+				#endif                                              \n\
+				varying vec3 texcoord;                              \n\
+				uniform sampler2D uSampler;                         \n\
 																	\n\
-				void main(void) {  									\n\
-					vec4 color;										\n\
-					color = texture2D(uSampler, texcoord.xy);      	\n\
-					gl_FragColor = color;           				\n\
-				}                                   				\n\
+				void main(void) {                                   \n\
+					vec4 color;                                     \n\
+					color = texture2D(uSampler, texcoord.xy);       \n\
+					gl_FragColor = color;                           \n\
+				}                                                   \n\
 				");
 			}
 
@@ -265,32 +265,32 @@ module akra.webgl {
 
 			if (isNull(pProgram)) {
 				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.decode_depth32_texture");
-				pProgram.create("																									\n\
-				attribute vec2 POSITION;																			\n\
-				attribute vec3 TEXCOORD;																			\n\
+				pProgram.create("                                                                                                   \n\
+				attribute vec2 POSITION;                                                                            \n\
+				attribute vec3 TEXCOORD;                                                                            \n\
 																													\n\
-				varying vec3 texcoord;																				\n\
+				varying vec3 texcoord;                                                                              \n\
 																													\n\
-				void main(void){																					\n\
-					texcoord = TEXCOORD;																			\n\
-					gl_Position = vec4(POSITION, 0., 1.);															\n\
-				}																									\n\
+				void main(void){                                                                                    \n\
+					texcoord = TEXCOORD;                                                                            \n\
+					gl_Position = vec4(POSITION, 0., 1.);                                                           \n\
+				}                                                                                                   \n\
 				",
-				"													\n\
-				#ifdef GL_ES                        				\n\
-					precision highp float;          				\n\
-				#endif												\n\
-				varying vec3 texcoord;              				\n\
-				uniform sampler2D uSampler;        					\n\
+				"                                                   \n\
+				#ifdef GL_ES                                        \n\
+					precision highp float;                          \n\
+				#endif                                              \n\
+				varying vec3 texcoord;                              \n\
+				uniform sampler2D uSampler;                         \n\
 																	\n\
 				" + sFloatToVec4Func + "\
 																	\n\
-				void main(void) {  									\n\
-					vec4 color;										\n\
-					color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));      	\n\
-					vec4 t = floatToVec4(color.r);					\n\
-					gl_FragColor = vec4(t.a, t.b, t.g, t.r);		\n\
-				}                                   				\n\
+				void main(void) {                                   \n\
+					vec4 color;                                     \n\
+					color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));         \n\
+					vec4 t = floatToVec4(color.r);                  \n\
+					gl_FragColor = vec4(t.a, t.b, t.g, t.r);        \n\
+				}                                                   \n\
 				");
 			}
 
@@ -298,52 +298,348 @@ module akra.webgl {
 
 			if (isNull(pProgram)) {
 				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.decode_float32_texture");
-				pProgram.create("																									\n\
-				attribute vec2 POSITION;																			\n\
-				attribute vec3 TEXCOORD;																			\n\
+				pProgram.create("                                                                                                   \n\
+				attribute vec2 POSITION;                                                                            \n\
+				attribute vec3 TEXCOORD;                                                                            \n\
 																													\n\
-				varying vec3 texcoord;																				\n\
-				varying vec2 dest_texcoord;																			\n\
+				varying vec3 texcoord;                                                                              \n\
+				varying vec2 dest_texcoord;                                                                         \n\
 																													\n\
-				void main(void){																					\n\
-					texcoord = TEXCOORD;																			\n\
-					gl_Position = vec4(POSITION, 0., 1.);															\n\
-					dest_texcoord.xy = (POSITION.xy + 1.  ) /2.;													\n\
-				}																									\n\
+				void main(void){                                                                                    \n\
+					texcoord = TEXCOORD;                                                                            \n\
+					gl_Position = vec4(POSITION, 0., 1.);                                                           \n\
+					dest_texcoord.xy = (POSITION.xy + 1.  ) /2.;                                                    \n\
+				}                                                                                                   \n\
 				",
-				"													\n\
-				#ifdef GL_ES                        				\n\
-					precision highp float;          				\n\
-				#endif												\n\
+				"                                                   \n\
+				#ifdef GL_ES                                        \n\
+					precision highp float;                          \n\
+				#endif                                              \n\
 																	\n\
-				varying vec3 texcoord;              				\n\
-				uniform sampler2D uSampler;							\n\
-				uniform int dst_width;        						\n\
-				uniform int dst_height;        						\n\
-				uniform int src_components_num;						\n\
-				varying vec2 dest_texcoord;							\n\
+				varying vec3 texcoord;                              \n\
+				uniform sampler2D uSampler;                         \n\
+				uniform int dst_width;                              \n\
+				uniform int dst_height;                             \n\
+				uniform int src_components_num;                     \n\
+				varying vec2 dest_texcoord;                         \n\
 				" + sFloatToVec4Func + "\
 																	\n\
-				void main(void) {  									\n\
+				void main(void) {                                   \n\
 																	\n\
-					float pixel = dest_texcoord.x * float(dst_width);	\n\
-					float value;									\n\
-					int comp = int(mod(pixel, float(src_components_num)));	\n\
+					float pixel = dest_texcoord.x * float(dst_width);   \n\
+					float value;                                    \n\
+					int comp = int(mod(pixel, float(src_components_num)));  \n\
 					vec4 color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));\n\
 																	\n\
-					if (comp == 0)									\n\
-						value = color.r;							\n\
-					if (comp == 1)									\n\
-						value = color.g;							\n\
-					if (comp == 2)									\n\
-						value = color.b;							\n\
-					if (comp == 3)									\n\
-						value = color.a;	 						\n\
+					if (comp == 0)                                  \n\
+						value = color.r;                            \n\
+					if (comp == 1)                                  \n\
+						value = color.g;                            \n\
+					if (comp == 2)                                  \n\
+						value = color.b;                            \n\
+					if (comp == 3)                                  \n\
+						value = color.a;                            \n\
 																	\n\
-					vec4 t = floatToVec4(value);					\n\
+					vec4 t = floatToVec4(value);                    \n\
 																	\n\
-					gl_FragColor = vec4(t.a, t.b, t.g, t.r);		\n\
+					gl_FragColor = vec4(t.a, t.b, t.g, t.r);        \n\
 				}\
+				");
+			}
+
+			pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.unwrap_cube_texture");
+			if (isNull(pProgram)) {
+				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.unwrap_cube_texture");
+				pProgram.create(
+					"                                                                                                   \n\
+				attribute vec2 POSITION;                                                                            \n\
+				attribute vec3 TEXCOORD;                                                                            \n\
+																													\n\
+				varying vec3 texcoord;                                                                              \n\
+																													\n\
+				void main(void){                                                                                    \n\
+					texcoord = TEXCOORD;                                                                            \n\
+					gl_Position = vec4(POSITION, 0., 1.);                                                           \n\
+				}                                                                                                   \n\
+				",
+					"                                                   \n\
+				#ifdef GL_ES                                        \n\
+					precision highp float;                          \n\
+				#endif                                              \n\
+				varying vec3 texcoord;                              \n\
+				uniform samplerCube cubeSampler;                    \n\
+																	\n\
+				vec4 getCubeDirLod(samplerCube sampler, float texel_size, vec3 v, int side, int lod) {                                \n\
+												\n\
+												\n\
+												\n\
+												\n\
+												\n\
+												\n\
+					return vec4(0.);                            \n\
+				}                               \n\
+				vec4 getCubeLod(samplerCube sampler, float texel_size, vec3 v, int side, int lod) {                                   \n\
+					if(lod>6) {                                   \n\
+						return vec4(0.,0.,0.,1.);                \n\
+					}           \n\
+					else {                             \n\
+						vec4 color = vec4(0.,0.,0.,1.);                                           \n\
+						/* float sum_size = pow(2.,float(lod));                              \n\
+						float local_texel_size = texel_size * sum_size;                                                \n\
+						vec3 min_pixel;                                                \n\
+						vec3 max_pixel;                                                \n\
+						if(side==1) {                                      \n\
+							vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.y+1.-local_texel_size)*0.5 );      \n\
+							min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.), 1.);                                        \n\
+							max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.), 1.);                                        \n\
+						}                                           \n\
+						else if(side==2) {                                      \n\
+							vec2 pixel_num = vec2( (v.y+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+							min_pixel = vec3(-1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+							max_pixel = vec3(-1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+						}                                           \n\
+						else if(side==3) {                                      \n\
+							vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+							min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.), 1.,  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+							max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.), 1.,  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+						}                                           \n\
+						else if(side==4) {                                      \n\
+							vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.y+1.-local_texel_size)*0.5 );      \n\
+							min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.), -1.);                                        \n\
+							max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.), -1.);                                        \n\
+						}                                           \n\
+						else if(side==5) {                                      \n\
+							vec2 pixel_num = vec2( (v.y+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+							min_pixel = vec3(1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+							max_pixel = vec3(1.,  ((pixel_num.x+0.5*texel_size)*2.-1.),  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+						}                                           \n\
+						else {                                      \n\
+							vec2 pixel_num = vec2( (v.x+1.-local_texel_size)*0.5, (v.z+1.-local_texel_size)*0.5 );      \n\
+							min_pixel = vec3( ((pixel_num.x+0.5*texel_size)*2.-1.), -1.,  ((pixel_num.y+0.5*texel_size)*2.-1.));                                        \n\
+							max_pixel = vec3( (((pixel_num.x+local_texel_size)+0.5*texel_size)*2.-1.), -1.,  (((pixel_num.y+local_texel_size)+0.5*texel_size)*2.-1.));                                        \n\
+						}                                         \n\
+						for(int i=0;i<64;i++) {                  \n\
+							if(float(i)>=sum_size) {             \n\
+								break;                                \n\
+							}                                         \n\
+							else {                                      \n\
+								for(int j=0;j<64;j++) {                    \n\
+									if(float(j)>=sum_size) {             \n\
+										break;                                \n\
+									}                                         \n\
+									else {                                      \n\
+										if(side == 1 || side == 4) {                 \n\
+											color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(float(i)/sum_size, float(j)/sum_size, 1.)) / sum_size / sum_size;                    \n\
+										}                                   \n\
+										else if(side == 2 || side == 5) {                 \n\
+											color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(1., float(i)/sum_size, float(j)/sum_size)) / sum_size / sum_size;                    \n\
+										}                                   \n\
+										else if(side == 3 || side == 6) {                 \n\
+											color += textureCube(sampler, min_pixel+(max_pixel-min_pixel)*vec3(float(i)/sum_size, 1., float(j)/sum_size)) / sum_size / sum_size;                    \n\
+										}                                   \n\
+										else {                 \n\
+											\n\
+										}                                   \n\
+									}                                           \n\
+								}                                           \n\
+							}                                           \n\
+						}*/                                               \n\
+																	   \n\
+						float power = pow(2.,float(lod));                        \n\
+						float local_texel_size = texel_size * power;                \n\
+																	   \n\
+						if(side==1 || side == 4) {                                      \n\
+							v.x = (v.x)/(1.-local_texel_size);                           \n\
+							v.y = (v.y)/(1.-local_texel_size);                           \n\
+							if(abs(1.-v.x)<0.5*texel_size) {          \n\
+								v.x = 1.;                        \n\
+							}                                     \n\
+							else if(abs(1.+v.x)<0.5*texel_size) {          \n\
+								v.x = -1.;                        \n\
+							}                                     \n\
+							if(abs(1.-v.y)<0.5*texel_size) {          \n\
+								v.y = 1.;                        \n\
+							}                                     \n\
+							else if(abs(1.+v.y)<0.5*texel_size) {          \n\
+								v.y = -1.;                        \n\
+							}                                     \n\
+						}                                           \n\
+						else if(side==2 || side==5) {                                      \n\
+							v.y = (v.y)/(1.-local_texel_size);                           \n\
+							v.z = (v.z)/(1.-local_texel_size);                           \n\
+							if(abs(1.-v.z)<0.5*texel_size) {          \n\
+								v.z = 1.;                        \n\
+							}                                     \n\
+							else if(abs(1.+v.z)<0.5*texel_size) {          \n\
+								v.z = -1.;                        \n\
+							}                                     \n\
+							if(abs(1.-v.y)<0.5*texel_size) {          \n\
+								v.y = 1.;                        \n\
+							}                                     \n\
+							else if(abs(1.+v.y)<0.5*texel_size) {          \n\
+								v.y = -1.;                        \n\
+							}                                     \n\
+						}                                           \n\
+						else if(side==3 || side==6) {                                      \n\
+							v.x = (v.x)/(1.-local_texel_size);                           \n\
+							v.z = (v.z)/(1.-local_texel_size);                           \n\
+							if(abs(1.-v.x)<0.5*texel_size) {          \n\
+								v.x = 1.;                        \n\
+							}                                     \n\
+							else if(abs(1.+v.x)<0.5*texel_size) {          \n\
+								v.x = -1.;                        \n\
+							}                                     \n\
+							if(abs(1.-v.z)<0.5*texel_size) {          \n\
+								v.z = 1.;                        \n\
+							}                                     \n\
+							else if(abs(1.+v.z)<0.5*texel_size) {          \n\
+								v.z = -1.;                        \n\
+							}                                     \n\
+						}                                           \n\
+						vec3 forward = normalize(v);                                  \n\
+						vec3 right = normalize(cross(forward,vec3(0.,1.,0.)));                \n\
+						if(abs(length(right))<0.95) {                             \n\
+							right = vec3(1.,0.,0.);                                \n\
+						}                                                            \n\
+						vec3 up = cross(forward,right);                      \n\
+						float steps = power*2.;                              \n\
+						float angle = asin(texel_size*steps)*0.5*float(lod);                              \n\
+						for(int i=0;i<128;i++) {                                                                           \n\
+							if(float(i)>=steps) {                                                                           \n\
+								break;                                                                                       \n\
+							}                                                                                                 \n\
+							else {                                                                                             \n\
+								for(int j=0;j<128;j++) {                                                                        \n\
+									if(float(j)>=steps) {                                                                        \n\
+										break;                                                                                    \n\
+									}                                                                                              \n\
+									else {                                                                                          \n\
+										float phi = angle*(-0.5+(float(i)+0.5)/steps);                                               \n\
+										float theta = angle*(-0.5+(float(j)+0.5)/steps);                                              \n\
+										vec3 dir = forward*cos(theta)*cos(phi) + right*cos(theta)*sin(phi) + up*sin(theta);                  \n\
+										color += textureCube(sampler, dir) / steps / steps;                    \n\
+									}                                           \n\
+								}                                           \n\
+							}                                           \n\
+						}                                               \n\
+						/* if(abs(v.x)==1.&&abs(v.y)==1.||abs(v.z)==1.&&abs(v.y)==1.||abs(v.x)==1.&&abs(v.z)==1.) {         \n\
+							color=vec4(1.,0.,0.,1.);                           \n\
+						}  */                                                     \n\
+						return color;                                               \n\
+					}                                               \n\
+				}                                                   \n\
+																	\n\
+				void main(void) {                                   \n\
+					vec4 color;                                     \n\
+					vec4 pos = vec4(texcoord.x*2.-1.,texcoord.y*2.-1.,0.,0.); \n\
+					int lod = 0;            \n\
+					if(pos.x < 0.) {        \n\
+						pos.x = pos.x*2.+1.;                \n\
+						for(int i=0;i<8;i++) {        \n\
+							if(pos.x < 0. || pos.y < 0.) {   \n\
+								break;                \n\
+							} \n\
+							else {    \n\
+								lod++;        \n\
+								pos.w = float(lod);  \n\
+								pos.x = (pos.x - 0.5)*2.;  \n\
+								pos.y = (pos.y - 0.5)*2.;  \n\
+							}            \n\
+						} \n\
+						if(pos.y >= 0.) {    \n\
+							 pos.z = 3.;       \n\
+							 pos.x = pos.x*2.+1.; \n\
+							 pos.y = pos.y*2.-1.; \n\
+						}           \n\
+						else if(pos.x < 0.) { \n\
+							 pos.z = 1.;       \n\
+							 pos.x = pos.x*2.+1.;       \n\
+							 pos.y = pos.y*2.+1.;       \n\
+						}            \n\
+						else {          \n\
+							 pos.z = 2.;       \n\
+							 pos.x = pos.x*2.-1.;       \n\
+							 pos.y = pos.y*2.+1.;       \n\
+						}               \n\
+					}                       \n\
+					else { \n\
+						pos.x = pos.x*2.-1.;                \n\
+						for(int i=0;i<8;i++) {        \n\
+							if(pos.x < 0. || pos.y >= 0.) {   \n\
+								break;                \n\
+							} \n\
+							else {    \n\
+								lod++;        \n\
+								pos.w = float(lod);  \n\
+								pos.x = (pos.x - 0.5)*2.;  \n\
+								pos.y = (pos.y + 0.5)*2.;  \n\
+							}            \n\
+						} \n\
+						if(pos.y < 0.) {    \n\
+							 pos.z = 6.;       \n\
+							 pos.x = pos.x*2.+1.; \n\
+							 pos.y = pos.y*2.+1.; \n\
+						}           \n\
+						else if(pos.x < 0.) { \n\
+							 pos.z = 4.;       \n\
+							 pos.x = pos.x*2.+1.;       \n\
+							 pos.y = pos.y*2.-1.;       \n\
+						}            \n\
+						else {          \n\
+							 pos.z = 5.;       \n\
+							 pos.x = pos.x*2.-1.;       \n\
+							 pos.y = pos.y*2.-1.;       \n\
+						}               \n\
+					} \n\
+					vec3 dir;               \n\
+					if(pos.z == 1.) {        \n\
+						dir.x = -pos.x;                        \n\
+						dir.y = pos.y;                        \n\
+						dir.z = 1.;                        \n\
+					}                        \n\
+					else if(pos.z == 2.) {        \n\
+						dir.x = -1.;                        \n\
+						dir.y = pos.y;                        \n\
+						dir.z = -pos.x;                        \n\
+					}                        \n\
+					else if(pos.z == 3.) {        \n\
+						dir.x = -pos.x;                        \n\
+						dir.y = 1.;                        \n\
+						dir.z = -pos.y;                        \n\
+					}                        \n\
+					else if(pos.z == 4.) {        \n\
+						dir.x = pos.x;                        \n\
+						dir.y = pos.y;                        \n\
+						dir.z = -1.;                        \n\
+					}                        \n\
+					else if(pos.z == 5.) {        \n\
+						dir.x = 1.;                        \n\
+						dir.y = pos.y;                        \n\
+						dir.z = pos.x;                        \n\
+					}                        \n\
+					else {                    \n\
+						dir.x = pos.x;                        \n\
+						dir.y = -1.;                        \n\
+						dir.z = -pos.y;                        \n\
+					}                        \n\
+					color = getCubeLod(cubeSampler, 1./256., dir, int(pos.z), int(pos.w));                      \n\
+					/*if(texcoord.x == 0. || texcoord.y == 0.) {      \n\
+						color = vec4(1.,0.,0.,1.);      \n\
+					}               \n\
+					else if(texcoord.x == 1./2./1024. || texcoord.y == 1./2./512.) {     \n\
+						color = vec4(1.,1.,0.,1.);      \n\
+					}                       \n\
+					else if(texcoord.x == 1.-1./2./1024. || texcoord.y == 1.-1./2./512.) {     \n\
+						color = vec4(0.,1.,1.,1.);      \n\
+					}                       \n\
+					else if(texcoord.x == 1. || texcoord.y == 1.) {     \n\
+						color = vec4(0.,1.,0.,1.);      \n\
+					}                       \n\
+					else {                  \n\
+						color = vec4(0.,0.,0.,1.);      \n\
+					}*/               \n\
+					gl_FragColor = color;                           \n\
+				}                                                   \n\
 				");
 			}
 
@@ -353,10 +649,10 @@ module akra.webgl {
 		}
 
 		// destroyResource(): boolean {
-		// 	super.destroyResource();
-		// 	this._pWebGLTexture = null;
-		// 	this.destroy();
-		// 	return true;
+		//  super.destroyResource();
+		//  this._pWebGLTexture = null;
+		//  this.destroy();
+		//  return true;
 		// }
 
 		destroy(): void {  
@@ -368,6 +664,164 @@ module akra.webgl {
 					pWebGLRenderer.destroyRenderTarget(this._pRTTList[i]);
 				}
 			}
+		}
+
+		unwrapFromCubeTexture(pCubeTex: WebGLInternalTexture): boolean {
+			var pSource = this;
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>pSource.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			pWebGLRenderer._disableTextureUnitsFrom(0);
+			pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
+
+			// Disable alpha, depth and scissor testing, disable blending, 
+			// and disable culling
+			pWebGLRenderer.disable(gl.DEPTH_TEST);
+			pWebGLRenderer.disable(gl.SCISSOR_TEST);
+			pWebGLRenderer.disable(gl.BLEND);
+			pWebGLRenderer.disable(gl.CULL_FACE);
+
+			// Set up source texture
+			pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
+			var iOldMagFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER),
+				iOldMinFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER),
+				iOldWrapS: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S),
+				iOldWrapT: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T);
+
+			//if (isNull(pSrcBox)) {
+			//    pSrcBox = pDestBox;
+			//}
+
+			// Set filtering modes depending on the dimensions and source
+			//if (pSrcBox.getWidth() === pDestBox.getWidth() &&
+			//    pSrcBox.getHeight() === pDestBox.getHeight() &&
+			//    pSrcBox.getDepth() === pDestBox.getDepth()) {
+			//    // Dimensions match -- use nearest filtering (fastest and pixel correct)
+			//    pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			//    pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			//}
+			//else {
+			//    pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			//    pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			//}
+			// Clamp to edge (fastest)
+			pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+			//Store old binding so it can be restored later
+			var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(gl.FRAMEBUFFER_BINDING);
+			var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+
+			pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pFramebuffer);
+
+			var pTempWebGLTexture: WebGLTexture = this._getWebGLTexture();
+
+			// If target format not directly supported, create intermediate texture
+			//var iGLTempFormat: int = webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(eFormat));
+
+			//pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_CUBE_MAP, pCubeTex.getWebGLTexture());
+			// Allocate temporary texture of the size of the destination area
+			//pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, iGLTempFormat,
+			//    /*math.ceilingPowerOfTwo*/(pDestBox.getWidth()),
+			//    /*math.ceilingPowerOfTwo*/(pDestBox.getHeight()),
+			//    0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+			pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+				gl.TEXTURE_2D, pTempWebGLTexture, 0);
+			// Set viewport to size of destination slice
+			pWebGLContext.viewport(0, 0, this.getWidth(), this.getHeight());
+
+
+			//Get WebGL program
+			var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.unwrap_cube_texture");
+			pWebGLRenderer.disableAllWebGLVertexAttribs();
+			pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram.getWebGLProgram());
+
+			var iPosAttrIndex: int = 0;
+			var iTexAttrIndex: int = 0;
+
+			iPosAttrIndex = pWebGLShaderProgram.getWebGLAttributeLocation("POSITION");
+			iTexAttrIndex = pWebGLShaderProgram.getWebGLAttributeLocation("TEXCOORD");
+
+			pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
+			pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
+
+			var pSquareVertices: Float32Array = SQUARE_VERTICES;
+			var pTexCoords: Float32Array = TEXCOORDS;
+
+			var pPositionBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+			var pTexCoordsBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+
+			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pPositionBuffer);
+			pWebGLContext.bufferData(gl.ARRAY_BUFFER, pSquareVertices, gl.STREAM_DRAW);
+			pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, gl.FLOAT, false, 0, 0);
+
+			pWebGLShaderProgram.setInt("cubeSampler", 0);
+			//pWebGLShaderProgram.setInt("src_components_num", pixelUtil.getComponentCount(pSource.getFormat()));
+			//pWebGLShaderProgram.setInt("dst_width", pDestBox.getWidth());
+			//pWebGLShaderProgram.setInt("dst_height", pDestBox.getHeight());
+
+			/// Calculate source texture coordinates
+			var u1: float = 0.;
+			var v1: float = 0.;
+			var u2: float = 1.;
+			var v2: float = 1.;
+			/// Calculate source slice for this destination slice
+			var w: float = 0.5;
+
+			pTexCoords[0] = 0.;
+			pTexCoords[1] = 1.;
+			pTexCoords[2] = w;
+
+			pTexCoords[3] = 1.;
+			pTexCoords[4] = 1.;
+			pTexCoords[5] = w;
+
+			pTexCoords[6] = 0.;
+			pTexCoords[7] = 0.;
+			pTexCoords[8] = w;
+
+			pTexCoords[9] = 1.;
+			pTexCoords[10] = 0.;
+			pTexCoords[11] = w;
+
+			/// Finally we're ready to rumble   
+			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_CUBE_MAP, pCubeTex.getWebGLTexture());
+
+			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pTexCoordsBuffer);
+			pWebGLContext.bufferData(gl.ARRAY_BUFFER, pTexCoords, gl.STREAM_DRAW);
+			pWebGLContext.vertexAttribPointer(iTexAttrIndex, 3, gl.FLOAT, false, 0, 0);
+
+			pWebGLContext.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+			if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0)) {
+				pWebGLContext.generateMipmap(this._eFaceTarget);
+			}
+
+			pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
+			pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+
+			pWebGLRenderer.deleteWebGLBuffer(pPositionBuffer);
+			pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);
+
+			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_CUBE_MAP, null);
+
+			// Reset source texture to sane state
+			pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
+			pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER, iOldMinFilter);
+			pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER, iOldMagFilter);
+			pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S, iOldWrapS);
+			pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T, iOldWrapT);
+			pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), null);
+
+			// Detach texture from temporary framebuffer
+			pWebGLContext.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+				gl.RENDERBUFFER, null);
+			// Restore old framebuffer
+			pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFramebuffer);
+			pWebGLRenderer.deleteWebGLFramebuffer(pFramebuffer);
+
+			return true;
 		}
 
 		//upload(download) data to(from) videocard.
@@ -441,7 +895,7 @@ module akra.webgl {
 				{
 					pWebGLContext.texImage2D(this._eFaceTarget,
 										this._iLevel,
-										webgl.getWebGLFormat(pData.format),	                            			
+										webgl.getWebGLFormat(pData.format),                                         
 										pDestBox.getWidth(), pDestBox.getHeight(), 0,
 										webgl.getWebGLFormat(pData.format),
 										webgl.getWebGLDataType(pData.format),
@@ -453,7 +907,7 @@ module akra.webgl {
 				{
 					pWebGLContext.texSubImage2D(this._eFaceTarget,
 										this._iLevel,
-										pDestBox.left, pDestBox.top,                            			
+										pDestBox.left, pDestBox.top,                                        
 										pDestBox.getWidth(), pDestBox.getHeight(),
 										webgl.getWebGLFormat(pData.format),
 										webgl.getWebGLDataType(pData.format),
@@ -545,7 +999,7 @@ module akra.webgl {
 			{
 				pSrcBox = new pixelUtil.PixelBox(pData, EPixelFormats.BYTE_RGBA, 
 					new Uint8Array(pixelUtil.getMemorySize(pData.getWidth(), pData.getHeight(), pData.getDepth(), EPixelFormats.BYTE_RGBA)));
-			}			
+			}           
 
 			
 
@@ -717,7 +1171,7 @@ module akra.webgl {
 				}
 				else {
 					return super.blit(pSource, pSrcBox, pDestBox);
-				}				
+				}               
 			}
 		}
 
@@ -739,8 +1193,8 @@ module akra.webgl {
 			pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
 			var iOldMagFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER),
 				iOldMinFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER),
-				iOldWrapS: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S),
-				iOldWrapT: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T);
+				iOldWrapS: uint     = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S),
+				iOldWrapT: uint     = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T);
 
 			if (isNull(pSrcBox)) {
 				pSrcBox = pDestBox;
@@ -749,7 +1203,7 @@ module akra.webgl {
 			// Set filtering modes depending on the dimensions and source
 			if (pSrcBox.getWidth() === pDestBox.getWidth() &&
 				pSrcBox.getHeight() === pDestBox.getHeight() &&
-			    pSrcBox.getDepth() === pDestBox.getDepth()) {
+				pSrcBox.getDepth() === pDestBox.getDepth()) {
 				// Dimensions match -- use nearest filtering (fastest and pixel correct)
 				pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 				pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -848,7 +1302,7 @@ module akra.webgl {
 				pTexCoords[10] = v2;
 				pTexCoords[11] = w;
 				
-				/// Finally we're ready to rumble	
+				/// Finally we're ready to rumble   
 				pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
 				
 				pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pTexCoordsBuffer);
@@ -944,13 +1398,13 @@ module akra.webgl {
 			pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
 			var iOldMagFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER),
 				iOldMinFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER),
-				iOldWrapS: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S),
-				iOldWrapT: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T);
+				iOldWrapS: uint     = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_S),
+				iOldWrapT: uint     = pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T);
 
 			// Set filtering modes depending on the dimensions and source
 			if (pSrcBox.getWidth() === pDestBox.getWidth() &&
 				pSrcBox.getHeight() === pDestBox.getHeight() &&
-			    pSrcBox.getDepth() === pDestBox.getDepth()) {
+				pSrcBox.getDepth() === pDestBox.getDepth()) {
 				// Dimensions match -- use nearest filtering (fastest and pixel correct)
 				pWebGLContext.texParameteri(pSource._getTarget(), gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 				pWebGLContext.texParameteri(pSource._getTarget(), gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -1003,7 +1457,7 @@ module akra.webgl {
 			}
 			else {
 				// We are going to bind directly, so set viewport to size and position of destination slice
-				pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.getWidth(), pDestBox.getHeight());	
+				pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.getWidth(), pDestBox.getHeight()); 
 			}
 
 			//Get WebGL program
@@ -1068,7 +1522,7 @@ module akra.webgl {
 				pTexCoords[10] = v2;
 				pTexCoords[11] = w;
 
-				/// Finally we're ready to rumble	
+				/// Finally we're ready to rumble   
 				pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
 				
 				// pWebGLContext.enable(pSource._getTarget());
@@ -1162,12 +1616,12 @@ module akra.webgl {
 			var pDestBox: IBox = arguments[1];
 
 			if (pixelUtil.isLuminance(pSourceOrigin.format) ||
-			    pixelUtil.isLuminance(this._eFormat) ||
+				pixelUtil.isLuminance(this._eFormat) ||
 			   (pSourceOrigin.getWidth() === pDestBox.getWidth() &&
-			    pSourceOrigin.getHeight() === pDestBox.getHeight() &&
+				pSourceOrigin.getHeight() === pDestBox.getHeight() &&
 				pSourceOrigin.getDepth() === pDestBox.getDepth())) {
 
-				return super.blitFromMemory(pSourceOrigin, pDestBox);	            
+				return super.blitFromMemory(pSourceOrigin, pDestBox);               
 			}
 
 			if(!this._pBuffer.contains(pDestBox)) {
@@ -1217,7 +1671,7 @@ module akra.webgl {
 			// var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.findResource(".temp");
 			
 			// if(isNull(pTextureBufferPool)){
-			// 	pTempTexBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
+			//  pTempTexBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
 			// }
 
 			pTempTexBuffer.create(eTarget, pTempWebGLTexture, iWidth, iHeight, 
@@ -1234,7 +1688,7 @@ module akra.webgl {
 			
 			//Delete temp data
 			pTempTexBuffer.release();
-			pTextureBufferPool.destroyResource(pTempTexBuffer);	        
+			pTextureBufferPool.destroyResource(pTempTexBuffer);         
 
 			pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);
 			pTempWebGLTexture = null;

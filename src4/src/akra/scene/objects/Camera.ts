@@ -86,7 +86,7 @@ module akra.scene.objects {
 		protected _v3fTargetPos: IVec3 = new Vec3;
 
 		/** Attributes for projection matrix */
-		protected _fFOV: float = math.PI / 5.;
+		protected _fFOV: float = math.PI / 3.;
 		protected _fAspect: float = 4. / 3.;
 		protected _fNearPlane: float = 0.1;
 		protected _fFarPlane: float = 500.;

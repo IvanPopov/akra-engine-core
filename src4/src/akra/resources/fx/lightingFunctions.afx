@@ -1,4 +1,5 @@
 include "common.afx";
+include "brdf.afx";
 
 struct LightData {
 	float4 diffuse     : DIFFUSE;
@@ -387,71 +388,88 @@ float4 calulatePBSReflection(float3 position, float3 normal,
 	float3 normal_dir = normal;
 	float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
 	// float3 reflect_dir = reflect(view_dir, normal_dir);
-	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
+	float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
+	float NoV = saturate(dot(normal_dir, view_dir));
 
-	//float shi = pixelData.material.specular.x * pixelData.material.specular.y * pixelData.material.specular.z;
-	float shi = shininess;
+	float3 fresnelReflectance;
 
-	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace,
-		specular.xyz * float3(1.0), shi, envSampler), 1.);
+	// Too bright envmap! multiplier
+	float3 envColor = getEnvMapColor(directionInsideCube, shininess, envSampler) * 0.5;
+	//if (specular.g < 0.2){
+		//fresnelReflectance = float3(EnvBRDFApproxNonmetal( 1. - shi, NoV ));
+	//}
+	//else {
+		fresnelReflectance = EnvBRDFApprox( specular.xyz, 1. - shininess, NoV );//3 add 3 mul 1 pow
+	//}
+
+	float4 reflection = float4(fresnelReflectance * envColor, 1.);
+
+	//if (reflection.r < 0.01){
+		//reflection.b = 1.;
+	//}
+	//else if (reflection.r < 0.05){
+		//reflection.r = 1.;
+	//}
+	//else if (reflection.r < 0.1){
+		//reflection.g = 1.;
+	//} 
+	//else {
+		//reflection.xyz = float3(1.);
+	//}
 
 	return reflection;
 };
 
-
-float dot_saturate (float3 a, float3 b) {
-	return clamp(dot(a,b),0.,1.);
-}
 
 float PBS_gloss : PBS_GLOSS = 0.; // temporarily used as transparency (how dirty is object from inside)
 float3 PBS_F0 : PBS_F0 = float3(0.); // temporarily used as reverse (1. - ) spectral transparency
 //float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
 
 // @c http://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
-float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3 normalDir, float Gloss)
+float3 FresnelSchlickWithRoughness(float3 SpecularColor, float NoV, float Gloss)
 {
 	// Canonical equation (from paper):
     //return SpecularColor + (max(float3(Gloss), SpecularColor) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.);
 	// Other possible function (used by Treyarch, Black Ops 2, Dimitar Lazarov):
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-    return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.) / (4. - 3. * Gloss);
-}
+    return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - NoV, 5.) / (4. - 3. * Gloss);
+}// 4 add 3 mul 1 rcp 1 pow
 
 // Functions for getting pixel position from cubemap formatted as follows:
 // zone3	nextlvl	zone4	zone5
 // zone1	zone2	zone6	nextlvl
 float2 getZone1z(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone2x(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = .5 - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone3y(float2 uv, int lod) {
-	uv.x = .5 - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = uv.y*pow(2.,-float(lod)-1.);
+	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 float2 getZone4z(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone5x(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-2.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = 1. - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone6y(float2 uv, int lod) {
-	uv.x = 1. - pow(2., -float(lod)-1.) + uv.x*pow(2.,-float(lod)-2.);
-	uv.y = 1. - pow(2., -float(lod)-1.) + uv.y*pow(2.,-float(lod)-1.);
+	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
+	uv.y = 1. - exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
 	return uv;
 }
 
@@ -463,8 +481,8 @@ float4 getEnvLod(sampler2D envSampler, float3 direction, int lod) {
 	direction /= max(max(abs(direction.x), abs(direction.y)), abs(direction.z));
 
 	// HACK: fixed cubemap size
-	float2 local_texel = float2(pow(2.,-8.+float(lod)));
-	float2 texel = float2(pow(2.,-10.),pow(2.,-9.));
+	float2 local_texel = float2(exp2(-8.+float(lod)));
+	float2 texel = float2(exp2(-10.),exp2(-9.));
 
 	if(direction.z >= .99) { // calculations are not precise
 		uv.x = -direction.x;
@@ -507,26 +525,41 @@ float glossToQualityConverter(float Gloss, float MaxLod)
 	return (1.-pow(Gloss,2.))*MaxLod;
 }
 
-float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float Gloss, sampler2D envSampler)
+//float3 EnvBRDF( float3 SpecularColor, float Roughness, float NoV )
+//{
+	//// Importance sampled preintegrated G * F
+	//float2 AB = Texture2DSampleLevel( PreIntegratedGF, PreIntegratedGFSampler, float2( NoV, Roughness ), 0 ).rg;
+//
+	//// Anything less than 2% is physically impossible and is instead considered to be shadowing 
+	//float3 GF = SpecularColor * AB.x + saturate( 50.0 * SpecularColor.g ) * AB.y;
+	//return GF;
+//}
+
+//// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
+//// [Lagarde 2012, "Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel"]
+//float3 FresnelSchlickRoughness( float3 SpecularColor, float VoH, float Roughness )
+//{ 
+	//return SpecularColor + ( saturate( 50.0 * SpecularColor.g ) - SpecularColor )
+							//* exp2( (-5.55473 * VoH - 6.98316) * VoH ) / (4. - 3. * Roughness);
+//}
+
+float3 getEnvMapColor(float3 R, float Gloss, sampler2D envSampler)
 {
 
 	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
 	// HACK: get maximum level of detail from size of texture
-	int lod1 = int(floor(glossToQualityConverter(Gloss, 7.)));
-	int lod2 = int(ceil(glossToQualityConverter(Gloss, 7.)));
-	float alpha = glossToQualityConverter(Gloss, 7.) - float(lod1);
+	// HardcodedNumCaptureArrayMips - 1 - REFLECTION_CAPTURE_ROUGHEST_MIP 
+	// 		+ REFLECTION_CAPTURE_ROUGHNESS_MIP_SCALE * log2(Roughness)
+	// 7 - 1 - 1 
+	// 		+ 1.2 * log2(Roughness)
+	int lod1 = int(floor(glossToQualityConverter(Gloss, 6.)));
+	int lod2 = int(ceil(glossToQualityConverter(Gloss, 6.)));
+	float alpha = glossToQualityConverter(Gloss, 6.) - float(lod1);
 
-    //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
     float3 Envcolor = getEnvLod(envSampler, R, lod1).rgb * (1. - alpha)
     	+ getEnvLod(envSampler, R, lod2).rgb * alpha;
 
-    return FresnelSchlickWithRoughness(SpecularColor, E, N, Gloss) * Envcolor;// * EnvMapScaleAndModulate; // EnvMapScaleAndModulate is used to decompress range
-}
-
-
-float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
-	// F0 = Fresnel reflectance at 0° (reflectance at normal incidence)
-	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
+    return Envcolor;
 }
 
 // @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
@@ -535,72 +568,70 @@ float4 applyPBSLightParams(PixelData pixelData,
 						   float3 lightDiffOrig, 
 						   float3 lightAttenuation) {
 	float4 color = float4(0.);
-	float3 light_dir = lightPosition - pixelData.position;
-	float light_dir_length = length(light_dir);
-	light_dir = normalize(light_dir);
-	float NoL = dot_saturate(pixelData.normal, light_dir);
 
+	// Physically based shading model
+	// parameterized with the below options
+	
+	// ESSENTIAL CONSTANTS DEF
+	float3 light_dir = normalize(lightPosition - pixelData.position);
+	float3 view_dir = normalize(-pixelData.position);
+	float3 normal_dir = normalize(pixelData.normal);
+	float3 half_vector = normalize(view_dir + light_dir);
+
+	float NoL = saturate(dot(normal_dir, light_dir));
+	float NoH = saturate(dot(normal_dir, half_vector));
+	float NoV = saturate(dot(normal_dir, view_dir));
+	float VoH = saturate(dot(view_dir, half_vector));
+
+	float Roughness = 1. - pixelData.material.shininess;
+	float3 DiffuseColor = pixelData.material.diffuse.xyz;
+	float3 SpecularColor = pixelData.material.specular.xyz;
+
+	// ATTENUATION
 	// multiplicator for better visibility REMOVED(bill-phong is much more shiny)
+	float light_dir_length = length(light_dir);
 	float attenuation = 1.0 / (lightAttenuation.x +
 							   lightAttenuation.y * light_dir_length + 
 							   lightAttenuation.z * light_dir_length * light_dir_length);
+	float ShadowedAttenuation = attenuation * saturate(dot(light_dir, normal_dir) * 100000.);
 
-	// Specular power used in paper:
-	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
-	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	float alpha_p = pow(8192., pixelData.material.shininess);
-	//float alpha_p = pow(2., 10.*pixelData.material.shininess + 1.);
-	float3 view_dir = normalize(-pixelData.position);
-	if(IS_FOR_LPP_PASS0 || IS_FOR_LPP_PASS1){
-		view_dir = normalize(-pixelData.position);
-	}
-	float3 halfVector = normalize(view_dir + light_dir);
-	
-	float HoN = dot_saturate(halfVector, pixelData.normal);
+	// ENERGY CONSERVATION
+	float Energy = 1.;
+	// additional conservation needed for prolonged light sources
 
-	float3 computedLightDiff;
-	float k1;
-	float k2;
+	if (IS_FOR_LPP_PASS0){
+		float D = D_Func( Roughness, NoH );
+		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir );
+		float3 xi = Energy * D * Geom * NoL * ShadowedAttenuation * lightDiffOrig;
+		float schlickE = LPP_F_Schlick_Exp(VoH);
 
-	k1 = (alpha_p+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
+		// if (dot(light_dir, normal_dir) <= -0.0){	//tambourine
+		// 	return float4(0., 1., 0., 0.);
+		// }
 
-	//(k1)*F0 + ( float3(1.)-F0 ) * (k1) * (k2);
-
-	if(IS_FOR_REAL_SHADING || IS_FOR_LPP_PASS0){
-		//Prepare light diffuse and k1
-		// Blinn-Phong BRDF
-		//computedLightDiff = lightDiffOrig * NoL;//* (alpha_p + 2.) / 2. / 3.14159265359;// pow(NoL, alpha_p);
-		computedLightDiff = lightDiffOrig * (alpha_p + 2.) / 2. / 3.14159265359 * pow(NoL, alpha_p);
-		// GGX (Trowbridge and Reitz) BRDF
-		//computedLightDiff = lightDiffOrig * pow(pixelData.material.shininess, 4.) / pow(3.14159265359 * (
-		//				   	pow(max(dot(pixelData.normal, light_dir), 0.000001), 2.) *
-		//				   	(pow(pixelData.material.shininess, 4.) - 1.) + 1.), 2.);
-
-
-		computedLightDiff = computedLightDiff.xyz * attenuation;
-		//k1 = (alpha_p+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
-
-		color = float4(computedLightDiff, k1);
+		return float4(xi, schlickE);
 	}
 
-	if(IS_FOR_REAL_SHADING || IS_FOR_LPP_PASS1){
-		k2 = pow((1.-(dot_saturate(light_dir, halfVector))), 5.);
-		color = float4(k1*k2, 0., 0., 0.);
+	if (IS_FOR_LPP_PASS1){
+		float3 xi = ShadowedAttenuation * NoL * lightDiffOrig;
+		return float4(xi, 0.);
 	}
 
-	if(IS_FOR_REAL_SHADING){
-		float3 lightSpec = lerp(pixelData.material.specular.xyz, float3(1.), k2) * k1;
-		computedLightDiff *= (float3(1.) - lightSpec);
+	if (IS_FOR_REAL_SHADING) {
+		float D = D_Func( Roughness, NoH ); //6 mul 1 rcp
+		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir ); //7 mul 1 rcp
+		float3 Fres = Fresnel( SpecularColor, VoH );	//3 mul 1 exp
+		float3 SpecularLighting = Energy * Fres * D * Geom; //3 mul
 
-		// // Cook-Torrance Kelemen approximation of visibility term (geometry included)
-		//float visibilityFunction = pow(HoN, 2.);
-		// Implicit visibility term
-		float visibilityFunction = 1.;
+		float3 DiffuseLighting = Diffuse_Func( DiffuseColor, Roughness, NoV, NoL, VoH ); // 1 rcp 1 mul
+		//DiffuseLighting *= (1. - SpecularLighting);
 
-		color = pixelData.material.diffuse * float4(computedLightDiff + lightSpec, 1.) * visibilityFunction;
-		//color = float4(lightSpec, 1.);
-		color.a = 1.;
-	}
+
+		color = float4( (SpecularLighting + DiffuseLighting)
+						* lightDiffOrig * ShadowedAttenuation * NoL, 1. ); // 3 mul
+		//color = float4( float3(D/10.), 1. );
+		return color;
+	}	//23 mul 3 rcp 1 exp
 
 	return color;	
 }
