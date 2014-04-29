@@ -93,17 +93,19 @@ module akra {
 			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
 				pCamera.addRelPosition(fSpeed, 0, 0);
 			}
-			if (pKeymap.isKeyPress(EKeyCodes.UP)) {
+			if (pKeymap.isKeyPress(EKeyCodes.UP) || pKeymap.isKeyPress(EKeyCodes.Q)) {
 				pCamera.addRelPosition(0, fSpeed, 0);
 			}
-			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
+			if (pKeymap.isKeyPress(EKeyCodes.DOWN) || pKeymap.isKeyPress(EKeyCodes.E)) {
 				pCamera.addRelPosition(0, -fSpeed, 0);
 			}
 		});
 	}
+var teapotSpecular = new Color(0.999, 0.71, 0.29, 1.0);
+var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 
 	function createViewport(): I3DViewport {
-		var pViewport: ILPPViewport = new render.DSViewport(pCamera);
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -124,36 +126,36 @@ module akra {
 
 		var pMaterialPresets = {
 			Gold: {
-				_F0: new math.Vec3(1., 1., 1.),
-				_Diffuse: new math.Vec3(1.00, 0.86, 0.57),
+				_F0: new Color(1., 0.71, 0.29),
+				_Diffuse: new Color(1.00, 0.86, 0.57),
 			},
 			Copper: {
-				_F0: new math.Vec3(1., 1., 1.),
-				_Diffuse: new math.Vec3(0.98, 0.82, 0.76),
+				_F0: new Color(0.95, 0.64, 0.54),
+				_Diffuse: new Color(0.98, 0.82, 0.76),
 			},
 			Plastic: {
-				_F0: new math.Vec3(1., 1., 1.),
-				_Diffuse: new math.Vec3(0.21, 0.21, 0.21),
+				_F0: new Color(0.03, 0.03, 0.03),
+				_Diffuse: new Color(0.21, 0.21, 0.21),
 			},
 			Iron: {
-				_F0: new math.Vec3(1., 1., 1.),
-				_Diffuse: new math.Vec3(0.77, 0.78, 0.78),
+				_F0: new Color(0.56, 0.57, 0.58),
+				_Diffuse: new Color(0.77, 0.78, 0.78),
 			},
 			Aluminium: {
-				_F0: new math.Vec3(1., 1., 1.),
-				_Diffuse: new math.Vec3(0.96, 0.96, 0.97),
+				_F0: new Color(0.91, 0.92, 0.92),
+				_Diffuse: new Color(0.96, 0.96, 0.97),
 			},
 			Silver: {
-				_F0: new math.Vec3(1., 1., 1.),
-				_Diffuse: new math.Vec3(0.98, 0.97, 0.95),
+				_F0: new Color(0.95, 0.93, 0.88),
+				_Diffuse: new Color(0.98, 0.97, 0.95),
 			},
 			Water: {
-				_F0: new math.Vec3(0.15, 0.15, 0.15),
-				_Diffuse: new math.Vec3(0.98, 0.97, 0.95),
+				_F0: new Color(0.02, 0.02, 0.02),
+				_Diffuse: new Color(0.15, 0.15, 0.15),
 			},
 			Glass: {
-				_F0: new math.Vec3(0.21, 0.21, 0.21),
-				_Diffuse: new math.Vec3(0.98, 0.97, 0.95),
+				_F0: new Color(0.08, 0.08, 0.08),
+				_Diffuse: new Color(0.31, 0.31, 0.31),
 			}
 		};
 
@@ -246,7 +248,9 @@ module akra {
             });
 		(<dat.NumberControllerSlider>pPBSFolder.add(pPBSData, '_Gloss')).step(0.01).min(0).max(1).name("gloss");
 		(<dat.OptionController>pPBSFolder.add({Material:"Plastic"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
-			pPBSData._Material = pMaterialPresets[sKey];
+			//pPBSData._Material = pMaterialPresets[sKey];
+			teapotSpecular.set(pMaterialPresets[sKey]._F0);
+			teapotDiffuse.set(pMaterialPresets[sKey]._Diffuse);
 		});
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
@@ -606,6 +610,17 @@ module akra {
 		                }
 		            });
 		        }, 'sphere-light-02', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos3 );
+        loadModel("SPHERE.DAE", 
+            (model)=>{
+                model.explore( function(node) {
+                    if(akra.scene.SceneModel.isModel(node)) {
+                        node.getMesh().getSubset(0).getMaterial().shininess=0.99;
+                        node.getMesh().getSubset(0).getMaterial().specular=new Color(0.0, 0.0, 0.0, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.0, 0.0, 0.0, 1.0);
+                        node.getMesh().getSubset(0).getMaterial().emissive =new Color(0.9, 0.9, 0.9, 1.);
+                        }
+                    });
+                }, 'sphere-light-022', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos4 );
 
         
         var nd = pScene.createNode();
@@ -677,8 +692,8 @@ module akra {
 					if(akra.scene.SceneModel.isModel(node)) {
 						//console.log(node.getMesh().getSubset(0).getMaterial().shininess);
 						node.getMesh().getSubset(0).getMaterial().shininess=0.99;
-						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
-						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
+						node.getMesh().getSubset(0).getMaterial().specular=teapotSpecular;
+						node.getMesh().getSubset(0).getMaterial().diffuse=teapotDiffuse;
 						node.getMesh().getSubset(0).getMaterial().emissive =new Color(0., 0., 0., 0.);
                         }
 					});
@@ -688,8 +703,8 @@ module akra {
 				model.explore( function(node) {
 					if(akra.scene.SceneModel.isModel(node)) {
 						node.getMesh().getSubset(0).getMaterial().shininess=0.75;
-						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
-						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
+						node.getMesh().getSubset(0).getMaterial().specular=teapotSpecular;
+						node.getMesh().getSubset(0).getMaterial().diffuse=teapotDiffuse;
                         node.getMesh().getSubset(0).getMaterial().emissive =new Color(0., 0., 0., 0.);
 						}
 					});
@@ -699,8 +714,8 @@ module akra {
 				model.explore( function(node) {
 					if(akra.scene.SceneModel.isModel(node)) {
 						node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
-						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
+						node.getMesh().getSubset(0).getMaterial().specular=teapotSpecular;
+						node.getMesh().getSubset(0).getMaterial().diffuse=teapotDiffuse;
                         node.getMesh().getSubset(0).getMaterial().emissive =new Color(0., 0., 0., 0.);
 						}
 					});
@@ -710,8 +725,8 @@ module akra {
 				model.explore( function(node) {
 					if(akra.scene.SceneModel.isModel(node)) {
 						node.getMesh().getSubset(0).getMaterial().shininess=0.25;
-						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
-						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
+						node.getMesh().getSubset(0).getMaterial().specular=teapotSpecular;
+						node.getMesh().getSubset(0).getMaterial().diffuse=teapotDiffuse;
                         node.getMesh().getSubset(0).getMaterial().emissive =new Color(0., 0., 0., 0.);
 						}
 					});
@@ -721,8 +736,8 @@ module akra {
 				model.explore( function(node) {
 					if(akra.scene.SceneModel.isModel(node)) {
 						node.getMesh().getSubset(0).getMaterial().shininess=0.01;
-						node.getMesh().getSubset(0).getMaterial().specular=new Color(0.999, 0.71, 0.29, 1.0);
-						node.getMesh().getSubset(0).getMaterial().diffuse=new Color(0.999, 0.86, 0.57, 1.0);
+						node.getMesh().getSubset(0).getMaterial().specular=teapotSpecular;
+						node.getMesh().getSubset(0).getMaterial().diffuse=teapotDiffuse;
                         node.getMesh().getSubset(0).getMaterial().emissive =new Color(0., 0., 0., 0.);
 						}
 					});

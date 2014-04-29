@@ -396,6 +396,28 @@ float calculateSunShadowMultiplierUpgraded(sampler shadowSampler, float2 v2fShad
 };
 
 
+float3 EnvBRDFApprox( float3 SpecularColor, float Roughness, float NoV )
+{
+	// [ Lazarov 2013, "Getting More Physical in Call of Duty: Black Ops II" ]
+	// Adaptation to fit our G term.
+	const float4 c0 = { -1., -0.0275, -0.572, 0.022 };
+	const float4 c1 = { 1., 0.0425, 1.04, -0.04 };
+	float4 r = Roughness * c0 + c1;
+	float a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+	float2 AB = float2( -1.04, 1.04 ) * a004 + r.zw;
+
+	return SpecularColor * AB.x + AB.y;
+}
+
+float EnvBRDFApproxNonmetal( float Roughness, float NoV )
+{
+	// Same as EnvBRDFApprox( 0.04, Roughness, NoV )
+	const float2 c0 = { -1., -0.0275 };
+	const float2 c1 = { 1., 0.0425 };
+	float2 r = Roughness * c0 + c1;
+	return min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+}
+
 float4 calulatePBSReflection(float3 position, float3 normal, 
 							 float3 specular, float shininess, 
 							 sampler2D envSampler){
@@ -404,13 +426,36 @@ float4 calulatePBSReflection(float3 position, float3 normal,
 	float3 normal_dir = normal;
 	float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
 	// float3 reflect_dir = reflect(view_dir, normal_dir);
-	float3 cubeVertexInRealSpace = (invView * float4(reflect_dir, 0.)).xyz;
+	float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
+	float NoV = saturate(dot(normal_dir, view_dir));
 
 	//float shi = pixelData.specular.x * pixelData.specular.y * pixelData.specular.z;
 	float shi = shininess;
+	float3 fresnelReflectance;
 
-	float4 reflection = float4(SpecularEnvmap(view_dir, normal_dir, cubeVertexInRealSpace,
-		specular.xyz * float3(1.0), shi, envSampler), 1.);
+	// Too bright envmap! multiplier
+	float3 envColor = getEnvMapColor(directionInsideCube, shi, envSampler) * 0.5;
+	//if (specular.g < 0.2){
+		//fresnelReflectance = float3(EnvBRDFApproxNonmetal( 1. - shi, NoV ));
+	//}
+	//else {
+		fresnelReflectance = EnvBRDFApprox( specular.xyz, 1. - shi, NoV );
+	//}
+
+	float4 reflection = float4(fresnelReflectance * envColor, 1.);
+
+	//if (reflection.r < 0.01){
+		//reflection.b = 1.;
+	//}
+	//else if (reflection.r < 0.05){
+		//reflection.r = 1.;
+	//}
+	//else if (reflection.r < 0.1){
+		//reflection.g = 1.;
+	//} 
+	//else {
+		//reflection.xyz = float3(1.);
+	//}
 
 	return reflection;
 };
@@ -425,13 +470,13 @@ float3 PBS_F0 : PBS_F0 = float3(0.); // temporarily used as reverse (1. - ) spec
 //float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
 
 // @c http://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
-float3 FresnelSchlickWithRoughness(float3 SpecularColor, float3 lightDir, float3 normalDir, float Gloss)
+float3 FresnelSchlickWithRoughness(float3 SpecularColor, float NoV, float Gloss)
 {
 	// Canonical equation (from paper):
     //return SpecularColor + (max(float3(Gloss), SpecularColor) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.);
 	// Other possible function (used by Treyarch, Black Ops 2, Dimitar Lazarov):
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-    return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - dot_saturate(lightDir, normalDir), 5.) / (4. - 3. * Gloss);
+    return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - NoV, 5.) / (4. - 3. * Gloss);
 }
 
 // Functions for getting pixel position from cubemap formatted as follows:
@@ -524,20 +569,41 @@ float glossToQualityConverter(float Gloss, float MaxLod)
 	return (1.-pow(Gloss,2.))*MaxLod;
 }
 
-float3 SpecularEnvmap(float3 E, float3 N, float3 R, float3 SpecularColor, float Gloss, sampler2D envSampler)
+//float3 EnvBRDF( float3 SpecularColor, float Roughness, float NoV )
+//{
+	//// Importance sampled preintegrated G * F
+	//float2 AB = Texture2DSampleLevel( PreIntegratedGF, PreIntegratedGFSampler, float2( NoV, Roughness ), 0 ).rg;
+//
+	//// Anything less than 2% is physically impossible and is instead considered to be shadowing 
+	//float3 GF = SpecularColor * AB.x + saturate( 50.0 * SpecularColor.g ) * AB.y;
+	//return GF;
+//}
+
+//// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
+//// [Lagarde 2012, "Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel"]
+//float3 FresnelSchlickRoughness( float3 SpecularColor, float VoH, float Roughness )
+//{ 
+	//return SpecularColor + ( saturate( 50.0 * SpecularColor.g ) - SpecularColor )
+							//* exp2( (-5.55473 * VoH - 6.98316) * VoH ) / (4. - 3. * Roughness);
+//}
+
+float3 getEnvMapColor(float3 R, float Gloss, sampler2D envSampler)
 {
 
 	// Exactly 6 lod supported. Increase multiplier if mipmap is better.
 	// HACK: get maximum level of detail from size of texture
+	// HardcodedNumCaptureArrayMips - 1 - REFLECTION_CAPTURE_ROUGHEST_MIP 
+	// 		+ REFLECTION_CAPTURE_ROUGHNESS_MIP_SCALE * log2(Roughness)
+	// 7 - 1 - 1 
+	// 		+ 1.2 * log2(Roughness)
 	int lod1 = int(floor(glossToQualityConverter(Gloss, 7.)));
 	int lod2 = int(ceil(glossToQualityConverter(Gloss, 7.)));
 	float alpha = glossToQualityConverter(Gloss, 7.) - float(lod1);
 
-    //float3 Envcolor = texCUBElod(EnvmapTexture, float4(R, EnvMapMipmapScaleBias.x * Gloss + EnvMapMipmapScaleBias.y)).rgb;
     float3 Envcolor = getEnvLod(envSampler, R, lod1).rgb * (1. - alpha)
     	+ getEnvLod(envSampler, R, lod2).rgb * alpha;
 
-    return FresnelSchlickWithRoughness(SpecularColor, E, N, Gloss) * Envcolor;// * EnvMapScaleAndModulate; // EnvMapScaleAndModulate is used to decompress range
+    return Envcolor;
 }
 
 
@@ -632,7 +698,7 @@ float D_Blinn( float Roughness, float NoH )
 	float m = Roughness * Roughness;
 	float m2 = m * m;
 	float n = 2. / m2 - 2.;
-	return (n+2.)/ 2. * pow( saturate(NoH), n ); // 1 mad, 1 exp, 1 mul, 1 log
+	return (n+2.) / 2. * pow( saturate(NoH), n ); // 1 mad, 1 exp, 1 mul, 1 log
 }
 
 // [Beckmann 1963, "The scattering of electromagnetic waves from rough surfaces"]
@@ -651,7 +717,7 @@ float D_GGX( float Roughness, float NoH )
 	float m = Roughness * Roughness;
 	float m2 = m * m;
 	float d = ( NoH * m2 - NoH ) * NoH + 1.;	// 2 mad
-	return m2 / ( d*d );					// 2 mul, 1 rcp
+	return m2 / max( d*d, 0.00001 );					// 2 mul, 1 rcp
 }
 
 float D_Func( float Roughness, float NoH )
@@ -716,7 +782,7 @@ float G_Smith( float Roughness, float NoV, float NoL )
 }
 
 float GeometricVisibility( float Roughness, float NoV, float NoL,
-							   float VoH, float3 L, float3 V )
+						   float3 L, float3 V )
 {
 	// Geometric attenuation or shadowing
 	// 0: Implicit
@@ -789,6 +855,12 @@ float3 Fresnel( float3 SpecularColor, float VoH )
 	}
 }
 
+//******** for LPP **** */
+float LPP_F_Schlick_Exp(float VoH)
+{
+	return exp2( (-5.55473 * VoH - 6.98316) * VoH );
+}
+
 float4 applyPBSLightParams(pixel_data pixelData, 
 						   float3 lightPosition, 
 						   float3 lightDiffOrig, 
@@ -825,27 +897,43 @@ float4 applyPBSLightParams(pixel_data pixelData,
 	float Energy = 1.;
 	// additional conservation needed for prolonged light sources
 
+	if (isForLPPPass0){
+		float D = D_Func( Roughness, NoH );
+		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir );
+		float3 xi = D * Geom * NoL * ShadowedAttenuation * lightDiffOrig;
+		float schlickE = LPP_F_Schlick_Exp(VoH);
+		return float4(xi, schlickE);
+	}
+
+	if (isForLPPPass1){
+		float3 xi = ShadowedAttenuation * NoL * lightDiffOrig;
+		return float4(xi, 0.);
+	}
+
 
 	if (isPrepareAll) {
 		float D = D_Func( Roughness, NoH );
-		float Geom = GeometricVisibility( Roughness, NoV, NoL, VoH, light_dir, view_dir );
+		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir );
 		float3 Fres = Fresnel( SpecularColor, VoH );
 		float3 SpecularLighting = Energy * Fres * D * Geom;
 
 		float3 DiffuseLighting = Diffuse_Func( DiffuseColor, Roughness, NoV, NoL, VoH );
+		//DiffuseLighting *= (1. - SpecularLighting);
 
 
 		color = float4( (SpecularLighting + DiffuseLighting)
 						* lightDiffOrig * ShadowedAttenuation * NoL, 1. );
+		//color = float4( float3(D/10.), 1. );
+		return color;
 	}
 
 
 
 //	// SPECULAR POWER (theoretical: (0., +infinity))
-//	// c@ http://seblagarde.wordpress.com/2011/08/17/hello-world/
+//	// @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
 //	float alpha_p = 2. * pow(1024., pixelData.shininess);
 //	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
-//	// c@ http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
+//	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
 //	float alpha_p = pow(8192., pixelData.shininess);
 //
 //	float3 view_dir = normalize(-pixelData.position);

@@ -183,7 +183,7 @@ float4 apply_pbs_reflection(): COLOR {
 	// lowering reflection brightness if we have a strong lighting already
 	float4 color = resultAFXColor;
 	//reflection *= float4(1.) - color;
-	//color += reflection;
+	color += reflection;
 	return color;
 };
 
