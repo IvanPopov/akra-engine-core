@@ -200,11 +200,11 @@ module akra.scene.light {
 
 			var pCameraBox: IRect2d = this._getBoxForCameraFrustum(pEffectiveCameraFrustum, new geometry.Rect2d());
 
-			var fCameraMinX: float = math.max(pCameraBox.x0, -1);
-			var fCameraMaxX: float = math.min(pCameraBox.x1, 1);
+			var fCameraMinX: float = -1.; //math.max(pCameraBox.x0, -1);
+			var fCameraMaxX: float = 1; //math.min(pCameraBox.x1, 1);
 
-			var fCameraMinY: float = math.max(pCameraBox.y0, -1);
-			var fCameraMaxY: float = math.min(pCameraBox.y1, 1);
+			var fCameraMinY: float = -1; //math.max(pCameraBox.y0, -1);
+			var fCameraMaxY: float = 1; //math.min(pCameraBox.y1, 1);
 
 			fXRes_Left = math.max((fXRes_Left < -1 || fXRes_Left == 1) ? -1 : fXRes_Left, fCameraMinX);
 			fXRes_Right = math.min((fXRes_Right > 1 || fXRes_Right == -1) ? 1 : fXRes_Right, fCameraMaxX);

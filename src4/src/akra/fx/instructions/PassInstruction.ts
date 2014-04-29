@@ -275,21 +275,7 @@ module akra.fx.instructions {
 
 		private clearPassStates(): void {
 			if (!isNull(this._pPassStateMap)) {
-				this._pPassStateMap[ERenderStates.BLENDENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.CULLFACEENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.ZENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.ZWRITEENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.DITHERENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.SCISSORTESTENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.STENCILTESTENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.POLYGONOFFSETFILLENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.CULLFACE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.FRONTFACE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.SRCBLEND] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.DESTBLEND] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.ZFUNC] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.ALPHABLENDENABLE] = ERenderStateValues.UNDEF;
-				this._pPassStateMap[ERenderStates.ALPHATESTENABLE] = ERenderStateValues.UNDEF;
+				render.clearRenderStateMap(this._pPassStateMap);
 			}
 		}
 

@@ -737,7 +737,7 @@ module akra.fx {
 				"else if(shift == 1) return A_tex2D(sampler, header, x, y).g; " +
 				"else if(shift == 2) return A_tex2D(sampler, header, x, y).b; " +
 				"else if(shift == 3) return A_tex2D(sampler, header, x, y).a; " +
-				"else return 0.; " + 
+				"else return 0.; " +
 				"\n#endif\n" +
 				"return 0.;}",
 				"float",
@@ -818,7 +818,7 @@ module akra.fx {
 				"if(int(x) == int(header.width - 1.)) " +
 				"return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0.5, (y + 1.)).rgb); " +
 				"else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " +
-				"else { return vec4(0.); } " + 
+				"else { return vec4(0.); } " +
 				"\n#endif\n" +
 				"\n#ifdef A_VB_COMPONENT3\n" +
 				"\n#endif\n" +
@@ -3996,216 +3996,359 @@ module akra.fx {
 			}
 			else {
 				var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
-				var eType: ERenderStates = null;
+				var eType: ERenderStates = this.getRenderState(sType);
 				var pStateExprNode: parser.IParseNode = pChildren[pChildren.length - 3];
 				var pExprNode: parser.IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
 
-				switch (sType) {
-					case "BLENDENABLE":
-						eType = ERenderStates.BLENDENABLE;
-						break;
-					case "CULLFACEENABLE":
-						eType = ERenderStates.CULLFACEENABLE;
-						break;
-					case "ZENABLE":
-						eType = ERenderStates.ZENABLE;
-						break;
-					case "ZWRITEENABLE":
-						eType = ERenderStates.ZWRITEENABLE;
-						break;
-					case "DITHERENABLE":
-						eType = ERenderStates.DITHERENABLE;
-						break;
-					case "SCISSORTESTENABLE":
-						eType = ERenderStates.SCISSORTESTENABLE;
-						break;
-					case "STENCILTESTENABLE":
-						eType = ERenderStates.STENCILTESTENABLE;
-						break;
-					case "POLYGONOFFSETFILLENABLE":
-						eType = ERenderStates.POLYGONOFFSETFILLENABLE;
-						break;
-					case "CULLFACE":
-						eType = ERenderStates.CULLFACE;
-						break;
-					case "FRONTFACE":
-						eType = ERenderStates.FRONTFACE;
-						break;
-					case "SRCBLEND":
-						eType = ERenderStates.SRCBLEND;
-						break;
-					case "DESTBLEND":
-						eType = ERenderStates.DESTBLEND;
-						break;
-					case "ZFUNC":
-						eType = ERenderStates.ZFUNC;
-						break;
-					case "ALPHABLENDENABLE":
-						eType = ERenderStates.ALPHABLENDENABLE;
-						break;
-					case "ALPHATESTENABLE":
-						eType = ERenderStates.ALPHATESTENABLE;
-						break;
-
-					default:
-						logger.warn("Unsupported render state type used: " + sType + ". WebGl...");
-						return;
-				}
-
-				if (pExprNode.value === "{" || pExprNode.value === "<" ||
-					isNull(pExprNode.value)) {
+				if (isNull(pExprNode.value) || isNull(eType)) {
 					logger.warn("So pass state are incorrect");
 					return;
 				}
 
-				var sValue: string = pExprNode.value.toUpperCase();
-				var eValue: ERenderStateValues = null;
+				if (pExprNode.value === "{" && pStateExprNode.children.length > 3) {
+					var pValues: ERenderStateValues[] = new Array(math.ceil((pStateExprNode.children.length - 3) / 2));
+					for (var i: uint = pStateExprNode.children.length - 2, j: uint = 0; i > 1; i -= 2, j++) {
+						pValues[j] = this.getRenderStateValue(eType, pStateExprNode.children[i].value.toUpperCase());
+					}
 
-				switch (eType) {
-					case ERenderStates.ALPHABLENDENABLE:
-					case ERenderStates.ALPHATESTENABLE:
-						logger.warn("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.");
-						return;
-
-					case ERenderStates.BLENDENABLE:
-					case ERenderStates.CULLFACEENABLE:
-					case ERenderStates.ZENABLE:
-					case ERenderStates.ZWRITEENABLE:
-					case ERenderStates.DITHERENABLE:
-					case ERenderStates.SCISSORTESTENABLE:
-					case ERenderStates.STENCILTESTENABLE:
-					case ERenderStates.POLYGONOFFSETFILLENABLE:
-						switch (sValue) {
-							case "TRUE":
-								eValue = ERenderStateValues.TRUE;
-								break;
-							case "FALSE":
-								eValue = ERenderStateValues.FALSE;
-								break;
-
-							default:
-								logger.warn("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: "
-									+ sValue + ".");
+					switch (eType) {
+						case ERenderStates.BLENDFUNC:
+							if (pValues.length !== 2) {
+								logger.warn("So pass state are incorrect");
 								return;
-						}
-						break;
+							}
+							pPass._setState(ERenderStates.SRCBLENDCOLOR, pValues[0]);
+							pPass._setState(ERenderStates.SRCBLENDALPHA, pValues[0]);
+							pPass._setState(ERenderStates.DESTBLENDCOLOR, pValues[1]);
+							pPass._setState(ERenderStates.DESTBLENDALPHA, pValues[1]);
+							break;
 
-					case ERenderStates.CULLFACE:
-						switch (sValue) {
-							case "FRONT":
-								eValue = ERenderStateValues.FRONT;
-								break;
-							case "BACK":
-								eValue = ERenderStateValues.BACK;
-								break
-							case "FRONT_AND_BACK":
-								eValue = ERenderStateValues.FRONT_AND_BACK;
-								break;
-
-							default:
-								logger.warn("Unsupported render state CULLFACE value used: " + sValue + ".");
+						case ERenderStates.BLENDFUNCSEPARATE:
+							if (pValues.length !== 4) {
+								logger.warn("So pass state are incorrect");
 								return;
-						}
-						break;
+							}
+							pPass._setState(ERenderStates.SRCBLENDCOLOR, pValues[0]);
+							pPass._setState(ERenderStates.SRCBLENDALPHA, pValues[1]);
+							pPass._setState(ERenderStates.DESTBLENDCOLOR, pValues[2]);
+							pPass._setState(ERenderStates.DESTBLENDALPHA, pValues[3]);
+							break;
 
-					case ERenderStates.FRONTFACE:
-						switch (sValue) {
-							case "CW":
-								eValue = ERenderStateValues.CW;
-								break;
-							case "CCW":
-								eValue = ERenderStateValues.CCW;
-								break;
-
-							default:
-								logger.warn("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+						case ERenderStates.BLENDEQUATIONSEPARATE:
+							if (pValues.length !== 2) {
+								logger.warn("So pass state are incorrect");
 								return;
-						}
-						break;
+							}
+							pPass._setState(ERenderStates.BLENDEQUATIONCOLOR, pValues[0]);
+							pPass._setState(ERenderStates.BLENDEQUATIONALPHA, pValues[1]);
+							break;
 
-					case ERenderStates.SRCBLEND:
-					case ERenderStates.DESTBLEND:
-						switch (sValue) {
-							case "ZERO":
-								eValue = ERenderStateValues.ZERO;
-								break;
-							case "ONE":
-								eValue = ERenderStateValues.ONE;
-								break;
-							case "SRCCOLOR":
-								eValue = ERenderStateValues.SRCCOLOR;
-								break;
-							case "INVSRCCOLOR":
-								eValue = ERenderStateValues.INVSRCCOLOR;
-								break;
-							case "SRCALPHA":
-								eValue = ERenderStateValues.SRCALPHA;
-								break;
-							case "INVSRCALPHA":
-								eValue = ERenderStateValues.INVSRCALPHA;
-								break;
-							case "DESTALPHA":
-								eValue = ERenderStateValues.DESTALPHA;
-								break;
-							case "INVDESTALPHA":
-								eValue = ERenderStateValues.INVDESTALPHA;
-								break;
-							case "DESTCOLOR":
-								eValue = ERenderStateValues.DESTCOLOR;
-								break;
-							case "INVDESTCOLOR":
-								eValue = ERenderStateValues.INVDESTCOLOR;
-								break;
-							case "SRCALPHASAT":
-								eValue = ERenderStateValues.SRCALPHASAT;
-								break;
-
-							default:
-								logger.warn("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
-								return;
-						}
-						break;
-
-
-
-					case ERenderStates.ZFUNC:
-						switch (sValue) {
-							case "NEVER":
-								eValue = ERenderStateValues.NEVER;
-								break;
-							case "LESS":
-								eValue = ERenderStateValues.LESS;
-								break;
-							case "EQUAL":
-								eValue = ERenderStateValues.EQUAL;
-								break;
-							case "LESSEQUAL":
-								eValue = ERenderStateValues.LESSEQUAL;
-								break;
-							case "GREATER":
-								eValue = ERenderStateValues.GREATER;
-								break;
-							case "NOTEQUAL":
-								eValue = ERenderStateValues.NOTEQUAL;
-								break;
-							case "GREATEREQUAL":
-								eValue = ERenderStateValues.GREATEREQUAL;
-								break;
-							case "ALWAYS":
-								eValue = ERenderStateValues.ALWAYS;
-								break;
-
-							default:
-								logger.warn("Unsupported render state ZFUNC value used: " +
-									sValue + ".");
-								return;
-						}
-						break;
+						default:
+							logger.warn("So pass state are incorrect");
+							return;
+					}					
 				}
+				else {
+					var sValue: string = "";
+					if (pExprNode.value === "{") {
+						sValue = pStateExprNode.children[1].value.toUpperCase();
+					}
+					else {
+						sValue = pExprNode.value.toUpperCase();
+					}
 
-				pPass._setState(eType, eValue);
+					var eValue: ERenderStateValues = this.getRenderStateValue(eType, sValue);
+
+					if (eValue !== ERenderStateValues.UNDEF) {
+						switch (eType) {
+							case ERenderStates.SRCBLEND:
+								pPass._setState(ERenderStates.SRCBLENDCOLOR, eValue);
+								pPass._setState(ERenderStates.SRCBLENDALPHA, eValue);
+								break;
+							case ERenderStates.DESTBLEND:
+								pPass._setState(ERenderStates.DESTBLENDCOLOR, eValue);
+								pPass._setState(ERenderStates.DESTBLENDALPHA, eValue);
+								break;
+							case ERenderStates.BLENDEQUATION:
+								pPass._setState(ERenderStates.BLENDEQUATIONCOLOR, eValue);
+								pPass._setState(ERenderStates.BLENDEQUATIONALPHA, eValue);
+								break;
+							default:
+								pPass._setState(eType, eValue);
+								break;
+						}
+					}
+				}
 			}
 
+		}
+
+		private getRenderState(sState: string): ERenderStates {
+			var eType: ERenderStates = null;
+
+			switch (sState) {
+				case "BLENDENABLE":
+					eType = ERenderStates.BLENDENABLE;
+					break;
+				case "CULLFACEENABLE":
+					eType = ERenderStates.CULLFACEENABLE;
+					break;
+				case "ZENABLE":
+					eType = ERenderStates.ZENABLE;
+					break;
+				case "ZWRITEENABLE":
+					eType = ERenderStates.ZWRITEENABLE;
+					break;
+				case "DITHERENABLE":
+					eType = ERenderStates.DITHERENABLE;
+					break;
+				case "SCISSORTESTENABLE":
+					eType = ERenderStates.SCISSORTESTENABLE;
+					break;
+				case "STENCILTESTENABLE":
+					eType = ERenderStates.STENCILTESTENABLE;
+					break;
+				case "POLYGONOFFSETFILLENABLE":
+					eType = ERenderStates.POLYGONOFFSETFILLENABLE;
+					break;
+				case "CULLFACE":
+					eType = ERenderStates.CULLFACE;
+					break;
+				case "FRONTFACE":
+					eType = ERenderStates.FRONTFACE;
+					break;
+
+				case "SRCBLENDCOLOR":
+					eType = ERenderStates.SRCBLENDCOLOR;
+					break;
+				case "DESTBLENDCOLOR":
+					eType = ERenderStates.DESTBLENDCOLOR;
+					break;
+				case "SRCBLENDALPHA":
+					eType = ERenderStates.SRCBLENDALPHA;
+					break;
+				case "DESTBLENDALPHA":
+					eType = ERenderStates.DESTBLENDALPHA;
+					break;
+
+				case "BLENDEQUATIONCOLOR":
+					eType = ERenderStates.BLENDEQUATIONCOLOR;
+					break;
+				case "BLENDEQUATIONALPHA":
+					eType = ERenderStates.BLENDEQUATIONALPHA;
+					break;
+
+				case "SRCBLEND":
+					eType = ERenderStates.SRCBLEND;
+					break;
+				case "DESTBLEND":
+					eType = ERenderStates.DESTBLEND;
+					break;
+				case "BLENDFUNC":
+					eType = ERenderStates.BLENDFUNC;
+					break;
+				case "BLENDFUNCSEPARATE":
+					eType = ERenderStates.BLENDFUNCSEPARATE;
+					break;
+
+				case "BLENDEQUATION":
+					eType = ERenderStates.BLENDEQUATION;
+					break;
+				case "BLENDEQUATIONSEPARATE":
+					eType = ERenderStates.BLENDEQUATIONSEPARATE;
+					break;
+
+				case "ZFUNC":
+					eType = ERenderStates.ZFUNC;
+					break;
+				case "ALPHABLENDENABLE":
+					eType = ERenderStates.ALPHABLENDENABLE;
+					break;
+				case "ALPHATESTENABLE":
+					eType = ERenderStates.ALPHATESTENABLE;
+					break;
+
+				default:
+					logger.warn("Unsupported render state type used: " + sState + ". WebGl...");
+					break;
+			}
+
+			return eType;
+		}
+
+		private getRenderStateValue(eState: ERenderStates, sValue: string): ERenderStateValues {
+			var eValue: ERenderStateValues = ERenderStateValues.UNDEF;
+
+			switch (eState) {
+				case ERenderStates.ALPHABLENDENABLE:
+				case ERenderStates.ALPHATESTENABLE:
+					logger.warn("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.");
+					return;
+
+				case ERenderStates.BLENDENABLE:
+				case ERenderStates.CULLFACEENABLE:
+				case ERenderStates.ZENABLE:
+				case ERenderStates.ZWRITEENABLE:
+				case ERenderStates.DITHERENABLE:
+				case ERenderStates.SCISSORTESTENABLE:
+				case ERenderStates.STENCILTESTENABLE:
+				case ERenderStates.POLYGONOFFSETFILLENABLE:
+					switch (sValue) {
+						case "TRUE":
+							eValue = ERenderStateValues.TRUE;
+							break;
+						case "FALSE":
+							eValue = ERenderStateValues.FALSE;
+							break;
+
+						default:
+							logger.warn("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: "
+								+ sValue + ".");
+							return eValue;
+					}
+					break;
+
+				case ERenderStates.CULLFACE:
+					switch (sValue) {
+						case "FRONT":
+							eValue = ERenderStateValues.FRONT;
+							break;
+						case "BACK":
+							eValue = ERenderStateValues.BACK;
+								break
+							case "FRONT_AND_BACK":
+							eValue = ERenderStateValues.FRONT_AND_BACK;
+							break;
+
+						default:
+							logger.warn("Unsupported render state CULLFACE value used: " + sValue + ".");
+							return eValue;
+					}
+					break;
+
+				case ERenderStates.FRONTFACE:
+					switch (sValue) {
+						case "CW":
+							eValue = ERenderStateValues.CW;
+							break;
+						case "CCW":
+							eValue = ERenderStateValues.CCW;
+							break;
+
+						default:
+							logger.warn("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+							return eValue;
+					}
+					break;
+
+				case ERenderStates.SRCBLEND:
+				case ERenderStates.DESTBLEND:
+				case ERenderStates.SRCBLENDALPHA:
+				case ERenderStates.DESTBLENDALPHA:
+				case ERenderStates.SRCBLENDCOLOR:
+				case ERenderStates.DESTBLENDCOLOR:
+				case ERenderStates.BLENDFUNC:
+				case ERenderStates.BLENDFUNCSEPARATE:
+					switch (sValue) {
+						case "ZERO":
+							eValue = ERenderStateValues.ZERO;
+							break;
+						case "ONE":
+							eValue = ERenderStateValues.ONE;
+							break;
+						case "SRCCOLOR":
+							eValue = ERenderStateValues.SRCCOLOR;
+							break;
+						case "INVSRCCOLOR":
+							eValue = ERenderStateValues.INVSRCCOLOR;
+							break;
+						case "SRCALPHA":
+							eValue = ERenderStateValues.SRCALPHA;
+							break;
+						case "INVSRCALPHA":
+							eValue = ERenderStateValues.INVSRCALPHA;
+							break;
+						case "DESTALPHA":
+							eValue = ERenderStateValues.DESTALPHA;
+							break;
+						case "INVDESTALPHA":
+							eValue = ERenderStateValues.INVDESTALPHA;
+							break;
+						case "DESTCOLOR":
+							eValue = ERenderStateValues.DESTCOLOR;
+							break;
+						case "INVDESTCOLOR":
+							eValue = ERenderStateValues.INVDESTCOLOR;
+							break;
+						case "SRCALPHASAT":
+							eValue = ERenderStateValues.SRCALPHASAT;
+							break;
+
+						default:
+							logger.warn("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+							return eValue;
+					}
+					break;
+
+				case ERenderStates.BLENDEQUATION:
+				case ERenderStates.BLENDEQUATIONSEPARATE:
+				case ERenderStates.BLENDEQUATIONCOLOR:
+				case ERenderStates.BLENDEQUATIONALPHA:
+					switch(sValue){
+						case "FUNCADD":
+						case "ADD":
+							eValue = ERenderStateValues.FUNCADD;
+							break;
+						case "FUNCSUBTRACT":
+						case "SUBTRACT":
+							eValue = ERenderStateValues.FUNCSUBTRACT;
+							break;
+						case "FUNCREVERSESUBTRACT":
+						case "REVERSESUBTRACT":
+							eValue = ERenderStateValues.FUNCREVERSESUBTRACT;
+							break;
+						default:
+							logger.warn("Unsupported render state BLENDEQUATION/BLENDEQUATIONSEPARATE value used: " + sValue + ".");
+							return eValue;
+					}
+					break;
+
+				case ERenderStates.ZFUNC:
+					switch (sValue) {
+						case "NEVER":
+							eValue = ERenderStateValues.NEVER;
+							break;
+						case "LESS":
+							eValue = ERenderStateValues.LESS;
+							break;
+						case "EQUAL":
+							eValue = ERenderStateValues.EQUAL;
+							break;
+						case "LESSEQUAL":
+							eValue = ERenderStateValues.LESSEQUAL;
+							break;
+						case "GREATER":
+							eValue = ERenderStateValues.GREATER;
+							break;
+						case "NOTEQUAL":
+							eValue = ERenderStateValues.NOTEQUAL;
+							break;
+						case "GREATEREQUAL":
+							eValue = ERenderStateValues.GREATEREQUAL;
+							break;
+						case "ALWAYS":
+							eValue = ERenderStateValues.ALWAYS;
+							break;
+
+						default:
+							logger.warn("Unsupported render state ZFUNC value used: " +
+								sValue + ".");
+							return eValue;
+					}
+					break;
+			}
+
+			return eValue;
 		}
 
 		private analyzePassStateIf(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {

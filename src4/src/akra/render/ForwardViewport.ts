@@ -215,6 +215,10 @@ module akra.render {
 			var pLightPoints: IObjectArray<ILightPoint> = this._pLightPoints;
 			var pCamera: ICamera = this.getCamera();
 
+			//if (pRenderable["transparency"]) {
+			//	pPass.setRenderState
+			//}
+
 			pPass.setForeign("NUM_OMNI", pLightUniforms.omni.length);
 			pPass.setForeign("NUM_OMNI_SHADOWS", pLightUniforms.omniShadows.length);
 			pPass.setForeign("NUM_PROJECT", pLightUniforms.project.length);

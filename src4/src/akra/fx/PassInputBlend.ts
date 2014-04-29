@@ -352,11 +352,21 @@ module akra.fx {
 		}
 
 		setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
-			if (this.renderStates[eState] !== eValue) {
-				this._pStatesInfo.renderStatesKey++;
+			if (eState === ERenderStates.SRCBLEND) {
+				this.setRenderState(ERenderStates.SRCBLENDCOLOR, eValue);
+				this.setRenderState(ERenderStates.SRCBLENDALPHA, eValue);
 			}
+			else if (eState === ERenderStates.DESTBLEND) {
+				this.setRenderState(ERenderStates.DESTBLENDCOLOR, eValue);
+				this.setRenderState(ERenderStates.DESTBLENDALPHA, eValue);
+			}
+			else {
+				if (this.renderStates[eState] !== eValue) {
+					this._pStatesInfo.renderStatesKey++;
+				}
 
-			this.renderStates[eState] = eValue;
+				this.renderStates[eState] = eValue;
+			}
 		}
 
 		_getForeignVarNameIndex(sName: string): uint {

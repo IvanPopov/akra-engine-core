@@ -2643,6 +2643,9 @@ declare module akra {
         NOTEQUAL = 25,
         GREATEREQUAL = 26,
         ALWAYS = 27,
+        FUNCADD = 28,
+        FUNCSUBTRACT = 29,
+        FUNCREVERSESUBTRACT = 30,
     }
 }
 declare module akra {
@@ -3501,11 +3504,21 @@ declare module akra {
         POLYGONOFFSETFILLENABLE = 7,
         CULLFACE = 8,
         FRONTFACE = 9,
-        SRCBLEND = 10,
-        DESTBLEND = 11,
-        ZFUNC = 12,
-        ALPHABLENDENABLE = 13,
-        ALPHATESTENABLE = 14,
+        SRCBLENDCOLOR = 10,
+        DESTBLENDCOLOR = 11,
+        SRCBLENDALPHA = 12,
+        DESTBLENDALPHA = 13,
+        BLENDEQUATIONCOLOR = 14,
+        BLENDEQUATIONALPHA = 15,
+        ZFUNC = 16,
+        ALPHABLENDENABLE = 17,
+        ALPHATESTENABLE = 18,
+        SRCBLEND = 19,
+        DESTBLEND = 20,
+        BLENDFUNC = 21,
+        BLENDFUNCSEPARATE = 22,
+        BLENDEQUATION = 23,
+        BLENDEQUATIONSEPARATE = 24,
     }
 }
 declare module akra {
@@ -11715,6 +11728,8 @@ declare module akra.fx {
         private resumePassAnalysis(pPass);
         private analyzePassStateBlock(pNode, pPass);
         private analyzePassState(pNode, pPass);
+        private getRenderState(sState);
+        private getRenderStateValue(eState, sValue);
         private analyzePassStateIf(pNode, pPass);
         private analyzePassStateSwitch(pNode, pPass);
         private analyzePassCaseBlock(pNode, pPass);

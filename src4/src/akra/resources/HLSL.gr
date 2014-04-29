@@ -206,7 +206,7 @@ PassStateBlock : '{' PassStates '}'
 PassStates : PassState --NN
 PassStates : PassStates PassState
 
-PassState : Id StateIndex StateExprBegin StateExpr StateExprEnd --AN
+PassState : Id StateIndex StateExprBegin PassStateExpr StateExprEnd --AN
 PassState : StateIf
 PassState : StateSwitch
 
@@ -282,6 +282,13 @@ ForStep : Expr
 
 DwordExpr : Dword
 DwordExpr : Dword '|' DwordExpr
+
+DwordExprSeq : DwordExpr
+DwordExprSeq : DwordExpr ',' DwordExprSeq
+
+PassStateExpr : DwordExpr --AN
+PassStateExpr : ComplexExpr
+PassStateExpr : '{' DwordExprSeq '}'
 
 StateExpr : DwordExpr --AN
 StateExpr : ComplexExpr

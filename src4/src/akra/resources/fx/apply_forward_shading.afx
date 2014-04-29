@@ -20,9 +20,13 @@ float4 fsForwardShading1(float3 vert: VERTEX) : COLOR {
 
 technique applyForwardShading {
 	pass {
-		if(engine.mesh.transperancy){
+		if(engine.mesh.transparency){
 			SRCBLEND = SRCALPHA;
 			DESTBLEND = ONE;
+			// SRCBLENDCOLOR = SRCALPHA;
+			// DESTBLENDCOLOR = ONE;
+			// SRCBLENDALPHA = SRCALPHA;
+			// DESTBLENDALPHA = ONE;
 			BLENDENABLE = TRUE;
 			//ZENABLE = FALSE;
 			ZWRITEENABLE = FALSE;

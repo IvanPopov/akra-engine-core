@@ -139,6 +139,8 @@ module akra {
 				pRenderable.getMaterial().specular = new color.Color(1., 0., 0., 1.);
 				pRenderable.getMaterial().shininess = 20;
 
+				pRenderable.setShadow(true);
+
 				SimpleSceneObject.renderable = pRenderable;
 			}
 
@@ -307,7 +309,7 @@ module akra {
 
 		std.createKeymap(pViewport);
 
-		//std.createSceneEnvironment(pScene, true, false, 100);
+		std.createSceneEnvironment(pScene, true, false, 100);
 		//var pModel: ISceneModel;
 
 		//loadModel2("WOODSOLDIER.DAE").addPosition(0., 1.1, 0.).explore((pNode: IEntity): boolean => {
@@ -348,13 +350,13 @@ module akra {
 
 
 		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
-		pLight.setShadowCaster(false);
+		pLight.setShadowCaster(true);
 
 		//var pLight2: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 6, 3));
 		//pLight2.setShadowCaster(false);
 
-		//var pLight3: ILightPoint = std.createLighting(pScene, ELightTypes.PROJECT, Vec3.temp(0, 2, 5));
-		//pLight3.setShadowCaster(true);
+		var pLight3: ILightPoint = std.createLighting(pScene, ELightTypes.PROJECT, Vec3.temp(0, 2, 5));
+		pLight3.setShadowCaster(true);
 
 		//var pLight4: ILightPoint = std.createLighting(pScene, ELightTypes.PROJECT, Vec3.temp(1, 5, 3));
 		//pLight4.setShadowCaster(false);
@@ -369,8 +371,8 @@ module akra {
 		//		pTechnique.getPass(iPass).setUniform("depthRange", pShowedDepthRange);
 		//	});
 		//}
-		loadManySimpleCubes(1000);
-		//loadManyModels(400, "CUBE.DAE");
+		//loadManySimpleCubes(1);
+		loadManyModels(1, "CUBE.DAE");
 		pProgress.destroy();
 		pEngine.exec();
 	}
