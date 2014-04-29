@@ -50,9 +50,14 @@ module akra {
 	}
 
 	export var pCameraParams = {
-		orbitRadius: 4.2,
-		targetRotation: new math.Vec2(0.,0.),
-		currentRotation: new math.Vec2(0.,0.),
+        current: {
+            orbitRadius: 4.2,
+            rotation: new math.Vec2(0., 0.)
+        },
+        target: {
+            orbitRadius: 4.2,
+            rotation: new math.Vec2(0., 0.)
+        }
 	}
 
 	export var pModelTable = null;
@@ -68,12 +73,14 @@ module akra {
 		pCamera.update();
 
 		pScene.beforeUpdate.connect(() => {
-			var newRot = math.Vec2.temp(pCameraParams.currentRotation).add( math.Vec2.temp(pCameraParams.targetRotation).subtract(pCameraParams.currentRotation).scale(0.03) );
-			pCameraParams.currentRotation.set(newRot);
+            var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.03));
+            var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+            pCameraParams.current.rotation.set(newRot);
+            pCameraParams.current.orbitRadius = newRad;
 			pCamera.setPosition(
-				pCameraParams.orbitRadius*-math.sin(newRot.x)*math.cos(newRot.y),
-				pCameraParams.orbitRadius*math.sin(newRot.y),
-				pCameraParams.orbitRadius*math.cos(newRot.x)*math.cos(newRot.y));
+				newRad*-math.sin(newRot.x)*math.cos(newRot.y),
+                newRad*math.sin(newRot.y),
+                newRad*math.cos(newRot.x)*math.cos(newRot.y));
 			pCamera.lookAt(math.Vec3.temp(0,0,0));
 			});
 
@@ -93,8 +100,8 @@ module akra {
 
 					//pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
 					//pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
-					pCameraParams.targetRotation.y = math.clamp(pCameraParams.targetRotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
-					pCameraParams.targetRotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
+					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
+					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
 
 					pKeymap.update();
 				}
@@ -118,8 +125,13 @@ module akra {
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
 				pCamera.addRelPosition(0, -fSpeed, 0);
-			}
-		});
+            }
+        });
+        pViewport.enableSupportFor3DEvent(E3DEventTypes.MOUSEWHEEL);
+        pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
+            //console.log("mousewheel moved: ",x,y,fDelta);
+            pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius + fDelta/pViewport.getActualHeight()*2., 2., 15.);
+        });
 	}
 
 	var pGUI;
@@ -652,7 +664,7 @@ module akra {
         	},
         	windspot: {
         		path: "data/models/windspot/WINDSPOT.DAE",
-        		init: function(model) { model.scale(0.7).addPosition(0,0.3,0); },
+        		init: function(model) { },
         	},
         	can: {
         		path: "data/models/can/can.DAE",
