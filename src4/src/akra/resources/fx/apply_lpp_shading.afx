@@ -1,5 +1,7 @@
 provide akra.system;
 
+float PI = 3.14159265359;
+
 struct base_material{
     float4 diffuse:DIFFUSE;
     float4 ambient:AMBIENT;
@@ -47,6 +49,15 @@ foreign bool isUsedBlinnPhong = false;
 foreign bool isUsedPhong = false;//true;
 foreign bool isUsedPBSSimple = true;//false;
 
+float3 schlick_specular_modifier(float3 SpecularColorMat){
+    return ( saturate( 50.0 * SpecularColorMat.g ) - SpecularColorMat );
+}
+
+float3 Diffuse_Lambert( float3 DiffuseColor )
+{
+    return DiffuseColor / PI;
+}
+
 float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
 	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
 	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
@@ -55,17 +66,27 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
 	float4 color = Fragment_material.emissive;
 
     if(isUsedPBSSimple){
-        float3 lightDif = lightsDataA.xyz;
-        float k1 = lightsDataA.w;
-        float k1_k2 = lightsDataB.x;
+        //float3 lightDif = lightsDataA.xyz;
+        //float k1 = lightsDataA.w;
+        //float k1_k2 = lightsDataB.x;
+//
+        //float3 F0 = Fragment_material.specular.xyz;
+        //float3 specular = F0 * k1 + ( float3(1.)-F0 ) * k1_k2;
+        //float visibilityFunction = 1.;
 
-        float3 F0 = Fragment_material.specular.xyz;
-        float3 specular = F0 * k1 + ( float3(1.)-F0 ) * k1_k2;
-        float visibilityFunction = 1.;
+        //lightDif *= (float3(1.) - specular);
+        //color += Fragment_material.diffuse * float4(lightDif * specular, 1.) * visibilityFunction;
+        //color += float4(float3(k1)/10., 1.); 
 
-        // lightDif *= (float3(1.) - specular);
-        color += Fragment_material.diffuse * float4(lightDif + specular, 1.) * visibilityFunction;
-        
+        float3 SpecularColorMat = Fragment_material.specular.xyz;
+        float3 SchliSpecMult = schlick_specular_modifier(SpecularColorMat);
+        float3 specular = SpecularColorMat * lightsDataA.rgb + 
+                            SchliSpecMult * lightsDataA.rgb * lightsDataA.a;
+
+        float3 diffuse = Diffuse_Lambert(Fragment_material.diffuse.rgb) * lightsDataB.rgb;
+
+        color += float4(specular + diffuse, 1.);
+
         pixelData.position = vert;
         pixelData.normal = Normal;
         pixelData.shininess = Fragment_material.shininess;

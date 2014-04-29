@@ -177,12 +177,6 @@ float4 apply_sun_light_shadows() : COLOR {
 	return returnColor(result_color);
 };
 
-float4 clampf4(float4 color){
-	return float4(clamp(color.x, 0., 1.),
-				  clamp(color.y, 0., 1.),
-				  clamp(color.z, 0., 1.), color.a);
-}
-
 float4 apply_pbs_reflection(): COLOR {
 	float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
 			pixelData.specular.xyz, pixelData.shininess, envSampler0);
@@ -190,7 +184,7 @@ float4 apply_pbs_reflection(): COLOR {
 	float4 color = resultAFXColor;
 	//reflection *= float4(1.) - color;
 	color += reflection;
-	return clampf4(color);
+	return color;
 };
 
 technique omniLighting{
