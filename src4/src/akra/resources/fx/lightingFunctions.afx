@@ -877,6 +877,9 @@ float4 applyPBSLightParams(pixel_data pixelData,
 	float3 half_vector = normalize(view_dir + light_dir);
 	
 	float NoL = saturate(dot(normal_dir, light_dir));
+	if (NoL < 0.01){
+		return float4(0., 0., 0., 0.);
+	}
 	float NoH = saturate(dot(normal_dir, half_vector));
 	float NoV = saturate(dot(normal_dir, view_dir));
 	float VoH = saturate(dot(view_dir, half_vector));
