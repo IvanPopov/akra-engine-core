@@ -34,8 +34,9 @@ module akra {
 	export var pBlurData = null;
 	export var pDofData = null;
 	export var pPBSData = null;
-	export var pSkyboxTexture = null;
-	export var pEnvTexture = null;
+    export var pSkyboxTexture = null;
+    export var pSkyboxTextures = null;
+    export var pEnvTexture = null;
 
 	var pState = {
 		animate: true,
@@ -119,6 +120,23 @@ var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 		//pEffect.addComponent("akra.system.dof");
 		//pEffect.addComponent("akra.system.blur");
 		// pEffect.addComponent("akra.system.lensflare");
+
+        var pSkyboxTexturesKeys = [
+        	'desert',
+        	'nature',
+        	'colosseum',
+        	'beach',
+        	'plains',
+        	'church',
+        	'basilica',
+        ];
+        pSkyboxTextures = { };
+        for(var i=0; i<pSkyboxTexturesKeys.length; i++) {
+        	console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
+        	pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-"+pSkyboxTexturesKeys[i]);
+        	(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_"+pSkyboxTexturesKeys[i].toUpperCase());
+        	console.log("Done!");
+        };
 
 		var pGUI = new dat.GUI();
 
@@ -252,14 +270,15 @@ var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 			teapotSpecular.set(pMaterialPresets[sKey]._F0);
 			teapotDiffuse.set(pMaterialPresets[sKey]._Diffuse);
 		});
+        (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+	        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+	            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+	        }
+	        (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
+        });
 
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
 		//var iCounter: int = 0;
-
-		pEnvTexture = pRmgr.createTexture(".env-texture-01");
-		(<ITexture>pEnvTexture).loadResource("ENVMAP");
-
-		pViewport.setDefaultEnvironmentMap(pEnvTexture);
 
         (<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
@@ -449,12 +468,20 @@ var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 	}
 
 	function createSkyBox(): void {
-		pSkyboxTexture = pRmgr.createTexture(".sky-box-texture");
-		<ITexture>pSkyboxTexture.loadResource("SKYBOX");
+        pSkyboxTexture = pSkyboxTextures['desert'];
 
-		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
-		}
+        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+        }
+
+        pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
+        pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
+            ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+        pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
+        
+        // pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), pEnvTexture.getWidth() / pViewport.getActualWidth(), pEnvTexture.getHeight() / pViewport.getActualHeight(),10));
+
+		(<I3DViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 	}
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -541,7 +568,7 @@ var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 		//var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
 		//pSceneQuad.attachToParent(pScene.getRootNode());
 
-		// createSkyBox();
+		createSkyBox();
 
 		//loadModel("WOOD_SOLDIER.DAE", null, 'WoodSoldier-01');
 		//loadModel("ROCK.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);

@@ -48,7 +48,6 @@
         <ResourceFile Path="data/textures/skyboxes/saint-peters-basilica.dds" Name="SKYBOX_BASILICA"/>
         <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
         <ResourceFile Path="data/textures/skyboxes/perea-beach1.dds" Name="SKYBOX_BEACH"/>
-        <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>
         <ResourceFile Path="data/models/oil/oil.DAE" Name="OIL.DAE"/>
       </Data>
     </Resource>
