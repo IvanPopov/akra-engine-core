@@ -116,7 +116,7 @@ module akra.fx {
 			"mesh": {
 				"isSkinned": false,
 				"isOptimizedSkinned": false,
-				"transparency": false
+				"transparent": false
 			},
 			"object": {
 				"isBillboard": false
@@ -904,11 +904,11 @@ module akra.fx {
 					this._pComposerState.mesh.isOptimizedSkinned = false;
 				}
 
-				if (this._pCurrentRenderable["transparency"]) {
-					this._pComposerState.mesh.transparency = true;
+				if (this._pCurrentSurfaceMaterial && this._pCurrentSurfaceMaterial.getMaterial().isTransparent) {
+					this._pComposerState.mesh.transparent = true;
 				}
 				else {
-					this._pComposerState.mesh.transparency = false;
+					this._pComposerState.mesh.transparent = false;
 				}
 			}
 

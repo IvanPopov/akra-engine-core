@@ -3437,6 +3437,7 @@ declare module akra {
         specular: IColorValue;
         emissive: IColorValue;
         shininess: number;
+        isTransparent?: boolean;
     }
     interface IMaterial extends IMaterialBase {
         name: string;
@@ -6806,6 +6807,7 @@ declare module akra.config {
             "specular": number;
             "emissive": number;
             "shininess": number;
+            "isTransparent": boolean;
         };
     };
     var fx: {
@@ -12062,6 +12064,7 @@ declare module akra.material {
         public specular: IColor;
         public emissive: IColor;
         public shininess: number;
+        public isTransparent: boolean;
         constructor(sName?: string, pMat?: IMaterialBase);
         public set(pMat: IMaterialBase): IMaterial;
         public isEqual(pMat: IMaterialBase): boolean;

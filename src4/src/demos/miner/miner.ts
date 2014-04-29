@@ -324,7 +324,7 @@ module akra {
 		pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
 		pCubeModel.getRenderable().getMaterial().specular.a = 0.2;
 		pCubeModel.getRenderable().getMaterial().ambient.a = 0.;
-		pCubeModel.getRenderable()["transparency"] = true;
+		pCubeModel.getRenderable().getMaterial().isTransparent = true;
 		//var pGlass: ITexture = pRmgr.createTexture("GLASS");
 		//pGlass.loadImage(<IImg>pRmgr.getImagePool().findResource("GLASS"));
 		//pCubeModel.getRenderable().getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.DIFFUSE, pGlass);

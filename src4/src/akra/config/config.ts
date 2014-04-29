@@ -159,7 +159,8 @@ module akra.config {
 			"ambient": .5,
 			"specular": .5,
 			"emissive": .5,
-			"shininess": 50.
+			"shininess": 0.2,
+			"isTransparent": false
 		}
 	}
 

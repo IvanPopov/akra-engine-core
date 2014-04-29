@@ -9,6 +9,7 @@ module akra {
 		specular: IColorValue;
 		emissive: IColorValue;
 		shininess: float;
+		isTransparent?: boolean;
 	}
 	
 	export interface IMaterial extends IMaterialBase {
