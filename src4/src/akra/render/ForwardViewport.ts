@@ -162,6 +162,7 @@ module akra.render {
 			this.createLightingUniforms(this.getCamera(), this._pLightPoints, this._pLightingUnifoms);
 			this._pCamera._keepLastViewport(this);
 			this.renderAsNormal("forwardShading", this.getCamera());
+			//TODO: use copyTexSubImage2D, for render global postEffects
 			//this.renderAsNormal("apply_lpp_shading", this.getCamera());
 		}
 
