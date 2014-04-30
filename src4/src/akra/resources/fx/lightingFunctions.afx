@@ -439,37 +439,37 @@ float3 FresnelSchlickWithRoughness(float3 SpecularColor, float NoV, float Gloss)
 // zone3	nextlvl	zone4	zone5
 // zone1	zone2	zone6	nextlvl
 float2 getZone1z(float2 uv, int lod) {
-	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
+	uv.x = .5 + (uv.x * 0.5 - 1.)  * exp2( -float(lod)-1.);
+	uv.y = (1.0 + uv.y)*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone2x(float2 uv, int lod) {
-	uv.x = .5 - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
+	uv.x = .5 + (uv.x - 1.) * exp2( -float(lod)-2.);
+	uv.y = (1. + uv.y) * exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone3y(float2 uv, int lod) {
-	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = uv.y*exp2(-float(lod)-1.);
+	uv.x = .5 + (uv.x * 0.5 - 1.)  * exp2( -float(lod)-1.);
+	uv.y = uv.y * exp2(-float(lod)-1.);
 	return uv;
 }
 float2 getZone4z(float2 uv, int lod) {
-	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
+	uv.x = 1. + (uv.x*0.5 - 1.) * exp2(-float(lod)-1.);
+	uv.y = 1. + (uv.y*0.5 - 1.) * exp2(-float(lod));
 	return uv;
 }
 
 float2 getZone5x(float2 uv, int lod) {
-	uv.x = 1. - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
+	uv.x = 1. + (uv.x - 1.) * exp2(-float(lod)-2.);
+	uv.y = 1. + (uv.y*0.5 - 1.) * exp2(-float(lod));
 	return uv;
 }
 
 float2 getZone6y(float2 uv, int lod) {
-	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = 1. - exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
+	uv.x = 1. + (uv.x*0.5 - 1.) * exp2(-float(lod)-1.);
+	uv.y = 1. + (uv.y - 1.) * exp2(-float(lod)-1.);
 	return uv;
 }
 

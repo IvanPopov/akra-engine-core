@@ -355,7 +355,7 @@ var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 	var lightPos2: math.Vec3 = new math.Vec3(0, 6, 16);
 	var lightPos3: math.Vec3 = new math.Vec3(0, 3, 16);
 	var lightPos4: math.Vec3 = new math.Vec3(0, -6, 16);
-	var lightDiffColor: color.Color = new Color(0.5, 0.5, 0.5, 1.0);
+	var lightDiffColor: color.Color = new Color(0.2, 0.2, 0.2, 1.0);
 
     var orbitalAngSpeed: float = 0.001
 
