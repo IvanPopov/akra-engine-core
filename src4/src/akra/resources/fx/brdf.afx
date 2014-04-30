@@ -244,9 +244,6 @@ float3 Fresnel( float3 SpecularColor, float VoH )
 //******** for LPP **** */
 float LPP_F_Schlick_Exp(float VoH)
 {
-	if (VoH < 0.){
-		return 1.;
-	}
 	return exp2( (-5.55473 * VoH - 6.98316) * VoH );
 }
 

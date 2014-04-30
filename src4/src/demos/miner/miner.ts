@@ -116,12 +116,12 @@ module akra {
 			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
 			pLightOmni.attachToParent(pScene.getRootNode());
 			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
-			//var pSprite = pScene.createSprite();
-			//pSprite.scale(.25);
-			//pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
-			//pSprite.setBillboard(true);
-			//pSprite.setShadow(false);
-			//pSprite.attachToParent(pLightOmni);
+			var pSprite = pScene.createSprite();
+			pSprite.scale(.25);
+			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
+			pSprite.setBillboard(true);
+			pSprite.setShadow(false);
+			pSprite.attachToParent(pLightOmni);
 
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
@@ -130,20 +130,20 @@ module akra {
 			pLightOmni.getParams().specular.set(math.random());
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
-			//((pSprite: ISprite, pLightOmni: IOmniLight) => {
-			//	pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
-			//	pSprite.mouseout.connect(() => { pViewport.highlight(null); });
-			//	//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
-			//	//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
-			//	pSprite.click.connect(() => {
-			//		pLightOmni.setEnabled(!pLightOmni.isEnabled());
-			//		(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
-			//		//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
-			//	});
-			//})(pSprite, pLightOmni);
+			((pSprite: ISprite, pLightOmni: IOmniLight) => {
+				pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
+				pSprite.mouseout.connect(() => { pViewport.highlight(null); });
+				//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
+				//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
+				pSprite.click.connect(() => {
+					pLightOmni.setEnabled(!pLightOmni.isEnabled());
+					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
+					//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
+				});
+			})(pSprite, pLightOmni);
 
-			//animateLight(pLightOmni, pSprite);
-			animateLight(pLightOmni, null);
+			animateLight(pLightOmni, pSprite);
+			//animateLight(pLightOmni, null);
 		}
 
 
@@ -226,9 +226,9 @@ module akra {
 
 
 		pMiner.getOptions().wireframe = true;
-		//var pModel: ISceneNode = pMiner.extractFullScene(pScene);
-		//pModel.addController(pController);
-		//pModel.scale(.5);
+		var pModel: ISceneNode = pMiner.extractFullScene(pScene);
+		pModel.addController(pController);
+		pModel.scale(.5);
 
 		pController.play.emit(0);
 
@@ -238,72 +238,72 @@ module akra {
 		var pMinerMesh: IMesh = null;
 		var pMinerModel: ISceneModel = null;
 
-		//pModel.explore((pEntity: IEntity): boolean => {
-		//	if (scene.SceneModel.isModel(pEntity)) {
-		//		var pNode = <ISceneModel>pEntity;
-		//		if (pNode.getMesh().getName() !== "geom-Object007") {
-		//			return;
-		//		}
+		pModel.explore((pEntity: IEntity): boolean => {
+			if (scene.SceneModel.isModel(pEntity)) {
+				var pNode = <ISceneModel>pEntity;
+				if (pNode.getMesh().getName() !== "geom-Object007") {
+					return;
+				}
 
-		//		pMinerModel = window["minerNode"] = pNode;
-		//		pMinerMesh = pNode.getMesh();
-		//		pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
+				pMinerModel = window["minerNode"] = pNode;
+				pMinerMesh = pNode.getMesh();
+				pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-		//		//////////////////////////
-		//		//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
+				//////////////////////////
+				//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-		//		//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
-		//		//	if (!pSubset.getBoneLocalBound(i)) {
-		//		//		continue;
-		//		//	}
+				//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
+				//	if (!pSubset.getBoneLocalBound(i)) {
+				//		continue;
+				//	}
 
-		//		//	var pBox = pSubset.getBoneLocalBound(i);
-		//		//	var pBone = pSubset.getSkin().getAffectedNode(i);
+				//	var pBox = pSubset.getBoneLocalBound(i);
+				//	var pBone = pSubset.getSkin().getAffectedNode(i);
 
-		//		//	var pCube = addons.lineCube(pScene);
-		//		//	pCube.attachToParent(pBone);
-		//		//	pCube.setInheritance(ENodeInheritance.ALL);
-		//		//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
-		//		//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
-		//		//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
-		//		//}
-		//	}
+				//	var pCube = addons.lineCube(pScene);
+				//	pCube.attachToParent(pBone);
+				//	pCube.setInheritance(ENodeInheritance.ALL);
+				//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
+				//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
+				//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
+				//}
+			}
 
-		//	return true;
-		//});
+			return true;
+		});
 
 		pLibeCube.attachToParent(pScene.getRootNode());
 
 
-		//pScene.beforeUpdate.connect(() => {
-		//	if (!pLibeCube.isVisible()) return;
-		//	var pBB = geometry.Rect3d.temp(pMinerModel.getWorldBounds());
+		pScene.beforeUpdate.connect(() => {
+			if (!pLibeCube.isVisible()) return;
+			var pBB = geometry.Rect3d.temp(pMinerModel.getWorldBounds());
 
-		//	//pBB.transform((<INode>pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getParent()).getWorldMatrix());
+			//pBB.transform((<INode>pMinerModel.getMesh().getSubset(0).getSkin().getSkeleton().getRoot().getParent()).getWorldMatrix());
 
-		//	pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
-		//	pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
-		//});
+			pLibeCube.setLocalScale(pBB.size(Vec3.temp())).scale(.5);
+			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
+		});
 
-		//pLibeCube.setVisible(false);
+		pLibeCube.setVisible(false);
 
 		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);
 		});
 
 
-		//pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
-		//	pModel.explore((pEntity: IEntity): boolean => {
-		//		if (scene.SceneModel.isModel(pEntity)) {
-		//			var pNode = <ISceneModel>pEntity;
-		//			for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
-		//				pNode.getRenderable(i).wireframe(bValue);
-		//			}
-		//		}
+		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
+			pModel.explore((pEntity: IEntity): boolean => {
+				if (scene.SceneModel.isModel(pEntity)) {
+					var pNode = <ISceneModel>pEntity;
+					for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
+						pNode.getRenderable(i).wireframe(bValue);
+					}
+				}
 
-		//		return true;
-		//	});
-		//});
+				return true;
+			});
+		});
 
 
 		pGUI.add({ usePhong: true }, 'usePhong').onChange(function (bValue: boolean) {

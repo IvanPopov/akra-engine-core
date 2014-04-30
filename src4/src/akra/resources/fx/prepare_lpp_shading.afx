@@ -98,10 +98,12 @@ void fsPrepareLPPDataPositionOnly(float2 texCoords: TEXCOORD0, float2 screenPosi
 }
 
 foreign bool PREPARE_ONLY_POSITION;
+foreign bool IS_USED_PBS_SIMPLE = false;
+
 technique prepare_lpp_lights_base {
     pass p1{
         VertexShader = compile vsPrepareLPPDataBase();
-        if(PREPARE_ONLY_POSITION) {
+        if(PREPARE_ONLY_POSITION && !IS_USED_PBS_SIMPLE) {
            PixelShader = compile fsPrepareLPPDataPositionOnly();            
         }
         else {

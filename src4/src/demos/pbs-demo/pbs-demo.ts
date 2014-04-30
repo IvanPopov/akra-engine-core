@@ -12,8 +12,14 @@ module akra {
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {
-		premultipliedAlpha: false,
+		alpha: true,
+		depth: true,
+		premultipliedAlpha: true,
+		antialias: true,
+		//premultipliedAlpha: false,
+		//for screenshoting
 		preserveDrawingBuffer: true,
+		//for black background & and avoiding composing with other html
 	};
 
 	var pOptions: IEngineOptions = {

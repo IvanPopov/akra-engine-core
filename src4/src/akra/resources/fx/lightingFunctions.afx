@@ -562,6 +562,7 @@ float3 getEnvMapColor(float3 R, float Gloss, sampler2D envSampler)
     return Envcolor;
 }
 
+int nLights: NUM_LIGHTS_WITH_PBS = 0;
 // @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
 float4 applyPBSLightParams(PixelData pixelData, 
 						   float3 lightPosition, 
@@ -603,7 +604,8 @@ float4 applyPBSLightParams(PixelData pixelData,
 		float D = D_Func( Roughness, NoH );
 		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir );
 		float3 xi = Energy * D * Geom * NoL * ShadowedAttenuation * lightDiffOrig;
-		float schlickE = LPP_F_Schlick_Exp(VoH);
+		//Fix only for lpp. Approximate correct sum of params
+		float schlickE = LPP_F_Schlick_Exp(VoH)/float(nLights);
 
 		// if (dot(light_dir, normal_dir) <= -0.0){	//tambourine
 		// 	return float4(0., 1., 0., 0.);

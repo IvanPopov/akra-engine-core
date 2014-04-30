@@ -239,7 +239,7 @@ technique sunShadowsLighting{
 
 technique pbsReflection{
 	pass applyPbsReflection{
-		if(false && IS_USED_PBS_REFLECTIONS && IS_USED_PBS_SIMPLE){
+		if(IS_USED_PBS_REFLECTIONS /*&& IS_USED_PBS_SIMPLE*/){
 			PixelShader = compile applyPBSReflection();
 		}
 	}

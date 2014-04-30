@@ -390,6 +390,13 @@ module akra.render {
 			pPass.setForeign("IS_USED_PNONG", this.getShadingModel() === EShadingModel.PHONG);
 			pPass.setForeign("IS_USED_BLINN_PNONG", this.getShadingModel() === EShadingModel.BLINNPHONG);
 			pPass.setForeign("IS_USED_PBS_SIMPLE", this.getShadingModel() === EShadingModel.PBS_SIMPLE);
+
+			pPass.setUniform("NUM_LIGHTS_WITH_PBS", pLightUniforms.omni.length +
+				pLightUniforms.omniShadows.length +
+				pLightUniforms.project.length +
+				pLightUniforms.projectShadows.length +
+				pLightUniforms.sun.length +
+				pLightUniforms.sunShadows.length);
 		}
 
 		_onObjectsRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
