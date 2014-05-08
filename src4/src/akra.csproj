@@ -539,6 +539,7 @@
     <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
     <TypeScriptCompile Include="akra\scene\light\CalculatePlanesForLighting.ts" />
     <TypeScriptCompile Include="akra\scene\light\OmniLight.ts" />
+    <TypeScriptCompile Include="akra\scene\light\ProjectLightSplit.ts" />
     <TypeScriptCompile Include="akra\scene\light\ProjectLight.ts" />
     <TypeScriptCompile Include="akra\scene\light\ShadowCaster.ts" />
     <TypeScriptCompile Include="akra\scene\light\SunLight.ts" />
