@@ -75,7 +75,7 @@ module akra {
 	}
 
 	function createViewports(): void {
-		pViewport = pCanvas.addViewport(new render.DSViewport(pCamera));
+		pViewport = pCanvas.addViewport(new render.LPPViewport(pCamera));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);

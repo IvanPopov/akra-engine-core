@@ -112,39 +112,37 @@ module akra {
 		//std.createSceneEnvironment(pScene, true, false, 50);
 
 
-		for (var i = 0; i < 10; ++i) {
-			var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
-			pLightOmni.attachToParent(pScene.getRootNode());
-			pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
-			var pSprite = pScene.createSprite();
-			pSprite.scale(.25);
-			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
-			pSprite.setBillboard(true);
-			pSprite.setShadow(false);
-			pSprite.attachToParent(pLightOmni);
+		var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512);
+		pLightOmni.attachToParent(pScene.getRootNode());
+		pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
+		var pSprite = pScene.createSprite();
+		pSprite.scale(.25);
+		pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
+		pSprite.setBillboard(true);
+		pSprite.setShadow(false);
+		pSprite.attachToParent(pLightOmni);
 
-			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
-			pLightOmni.setInheritance(ENodeInheritance.ALL);
-			//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
-			pLightOmni.getParams().diffuse.set(math.random(), math.random(), math.random());
-			pLightOmni.getParams().specular.set(math.random());
-			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
+		pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
+		pLightOmni.setInheritance(ENodeInheritance.ALL);
+		//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
+		pLightOmni.getParams().diffuse.set(1, 1, 1);
+		pLightOmni.getParams().specular.set(math.random());
+		pLightOmni.getParams().attenuation.set(2, 0, 0);
 
-			((pSprite: ISprite, pLightOmni: IOmniLight) => {
-				pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
-				pSprite.mouseout.connect(() => { pViewport.highlight(null); });
-				//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
-				//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
-				pSprite.click.connect(() => {
-					pLightOmni.setEnabled(!pLightOmni.isEnabled());
-					(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
-					//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
-				});
-			})(pSprite, pLightOmni);
+		((pSprite: ISprite, pLightOmni: IOmniLight) => {
+			pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
+			pSprite.mouseout.connect(() => { pViewport.highlight(null); });
+			//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
+			//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
+			pSprite.click.connect(() => {
+				pLightOmni.setEnabled(!pLightOmni.isEnabled());
+				(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
+				//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
+			});
+		})(pSprite, pLightOmni);
 
-			animateLight(pLightOmni, pSprite);
-			//animateLight(pLightOmni, null);
-		}
+		//animateLight(pLightOmni, pSprite);
+		//animateLight(pLightOmni, null);
 
 
 		var pGrid = pRmgr.createTexture("GRID");
