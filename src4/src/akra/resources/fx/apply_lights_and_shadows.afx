@@ -186,6 +186,10 @@ float4 applyPBSReflection(): COLOR {
 	float4 color = resultAFXColor;
 	//reflection *= float4(1.) - color;
 	color += reflection;
+
+	//if (){
+		//return float4(1.0, 0.3, 0.3, 0.0);
+	//}
 	return color;
 };
 

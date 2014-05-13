@@ -670,6 +670,7 @@ module akra.webgl {
 			var pSource = this;
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>pSource.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+			pWebGLRenderer._setViewport(null);
 
 			pWebGLRenderer._disableTextureUnitsFrom(0);
 			pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
