@@ -215,12 +215,20 @@ float4 applyExponentialFogfs(): COLOR {// required fog variables
 	float dist = length(pixelData.position);
 	float3 fogColor = float3 (0.0);
 	float fogStart = 30.0;
-	float fogIndex = 50.0;
+	float fogIndex = 30.0;
 
 	// get a fog factor (thickness of fog) based on the distance
-	float fogFac = exp(- (dist-fogStart) / fogIndex);
-	// constrain the fog factor between 0 and 1
-	fogFac = 1. - clamp (fogFac, 0.0, 1.0);
+	float fogFac;
+	// Saves a little bit of calculation
+	if (dist < fogStart){
+		fogFac = 0.;
+	}
+	else if (dist - fogStart < fogIndex * 6.){
+		fogFac = 1. - exp(- (dist-fogStart) / fogIndex);
+	}
+	else {
+		fogFac = 1.;
+	}
 
 	// blend the fog color with the lighting color, based on the fog factor
 	color.rgb = mix (color.rgb, fogColor, fogFac);
