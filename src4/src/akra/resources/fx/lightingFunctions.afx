@@ -85,6 +85,8 @@ foreign bool IS_USED_BLINN_PNONG = false;
 foreign bool IS_USED_PNONG = true;
 foreign bool IS_USED_PBS_SIMPLE = false;
 foreign bool IS_USED_PBS_REFLECTIONS = false;
+foreign bool USE_LINEAR_FOG = false;
+foreign bool USE_EXPONENTIAL_FOG = false;
 
 CalculatedLightParams prepareBaseLightParams(PixelData pixelData, LightData lightData) {
 	CalculatedLightParams lightParams;
