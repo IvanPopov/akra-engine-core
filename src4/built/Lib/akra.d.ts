@@ -15458,6 +15458,7 @@ declare module akra.render {
         private _pSkyboxTexture;
         private _eShadingModel;
         private _pDefaultEnvMap;
+        private _pTextureToScreenViewport;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15473,14 +15474,21 @@ declare module akra.render {
         public getDefaultEnvironmentMap(): ITexture;
         public _setTarget(pTarget: IRenderTarget): void;
         public _getRenderId(x: number, y: number): number;
+        public _updateDimensions(bEmitEvent?: boolean): void;
         public _updateImpl(): void;
+        public renderAsNormal(csMethod: string, pCamera: ICamera): void;
+        public renderTransparentObjects(csMethod: string, pCamera: ICamera): void;
         public endFrame(): void;
         public setSkybox(pSkyTexture: ITexture): boolean;
         public setFXAA(bValue?: boolean): void;
         public isFXAA(): boolean;
         public highlight(a: any): void;
+        public _onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         private prepareForForwardShading();
+        private updateRenderTextureDimensions(pTexture);
+        private prepareRenderMethods();
+        private createResultRenderTarget(iWidth, iHeight);
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
     }

@@ -47,6 +47,8 @@ module akra.render {
 		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
 		private _pDefaultEnvMap: ITexture = null;
 
+		private _pTextureToScreenViewport: IViewport = null;
+
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
@@ -127,22 +129,44 @@ module akra.render {
 
 			//this.createNormalBufferRenderTarget(iWidth, iHeight);
 			//this.createLightBuffersRenderTargets(iWidth, iHeight);
-			//this.createResultLPPRenderTarget(iWidth, iHeight);
+			this.createResultRenderTarget(iWidth, iHeight);
 
-			//this._v2fTextureRatio = new math.Vec2(this.getActualWidth() / this._pNormalBufferTexture.getWidth(), this.getActualHeight() / this._pNormalBufferTexture.getHeight());
+			this._v2fTextureRatio = new math.Vec2(this.getActualWidth() / this._pResultTexture.getWidth(), this.getActualHeight() / this._pResultTexture.getHeight());
 			this._v2fScreenSize = new Vec2(this.getActualWidth(), this.getActualHeight());
 
-			//this.prepareRenderMethods();
+			this.prepareRenderMethods();
 
 			this.setClearEveryFrame(true, EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH);
 			this.setBackgroundColor(color.ZERO);
 			this.setDepthParams(true, true, ECompareFunction.LESS);
 
 			this.setFXAA(true);
+
+			this._pTextureToScreenViewport = pTarget.addViewport(new Viewport(this.getCamera(), null, this.getLeft(), this.getTop(), this.getWidth(), this.getHeight(), 66));
+			this._pTextureToScreenViewport.setAutoUpdated(false);
+			this._pTextureToScreenViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+			this._pTextureToScreenViewport.setDepthParams(false, false, 0);
+
+			this._pTextureToScreenViewport.render.connect(this, this._onScreenRender);
 		}
 
 		_getRenderId(x: int, y: int): int {
 			return 0;
+		}
+
+		_updateDimensions(bEmitEvent: boolean = true): void {
+			super._updateDimensions(false);
+
+			if (isDefAndNotNull(this._pResultTexture)) {
+				this.updateRenderTextureDimensions(this._pResultTexture);
+
+				this._v2fTextureRatio.set(this.getActualWidth() / this._pResultTexture.getWidth(), this.getActualHeight() / this._pResultTexture.getHeight());
+				this._v2fScreenSize.set(this.getActualWidth(), this.getActualHeight());
+			}
+
+			if (bEmitEvent) {
+				this.viewportDimensionsChanged.emit();
+			}
 		}
 
 		_updateImpl(): void {
@@ -162,9 +186,62 @@ module akra.render {
 			this.createLightingUniforms(this.getCamera(), this._pLightPoints, this._pLightingUnifoms);
 			this._pCamera._keepLastViewport(this);
 			this.renderAsNormal("forwardShading", this.getCamera());
+			this.getTarget().getRenderer().executeQueue(true);
+
+			this.renderTransparentObjects("forwardShading", this.getCamera());
+			this.getTarget().getRenderer().executeQueue(true);
+
+			//var pRenderer: IRenderer = this._pTarget.getRenderer();
+			//var pCurrentViewport: IViewport = pRenderer._getViewport();
+			//pRenderer._setViewport(this);
+			//(<webgl.WebGLTextureBuffer>this._pResultTexture.getBuffer())._copyFromFramebuffer(0);
+			//pRenderer._setViewport(pCurrentViewport);
+
+			//this._pViewScreen.render(this._pTextureToScreenViewport);
+			//this.getTarget().getRenderer().executeQueue(false);
+
 			//TODO: use copyTexSubImage2D, for render global postEffects
 			//this.renderAsNormal("apply_lpp_shading", this.getCamera());
 		}
+			
+		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
+			var pVisibleObjects: IObjectArray<ISceneObject> = pCamera.display();
+			var pRenderable: IRenderableObject;
+
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
+				pVisibleObjects.value(i).prepareForRender(this);
+			}
+
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
+				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
+
+				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
+					pRenderable = pSceneObject.getRenderable(j);
+
+					if (!isNull(pRenderable) && !pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent) {
+						pRenderable.render(this, csMethod, pSceneObject);
+					}
+				}
+			}
+		}
+
+		protected renderTransparentObjects(csMethod: string, pCamera: ICamera): void {
+			var pVisibleObjects: IObjectArray<ISceneObject> = pCamera.display();
+			var pRenderable: IRenderableObject;
+
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
+				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
+
+				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
+					pRenderable = pSceneObject.getRenderable(j);
+
+					if (!isNull(pRenderable) && pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent) {
+						pRenderable.render(this, csMethod, pSceneObject);
+					}
+				}
+			}
+		}
+
 
 		endFrame(): void {
 			this.getTarget().getRenderer().executeQueue(true);
@@ -207,6 +284,18 @@ module akra.render {
 		}
 
 		highlight(a): void {
+		}
+
+		_onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			switch (iPass) {
+				case 0:
+					pPass.setUniform("VIEWPORT", math.Vec4.temp(0., 0., this._v2fTextureRatio.x, this._v2fTextureRatio.y));
+					pPass.setTexture("TEXTURE_FOR_SCREEN", this._pResultTexture);
+					pPass.setForeign("SAVE_ALPHA", true);
+					break;
+			}
 		}
 
 		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -293,6 +382,36 @@ module akra.render {
 				}
 			}
 		}
+
+		private updateRenderTextureDimensions(pTexture: ITexture) {
+			pTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
+			pTexture.getBuffer().getRenderTarget().getViewport(0).setDimensions(0., 0., this.getActualWidth() / pTexture.getWidth(), this.getActualHeight() / pTexture.getHeight());
+		}
+
+		private prepareRenderMethods(): void {
+			this._pViewScreen.switchRenderMethod(null);
+			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
+		}
+
+		private createResultRenderTarget(iWidth: uint, iHeight: uint): void {
+			var pEngine: IEngine = this._pTarget.getRenderer().getEngine();
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+
+			var pRenderTarget: IRenderTarget = null;
+			var pViewport: IViewport = null;
+
+			this._pResultTexture = pResMgr.createTexture("resultr-forward-texture-" + this.guid);
+			this._pResultTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+				ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+			pRenderTarget = this._pResultTexture.getBuffer().getRenderTarget();
+			pRenderTarget.setAutoUpdated(false);
+
+			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), null,
+				0, 0, this.getActualWidth() / this._pResultTexture.getWidth(), this.getActualHeight() / this._pResultTexture.getHeight()));
+			pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+			pViewport.setDepthParams(false, false, ECompareFunction.EQUAL);
+		}
+
 
 		protected createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;

@@ -1514,8 +1514,13 @@ module akra.webgl {
 					this._pCurrentContextStates.blend_src_alpha = iWebGLSAlpha;
 					this._pCurrentContextStates.blend_dst_rgb = iWebGLDColor;
 					this._pCurrentContextStates.blend_dst_alpha = iWebGLDAlpha;
-					
-					this._pWebGLContext.blendFuncSeparate(iWebGLSColor, iWebGLDColor, iWebGLSAlpha, iWebGLDAlpha);
+
+					if (iWebGLSColor === iWebGLSAlpha && iWebGLDColor === iWebGLDAlpha) {
+						this._pWebGLContext.blendFunc(iWebGLSColor, iWebGLDColor);
+					}
+					else {
+						this._pWebGLContext.blendFuncSeparate(iWebGLSColor, iWebGLDColor, iWebGLSAlpha, iWebGLDAlpha);
+					}
 				}
 			}
 

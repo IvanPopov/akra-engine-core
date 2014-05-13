@@ -119,6 +119,7 @@ module akra {
 			var pSprite = pScene.createSprite();
 			pSprite.scale(.25);
 			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
+			pSprite.getRenderable().getMaterial().isTransparent = true;
 			pSprite.setBillboard(true);
 			pSprite.setShadow(false);
 			pSprite.attachToParent(pLightOmni);
@@ -328,6 +329,8 @@ module akra {
 		//var pGlass: ITexture = pRmgr.createTexture("GLASS");
 		//pGlass.loadImage(<IImg>pRmgr.getImagePool().findResource("GLASS"));
 		//pCubeModel.getRenderable().getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.DIFFUSE, pGlass);
+
+
 		pProgress.destroy();
 	}
 
