@@ -525,6 +525,7 @@
     <TypeScriptCompile Include="akra\idl\I3DViewport.ts" />
     <TypeScriptCompile Include="akra\idl\IForwardViewport.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
+    <Content Include="akra\idl\ISplitProjectLight.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
@@ -539,7 +540,7 @@
     <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
     <TypeScriptCompile Include="akra\scene\light\CalculatePlanesForLighting.ts" />
     <TypeScriptCompile Include="akra\scene\light\OmniLight.ts" />
-    <TypeScriptCompile Include="akra\scene\light\ProjectLightSplit.ts" />
+    <TypeScriptCompile Include="akra\scene\light\SplitProjectLight.ts" />
     <TypeScriptCompile Include="akra\scene\light\ProjectLight.ts" />
     <TypeScriptCompile Include="akra\scene\light\ShadowCaster.ts" />
     <TypeScriptCompile Include="akra\scene\light\SunLight.ts" />

@@ -4866,10 +4866,12 @@ declare module akra {
         PROJECT = 1,
         OMNI = 2,
         SUN = 3,
+        SPLIT_PROJECT = 4,
     }
     interface ILightPoint extends ISceneNode {
         getParams(): ILightParameters;
         getLightType(): ELightTypes;
+        _setLightType(eType: ELightTypes): void;
         /** optimized camera frustum for better shadow casting */
         getOptimizedCameraFrustum(): IFrustum;
         isEnabled(): boolean;
@@ -13552,6 +13554,17 @@ declare module akra {
     }
 }
 declare module akra {
+    interface ISplitProjectLight extends ILightPoint {
+        getParams(): IProjectParameters;
+        getShadowCaster(iSplit?: number): IShadowCaster;
+        getDepthTexture(): ITexture;
+        getRenderTarget(): IRenderTarget;
+        getSplitCount(): number;
+        getViewportPosition(iSplit: number): IVec4;
+        _prepareForLighting(pCamera: ICamera): boolean;
+    }
+}
+declare module akra {
     interface ISunParameters extends ILightParameters {
         eyePosition: IVec3;
         sunDir: IVec3;
@@ -13629,6 +13642,24 @@ declare module akra.render {
         private static _iElement;
         static temp(): IUniform;
     }
+    class UniformSplitProjectShadow implements IUniform {
+        public LIGHT_DATA: LightData;
+        public TO_LIGHT_SPACE: IMat4;
+        public REAL_PROJECTION_MATRIX: IMat4;
+        public SPLIT_COUNT: number;
+        public SHADOW_SAMPLER: IAFXSamplerState;
+        public OPTIMIZED_PROJECTION_MATRIX: IMat4[];
+        public VIEWPORT_POSITION: IVec4[];
+        public setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformSplitProjectShadow;
+        public setMatrix(m4fToLightSpace: IMat4, m4fRealProj: IMat4): UniformSplitProjectShadow;
+        public setSplitCount(nSplit: number): UniformSplitProjectShadow;
+        public setOptimizedProjectionMatrix(m4fOptimizedProj: IMat4, index: number): UniformSplitProjectShadow;
+        public setViewportPosition(v4fViewportPosition: IVec4, index: number): UniformSplitProjectShadow;
+        public setSampler(sTexture: string): UniformSplitProjectShadow;
+        private static _pBuffer;
+        private static _iElement;
+        static temp(): IUniform;
+    }
     class UniformSun implements IUniform {
         public LIGHT_DATA: SunLightData;
         public setLightData(pSunParam: ISunParameters, iSunDomeId: number): UniformSun;
@@ -13654,10 +13685,12 @@ declare module akra.render {
         sun: UniformSun[];
         omniShadows: UniformOmniShadow[];
         projectShadows: UniformProjectShadow[];
+        splitProjectShadows: UniformSplitProjectShadow[];
         sunShadows: UniformSunShadow[];
         textures: ITexture[];
         samplersOmni: IAFXSamplerState[];
         samplersProject: IAFXSamplerState[];
+        samplersSplitProject: IAFXSamplerState[];
         samplersSun: IAFXSamplerState[];
     }
 }
@@ -14282,6 +14315,7 @@ declare module akra.scene.light {
         public _pOptimizedCameraFrustum: IFrustum;
         public getParams(): ILightParameters;
         public getLightType(): ELightTypes;
+        public _setLightType(eType: ELightTypes): void;
         public getOptimizedCameraFrustum(): IFrustum;
         public isEnabled(): boolean;
         public setEnabled(bValue: boolean): void;
@@ -15187,6 +15221,40 @@ declare module akra.scene.light {
         public _prepareForLighting(pCamera: ICamera): boolean;
         public _defineLightingInfluence(pCamera: ICamera): IObjectArray<ISceneObject>;
         public _defineShadowInfluence(pCamera: ICamera): IObjectArray<ISceneObject>;
+        static _pFrustumPlanes: IPlane3d[];
+    }
+}
+declare module akra.scene.light {
+    class SplitProjectLight extends LightPoint implements ISplitProjectLight {
+        public _pDepthTexture: ITexture;
+        public _pColorTexture: ITexture;
+        public _pLightParameters: IProjectParameters;
+        public _pSplitShadowCasters: IShadowCaster[];
+        public _nSplitNumber: number;
+        public _fSplitParameter: number;
+        public _pViewportCoords: IVec4[];
+        public _pSplitPositions: number[];
+        constructor(pScene: IScene3d);
+        public getParams(): IProjectParameters;
+        public isShadowCaster(): boolean;
+        /**
+        * overridden setter isShadow caster,
+        * if depth texture don't created then create depth texture
+        */
+        public setShadowCaster(bValue: boolean): void;
+        public getLightingDistance(): number;
+        public setLightingDistance(fDistance: any): void;
+        public getShadowCaster(iCaster?: number): IShadowCaster;
+        public getDepthTexture(): ITexture;
+        public getRenderTarget(): IRenderTarget;
+        public getSplitCount(): number;
+        public getViewportPosition(iSplit: number): IVec4;
+        public create(isShadowCaster?: boolean, iMaxShadowResolution?: number, nSplitNumber?: number, fSplitParameter?: number): boolean;
+        public initializeTextures(): void;
+        public _calculateShadows(): void;
+        public _prepareForLighting(pCamera: ICamera): boolean;
+        public _defineLightingInfluence(pCamera: ICamera): IObjectArray<ISceneObject>;
+        public _defineShadowInfluence(pCamera: ICamera, iSplit: number): IObjectArray<ISceneObject>;
         static _pFrustumPlanes: IPlane3d[];
     }
 }

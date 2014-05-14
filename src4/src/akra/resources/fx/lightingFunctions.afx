@@ -50,6 +50,15 @@ struct LightSunShadows{
 	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
+struct LightSplitProjectShadows{
+	LightData lightData : LIGHT_DATA;
+	float4x4 real_projection_matrix : REAL_PROJECTION_MATRIX;
+	float4x4 toLightSpace : TO_LIGHT_SPACE;
+	float4x4 optimized_projection_matrix[6] : OPTIMIZED_PROJECTION_MATRIX;
+	float4 viewport_position[6] : VIEWPORT_POSITION;
+	int split_count : SPLIT_COUNT;
+};
+
 
 struct CalculatedLightParams {
 	float3 ambient;
@@ -142,9 +151,9 @@ CalculatedLightParams prepareBaseLightParamsSun(PixelData pixelData, float3 ligh
 }
 
 float4 applyBaseLightParams(PixelData pixelData, LightData lightData){
-	if(IS_USED_PBS_SIMPLE){
+	/*if(IS_USED_PBS_SIMPLE){
 		return applyPBSLightParams(pixelData, lightData.position, lightData.diffuse.xyz, lightData.attenuation);
-	}
+	}*/
 
 	float4 color = float4(0.);
 	CalculatedLightParams lightParams = prepareBaseLightParams(pixelData, lightData);
@@ -230,7 +239,7 @@ bool isUnderShadowInfluence(float4x4 toLightSpace, float4x4 projMat, float3 posi
 
 	//тест на попадание в область действия источника
 	//так как здесь происходит считывание из текстуру другой тест не корректен
-	if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
+	if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v4fTmp.w >= 0.){
 		shadowTexCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
 		realDepth = v4fLightSpace.z;
 		return true;

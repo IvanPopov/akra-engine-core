@@ -34,11 +34,13 @@ module akra.render {
 			project: [],
 			sun: [],
 			omniShadows: [],
-			projectShadows: [],
+            projectShadows: [],
+            splitProjectShadows: [],
 			sunShadows: [],
 			textures: [],
 			samplersOmni: [],
-			samplersProject: [],
+            samplersProject: [],
+            samplersSplitProject: [],
 			samplersSun: []
 		};
 
@@ -223,14 +225,16 @@ module akra.render {
 			pPass.setForeign("NUM_OMNI", pLightUniforms.omni.length);
 			pPass.setForeign("NUM_OMNI_SHADOWS", pLightUniforms.omniShadows.length);
 			pPass.setForeign("NUM_PROJECT", pLightUniforms.project.length);
-			pPass.setForeign("NUM_PROJECT_SHADOWS", pLightUniforms.projectShadows.length);
+            pPass.setForeign("NUM_PROJECT_SHADOWS", pLightUniforms.projectShadows.length);
+            pPass.setForeign("NUM_SPLIT_PROJECT_SHADOWS", pLightUniforms.splitProjectShadows.length);
 			pPass.setForeign("NUM_SUN", pLightUniforms.sun.length);
 			pPass.setForeign("NUM_SUN_SHADOWS", pLightUniforms.sunShadows.length);
 
 			pPass.setStruct("points_omni", pLightUniforms.omni);
 			pPass.setStruct("points_project", pLightUniforms.project);
 			pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
-			pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
+            pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
+            pPass.setStruct("points_split_project_shadows", pLightUniforms.splitProjectShadows);
 			pPass.setStruct("points_sun", pLightUniforms.sun);
 			pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
 
@@ -285,7 +289,8 @@ module akra.render {
 						pTechnique.addComponent("akra.system.omniLighting");
 						pTechnique.addComponent("akra.system.projectLighting");
 						pTechnique.addComponent("akra.system.omniShadowsLighting");
-						pTechnique.addComponent("akra.system.projectShadowsLighting");
+                        pTechnique.addComponent("akra.system.projectShadowsLighting");
+                        //pTechnique.addComponent("akra.system.projectSplitShadowsLighting");
 						pTechnique.addComponent("akra.system.sunLighting");
 						pTechnique.addComponent("akra.system.sunShadowsLighting");
 						pTechnique.addComponent("akra.system.pbsReflection");
@@ -297,7 +302,8 @@ module akra.render {
 		protected createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;
 			var pOmniLight: IOmniLight;
-			var pProjectLight: IProjectLight;
+            var pProjectLight: IProjectLight;
+            var pSplitProjectLight: ISplitProjectLight;
 			var pSunLight: ISunLight;
 			var i: int, j: int;
 			var pUniformData: IUniform;
@@ -383,7 +389,40 @@ module akra.render {
 						pUniforms.project.push(<UniformProject>pUniformData);
 					}
 
-				}
+                }
+                else if (pLight.getLightType() === ELightTypes.SPLIT_PROJECT) {
+                    pSplitProjectLight = <ISplitProjectLight>pLight;
+
+                    pUniformData = UniformSplitProjectShadow.temp();
+
+                    (<UniformSplitProjectShadow>pUniformData).setLightData(<IProjectParameters>pLight.getParams(), v3fLightTransformPosition);
+
+                    pUniforms.textures.push(pSplitProjectLight.getDepthTexture());
+                    sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
+
+                    (<UniformSplitProjectShadow>pUniformData).setSampler(sTexture);
+                    pUniforms.samplersProject.push((<UniformSplitProjectShadow>pUniformData).SHADOW_SAMPLER);
+
+                    pShadowCaster = pSplitProjectLight.getShadowCaster(0); 
+
+                    //get same data for all casters
+                    m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
+                    (<UniformSplitProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.getProjectionMatrix());
+
+                    var nSplit: uint = pSplitProjectLight.getSplitCount();
+
+                    (<UniformSplitProjectShadow>pUniformData).setSplitCount(nSplit);
+
+                    for (j = 0; j < nSplit; j++) {
+                        pShadowCaster = pSplitProjectLight.getShadowCaster(j);
+                        //we have split project if shadows enabled otherwise is just project
+
+                        (<UniformSplitProjectShadow>pUniformData).setOptimizedProjectionMatrix(pShadowCaster.getOptimizedProjection(), j);
+                        (<UniformSplitProjectShadow>pUniformData).setViewportPosition(pSplitProjectLight.getViewportPosition(j), j);
+                    }
+                    pUniforms.splitProjectShadows.push(<UniformSplitProjectShadow>pUniformData);
+
+                }
 				else if (pLight.getLightType() === ELightTypes.SUN) {
 					pSunLight = <ISunLight>pLight;
 					pShadowCaster = pSunLight.getShadowCaster();
@@ -425,10 +464,12 @@ module akra.render {
 			pUniforms.project.clear();
 			pUniforms.sun.clear();
 			pUniforms.omniShadows.clear();
-			pUniforms.projectShadows.clear();
+            pUniforms.projectShadows.clear();
+            pUniforms.splitProjectShadows.clear();
 			pUniforms.sunShadows.clear();
 			pUniforms.textures.clear();
-			pUniforms.samplersProject.clear();
+            pUniforms.samplersProject.clear();
+            pUniforms.samplersSplitProject.clear();
 			pUniforms.samplersOmni.clear();
 			pUniforms.samplersSun.clear();
 		}

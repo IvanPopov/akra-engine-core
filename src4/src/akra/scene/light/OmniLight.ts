@@ -213,24 +213,24 @@ module akra.scene.light {
 				this.getOptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
 				/*************************************************************/
 
-				var haveInfluence: boolean = false;
+                var nCasted: uint = 0;
 				if (!this.isShadowCaster()) {
 					for (var i = 0; i < 6; i++) {
 						var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera, i);
 						if (pResult.getLength() !== 0) {
-							haveInfluence = true;
+                            nCasted++;
 						}
 					}
-					return haveInfluence;
+					return (nCasted > 0) ? true : false;
 				}
 				else {
 					for (var i = 0; i < 6; i++) {
 						var pResult: IObjectArray<ISceneObject> = this._defineShadowInfluence(pCamera, i);
 						if (pResult.getLength() !== 0) {
-							haveInfluence = true;
+                            nCasted++;
 						}
 					}
-					return haveInfluence;
+                    return (nCasted > 0) ? true : false;
 				}
 			}
 		}

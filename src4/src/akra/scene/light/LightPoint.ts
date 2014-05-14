@@ -21,7 +21,11 @@ module akra.scene.light {
 
 		getLightType(): ELightTypes {
 			return this._eLightType;
-		}
+        }
+
+        _setLightType(eType: ELightTypes): void {
+            this._eLightType = eType;     
+        }
 
 		getOptimizedCameraFrustum(): IFrustum {
 			return this._pOptimizedCameraFrustum;

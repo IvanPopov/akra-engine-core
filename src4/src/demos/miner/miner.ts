@@ -112,34 +112,45 @@ module akra {
 		//std.createSceneEnvironment(pScene, true, false, 50);
 
 
-		var pLightOmni: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512);
-		pLightOmni.attachToParent(pScene.getRootNode());
-		pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
+        var pLightProject: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.SPLIT_PROJECT, true, 512);
+        pLightProject.attachToParent(pScene.getRootNode());
+        pLightProject.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
 		var pSprite = pScene.createSprite();
 		pSprite.scale(.25);
 		pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
 		pSprite.setBillboard(true);
 		pSprite.setShadow(false);
-		pSprite.attachToParent(pLightOmni);
+        pSprite.attachToParent(pLightProject);
 
-		pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
-		pLightOmni.setInheritance(ENodeInheritance.ALL);
+        pLightProject.lookAt(Vec3.temp(0., 0., 0.));
+        pLightProject.setInheritance(ENodeInheritance.ALL);
 		//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
-		pLightOmni.getParams().diffuse.set(1, 1, 1);
-		pLightOmni.getParams().specular.set(math.random());
-		pLightOmni.getParams().attenuation.set(2, 0, 0);
+        pLightProject.getParams().diffuse.set(1, 1, 1);
+        pLightProject.getParams().specular.set(math.random());
+        pLightProject.getParams().attenuation.set(0.3, 0, 0);
 
-		((pSprite: ISprite, pLightOmni: IOmniLight) => {
+        ((pSprite: ISprite, pLightProject: IProjectLight) => {
 			pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); });
 			pSprite.mouseout.connect(() => { pViewport.highlight(null); });
 			//pSprite.mouseover.connect(() => { pViewport.highlight(pSprite); pLPPViewport.highlight(pSprite);});
 			//pSprite.mouseout.connect(() => { pViewport.highlight(null); pLPPViewport.highlight(null);});
 			pSprite.click.connect(() => {
-				pLightOmni.setEnabled(!pLightOmni.isEnabled());
-				(<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightOmni.isEnabled() ? 0 : 1);
+                pLightProject.setEnabled(!pLightProject.isEnabled());
+                (<IColor>pSprite.getRenderable().getMaterial().emissive).set(pLightProject.isEnabled() ? 0 : 1);
 				//debug.log(pLightOmni, pLightOmni.getName(), pLightOmni.isEnabled());
 			});
-		})(pSprite, pLightOmni);
+        })(pSprite, pLightProject);
+
+        var pLightOmni: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512);
+        pLightOmni.attachToParent(pScene.getRootNode());
+        pLightOmni.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
+
+        pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
+        pLightOmni.setInheritance(ENodeInheritance.ALL);
+        //pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
+        pLightOmni.getParams().diffuse.set(0.3, 0.3, 0.3);
+        pLightOmni.getParams().specular.set(math.random());
+        pLightOmni.getParams().attenuation.set(1., 0, 0);
 
 		//animateLight(pLightOmni, pSprite);
 		//animateLight(pLightOmni, null);

@@ -198,7 +198,70 @@ module akra.render {
 			var p = UniformOmniShadow._pBuffer[UniformOmniShadow._iElement++];
 			return p;
 		}
-	}
+    }
+
+    //////////////////////////////////////
+
+
+    export class UniformSplitProjectShadow implements IUniform {
+        LIGHT_DATA: LightData = new LightData();
+        TO_LIGHT_SPACE: IMat4 = new Mat4();
+        REAL_PROJECTION_MATRIX: IMat4 = new Mat4();
+        SPLIT_COUNT: int = 0;
+        SHADOW_SAMPLER: IAFXSamplerState = render.createSamplerState();
+        OPTIMIZED_PROJECTION_MATRIX: IMat4[] =
+        [
+            new Mat4, new Mat4, new Mat4,
+            new Mat4, new Mat4, new Mat4
+        ];
+
+        VIEWPORT_POSITION: IVec4[] =
+        [
+            new Vec4, new Vec4, new Vec4,
+            new Vec4, new Vec4, new Vec4
+        ];
+
+        setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformSplitProjectShadow {
+            this.LIGHT_DATA.set(pLightParam, v3fPosition);
+            return this;
+        }
+
+        setMatrix(m4fToLightSpace: IMat4, m4fRealProj: IMat4): UniformSplitProjectShadow {
+            this.TO_LIGHT_SPACE.set(m4fToLightSpace);
+            this.REAL_PROJECTION_MATRIX.set(m4fRealProj);
+
+            return this;
+        }
+
+        setSplitCount(nSplit: uint): UniformSplitProjectShadow {
+            this.SPLIT_COUNT = nSplit;
+            return this;
+        }
+
+        setOptimizedProjectionMatrix(m4fOptimizedProj: IMat4, index: int): UniformSplitProjectShadow {
+            this.OPTIMIZED_PROJECTION_MATRIX[index].set(m4fOptimizedProj);
+            return this;
+        }
+
+        setViewportPosition(v4fViewportPosition: IVec4, index: int): UniformSplitProjectShadow {
+            this.VIEWPORT_POSITION[index].set(v4fViewportPosition);
+            return this;
+        }
+
+        setSampler(sTexture: string): UniformSplitProjectShadow {
+            this.SHADOW_SAMPLER.textureName = sTexture;
+            return this;
+        }
+
+        private static _pBuffer: IUniform[] = gen.array<IUniform>(20, UniformSplitProjectShadow);
+        private static _iElement: uint = 0;
+
+        static temp(): IUniform {
+            UniformSplitProjectShadow._iElement = (UniformSplitProjectShadow._iElement === UniformSplitProjectShadow._pBuffer.length - 1 ? 0 : UniformSplitProjectShadow._iElement);
+            var p = UniformSplitProjectShadow._pBuffer[UniformSplitProjectShadow._iElement++];
+            return p;
+        }
+    }
 
 	//////////////////////////////////////
 
@@ -266,11 +329,13 @@ module akra.render {
 		project: UniformProject[];
 		sun: UniformSun[];
 		omniShadows: UniformOmniShadow[];
-		projectShadows: UniformProjectShadow[];
+        projectShadows: UniformProjectShadow[];
+        splitProjectShadows: UniformSplitProjectShadow[];
 		sunShadows: UniformSunShadow[];
 		textures: ITexture[];
 		samplersOmni: IAFXSamplerState[];
-		samplersProject: IAFXSamplerState[];
+        samplersProject: IAFXSamplerState[];
+        samplersSplitProject: IAFXSamplerState[];
 		samplersSun: IAFXSamplerState[];
 	}
 }

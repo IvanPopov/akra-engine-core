@@ -25,6 +25,7 @@
 /// <reference path="../terrain/TerrainSectionROAM.ts" />
 
 /// <reference path="light/ProjectLight.ts" />
+/// <reference path="light/SplitProjectLight.ts" />
 /// <reference path="light/OmniLight.ts" />
 /// <reference path="light/SunLight.ts" />
 /// <reference path="light/ShadowCaster.ts" />
@@ -208,7 +209,10 @@ module akra.scene {
 					break;
 				case ELightTypes.SUN:
 					pLight = <ILightPoint>(new light.SunLight(this));
-					break;
+                    break;
+                case ELightTypes.SPLIT_PROJECT:
+                    pLight = <ILightPoint>(new light.SplitProjectLight(this));
+                    break;
 				default:
 					return null;
 			}

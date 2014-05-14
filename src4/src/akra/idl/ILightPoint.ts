@@ -17,12 +17,14 @@ module akra {
 		UNKNOWN,
 		PROJECT,
 		OMNI,
-		SUN
+        SUN,
+        SPLIT_PROJECT
 	}
 	
 	export interface ILightPoint extends ISceneNode {
 		getParams(): ILightParameters;
-		getLightType(): ELightTypes;
+        getLightType(): ELightTypes;
+        _setLightType(eType: ELightTypes): void;
 
 		/** optimized camera frustum for better shadow casting */
 		getOptimizedCameraFrustum(): IFrustum;
