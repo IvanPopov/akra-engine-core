@@ -486,7 +486,7 @@ module akra.model {
 			// console.log(pVertices);
 
 			// Fill the Indices Buffer
-			var pIndices: Float32Array = new Float32Array(DISize * 3);
+			var pIndices: Float32Array = new Uint16Array(DISize * 3);
 			DomeIndex = 0;
 
 			for (var i: uint = 0; i < Rows - 1; i++) {
@@ -501,11 +501,11 @@ module akra.model {
 				}
 			}
 
-			var pSubMesh: IMeshSubset = pDome.createSubset("main", EPrimitiveTypes.TRIANGLELIST);
+			var pSubMesh: IMeshSubset = pDome.createSubset("main",
+				EPrimitiveTypes.TRIANGLELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
 
 			var e = pSubMesh.getData().allocateData([VE.float3("POSITION"), VE.float2("TEXCOORD0")], pVertices);
 			pSubMesh.getData().allocateIndex([VE.float("INDEX0")], pIndices);
-			pSubMesh.getData().index(e, "INDEX0");
 			pSubMesh.setShadow(false);
 
 			var pMatrial: IMaterial = pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial();

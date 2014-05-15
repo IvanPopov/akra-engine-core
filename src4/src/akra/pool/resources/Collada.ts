@@ -70,16 +70,13 @@ module akra.pool.resources {
 
 	export class Collada extends ResourcePoolItem implements ICollada {
 		static DEFAULT_OPTIONS: IColladaLoadOptions = {
-			drawJoints: false,
 			wireframe: false,
 			shadows: true,
-			sharedBuffer: false,
 			animation: { pose: true },
 			scene: true,
 			extractPoses: true,
 			skeletons: [],
-			images: { flipY: false },
-			debug: false
+			images: { flipY: false }
 		};
 
 		private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
@@ -117,7 +114,7 @@ module akra.pool.resources {
 
 		private _pLinks: IColladaLinkMap = {};
 		private _pLib: IColladaLibraryMap = {};
-		private _pCache: IColladaCache = { meshMap: {}, sharedBuffer: null };
+		private _pCache: IMap<IMesh> = {};
 
 		private _pAsset: IColladaAsset = null;
 		private _pVisualScene: IColladaVisualScene = null;
@@ -300,12 +297,6 @@ module akra.pool.resources {
 					break;
 				}
 			}
-
-			//        for (var i = 0; i < nMax; i++) {
-			//            var pXMLData = pXMLList.item(i);
-			//            var sName = pXMLData.getNodeName();
-			//            fnCallback(pXMLData, sName);
-			//        }
 		}
 
 		private eachChild(pXML: Element, fnCallback: IXMLExplorer): void {
@@ -892,18 +883,30 @@ module akra.pool.resources {
 			return pJoints;
 		}
 
+		//this means, that all inputs in polygons tag has same index.
+		static isSingleIndexedPolygons(pPolygons: IColladaPolygons): boolean {
+			for (var i: uint = 0; i < pPolygons.inputs.length; ++i) {
+				if (i != pPolygons.inputs.length - 1 && pPolygons.inputs[i].offset !== pPolygons.inputs[i + 1].offset) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private COLLADAPolygons(pXML: Element, sType: string): IColladaPolygons {
 			var pPolygons: IColladaPolygons = {
-				inputs: [],                     /*потоки данных*/
-				p: null,                   /*индексы*/
-				material: attr(pXML, "material"), /*идентификатор материала*/
-				name: null,                   /*имя (встречается редко, не используется)*/
-				count: parseInt(attr(pXML, "count")) /*полное число индексов*/
+				inputs: [],								/*потоки данных*/
+				p: null,								/*индексы*/
+				material: attr(pXML, "material"),		/*идентификатор материала*/
+				name: null,								/*имя (встречается редко, не используется)*/
+				count: parseInt(attr(pXML, "count")),	/*полное число индексов*/
 			};
 
 			var iOffset: int = 0, n: uint = 0;
 			var iCount: int = parseInt(attr(pXML, "count"));
 			var iStride: int = 0;
+
 
 			this.eachByTag(pXML, "input", (pXMLData: Element): void => {
 				pPolygons.inputs.push(this.COLLADAInput(pXMLData, iOffset));
@@ -913,7 +916,8 @@ module akra.pool.resources {
 			sortArrayByProperty(pPolygons.inputs, "iOffset");
 
 			for (var i: uint = 0; i < pPolygons.inputs.length; ++i) {
-				iStride = math.max((<IColladaInput>pPolygons.inputs[i]).offset + 1, iStride);
+				var pInput: IColladaInput = <IColladaInput>pPolygons.inputs[i];
+				iStride = math.max(pInput.offset + 1, iStride);
 			}
 
 			debug.assert(iStride > 0, "Invalid offset detected.");
@@ -1058,6 +1062,109 @@ module akra.pool.resources {
 
 						pMesh.polygons.push(pPolygons);
 						break;
+				}
+			});
+
+			return pMesh;
+		}
+
+		private static isCOLLADAMeshOptimized(pMesh: IColladaMesh): boolean {
+			var pPolyGroup = pMesh.polygons;
+
+			return !pPolyGroup.some((pPolygons: IColladaPolygons) => {
+				return !Collada.isSingleIndexedPolygons(pPolygons);
+			});
+		}
+
+		private static optimizeCOLLADAMesh(pMesh: IColladaMesh): IColladaMesh {
+			var pPolyGroup = pMesh.polygons;
+
+			var pHashIndices: IIntMap = <any>{};
+			//map: data semantics -> data(any[])
+			var pUnpackedData: IMap<any[]> = <any>{};
+			var iLastIndex: uint = 0;
+
+			pPolyGroup.forEach((pPolygons: IColladaPolygons, n) => {
+				var pUnpackedIndices: number[] = [];
+				//number of indexes
+				var iStep = pPolygons.inputs.last.offset + 1;
+				//total sets of indexes
+				var iCount = pPolygons.p.length / iStep;
+
+				//move along the sets of indices
+				for (var i = 0; i < pPolygons.p.length; i += iStep) {
+
+					//calculation string hash key for set of indices
+					var sHash: string = "" + pPolygons.p[i];
+
+					for (var t = 1; t < iStep; ++t) {
+						sHash += "/" + pPolygons.p[i + t];
+					}
+
+					//check key in hash map
+					if (sHash in pHashIndices) {
+						pUnpackedIndices.push(pHashIndices[sHash]);
+					}
+					else {
+						//moving along each index in set
+						// set: [INDEX0(POSITION), INDEX1(NORMAL), ...]
+						for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+							var pInput: IColladaInput = pPolygons.inputs[j];
+
+							//index value in current set
+							var iIndex: uint = pPolygons.p[i + pInput.offset];
+
+							//semantics of data for current index
+							//	like: POSITION, NORMAL, ...
+							var sSemantic: string = pInput.semantics;
+
+							//number of components in data by current index
+							//	for example: 3(typically) for POSITION, NORMAL
+							//				 2 for UV
+							var iStride: uint = pInput.accessor.stride;
+
+							if (!isDefAndNotNull(pUnpackedData[sSemantic])) {
+								pUnpackedData[sSemantic] = [];
+							}
+
+							//original cleaned data of <source /> linked with current <input />
+							var pSrc: any[] = pInput.array;
+							var pDest: any[] = pUnpackedData[sSemantic];
+
+							//copy(unpack) data per component
+							for (var k = 0; k < iStride; ++k) {
+								pDest.push(pSrc[(iIndex * iStride) + k]);
+							}
+						}
+
+						// add the newly created vertex to the list of indices
+						pHashIndices[sHash] = iLastIndex;
+						pUnpackedIndices.push(iLastIndex);
+
+						// increment the counter
+						iLastIndex += 1;
+					}
+				}
+
+				//substitude all previous data with unpacked analogue
+
+				//subst indices
+				pPolygons.p = pUnpackedIndices;
+			});
+
+			Object.keys(pUnpackedData).forEach((sSemantics: string) => {
+				//TODO: add support for non-float32 arrays
+				pUnpackedData[sSemantics] = <any>(new Float32Array(pUnpackedData[sSemantics]));
+			});
+
+			//after all indexes recalculated, replacing data.
+			pPolyGroup.forEach((pPolygons: IColladaPolygons, n) => {
+				//subst data
+				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+					var pInput: IColladaInput = pPolygons.inputs[j];
+
+					pInput.offset = 0;
+					pInput.array = pUnpackedData[pInput.semantics];
 				}
 			});
 
@@ -2237,12 +2344,17 @@ module akra.pool.resources {
 			return pSkeleton;
 		}
 
-		private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh {
+		private buildMesh(pGeometryInstance: IColladaInstanceGeometry, isSkinned: boolean = false): IMesh {
 
 			var pMesh: IMesh = null;
 			var pGeometry: IColladaGeometrie = pGeometryInstance.geometry;
 			var pNodeData: IColladaMesh = pGeometry.mesh;
 			var sMeshName: string = pGeometry.id;
+
+			//we cant optimize skinned mesh, because animation can be placed in file differen from current
+			if (!isSkinned && !Collada.isCOLLADAMeshOptimized(pNodeData)) {
+				pNodeData = Collada.optimizeCOLLADAMesh(pNodeData);
+			}
 
 			if (isNull(pNodeData)) {
 				return null;
@@ -2255,76 +2367,124 @@ module akra.pool.resources {
 					pGeometryInstance);
 			}
 
-			// debug.time("Build mesh #" + pGeometry.id);
-
 			var iBegin: int = Date.now();
 
 			pMesh = this.getEngine().createMesh(
 				sMeshName,
 				<int>(EMeshOptions.HB_READABLE), /*|EMeshOptions.RD_ADVANCED_INDEX,  0,*/
-				this.sharedBuffer());    /*shared buffer, if supported*/
+				null);
 
 			var pPolyGroup: IColladaPolygons[] = pNodeData.polygons;
 			var pMeshData: IRenderDataCollection = pMesh.getData();
 
 			//creating subsets
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
-				pMesh.createSubset("submesh-" + i, pPolyGroup[i].type);
+				pMesh.createSubset("submesh-" + i, pPolyGroup[i].type,
+					Collada.isSingleIndexedPolygons(pPolyGroup[i]) ? ERenderDataBufferOptions.RD_SINGLE_INDEX : 0);
 			}
 
-			//filling data
-			for (var i: int = 0, pUsedSemantics: IMap<boolean> = <IMap<boolean>>{}; i < pPolyGroup.length; ++i) {
-				var pPolygons: IColladaPolygons = pPolyGroup[i];
+			//TODO: correct check, that it is simple mesh.
+			if (Collada.isSingleIndexedPolygons(pPolyGroup[0])) {
+				var pVertexBuffer: IVertexBuffer = this.getManager().createVertexBuffer(sMeshName);
 
-				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
-					var pInput: IColladaInput = pPolygons.inputs[j];
-					var sSemantic: string = pInput.semantics;
-					var pData: ArrayBufferView = <ArrayBufferView><any>pInput.array;
-					var pDecl: IVertexElementInterface[];
-					var pDataExt: Float32Array;
+				var pDataMap: IMap<ArrayBufferView> = <any>{};
+				var iByteLength: uint = 0;
+				var pDeclElements: IVertexElementInterface[] = [];
+				var pDeclaration: IVertexDeclaration = new data.VertexDeclaration();
 
-					//if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
-					if (!pUsedSemantics[sSemantic]) {
-						pUsedSemantics[sSemantic] = true;
+				for (var i: int = 0; i < pPolyGroup.length; ++i) {
+					var pPolygons: IColladaPolygons = pPolyGroup[i];
 
-						switch (sSemantic) {
-							case data.Usages.POSITION:
-							case data.Usages.NORMAL:
-								/*
-								 Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
-								 */
+					for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+						var pInput: IColladaInput = pPolygons.inputs[j];
+						var sSemantic: string = pInput.semantics;
 
-								pDataExt = new Float32Array((<Float32Array>pData).length / 3 * 4);
-
-								for (var y = 0, n = 0, m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
-									pDataExt[n++] = pData[m++];
-									pDataExt[n++] = pData[m++];
-									pDataExt[n++] = pData[m++];
-								}
-
-								pData = pDataExt;
-								pDecl = [VE.float3(sSemantic), VE.end(16)];
-
-								break;
-							case data.Usages.TEXCOORD:
-							case data.Usages.TEXCOORD1:
-							case data.Usages.TEXCOORD2:
-							case data.Usages.TEXCOORD3:
-							case data.Usages.TEXCOORD4:
-							case data.Usages.TEXCOORD5:
-								//avoiding semantics collisions
-								if (sSemantic === "TEXCOORD") {
-									sSemantic = "TEXCOORD0";
-								}
-
-								pDecl = [VE.custom(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
-								break;
-							default:
-								pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
-								debug.warn("unsupported semantics used: " + sSemantic);
+						if (sSemantic === "TEXCOORD") {
+							sSemantic = "TEXCOORD0";
 						}
 
-						pMeshData.allocateData(pDecl, pData);
+						if (!isDefAndNotNull(pDataMap[sSemantic])) {
+							pDataMap[sSemantic] = <ArrayBufferView><any>pInput.array;
+							iByteLength += (<ArrayBufferView><any>pInput.array).byteLength;
+							pDeclaration.append(VE.custom(sSemantic, EDataTypes.FLOAT, pInput.accessor.params.length));
+						}
+					}
+				}
+
+
+				pVertexBuffer.create(iByteLength, EHardwareBufferFlags.STATIC_READABLE);
+
+				var pVertexData = pVertexBuffer.getEmptyVertexData(iByteLength / pDeclaration.stride, pDeclaration);
+
+				for (var sSemantic in pDataMap) {
+					if (!pVertexData.setData(pDataMap[sSemantic], sSemantic)) {
+						debug.error("could not load data to buffer: " + sSemantic);
+					}
+				}
+
+				for (var i = 0; i < pMesh.getLength(); ++i) {
+					pMesh.getSubset(i).getData()._addData(pVertexData);
+				}
+			}
+			else {
+				//filling data for multiple indexes
+
+				//	pUsedSemantics contains semantics of already added data.
+				//	many <imput />'s are linked into same data, consequently, we must skip duplicates
+				for (var i: int = 0, pUsedSemantics: IMap<boolean> = <IMap<boolean>>{}; i < pPolyGroup.length; ++i) {
+					var pPolygons: IColladaPolygons = pPolyGroup[i];
+
+					for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+						var pInput: IColladaInput = pPolygons.inputs[j];
+						var sSemantic: string = pInput.semantics;
+						var pData: ArrayBufferView = <ArrayBufferView><any>pInput.array;
+						var pDecl: IVertexElementInterface[];
+						var pDataExt: Float32Array;
+
+						//if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
+						if (!pUsedSemantics[sSemantic]) {
+							pUsedSemantics[sSemantic] = true;
+
+							switch (sSemantic) {
+								case data.Usages.POSITION:
+								case data.Usages.NORMAL:
+
+									/*
+									 Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
+									 */
+
+									pDataExt = new Float32Array((<Float32Array>pData).length / 3 * 4);
+
+									for (var y = 0, n = 0, m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
+										pDataExt[n++] = pData[m++];
+										pDataExt[n++] = pData[m++];
+										pDataExt[n++] = pData[m++];
+									}
+
+									pData = pDataExt;
+									pDecl = [VE.float3(sSemantic), VE.end(16)];
+
+									break;
+								case data.Usages.TEXCOORD:
+								case data.Usages.TEXCOORD1:
+								case data.Usages.TEXCOORD2:
+								case data.Usages.TEXCOORD3:
+								case data.Usages.TEXCOORD4:
+								case data.Usages.TEXCOORD5:
+									//avoiding semantics collisions
+									if (sSemantic === "TEXCOORD") {
+										sSemantic = "TEXCOORD0";
+									}
+
+									pDecl = [VE.custom(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
+									break;
+								default:
+									pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+									debug.warn("unsupported semantics used: " + sSemantic);
+							}
+
+							pMeshData.allocateData(pDecl, pData);
+						}
 					}
 				}
 			}
@@ -2332,45 +2492,60 @@ module akra.pool.resources {
 			//add indices to data
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
+
+				//geometries
 				var pSubMesh: IMeshSubset = pMesh.getSubset(i);
 				var pSubMeshData: IRenderData = pSubMesh.getData();
-				var pIndexDecl: IVertexDeclaration = data.VertexDeclaration.normalize(undefined);
+				var pIndexDecl: IVertexDeclaration = null;
+
+
+				//materials
 				var pSurfaceMaterial: ISurfaceMaterial = null;
 				var pSurfacePool: IResourcePool<ISurfaceMaterial> = null;
 
-				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
-					var iOffset: int = pPolygons.inputs[j].offset;
-					var sIndexSemantic: string = data.Usages.INDEX + iOffset;
-					//total number of offsets can be less then number of inputs
-					if (!pIndexDecl.hasSemantics(sIndexSemantic)) {
-						pIndexDecl.append(VE.float(sIndexSemantic));
+				if (pSubMeshData.useMultiIndex()) {
+					pIndexDecl = data.VertexDeclaration.normalize(/* undefined */);
+
+					for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+						//number of index
+						var iOffset: int = pPolygons.inputs[j].offset;
+						//like: 
+						//	<input semantic = "VERTEX" offset ="0"/ > has index semantics INDEX0
+						//	<input semantic = "NORMAL" offset ="1"/ > has index semantics INDEX1
+						var sIndexSemantic: string = data.Usages.INDEX + iOffset;
+
+						//total number of offsets can be less then number of inputs
+						//for example: 
+						//	<input semantic = "VERTEX" offset ="0"/ >
+						//	<input semantic = "VERTEX" offset ="0"/ >
+						//
+						// two <input />'s has same offset
+						if (!pIndexDecl.hasSemantics(sIndexSemantic)) {
+							pIndexDecl.append(VE.float(sIndexSemantic));
+						}
+					}
+
+					pSubMeshData.allocateIndex(pIndexDecl, new Float32Array(pPolygons.p));
+
+					for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+						var sSemantic: string = pPolygons.inputs[j].semantics;
+						var sIndexSemantics: string = data.Usages.INDEX + pPolygons.inputs[j].offset;
+
+						pSubMeshData.index(sSemantic, sIndexSemantics);
 					}
 				}
+				//single index case:
+				else {
+					debug.assert(pPolygons.inputs[0].offset === 0, "Single index with non-zero offset unsupported.");
 
-				pSubMeshData.allocateIndex(pIndexDecl, new Float32Array(pPolygons.p));
-
-				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
-					var sSemantic: string = pPolygons.inputs[j].semantics;
-					var sIndexSemantics: string = data.Usages.INDEX + pPolygons.inputs[j].offset;
-
-					pSubMeshData.index(sSemantic, sIndexSemantics);
+					//alocate single index
+					pSubMeshData.allocateIndex(null, new Uint32Array(pPolygons.p));
 				}
-
-				// if (!pSubMesh.material) {
-				//     pSurfacePool = pEngine.getResourceManager().surfaceMaterialPool;
-				//     pSurfaceMaterial = pSurfacePool.findResource(pPolygons.material);
-
-				//     if (!pSurfaceMaterial) {
-				//         pSurfaceMaterial = pSurfacePool.createResource(pPolygons.material);
-				//     }
-
-				//     pSubMesh.surfaceMaterial = pSurfaceMaterial;
-				// }
 
 				pSubMesh.getMaterial().name = pPolygons.material;
 			}
 
-			//debug.log("mesh:", pMesh.getName(), "shadow: ", pMesh.getShadow(), "collada: ", this.findResourceName(), "total subsets: ", pMesh.getLength());
+
 			pMesh.setShadow(this.isShadowsEnabled());
 
 			//adding all data to cahce data
@@ -2400,7 +2575,7 @@ module akra.pool.resources {
 			var pSkin: ISkin;
 
 			pSkeleton = this.buildSkeleton(pControllerInstance.skeletons);
-			pMesh = this.buildMesh({ geometry: pGeometry, material: pMaterials });
+			pMesh = this.buildMesh({ geometry: pGeometry, material: pMaterials }, true);
 
 			pSkin = pMesh.createSkin();
 
@@ -2493,38 +2668,6 @@ module akra.pool.resources {
 		}
 
 		private buildMeshes(): IMesh[] {
-			//var pScene: IColladaVisualScene = this.getVisualScene();
-			//var pMeshes: IMesh[] = [];
-
-			//this.findNode(pScene.nodes, null, (pNode: IColladaNode) => {
-			//	var pModelNode: ISceneNode;
-
-			//	if (pNode.controller.length == 0 && pNode.geometry.length == 0) {
-			//		return;
-			//	}
-
-			//	//get any controller/geometry
-
-			//	if (isNull(pNode.constructedNode)) {
-			//		debug.error("you must call buildScene() before call buildMeshes() or file corrupt");
-			//		return;
-			//	}
-
-			//	if (pNode.geometry.length > 0) {
-			//		if (!scene.SceneModel.isModel(pNode.constructedNode)) {
-			//			pModelNode = pNode.constructedNode.getScene().createModel(".joint-to-model-link-" + guid());
-			//			pModelNode.attachToParent(pNode.constructedNode);
-			//		}
-			//		else {
-			//			pModelNode = pNode.constructedNode;
-			//		}
-			//	}
-
-			//	pMeshes.insert(<IMesh[]>this.buildSkinMeshInstance(pNode.controller));
-			//	pMeshes.insert(<IMesh[]>this.buildMeshInstance(pNode.geometry, <ISceneModel>pModelNode));
-			//});
-
-			//return pMeshes;
 			var pScene: IColladaVisualScene = this.getVisualScene();
 			var pMeshes: IMesh[] = [];
 
@@ -2600,17 +2743,6 @@ module akra.pool.resources {
 
 			pJointNode.setBoneName(sJointSid);
 			pJointNode.attachToParent(pParentNode);
-
-
-			debug.assert(!this.isJointsVisualizationNeeded(), "TODO: visualize joints...");
-			//draw joints
-			// var pSceneNode: ISceneModel = pEngine.appendMesh(
-			//     pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY | a.Mesh.SHARED_GEOMETRY),
-			//     pJointNode);
-			// pSceneNode.name = sJointName + '[joint]';
-			// pSceneNode.setScale(0.02);
-
-
 
 			return pJointNode;
 		}
@@ -2797,21 +2929,11 @@ module akra.pool.resources {
 		}
 
 		private findMesh(sName: string): IMesh {
-			return this._pCache.meshMap[sName] || null;
+			return this._pCache[sName] || null;
 		}
 
 		private addMesh(pMesh: IMesh): void {
-			this._pCache.meshMap[pMesh.getName()] = pMesh;
-			this.sharedBuffer(pMesh.getData());
-		}
-
-		private sharedBuffer(pBuffer?: IRenderDataCollection): IRenderDataCollection {
-			if (isDefAndNotNull(pBuffer)) {
-				this._pCache.sharedBuffer = pBuffer;
-			}
-
-			return null;
-			// return this._pOptions.sharedBuffer ? pCache.sharedBuffer : null;
+			this._pCache[pMesh.getName()] = pMesh;
 		}
 
 		private prepareInput(pInput: IColladaInput): IColladaInput {
@@ -2822,10 +2944,6 @@ module akra.pool.resources {
 			pInput.accessor = pInput.source.techniqueCommon.accessor;
 
 			return pInput;
-		}
-
-		private isJointsVisualizationNeeded(): boolean {
-			return this._pOptions.drawJoints === true;
 		}
 
 		public isVisualSceneLoaded(): boolean {
@@ -3002,7 +3120,7 @@ module akra.pool.resources {
 			return true;
 		}
 
-		
+
 		extractMesh(sMeshName: string = null): IMesh {
 			return this.buildMeshByName(sMeshName);
 		}

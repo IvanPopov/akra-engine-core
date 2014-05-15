@@ -22,10 +22,6 @@ module akra {
 		SHARED_GEOMETRY = 0x01  /*<! use shared geometry*/
 	};
 	
-	export interface IMeshMap {
-		[name: string]: IMesh;
-	}
-	
 	export interface IMesh extends IEventProvider {
 		/** notify, when one of substets added or removed shadow */
 		shadowed: ISignal<{ (pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void; }>;

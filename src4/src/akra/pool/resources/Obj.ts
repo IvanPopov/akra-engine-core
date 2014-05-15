@@ -7,6 +7,40 @@
 
 /// <reference path="../../io/io.ts" />
 
+module akra {
+	interface IGeometryData {
+		normals: Float32Array;
+		vertices: Float32Array;
+		uv: Float32Array;
+		indices: Uint32Array;
+	}
+
+	interface IGeometryData_MI {
+		normals: { data: Float32Array; indices: Uint32Array };
+		vertices: { data: Float32Array; indices: Uint32Array };
+		uv: { data: Float32Array; indices: Uint32Array };
+	}
+
+	class ExternalGeometry {
+		vertices: IVec3[] = [];
+		normals: IVec3[] = [];
+		uv: IVec2[] = [];
+
+		constructor() {
+
+		}
+
+		uploadDataWithMultipleIndex(data: IGeometryData_MI): boolean {
+			return true;
+		}
+
+		uploadDataWithSingleIndex(data: IGeometryData): boolean {
+			return true;
+		}
+	}
+}
+
+
 module akra.pool.resources {
 	import Mat4 = math.Mat4;
 	import Vec3 = math.Vec3;
@@ -487,18 +521,3 @@ module akra.pool.resources {
 	}
 }
 
-module akra {
-	//var data1 = {
-	//	vertices: [],
-	//	normals: [],
-	//	texcoords: [],
-	//	indices: []
-	//};
-
-	//var data2 = {
-	//	vertices: { data: [], indices: [] },
-	//	normals: { data: [], indices: [] },
-	//	texcoords: { data: [], indices: [] },
-	//}
-
-}

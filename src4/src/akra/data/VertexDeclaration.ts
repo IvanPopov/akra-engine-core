@@ -174,6 +174,7 @@ module akra.data {
 			return null;
 		}
 
+		static normalize(): IVertexDeclaration;
 		static normalize(pElement: IVertexElement): IVertexDeclaration;
 		static normalize(pElements: IVertexElementInterface[]): IVertexDeclaration;
 		static normalize(pDecl: IVertexDeclaration): IVertexDeclaration;

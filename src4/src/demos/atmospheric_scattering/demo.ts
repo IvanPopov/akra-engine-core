@@ -208,7 +208,7 @@ module akra {
 		createViewports();
 
 		createSceneEnvironment();
-		//createModelEntry("CUBE.DAE");
+		//pDragon = createModelEntry("CUBE.DAE");
 		pDragon = createModelEntry("SEYMOURPLANE.DAE");
 		//pDragon.addOrbitRotationByXYZAxis(-math.HALF_PI, 0., 0).update();
 		pDragon.setPosition(0., 1, 0.).scale(.25).update();

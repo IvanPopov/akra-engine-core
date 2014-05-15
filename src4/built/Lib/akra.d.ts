@@ -4625,7 +4625,12 @@ declare module akra {
         isReadyForRender(): boolean;
         isAllMethodsLoaded(): boolean;
         isFrozen(): boolean;
-        wireframe(enable?: boolean, bOverlay?: boolean): boolean;
+        /**
+        * Display with wireframe.
+        * @param bEnable Enable/Disable wireframe display mode.
+        * @param bOverlay If TRUE, wireframe will be overlayed into default material; Default is TRUE.
+        */
+        wireframe(bEnable?: boolean, bOverlay?: boolean): boolean;
         render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
         _setRenderData(pData: IRenderData): void;
         _setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
@@ -4986,9 +4991,6 @@ declare module akra {
         GEOMETRY_ONLY = 0,
         SHARED_GEOMETRY = 1,
     }
-    interface IMeshMap {
-        [name: string]: IMesh;
-    }
     interface IMesh extends IEventProvider {
         /** notify, when one of substets added or removed shadow */
         shadowed: ISignal<(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean) => void>;
@@ -5143,35 +5145,42 @@ declare module akra {
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
     }
-    interface IColladaCache {
-        meshMap: IMeshMap;
-        sharedBuffer: IRenderDataCollection;
-    }
     interface IColladaAnimationLoadOptions {
+        /** @unsupported */
         pose?: boolean;
     }
     interface IColladaImageLoadOptions {
         flipY?: boolean;
     }
     interface IColladaLoadOptions extends IModelLoadOptions {
-        /** Add nodes, that visualize joints in animated models. */
-        drawJoints?: boolean;
-        /** Convert all meshed to wireframe. */
+        /** Display all meshes with wireframe overlay. Default to FALSE.*/
         wireframe?: boolean;
+        /** Enable/Disable shadows for all models. Dfault to TRUE.*/
         shadows?: boolean;
         /**
-        * Use common buffer for all data
-        * @deprecated
+        * Determines whether to load animations.
+        * Use NULL to skip animation loading.
+        * Default to not null;
         */
-        sharedBuffer?: boolean;
         animation?: IColladaAnimationLoadOptions;
+        /** Determines whether to create visual scene, written in Collada. Default to TRUE.*/
         scene?: boolean;
+        /**
+        * Determines whether to extends all animation with default mesh poses.
+        * Default to TRUE.
+        * @system
+        */
         extractPoses?: boolean;
+        /**
+        * Upload skeletons from collada.
+        * @system
+        * @deprectaed
+        */
         skeletons?: ISkeleton[];
+        /** @note: unsupported now... */
         images?: IColladaImageLoadOptions;
+        /** Name of scene root node. */
         name?: string;
-        /** @debug */
-        debug?: boolean;
     }
     interface IXMLExplorer {
         (pXML: Element, sName?: string): void;
@@ -13330,6 +13339,7 @@ declare module akra.data {
         public findElement(sSemantics: string, iCount?: number): IVertexElement;
         public clone(): IVertexDeclaration;
         public toString(): string;
+        static normalize(): IVertexDeclaration;
         static normalize(pElement: IVertexElement): IVertexDeclaration;
         static normalize(pElements: IVertexElementInterface[]): IVertexDeclaration;
         static normalize(pDecl: IVertexDeclaration): IVertexDeclaration;
@@ -14626,8 +14636,11 @@ declare module akra.data {
         * Get indices that uses in current index set.
         */
         public getIndices(): IBufferData;
+        /** Get real index, that will be used in shader program. */
         public getIndexFor(sSemantics: string): ArrayBufferView;
         public getIndexFor(iDataLocation: number): ArrayBufferView;
+        public getInitialIndexFor(sSemantics: string): ArrayBufferView;
+        public getInitialIndexFor(iDataLocation: number): ArrayBufferView;
         /**
         * Get number of primitives for rendering.
         */
@@ -16103,11 +16116,15 @@ declare module akra.model {
         public getTotalBones(): number;
         public getBoneLocalBound(sBone: string): IRect3d;
         public getBoneLocalBound(iBone: number): IRect3d;
-        public computeNormals(): void;
+        public computeNormals(): boolean;
         public computeTangents(): void;
         public computeBinormals(): void;
         public isSkinned(): boolean;
         public isOptimizedSkinned(): boolean;
+        public getVertexData(sUsage: string): IVertexData;
+        public getVertexData(sUsage: 'TEXCOORD'): IVertexData;
+        public getVertexData(sUsage: 'NORMAL'): IVertexData;
+        public getVertexData(sUsage: 'POSITION'): IVertexData;
         public setSkin(pSkin: ISkin): boolean;
         public update(): boolean;
         private calculateBoneLocalBoundingBoxes();
@@ -16633,9 +16650,12 @@ declare module akra.pool.resources {
         private COLLADASource(pXML);
         private COLLADAVertices(pXML);
         private COLLADAJoints(pXML);
+        static isSingleIndexedPolygons(pPolygons: IColladaPolygons): boolean;
         private COLLADAPolygons(pXML, sType);
         private COLLADAVertexWeights(pXML);
         private COLLADAMesh(pXML);
+        private static isCOLLADAMeshOptimized(pMesh);
+        private static optimizeCOLLADAMesh(pMesh);
         private COLLADAGeometrie(pXML);
         private COLLADASkin(pXML);
         private COLLADAController(pXML);
@@ -16676,7 +16696,7 @@ declare module akra.pool.resources {
         private buildDefaultMaterials(pMesh);
         private buildMaterials(pMesh, pGeometryInstance);
         private buildSkeleton(pSkeletonsList);
-        private buildMesh(pGeometryInstance);
+        private buildMesh(pGeometryInstance, isSkinned?);
         private buildSkinMesh(pControllerInstance);
         private buildSkinMeshInstance(pControllers, pSceneNode?);
         private buildMeshInstance(pGeometries, pSceneNode?);
@@ -16695,9 +16715,7 @@ declare module akra.pool.resources {
         private getXMLRoot();
         private findMesh(sName);
         private addMesh(pMesh);
-        private sharedBuffer(pBuffer?);
         private prepareInput(pInput);
-        private isJointsVisualizationNeeded();
         public isVisualSceneLoaded(): boolean;
         public isAnimationLoaded(): boolean;
         private isSceneNeeded();
@@ -16739,6 +16757,8 @@ declare module akra.pool.resources {
         static isColladaResource(pItem: IResourcePoolItem): boolean;
     }
     function isModelResource(pItem: IResourcePoolItem): boolean;
+}
+declare module akra {
 }
 declare module akra.pool.resources {
     enum EObjFVF {

@@ -53,7 +53,12 @@ module akra {
 		isAllMethodsLoaded(): boolean;
 		isFrozen(): boolean;
 
-		wireframe(enable?: boolean, bOverlay?: boolean): boolean;
+		/** 
+		 * Display with wireframe.
+		 * @param bEnable Enable/Disable wireframe display mode.
+		 * @param bOverlay If TRUE, wireframe will be overlayed into default material; Default is TRUE.
+		 */
+		wireframe(bEnable?: boolean, bOverlay?: boolean): boolean;
 
 		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 

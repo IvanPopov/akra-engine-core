@@ -367,6 +367,8 @@ module akra.data {
 			return this._pIndexData;
 		}
 
+
+		/** Get real index, that will be used in shader program. */
 		getIndexFor(sSemantics: string): ArrayBufferView;
 		getIndexFor(iDataLocation: int): ArrayBufferView;
 		getIndexFor(sSemantics?): ArrayBufferView {
@@ -378,6 +380,29 @@ module akra.data {
 
 			return null;
 		}
+
+
+		getInitialIndexFor(sSemantics: string): ArrayBufferView;
+		getInitialIndexFor(iDataLocation: int): ArrayBufferView;
+		getInitialIndexFor(sSemantics?): ArrayBufferView {
+			var pFlow: IDataFlow = this._getFlow(<string>sSemantics);
+
+			if (!isNull(pFlow.mapper)) {
+				return null;
+			}
+
+			var pIndices: Float32Array = <Float32Array>pFlow.mapper.data.getTypedData(pFlow.mapper.semantics);
+			var pData: Float32Array = <Float32Array>pFlow.data.getTypedData(sSemantics);
+			var iStride: int = pFlow.data.getStride();
+			var iAddition: int = pFlow.data.getByteOffset();
+
+			for (var i: uint = 0; i < pIndices.length; i++) {
+				pIndices[i] = (pIndices[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAddition) / iStride;
+			}
+
+			return pIndices;
+		}
+
 
 		/**
 		 * Get number of primitives for rendering.

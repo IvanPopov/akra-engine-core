@@ -72,14 +72,14 @@ module akra.addons {
 		var pEngine: IEngine = pScene.getManager().getEngine();
 
 		pMesh = model.createMesh(pEngine, 'scene-surface', EMeshOptions.HB_READABLE);
-		pSubMesh = pMesh.createSubset('scene-surface::main', EPrimitiveTypes.LINELIST);
+		pSubMesh = pMesh.createSubset('scene-surface::main', EPrimitiveTypes.LINELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
 		pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
 		pSubMesh.getData().allocateIndex([VE.float('INDEX_POSITION')], pVertexIndicesData);
-		pSubMesh.getData().index('POSITION', 'INDEX_POSITION');
+		//pSubMesh.getData().index('POSITION', 'INDEX_POSITION');
 
 		pSubMesh.setShadow(false);
 
-		if ((<core.Engine>pEngine).isDepsLoaded()) {
+		if ((<core.Engine>pEngine).isLoaded()) {
 			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.plane");
 		}
 		else {
@@ -101,58 +101,24 @@ module akra.addons {
 		var pMesh: IMesh = null,
 			pSubMesh: IMeshSubset = null;
 
-		var pVerticesData: Float32Array = new Float32Array([
-			-fSize, 0., -fSize,
-			fSize, 0., -fSize,
-			-fSize, 0., fSize,
-			fSize, 0., fSize
+		var pData: Float32Array = new Float32Array([
+			-fSize, 0., -fSize,			0., 0.,				0., 1., 0.,
+			fSize, 0., -fSize,			v2UV.x, 0.,			0., 1., 0.,
+			-fSize, 0., fSize,			0., v2UV.y,			0., 1., 0.,
+			fSize, 0., fSize,			v2UV.x, v2UV.y,		0., 1., 0.
 		]);
-
-		var pTexCoordData: Float32Array = new Float32Array([
-			0., 0.,
-			v2UV.x, 0.,
-			0., v2UV.y,
-			v2UV.x, v2UV.y
-		]);
-
-		var pNormalsData: Float32Array = new Float32Array([
-			0., 1., 0.
-		]);
-
-		var pVertexIndicesData: Float32Array = new Float32Array([
-			0., 1., 2., 3.
-		]);
-
-
-		var pNormalIndicesData: Float32Array = new Float32Array([
-			0., 0., 0., 0.
-		]);
-
-		var iPos: uint = 0,
-			iNorm: uint = 0,
-			iTex: uint = 0;
 
 		var pEngine: IEngine = pScene.getManager().getEngine();
 
 		pMesh = model.createMesh(pEngine, 'quad', EMeshOptions.HB_READABLE);
-		pSubMesh = pMesh.createSubset('quad::main', EPrimitiveTypes.TRIANGLESTRIP);
+		pSubMesh = pMesh.createSubset('quad::main', EPrimitiveTypes.TRIANGLESTRIP, ERenderDataBufferOptions.RD_SINGLE_INDEX);
 
-		pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
-		pSubMesh.getData().allocateData([VE.float2('TEXCOORD0')], pTexCoordData);
-		pSubMesh.getData().allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
-		pSubMesh.getData().allocateIndex([VE.float('INDEX2')], pVertexIndicesData);
-		pSubMesh.getData().index('POSITION', 'INDEX0');
-		pSubMesh.getData().index('TEXCOORD0', 'INDEX2');
-
-		iNorm = pSubMesh.getData().allocateData([VE.float3('NORMAL')], pNormalsData);
-		pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
-		pSubMesh.getData().index('NORMAL', 'INDEX1');
-
+		pSubMesh.getData().allocateData([VE.float3('POSITION'), VE.float2('TEXCOORD0'), VE.float3('NORMAL')], pData);
 
 
 		pSubMesh.setShadow(false);
 
-		if (pEngine.isDepsLoaded()) {
+		if (pEngine.isLoaded()) {
 			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 		}
 		else {
@@ -200,7 +166,7 @@ module akra.addons {
 
 			pSubMesh.setShadow(false);
 
-			if (pEngine.isDepsLoaded()) {
+			if (pEngine.isLoaded()) {
 				pSubMesh.getEffect().addComponent("akra.system.mesh_texture");
 			}
 			else {
@@ -238,19 +204,19 @@ module akra.addons {
 		var v: IVec3 = pJoint.getWorldPosition().subtract(pParent.getWorldPosition(), math.Vec3.temp());
 
 		pMesh = model.createMesh(pEngine, "bone-" + pJoint.getName(), EMeshOptions.HB_READABLE);
-		pSubMesh = pMesh.createSubset("bone", EPrimitiveTypes.LINELIST);
+		pSubMesh = pMesh.createSubset("bone", EPrimitiveTypes.LINELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
 
 		pSubMesh.getData().allocateData([VE.float3("POSITION")], new Float32Array([0, 0, 0, v.x, v.y, v.z]));
 		pSubMesh.getData().allocateIndex([VE.float("INDEX0")], new Float32Array([0, 1]));
 
-		pSubMesh.getData().index("POSITION", "INDEX0");
+		//pSubMesh.getData().index("POSITION", "INDEX0");
 
 		pMaterial = pSubMesh.getMaterial();
 		(<IColor>pMaterial.emissive).set(Color.WHITE);
 
 		pSubMesh.setShadow(false);
 
-		if (pEngine.isDepsLoaded()) {
+		if (pEngine.isLoaded()) {
 			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 		}
 		else {
@@ -268,15 +234,14 @@ module akra.addons {
 
 	export function lineCube(pScene: IScene3d, eOptions?: int): ISceneModel {
 		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
-		var iPos: int, iNorm: int;
+		var iPos: int
 		var pEngine: IEngine = pScene.getManager().getEngine();
 
 		pMesh = model.createMesh(pEngine, "line-cube", eOptions || EMeshOptions.HB_READABLE);
-		iNorm = pMesh.getData().allocateData([VE.float3("NORMAL")], new Float32Array([1, 0, 0]));
 
-		pSubMesh = pMesh.createSubset("cube", EPrimitiveTypes.LINELIST);
+		pSubMesh = pMesh.createSubset("cube", EPrimitiveTypes.LINELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
 
-		pSubMesh.getData().allocateAttribute([VE.float3("POSITION")], new Float32Array([
+		pSubMesh.getData().allocateData([VE.float3("POSITION")], new Float32Array([
 			//front
 			-1, -1, -1,
 			1, -1, -1,
@@ -339,7 +304,7 @@ module akra.addons {
 
 		pSubMesh.setShadow(false);
 
-		if (pEngine.isDepsLoaded()) {
+		if (pEngine.isLoaded()) {
 			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 		}
 		else {
