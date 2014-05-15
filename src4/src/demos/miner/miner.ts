@@ -40,7 +40,8 @@ module akra {
 	export var pCamera: ICamera = null;
 	export var pViewport: I3DViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
-	export var pScene: IScene3d = pEngine.getScene();
+    export var pScene: IScene3d = pEngine.getScene();
+    export var pLightProject: IProjectLight = null;
 
 	function animateLight(pLight: IOmniLight, pSprite: ISprite): void {
 		var i = 1000;
@@ -69,7 +70,7 @@ module akra {
 
 		pCamera = pScene.createCamera();
 		pCamera.attachToParent(pScene.getRootNode());
-		pCamera.setPosition(4., 4., 3.5);
+        pCamera.setPosition(-2.367366313934326, 9.469015121459961, 0.9847351908683777);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
@@ -93,7 +94,7 @@ module akra {
 		pDSViewport.setBackgroundColor(color.GRAY);
 		pDSViewport.setFXAA(false);
 
-		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
+		
 
 		//var pNormalViewport = new render.TextureViewport(pViewport["_pNormalBufferTexture"], 0.01, 0.17, 0.15, 0.15, 2);
 		//pCanvas.addViewport(pNormalViewport);
@@ -112,9 +113,9 @@ module akra {
 		//std.createSceneEnvironment(pScene, true, false, 50);
 
 
-        var pLightProject: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.SPLIT_PROJECT, true, 512);
+        pLightProject = <IProjectLight>pScene.createLightPoint(ELightTypes.SPLIT_PROJECT, true, 512);
         pLightProject.attachToParent(pScene.getRootNode());
-        pLightProject.setPosition(math.random() * -10 + 5., math.random() * 5, math.random() * -10 + 5);
+        pLightProject.setPosition(4.17600679397583, 3.924830913543701, -0.5841776132583618);
 		var pSprite = pScene.createSprite();
 		pSprite.scale(.25);
 		pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
@@ -154,6 +155,8 @@ module akra {
 
 		//animateLight(pLightOmni, pSprite);
 		//animateLight(pLightOmni, null);
+
+        pCanvas.addViewport(new render.TextureViewport(pLightProject.getDepthTexture(), 0.01, 0.01, 0.3, 0.3, 2));
 
 
 		var pGrid = pRmgr.createTexture("GRID");

@@ -97,9 +97,9 @@ module akra.scene.light {
             var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
 
             //if shadows disabled change type on simple project
-            //if (!isShadowCaster) {
+            if (!isShadowCaster) {
                 this._setLightType(ELightTypes.PROJECT);
-            //}
+            }
 
             var pCasters: IShadowCaster[] = this._pSplitShadowCasters = new Array(nSplitNumber);
             var pCaster: IShadowCaster;
@@ -137,7 +137,7 @@ module akra.scene.light {
 
             //используется для упаковки нескольких текстур в одну
 
-            iColomns = math.pow(2, math.ceil(fTmp)); 
+            iColomns = math.pow(2, math.ceil(fTmp/2)); 
             iRows = iTmp / iColomns;
 
 			// if (!isNull(this._pDepthTexture)){

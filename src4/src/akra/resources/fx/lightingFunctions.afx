@@ -230,7 +230,7 @@ float calcProjectLightInfluence(float4x4 toLightProjectSpace, float3 position){
 }
 
 bool isUnderShadowInfluence(float4x4 toLightSpace, float4x4 projMat, float3 position, out float2 shadowTexCoords, out float realDepth) {
-	float4 v4fLightSpace = toLightSpace *float4(position, 1.);
+	float4 v4fLightSpace = toLightSpace * float4(position, 1.);
 
 	float4 v4fTmp = projMat * v4fLightSpace;
 	float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
@@ -239,7 +239,7 @@ bool isUnderShadowInfluence(float4x4 toLightSpace, float4x4 projMat, float3 posi
 
 	//тест на попадание в область действия источника
 	//так как здесь происходит считывание из текстуру другой тест не корректен
-	if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v4fTmp.w >= 0.){
+	if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
 		shadowTexCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
 		realDepth = v4fLightSpace.z;
 		return true;
@@ -262,7 +262,7 @@ float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCo
 	float lightRealDepth = unprojZ(projMat, lightDepth); //negative
 
 	float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow, 1.);
-	fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - lightRealDepth));
+	//fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - lightRealDepth));
 	return fShadowMultiplier;
 }
 

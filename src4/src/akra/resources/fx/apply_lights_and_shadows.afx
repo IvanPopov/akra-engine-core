@@ -145,8 +145,14 @@ float4 applyLightSplitProjectShadow() : COLOR{
 						float4 viewportPosition = points_split_project_shadows[i].viewport_position[j];
 						shadowTexCoords = viewportPosition.xy + viewportPosition.zw * shadowTexCoords;
 
-						shadowMultiplier = calculateShadowMultiplier(split_project_shadow_sampler[i], shadowTexCoords,
-																	 points_omni_shadows[i].optimized_projection_matrix[j], realDepth);
+						/*shadowMultiplier = calculateShadowMultiplier(split_project_shadow_sampler[i], shadowTexCoords,
+																	 points_split_project_shadows[i].optimized_projection_matrix[j], realDepth);*/
+
+ 						if(all(lessThanEqual(shadowTexCoords,float2(0.5)))){
+							shadowMultiplier = 0.;
+						}
+						
+
 						isOk = false;
 						break;
 					}

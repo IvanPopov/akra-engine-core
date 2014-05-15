@@ -699,7 +699,7 @@ module akra.render {
                     sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
                     
                     (<UniformSplitProjectShadow>pUniformData).setSampler(sTexture);
-                    pUniforms.samplersProject.push((<UniformSplitProjectShadow>pUniformData).SHADOW_SAMPLER);
+                    pUniforms.samplersSplitProject.push((<UniformSplitProjectShadow>pUniformData).SHADOW_SAMPLER);
 
                     pShadowCaster = pSplitProjectLight.getShadowCaster(0);
 
