@@ -193,15 +193,16 @@ float4 applyPBSReflection(): COLOR {
 	return color;
 };
 
+float3 fogColor : FOG_COLOR;
+float fogStart : FOG_START;
+float fogIndex : FOG_INDEX;
+
 float4 applyLinearFogfs(): COLOR {// required fog variables
 	float4 color = resultAFXColor;
 	float dist = length(pixelData.position);
-	float3 fogColor = float3 (0.0);
-	float minFogRadius = 30.0;
-	float maxFogRadius = 100.0;
 
 	// get a fog factor (thickness of fog) based on the distance
-	float fogFac = (dist - minFogRadius) / (maxFogRadius - minFogRadius);
+	float fogFac = (dist - fogStart) / (fogIndex - fogStart);
 	// constrain the fog factor between 0 and 1
 	fogFac = clamp (fogFac, 0.0, 1.0);
 
@@ -213,9 +214,6 @@ float4 applyLinearFogfs(): COLOR {// required fog variables
 float4 applyExponentialFogfs(): COLOR {// required fog variables
 	float4 color = resultAFXColor;
 	float dist = length(pixelData.position);
-	float3 fogColor = float3 (0.0);
-	float fogStart = 30.0;
-	float fogIndex = 30.0;
 
 	// get a fog factor (thickness of fog) based on the distance
 	float fogFac;

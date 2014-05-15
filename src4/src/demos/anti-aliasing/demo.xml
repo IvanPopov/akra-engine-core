@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Demo Name="PBS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Demo Name="Anti-aliasing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
-  <Description>Physically based shading demo.</Description>
+  <Description>Anti-aliasing test demo.</Description>
   <ItemGroup>
-    <TypeScriptCompile Include="pbs-demo.ts"/>
+    <TypeScriptCompile Include="anti-aliasing.ts"/>
   </ItemGroup>
   <PropertyGroup>
-    <TypeScriptOutFile>../../../$(BuiltDir)/demos/pbs-demo/pbs-demo.js</TypeScriptOutFile>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/anti-aliasing/anti-aliasing.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
       <Attachment>

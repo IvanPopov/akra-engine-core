@@ -232,26 +232,43 @@ module akra {
         var iPbsSpecG = 3;
 		(<dat.OptionController>pPBSFolder.add({PbsSpecG:"Schlick"}, 'PbsSpecG', Object.keys(pPbsSpecG))).name("PBS Spec G").onChange((sKey) => {
 			iPbsSpecG = pPbsSpecG[sKey];
-			console.log(iPbsSpecG);
 		});
 
         var iPbsDiffuse = 0;
 		(<dat.OptionController>pPBSFolder.add({PbsDiffuse:"Lambert"}, 'PbsDiffuse', Object.keys(pPbsDiffuse))).name("PBS Diffuse").onChange((sKey) => {
 			iPbsDiffuse = pPbsDiffuse[sKey];
-			console.log(iPbsDiffuse);
 		});
 
         var iPbsSpecD = 2;
 		(<dat.OptionController>pPBSFolder.add({PbsSpecD:"GGX"}, 'PbsSpecD', Object.keys(pPbsSpecD))).name("PBS Spec D").onChange((sKey) => {
 			iPbsSpecD = pPbsSpecD[sKey];
-			console.log(iPbsSpecD);
 		});
 
         var iPbsSpecF = 1;
 		(<dat.OptionController>pPBSFolder.add({PbsSpecF:"Schlick"}, 'PbsSpecF', Object.keys(pPbsSpecF))).name("PBS Spec F").onChange((sKey) => {
 			iPbsSpecF = pPbsSpecF[sKey];
-			console.log(iPbsSpecF);
 		});
+
+        var fogType = {
+            None: 0,
+            linear: 1,
+            exp: 2
+        };
+
+        var pFogData = {
+            fogColor: 0,
+            fogStart: 30,
+            fogIndex: 30
+        }
+
+        var pFogFolder = pGUI.addFolder("fog");
+        var iFogType = 0;
+        (<dat.OptionController>pFogFolder.add({FogType:"exp"}, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
+            iFogType = fogType[sKey];
+        });
+        (<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;
+        (<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogStart')).min(0.).max(200.).name("start");
+        (<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogIndex')).min(0.01).max(200.).name("index");
 
         (<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
@@ -288,8 +305,21 @@ module akra {
 			pPass.setUniform("PHYSICAL_SPEC_F", iPbsSpecF);
 			pPass.setForeign("PhysicalSpecF", iPbsSpecF);
 
-            pPass.setForeign("USE_LINEAR_FOG", false);
-            pPass.setForeign("USE_EXPONENTIAL_FOG", true);
+            if (iFogType == 0){
+                pPass.setForeign("USE_LINEAR_FOG", false);
+                pPass.setForeign("USE_EXPONENTIAL_FOG", false);
+            }
+            else if (iFogType == 1){
+                pPass.setForeign("USE_LINEAR_FOG", true);
+                pPass.setForeign("USE_EXPONENTIAL_FOG", false);
+            }
+            else if (iFogType == 2){
+                pPass.setForeign("USE_LINEAR_FOG", false);
+                pPass.setForeign("USE_EXPONENTIAL_FOG", true);
+            }
+            pPass.setUniform("FOG_COLOR", new math.Vec3(pFogData.fogColor));
+            pPass.setUniform("FOG_START", pFogData.fogStart);
+            pPass.setUniform("FOG_INDEX", pFogData.fogIndex);
 
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
