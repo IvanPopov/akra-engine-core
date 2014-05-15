@@ -48,6 +48,7 @@ module akra.render {
 		private _pDefaultEnvMap: ITexture = null;
 
 		private _pTextureToScreenViewport: IViewport = null;
+		private _isTransparencySupported: boolean = true;
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -101,6 +102,14 @@ module akra.render {
 
 		getDefaultEnvironmentMap(): ITexture {
 			return this._pDefaultEnvMap;
+		}
+
+		setTransparencySupported(bEnable: boolean): void {
+			this._isTransparencySupported = bEnable;
+		}
+
+		isTransparencySupported(): boolean {
+			return this._isTransparencySupported;
 		}
 
 
@@ -185,11 +194,14 @@ module akra.render {
 			this._pLightPoints = pLights;
 			this.createLightingUniforms(this.getCamera(), this._pLightPoints, this._pLightingUnifoms);
 			this._pCamera._keepLastViewport(this);
+
 			this.renderAsNormal("forwardShading", this.getCamera());
 			this.getTarget().getRenderer().executeQueue(true);
 
-			this.renderTransparentObjects("forwardShading", this.getCamera());
-			this.getTarget().getRenderer().executeQueue(true);
+			if (this.isTransparencySupported()) {
+				this.renderTransparentObjects("forwardShading", this.getCamera());
+				this.getTarget().getRenderer().executeQueue(true);
+			}
 
 			//var pRenderer: IRenderer = this._pTarget.getRenderer();
 			//var pCurrentViewport: IViewport = pRenderer._getViewport();
@@ -218,7 +230,8 @@ module akra.render {
 				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 
-					if (!isNull(pRenderable) && !pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent) {
+					if (!isNull(pRenderable) &&
+						!(this.isTransparencySupported() && pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent)) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}
@@ -226,6 +239,10 @@ module akra.render {
 		}
 
 		protected renderTransparentObjects(csMethod: string, pCamera: ICamera): void {
+			if (!this.isTransparencySupported()) {
+				return;
+			}
+
 			var pVisibleObjects: IObjectArray<ISceneObject> = pCamera.display();
 			var pRenderable: IRenderableObject;
 
@@ -378,6 +395,8 @@ module akra.render {
 						pTechnique.addComponent("akra.system.sunLighting");
 						pTechnique.addComponent("akra.system.sunShadowsLighting");
 						pTechnique.addComponent("akra.system.pbsReflection");
+						//pTechnique.addComponent("akra.system.forceSetAlpha");
+						pTechnique.addComponent("akra.system.applyAlpha");
 					}
 				}
 			}

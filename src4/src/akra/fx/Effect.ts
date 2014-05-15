@@ -4008,8 +4008,8 @@ module akra.fx {
 				}
 
 				if (pExprNode.value === "{" && pStateExprNode.children.length > 3) {
-					var pValues: ERenderStateValues[] = new Array(math.ceil((pStateExprNode.children.length - 3) / 2));
-					for (var i: uint = pStateExprNode.children.length - 2, j: uint = 0; i > 1; i -= 2, j++) {
+					var pValues: ERenderStateValues[] = new Array(math.ceil((pStateExprNode.children.length - 2) / 2));
+					for (var i: uint = pStateExprNode.children.length - 2, j: uint = 0; i >= 1; i -= 2, j++) {
 						pValues[j] = this.getRenderStateValue(eType, pStateExprNode.children[i].value.toUpperCase());
 					}
 
@@ -4031,8 +4031,8 @@ module akra.fx {
 								return;
 							}
 							pPass._setState(ERenderStates.SRCBLENDCOLOR, pValues[0]);
-							pPass._setState(ERenderStates.SRCBLENDALPHA, pValues[1]);
-							pPass._setState(ERenderStates.DESTBLENDCOLOR, pValues[2]);
+							pPass._setState(ERenderStates.SRCBLENDALPHA, pValues[2]);
+							pPass._setState(ERenderStates.DESTBLENDCOLOR, pValues[1]);
 							pPass._setState(ERenderStates.DESTBLENDALPHA, pValues[3]);
 							break;
 
@@ -4238,7 +4238,7 @@ module akra.fx {
 							break;
 
 						default:
-							logger.warn("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+							logger.warn("Unsupported render state FRONTFACE value used: " + sValue + ".");
 							return eValue;
 					}
 					break;

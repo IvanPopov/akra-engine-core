@@ -35,5 +35,8 @@ module akra {
 
 		setDefaultEnvironmentMap(pEnvMap: ITexture): void;
 		getDefaultEnvironmentMap(): ITexture;
+
+		setTransparencySupported(bEnable: boolean): void;
+		isTransparencySupported(): boolean; 
 	}
 }

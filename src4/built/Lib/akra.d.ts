@@ -13513,6 +13513,8 @@ declare module akra {
         getShadingModel(): EShadingModel;
         setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         getDefaultEnvironmentMap(): ITexture;
+        setTransparencySupported(bEnable: boolean): void;
+        isTransparencySupported(): boolean;
     }
 }
 declare module akra {
@@ -15329,6 +15331,7 @@ declare module akra.render {
         private _pHighlightedObject;
         private _eShadingModel;
         private _pDefaultEnvMap;
+        private _isTransparencySupported;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15342,6 +15345,8 @@ declare module akra.render {
         public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15394,6 +15399,7 @@ declare module akra.render {
         private _pSkyboxTexture;
         private _eShadingModel;
         private _pDefaultEnvMap;
+        private _isTransparencySupported;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15407,6 +15413,8 @@ declare module akra.render {
         public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public getObject(x: number, y: number): ISceneObject;
@@ -15459,6 +15467,7 @@ declare module akra.render {
         private _eShadingModel;
         private _pDefaultEnvMap;
         private _pTextureToScreenViewport;
+        private _isTransparencySupported;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15472,6 +15481,8 @@ declare module akra.render {
         public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;

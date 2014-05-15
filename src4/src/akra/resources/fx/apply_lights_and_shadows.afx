@@ -35,6 +35,11 @@ LightSunShadows points_sun_shadows[NUM_SUN_SHADOWS];
 shared float4 result_color = float4(0.);
 shared PixelData pixelData;
 
+float4 applyMaterialAlpha() : COLOR {
+	result_color.a = pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a;
+	return result_color;
+}
+
 float4 applyLightOmni() : COLOR {
 	for(int i = 0; i < NUM_OMNI; i++){
 		result_color += applyBaseLightParams(pixelData, points_omni[i].lightData);
@@ -188,6 +193,12 @@ float4 applyPBSReflection(): COLOR {
 	color += reflection;
 	return color;
 };
+
+technique applyAlpha {
+	pass {
+		PixelShader = compile applyMaterialAlpha();
+	}
+}
 
 technique omniLighting{
 	pass applyOmniLighting{

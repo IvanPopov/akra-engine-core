@@ -119,10 +119,17 @@ module akra {
 			var pSprite = pScene.createSprite();
 			pSprite.scale(.25);
 			pSprite.setTexture(<ITexture>pRmgr.getTexturePool().loadResource("LIGHT_ICON"));
-			pSprite.getRenderable().getMaterial().isTransparent = true;
+			
 			pSprite.setBillboard(true);
 			pSprite.setShadow(false);
 			pSprite.attachToParent(pLightOmni);
+
+			var pMaterial: IMaterial = pSprite.getRenderable().getMaterial();
+			pMaterial.isTransparent = true;
+			pMaterial.diffuse.a = 0.;
+			pMaterial.specular.a = 0.;
+			pMaterial.ambient.a = 0.;
+			pMaterial.emissive.a = 0.;
 
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
@@ -320,12 +327,26 @@ module akra {
 
 		pCubeModel.attachToParent(pScene.getRootNode());
 		pCubeModel.setPosition(0., 2., -2.).scale(50.);
+		pCubeModel.addRotationByXYZAxis(0., Math.PI, 0.);
 		pCubeModel.getRenderable().getMaterial().diffuse.a = 0.0;
-		pCubeModel.getRenderable().getMaterial().diffuse.r = 0.0;
+		pCubeModel.getRenderable().getMaterial().diffuse.r = 1.0;
 		pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
-		pCubeModel.getRenderable().getMaterial().specular.a = 0.2;
+		pCubeModel.getRenderable().getMaterial().specular.a = 0.0;
 		pCubeModel.getRenderable().getMaterial().ambient.a = 0.;
 		pCubeModel.getRenderable().getMaterial().isTransparent = true;
+
+		window["cubeMaterial"] = pCubeModel.getRenderable().getMaterial();
+		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			if (pRenderable === pCubeModel.getRenderable()) {
+				pTechnique.getPass(iPass).setUniform("bSetAlpha", true);
+			}
+		});
+
+
+		//var pCarCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CAR");
+		//var pCarModel = pCarCollada.extractModel();
+
+		//pCarModel.attachToParent(pScene.getRootNode());
 		//var pGlass: ITexture = pRmgr.createTexture("GLASS");
 		//pGlass.loadImage(<IImg>pRmgr.getImagePool().findResource("GLASS"));
 		//pCubeModel.getRenderable().getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.DIFFUSE, pGlass);

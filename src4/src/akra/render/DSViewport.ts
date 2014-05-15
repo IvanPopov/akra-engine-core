@@ -64,6 +64,9 @@ module akra.render {
 		private _eShadingModel: EShadingModel = EShadingModel.PHONG;
 		private _pDefaultEnvMap: ITexture = null;
 
+		private _isTransparencySupported: boolean = true;
+		private _pViewportForTransparencyObjects: IForwardViewport = null;
+
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -118,6 +121,14 @@ module akra.render {
 
 		getDefaultEnvironmentMap(): ITexture {
 			return this._pDefaultEnvMap;
+		}
+
+		setTransparencySupported(bEnable: boolean): void {
+			this._isTransparencySupported = bEnable;
+		}
+
+		isTransparencySupported(): boolean {
+			return this._isTransparencySupported;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -726,6 +737,10 @@ module akra.render {
 			pUniforms.samplersProject.clear();
 			pUniforms.samplersOmni.clear();
 			pUniforms.samplersSun.clear();
+		}
+
+		private initViewportForTransparencyObjects(): void {
+			//
 		}
 	}
 }
