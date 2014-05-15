@@ -2,8 +2,8 @@
 /// <reference path="../../util/ObjectArray.ts" />
 /// <reference path="../../geometry/Plane3d.ts" />
 /// <reference path="../../geometry/classify/classify.ts" />
+
 /// <reference path="ShadowCaster.ts" />
-/// <reference path="CalculatePlanesForLighting.ts" />
 
 module akra.scene.light {
 	import Scene3d = scene.Scene3d;
@@ -216,7 +216,7 @@ module akra.scene.light {
                 var nCasted: uint = 0;
 				if (!this.isShadowCaster()) {
 					for (var i = 0; i < 6; i++) {
-						var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera, i);
+						var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(this._pShadowCasterCube[iFace], pCamera, this.getOptimizedCameraFrustum());
 						if (pResult.getLength() !== 0) {
                             nCasted++;
 						}
@@ -225,7 +225,7 @@ module akra.scene.light {
 				}
 				else {
 					for (var i = 0; i < 6; i++) {
-						var pResult: IObjectArray<ISceneObject> = this._defineShadowInfluence(pCamera, i);
+						var pResult: IObjectArray<ISceneObject> = this._defineShadowInfluence(this._pShadowCasterCube[iFace], pCamera, this.getOptimizedCameraFrustum());
 						if (pResult.getLength() !== 0) {
                             nCasted++;
 						}
@@ -234,113 +234,6 @@ module akra.scene.light {
 				}
 			}
 		}
-
-		protected _defineLightingInfluence(pCamera: ICamera, iFace: int): IObjectArray<ISceneObject> {
-			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
-			var pCameraFrustum: IFrustum = this.getOptimizedCameraFrustum();
-			// var pCameraFrustum: IFrustum = pCamera.frustum;
-
-			var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
-			pResult.clear();
-
-			//fast test on frustum intersection
-			if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
-				//frustums don't intersecting
-				return pResult;
-			}
-
-			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
-
-			for (var i: int = 0; i < pRawResult.getLength(); i++) {
-				var pObject: ISceneObject = pRawResult.value(i);
-
-				if (pCameraFrustum.testRect(pObject.getWorldBounds())) {
-					pResult.push(pObject);
-				}
-			}
-
-			return pResult;
-		}
-
-		protected _defineShadowInfluence(pCamera: ICamera, iFace: int): IObjectArray<ISceneObject> {
-			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
-			var pCameraFrustum: IFrustum = this.getOptimizedCameraFrustum();
-
-			var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
-			pResult.clear();
-
-			//fast test on frustum intersection
-			if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
-				//frustums don't intersecting
-				pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
-				return pResult;
-			}
-
-			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
-
-			var pTestArray: IPlane3d[] = OmniLight._pFrustumPlanes;
-			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
-
-			calculatePlanesForFrustumLighting(
-				pShadowCaster.getFrustum(), pShadowCaster.getWorldPosition(),
-				pCameraFrustum, pTestArray);
-
-			var v3fMidPoint: IVec3 = Vec3.temp();
-			var v3fShadowDir: IVec3 = Vec3.temp();
-			var v3fCameraDir: IVec3 = Vec3.temp();
-
-			for (var i: int = 0; i < pRawResult.getLength(); i++) {
-				var pObject: ISceneObject = pRawResult.value(i);
-				var pWorldBounds: IRect3d = pObject.getWorldBounds();
-
-				//have object shadows?
-				if (pObject.getShadow()) {
-					var j: int = 0;
-					for (j = 0; j < 6; j++) {
-						var pPlane: IPlane3d = pTestArray[j];
-
-						if (geometry.classify.planeRect3d(pPlane, pWorldBounds)
-							== EPlaneClassifications.PLANE_FRONT) {
-							break;
-						}
-					}
-
-					if (j == 6) {
-						//discard shadow by distance?
-
-						pWorldBounds.midPoint(v3fMidPoint);
-
-						v3fMidPoint.subtract(pShadowCaster.getWorldPosition(), v3fShadowDir);
-						v3fMidPoint.subtract(pCamera.getWorldPosition(), v3fCameraDir);
-
-						if (v3fCameraDir.dot(v3fShadowDir) > 0 &&
-							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE) {
-						}
-						else {
-							pResult.push(pObject);
-						}
-					}
-				}
-				else {
-					if (pCameraFrustum.testRect(pWorldBounds)) {
-						pResult.push(pObject);
-					}
-				}
-
-			}
-
-			pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
-
-			return pResult;
-		}
-
-		//list of frustum planes with which additional testing must be done.
-		//created just for prevent reallocation
-		static _pFrustumPlanes: IPlane3d[] = new Array(6);/*new geometry.Plane3d[];*/
-	}
-
-	for (var i: int = 0; i < 6; i++) {
-		OmniLight._pFrustumPlanes[i] = new geometry.Plane3d();
 	}
 }
 

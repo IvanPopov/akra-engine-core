@@ -2,6 +2,9 @@
 /// <reference path="../SceneObject.ts" />
 /// <reference path="../../math/math.ts" />
 
+/// <reference path="CalculatePlanesForLighting.ts" />
+/// <reference path="ShadowCaster.ts" />
+
 module akra.scene.light {
 
 	export class LightPoint extends SceneNode implements ILightPoint {
@@ -82,7 +85,106 @@ module akra.scene.light {
 
 		static isLightPoint(pNode: IEntity) {
 			return pNode.getType() === EEntityTypes.LIGHT;
+        }
+
+        protected _defineLightingInfluence(pShadowCaster: IShadowCaster, pCamera: ICamera, pCameraFrustum: IFrustum = pCamera.getFrustum()): IObjectArray < ISceneObject > {
+            var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
+            pResult.clear();
+
+            //fast test on frustum intersection
+            if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
+                //frustums don't intersecting
+                return pResult;
+            }
+
+            var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
+
+            for (var i: int = 0; i < pRawResult.getLength(); i++) {
+                var pObject: ISceneObject = pRawResult.value(i);
+
+                if (pCameraFrustum.testRect(pObject.getWorldBounds())) {
+                    pResult.push(pObject);
+                }
+            }
+
+            return pResult;
+        }
+
+        protected _defineShadowInfluence(pShadowCaster: IShadowCaster, pCamera: ICamera, pCameraFrustum: IFrustum = pCamera.getFrustum()): IObjectArray < ISceneObject > {
+            var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
+            pResult.clear();
+
+            //fast test on frustum intersection
+            if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
+                //frustums don't intersecting
+                pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
+                return pResult;
+            }
+
+            var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
+
+            var pTestArray: IPlane3d[] = LightPoint._pFrustumPlanes;
+            var nAdditionalTestLength: int = 0;
+
+            if (pShadowCaster.getProjectionMatrix().isOrthogonalProjection()) {
+                nAdditionalTestLength = calculatePlanesForOrthogonalLighting(
+                    pShadowCaster.getFrustum(), pShadowCaster.getWorldPosition(),
+                    pCameraFrustum, pTestArray);
+            }
+            else {
+                nAdditionalTestLength = calculatePlanesForFrustumLighting(
+                    pShadowCaster.getFrustum(), pShadowCaster.getWorldPosition(),
+                    pCameraFrustum, pTestArray);
+            }
+
+            var v3fMidPoint: IVec3 = Vec3.temp();
+            var v3fShadowDir: IVec3 = Vec3.temp();
+            var v3fCameraDir: IVec3 = Vec3.temp();
+
+            for (var i: int = 0; i < pRawResult.getLength(); i++) {
+                var pObject: ISceneObject = pRawResult.value(i);
+                var pWorldBounds: IRect3d = pObject.getWorldBounds();
+
+                //have object shadows?
+                if (pObject.getShadow()) {
+                    var j: int = 0;
+                    for (j = 0; j < nAdditionalTestLength; j++) {
+                        var pPlane: IPlane3d = pTestArray[j];
+
+                        if (geometry.classify.planeRect3d(pPlane, pWorldBounds)
+                            == EPlaneClassifications.PLANE_FRONT) {
+                            break;
+                        }
+                    }
+                    if (j == nAdditionalTestLength) {
+                        //discard shadow by distance?
+
+                        pWorldBounds.midPoint(v3fMidPoint);
+
+                        v3fMidPoint.subtract(pShadowCaster.getWorldPosition(), v3fShadowDir);
+                        v3fMidPoint.subtract(pCamera.getWorldPosition(), v3fCameraDir);
+
+                        if (v3fCameraDir.dot(v3fShadowDir) > 0 &&
+                            pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE) {
+                        }
+                        else {
+                            pResult.push(pObject);
+                        }
+                    }
+                }
+                else {
+                    if (pCameraFrustum.testRect(pWorldBounds)) {
+                        pResult.push(pObject);
+                    }
+                }
+            }
+
+            return pResult;
 		}
+
+        //list of frustum planes with which additional testing must be done.
+	    //created just for prevent reallocation
+	    static _pFrustumPlanes: IPlane3d[] = new Array(6);/*new geometry.Plane3d[];*/
 	}
 }
 
