@@ -65,8 +65,7 @@ module akra.render {
 		private _pDefaultEnvMap: ITexture = null;
 
 		private _isTransparencySupported: boolean = true;
-		private _pViewportForTransparencyObjects: IForwardViewport = null;
-
+		private _pTextureForTransparentObjects: ITexture = null;
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -125,6 +124,11 @@ module akra.render {
 
 		setTransparencySupported(bEnable: boolean): void {
 			this._isTransparencySupported = bEnable;
+
+			if (bEnable && isNull(this._pTextureForTransparentObjects)) {
+				this.initTextureForTransparentObjects();
+			}
+
 		}
 
 		isTransparencySupported(): boolean {
@@ -203,6 +207,8 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 			pDSEffect.addComponent("akra.system.pbsReflection");
 
+			pDSEffect.addComponent("akra.system.applyTransparency", 1, 0);
+
 			pDSMethod.setEffect(pDSEffect);
 
 			this._pDeferredEffect = pDSEffect;
@@ -236,6 +242,13 @@ module akra.render {
 					pDeferredTextures[i].getBuffer().getRenderTarget().getViewport(0)
 						.setDimensions(0., 0., this.getActualWidth() / pDeferredTextures[i].getWidth(), this.getActualHeight() / pDeferredTextures[i].getHeight())
 				}
+			}
+
+			if (isDefAndNotNull(this._pTextureForTransparentObjects)) {
+				this._pTextureForTransparentObjects.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
+
+				this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)
+					.setDimensions(0., 0., this.getActualWidth() / this._pTextureForTransparentObjects.getWidth(), this.getActualHeight() / this._pTextureForTransparentObjects.getHeight());				
 			}
 
 			if (bEmitEvent) {
@@ -570,6 +583,8 @@ module akra.render {
 					break;
 
 				case 1:
+					//transparency
+					pPass.setTexture("TRANSPARENT_TEXTURE", this._pTextureForTransparentObjects);
 					//skybox
 					pPass.setTexture("OBJECT_ID_TEXTURE", pDeferredTextures[0]);
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
@@ -739,8 +754,25 @@ module akra.render {
 			pUniforms.samplersSun.clear();
 		}
 
-		private initViewportForTransparencyObjects(): void {
-			//
+		private initTextureForTransparentObjects(): void {
+			var pResMgr: IResourcePoolManager = this.getTarget().getRenderer().getEngine().getResourceManager();
+			var pTexture: ITexture = pResMgr.createTexture("deferred-trasparency-texture-" + this.guid);
+			var pDepthTexture: ITexture = this.getDepthTexture();
+
+			pTexture.create(pDepthTexture.getWidth(), pDepthTexture.getHeight(), 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+				ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
+			var pRenderTarget: IRenderTarget = pTexture.getBuffer().getRenderTarget();
+			pRenderTarget.attachDepthTexture(pDepthTexture);
+
+			pRenderTarget.setAutoUpdated(false);
+
+			var pViewport: IForwardViewport = new ForwardViewport(this.getCamera(), 0, 0, this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight());
+			pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+			pViewport.setBackgroundColor(new color.Color(0, 0, 0, 0));
+			pViewport._renderOnlyTransparentObjects(true);
+
+			this._pTextureForTransparentObjects = pTexture;
 		}
 	}
 }

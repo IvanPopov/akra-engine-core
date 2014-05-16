@@ -49,6 +49,7 @@ module akra.render {
 
 		private _pTextureToScreenViewport: IViewport = null;
 		private _isTransparencySupported: boolean = true;
+		private _bRenderOnlyTransparentObjects: boolean = false;
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -112,6 +113,13 @@ module akra.render {
 			return this._isTransparencySupported;
 		}
 
+		_renderOnlyTransparentObjects(bValue: boolean): void {
+			this._bRenderOnlyTransparentObjects = bValue;
+
+			if (bValue && !this.isTransparencySupported()) {
+				this.setTransparencySupported(true);
+			}
+		}
 
 		_setTarget(pTarget: IRenderTarget): void {
 			super._setTarget(pTarget);
@@ -195,8 +203,10 @@ module akra.render {
 			this.createLightingUniforms(this.getCamera(), this._pLightPoints, this._pLightingUnifoms);
 			this._pCamera._keepLastViewport(this);
 
-			this.renderAsNormal("forwardShading", this.getCamera());
-			this.getTarget().getRenderer().executeQueue(true);
+			if (!this._bRenderOnlyTransparentObjects) {
+				this.renderAsNormal("forwardShading", this.getCamera());
+				this.getTarget().getRenderer().executeQueue(true);
+			}
 
 			if (this.isTransparencySupported()) {
 				this.renderTransparentObjects("forwardShading", this.getCamera());

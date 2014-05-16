@@ -15332,6 +15332,7 @@ declare module akra.render {
         private _eShadingModel;
         private _pDefaultEnvMap;
         private _isTransparencySupported;
+        private _pTextureForTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15370,6 +15371,7 @@ declare module akra.render {
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
+        private initTextureForTransparentObjects();
     }
 }
 declare module akra {
@@ -15447,6 +15449,7 @@ declare module akra.render {
 }
 declare module akra {
     interface IForwardViewport extends I3DViewport {
+        _renderOnlyTransparentObjects(bValue: boolean): void;
     }
 }
 declare module akra.render {
@@ -15468,6 +15471,7 @@ declare module akra.render {
         private _pDefaultEnvMap;
         private _pTextureToScreenViewport;
         private _isTransparencySupported;
+        private _bRenderOnlyTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15483,6 +15487,7 @@ declare module akra.render {
         public getDefaultEnvironmentMap(): ITexture;
         public setTransparencySupported(bEnable: boolean): void;
         public isTransparencySupported(): boolean;
+        public _renderOnlyTransparentObjects(bValue: boolean): void;
         public _setTarget(pTarget: IRenderTarget): void;
         public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;

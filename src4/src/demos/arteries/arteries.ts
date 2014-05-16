@@ -390,7 +390,7 @@ module akra {
 			var pModel: IObj = <IObj>pRmgr.getObjPool().createResource("modified_artery");
 			(<any>pModel).setOptions({ shadows: false });
 			(<any>pModel).uploadVertexes(pPositions, pIndexes);
-			var pNode: ISceneNode = pModel.attachToScene(pScene);
+			var pNode: ISceneNode = (<any>pModel).attachToScene(pScene);
 		}
 
 		io.fopen("data/coords/coord_real_ag.txt", "r").read((err, data) => {
@@ -405,7 +405,7 @@ module akra {
 		function loadObjFromMATLAB(sPath: string, fnCallback?: Function): void {
 			var sName: string = path.parse(sPath).getFileName();
 			var pRealArtery: IModel = pRmgr.loadModel(sPath);
-			var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
+			var pRealArteryObj: ISceneNode = (<any>pRealArtery).attachToScene(pScene);
 			pRealArteryObj.setLocalMatrix(Mat4.temp(
 					[1, 0, 0, 0],
 					[0, 0, 1, 0],
@@ -454,7 +454,7 @@ module akra {
 			var pParent: ISceneNode = pScene.createNode();
 			pParent.attachToParent(pScene.getRootNode());
 
-			pArteriesObj = pArteriesModelObj.attachToScene(pParent);
+			pArteriesObj = (<any>pArteriesModelObj).attachToScene(pParent);
 			pArteriesObj.setInheritance(ENodeInheritance.ALL);
 
 			pParent.scale(0.0525);

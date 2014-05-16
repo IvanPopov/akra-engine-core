@@ -329,7 +329,7 @@ module akra {
 		pCubeModel.setPosition(0., 2., -2.).scale(50.);
 		pCubeModel.addRotationByXYZAxis(0., Math.PI, 0.);
 		pCubeModel.getRenderable().getMaterial().diffuse.a = 0.0;
-		pCubeModel.getRenderable().getMaterial().diffuse.r = 1.0;
+		pCubeModel.getRenderable().getMaterial().diffuse.r = 0.0;
 		pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
 		pCubeModel.getRenderable().getMaterial().specular.a = 0.0;
 		pCubeModel.getRenderable().getMaterial().ambient.a = 0.;

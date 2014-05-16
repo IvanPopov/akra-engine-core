@@ -208,3 +208,28 @@ technique deferredBackground : POST_EFFECT
 };
 
 */
+
+
+texture tex0: TRANSPARENT_TEXTURE;
+sampler sampler0 = sampler_state {
+	Texture = <tex0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
+
+float4 fs_compose(float2 textureCoords: TEXCOORD0): COLOR {
+	return tex2D(sampler0, textureCoords);
+}
+
+technique applyTransparency {
+	pass {
+		BLENDEQUATIONSEPARATE = {FUNCADD, FUNCADD};
+		BLENDFUNCSEPARATE = {SRCALPHA, INVSRCALPHA, SRCALPHA, INVSRCALPHA};
+
+		BLENDENABLE = TRUE;
+		ZWRITEENABLE = FALSE;
+		
+		VertexShader = compile vs_compose();
+		PixelShader = compile fs_compose();
+	}
+}
