@@ -403,20 +403,16 @@ module akra {
         pRenderTarget.setAutoUpdated(false);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
-		// pTexViewport.setFXAA(false);
+		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 
-		// pCanvas.addViewport(pViewport);
-        // pCanvas.addViewport(new render.TextureViewport(pReflectionTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), 0.3, 0.3, 10));
-        // (<I3DViewport>pTexViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+		pEffect.addComponent("akra.system.blur");
+		// (<render.LPPViewport>pTexViewport.getInternalViewport()).setFXAA(false);
 
-        // pDepthViewport = pCanvas.addViewport(new render.TextureViewport((<I3DViewport>pViewport).getDepthTexture(), 10. / pViewport.getActualWidth(), 20. / pViewport.getActualHeight() + 0.3, 0.3, 0.3, 11));
-        // pDepthViewport.getEffect().addComponent("akra.system.display_depth");
-        // pDepthViewport.render.connect( (pViewport: IViewport, pTechnique: IRenderTechnique,
-			// iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
-
-			// pTechnique.getPass(iPass).setUniform("depthRange", math.Vec2.temp(.9,1.));
-
-        	// });
+		(<render.LPPViewport>pTexViewport.getInternalViewport()).render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			pPass.setUniform("BLUR_RADIUS", 5.0);
+			});
 
 		return pTexViewport;
 	}
@@ -763,7 +759,7 @@ module akra {
 				pReflectionTexture.getBuffer().getRenderTarget().update();
 			}
 		});
-		
+
 		pProgress.destroy();
 		pEngine.exec();
 
