@@ -13553,6 +13553,13 @@ declare module akra {
         _prepareForLighting(pCamera: ICamera): boolean;
     }
 }
+declare module akra.render {
+    class ViewportWithTransparencyMode extends Viewport {
+        private _bTransparencyMode;
+        public setTransparencyMode(bValue: boolean): void;
+        public renderAsNormal(csMethod: string, pCamera: ICamera): void;
+    }
+}
 declare module akra {
     interface ISunParameters extends ILightParameters {
         eyePosition: IVec3;
@@ -15402,6 +15409,7 @@ declare module akra.render {
         private _eShadingModel;
         private _pDefaultEnvMap;
         private _isTransparencySupported;
+        private _pTextureForTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15445,6 +15453,7 @@ declare module akra.render {
         private prepareForLPPShading();
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
+        private initTextureForTransparentObjects();
     }
 }
 declare module akra {

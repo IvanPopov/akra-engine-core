@@ -208,17 +208,25 @@ technique deferredBackground : POST_EFFECT
 };
 
 */
+/*
+VS_OUT vs_compose(VS_IN IN){
+	VS_OUT Out;
 
+	Out.position = float4(IN.position, 0.,1.);
+	Out.texCoords = (IN.position + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
 
-texture tex0: TRANSPARENT_TEXTURE;
-sampler sampler0 = sampler_state {
-	Texture = <tex0>;
+texture transparet_tex: TRANSPARENT_TEXTURE;
+sampler transparent_sampler = sampler_state {
+	Texture = <transparet_tex>;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 };
 
 float4 fs_compose(float2 textureCoords: TEXCOORD0): COLOR {
-	return tex2D(sampler0, textureCoords);
+	return tex2D(transparent_sampler, textureCoords);
 }
 
 technique applyTransparency {
@@ -232,4 +240,4 @@ technique applyTransparency {
 		VertexShader = compile vs_compose();
 		PixelShader = compile fs_compose();
 	}
-}
+}*/

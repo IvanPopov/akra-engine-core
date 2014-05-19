@@ -21,7 +21,6 @@ VS_OUT vs_compose(VS_IN IN){
 };
 
 
-
 texture tex0: TRANSPARENT_TEXTURE;
 sampler sampler0 = sampler_state {
 	Texture = <tex0>;

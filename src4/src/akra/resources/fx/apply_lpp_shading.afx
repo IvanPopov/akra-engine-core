@@ -45,7 +45,7 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
 	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
 	float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
 
-	float4 color = float4(0.);//pixelData.material.emissive;
+	float4 color = pixelData.material.emissive;
 
     if(IS_USED_PBS_SIMPLE){
         //float3 lightDif = lightsDataA.xyz;

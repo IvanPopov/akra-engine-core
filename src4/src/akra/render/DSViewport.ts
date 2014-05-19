@@ -9,6 +9,7 @@
 /// <reference path="../idl/IEffect.ts" />
 
 /// <reference path="Viewport.ts" />
+/// <reference path="ViewportWithTransparencyMode.ts" />
 /// <reference path="LightingUniforms.ts" />
 /// <reference path="RenderableObject.ts" />
 /// <reference path="Screen.ts" />
@@ -31,7 +32,7 @@ module akra.render {
 
 	var pDepthPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_DEPTH, new Uint8Array(4 * 1));
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
-	var pColor: IColor = new Color(0);
+	var pColor: IColor = new Color(0);	
 
 	export class DSViewport extends Viewport implements IDSViewport {
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
@@ -125,6 +126,12 @@ module akra.render {
 		setTransparencySupported(bEnable: boolean): void {
 			this._isTransparencySupported = bEnable;
 
+			if (isDefAndNotNull(this._pDeferredColorTextures)) {
+				for (var i: uint = 0; i < this._pDeferredColorTextures.length; i++) {
+					(<ViewportWithTransparencyMode>this._pDeferredColorTextures[i].getBuffer().getRenderTarget().getViewport(0)).setTransparencyMode(!bEnable);
+				}
+			}
+
 			if (bEnable && isNull(this._pTextureForTransparentObjects)) {
 				this.initTextureForTransparentObjects();
 			}
@@ -181,7 +188,7 @@ module akra.render {
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
-				pViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i,
+				pViewport = pDeferredData[i].addViewport(new ViewportWithTransparencyMode(this.getCamera(), "deferred_shading_pass_" + i,
 					0, 0, this.getActualWidth() / pDeferredTextures[i].getWidth(), this.getActualHeight() / pDeferredTextures[i].getHeight()));
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
@@ -221,6 +228,8 @@ module akra.render {
 
 			//AA is default
 			this.setFXAA(true);
+
+			this.setTransparencySupported(this.isTransparencySupported());
 		}
 
 		setCamera(pCamera: ICamera): boolean {
@@ -275,6 +284,10 @@ module akra.render {
 			}
 
 			this._pLightPoints = pLights;
+
+			if (this.isTransparencySupported()) {
+				this._pTextureForTransparentObjects.getBuffer().getRenderTarget().update();
+			}
 
 			//render deferred
 			this._pDeferredView.render(this);
@@ -438,10 +451,10 @@ module akra.render {
 			var pEffect: IEffect = this._pDeferredEffect;
 
 			if (pSkyTexture) {
-				pEffect.addComponent("akra.system.skybox", 1, 0);
+				pEffect.addComponent("akra.system.skybox", 2, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.skybox", 1, 0);
+				pEffect.delComponent("akra.system.skybox", 2, 0);
 			}
 
 			this._pDeferredSkyTexture = pSkyTexture;
@@ -455,10 +468,10 @@ module akra.render {
 			var pEffect: IEffect = this._pDeferredEffect;
 
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 2, 0);
+				pEffect.addComponent("akra.system.fxaa", 3, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 2, 0);
+				pEffect.delComponent("akra.system.fxaa", 3, 0);
 			}
 		}
 
@@ -492,14 +505,14 @@ module akra.render {
 			}
 
 			if (p.object && isNull(pObjectPrev)) {
-				pEffect.addComponent("akra.system.outline", 1, 0);
+				pEffect.addComponent("akra.system.outline", 2, 0);
 			}
 			else if (isNull(p.object) && pObjectPrev) {
-				pEffect.delComponent("akra.system.outline", 1, 0);
+				pEffect.delComponent("akra.system.outline", 2, 0);
 
 				//FIX ME: Need do understood how to know that skybox added like single effect, and not as imported component
 				if (!isNull(this._pDeferredSkyTexture)) {
-					pEffect.addComponent("akra.system.skybox", 1, 0);
+					pEffect.addComponent("akra.system.skybox", 2, 0);
 				}
 			}
 		}
@@ -583,6 +596,7 @@ module akra.render {
 					break;
 
 				case 1:
+				case 2:
 					//transparency
 					pPass.setTexture("TRANSPARENT_TEXTURE", this._pTextureForTransparentObjects);
 					//skybox
@@ -768,9 +782,11 @@ module akra.render {
 			pRenderTarget.setAutoUpdated(false);
 
 			var pViewport: IForwardViewport = new ForwardViewport(this.getCamera(), 0, 0, this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight());
+			pViewport._renderOnlyTransparentObjects(true);
+			pRenderTarget.addViewport(pViewport);
+
 			pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
 			pViewport.setBackgroundColor(new color.Color(0, 0, 0, 0));
-			pViewport._renderOnlyTransparentObjects(true);
 
 			this._pTextureForTransparentObjects = pTexture;
 		}
