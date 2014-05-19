@@ -2054,6 +2054,12 @@ declare module akra {
         getWorldScale(): IVec3;
         getInverseWorldMatrix(): IMat4;
         getNormalMatrix(): IMat3;
+        getVectorUp(): IVec3;
+        getVectorRight(): IVec3;
+        getVectorForward(): IVec3;
+        getTempVectorUp(): IVec3;
+        getTempVectorRight(): IVec3;
+        getTempVectorForward(): IVec3;
         create(): boolean;
         setInheritance(eInheritance: ENodeInheritance): any;
         getInheritance(): ENodeInheritance;
@@ -3808,6 +3814,7 @@ declare module akra {
         activateEffectResource(pEffectResource: IEffect, iShift: number): boolean;
         deactivateEffectResource(pEffectResource: IEffect): boolean;
         getPassInputBlendForEffect(pEffectResource: IEffect, iPass: number): IAFXPassInputBlend;
+        copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique): void;
         getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): number;
         getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): number;
         addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, pComponent: IAFXComponent, iShift: number, iPass: number): boolean;
@@ -4202,6 +4209,7 @@ declare module akra {
         setTextureBySemantics(sName: string, pValue: any): void;
         setShadowSamplerArray(sName: string, pValue: any): void;
         setVec2BySemantic(sName: string, pValue: any): void;
+        copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique): void;
         addComponent(iComponentHandle: number, iShift?: number, iPass?: number): boolean;
         addComponent(pComponent: IAFXComponent, iShift?: number, iPass?: number): boolean;
         addComponent(sComponent: string, iShift?: number, iPass?: number): boolean;
@@ -4548,6 +4556,7 @@ declare module akra {
         TEXTUREVIEWPORT = 4,
         LPPVIEWPORT = 5,
         FORWARDVIEWPORT = 6,
+        MIRRORVIEWPORT = 7,
     }
     interface IViewport extends IEventProvider, IClickable {
         getLeft(): number;
@@ -9272,6 +9281,12 @@ declare module akra.scene {
         public getWorldScale(): IVec3;
         public getInverseWorldMatrix(): IMat4;
         public getNormalMatrix(): IMat3;
+        public getVectorUp(): IVec3;
+        public getVectorRight(): IVec3;
+        public getVectorForward(): IVec3;
+        public getTempVectorUp(): IVec3;
+        public getTempVectorRight(): IVec3;
+        public getTempVectorForward(): IVec3;
         public update(): boolean;
         public prepareForUpdate(): void;
         public setInheritance(eInheritance: ENodeInheritance): void;
@@ -12731,6 +12746,7 @@ declare module akra.render {
         static pRenderMethodPassStatesPool: IObjectArray<IAFXPassInputStateInfo>;
         constructor(pMethod?: IRenderMethod);
         public setupSignals(): void;
+        public copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique): void;
         public getModified(): number;
         public getTotalPasses(): number;
         public destroy(): void;
@@ -15518,6 +15534,24 @@ declare module akra.render {
         private resetUniforms();
     }
 }
+declare module akra {
+    interface IMirrorViewport extends IViewport {
+        getReflectionPlane(): IPlane3d;
+        getInternalViewport(): IViewport;
+    }
+}
+declare module akra.render {
+    class MirrorViewport extends Viewport implements IMirrorViewport {
+        private _pReflectionPlane;
+        private _pInternal3dViewport;
+        public getReflectionPlane(): IPlane3d;
+        public getInternalViewport(): IViewport;
+        constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public _setTarget(pTarget: IRenderTarget): void;
+        public _updateImpl(): void;
+        private prepareForMirrorRender();
+    }
+}
 declare module akra.render {
     class ColorViewport extends Viewport implements IViewport {
         public _pGuidToColorMap: IMap<number>;
@@ -16150,6 +16184,7 @@ declare module akra.fx {
         public activateEffectResource(pEffectResource: IEffect, iShift: number): boolean;
         public deactivateEffectResource(pEffectResource: IEffect): boolean;
         public getPassInputBlendForEffect(pEffectResource: IEffect, iPass: number): IAFXPassInputBlend;
+        public copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique): void;
         public getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): number;
         public getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): number;
         public addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, pComponent: IAFXComponent, iShift: number, iPass: number): boolean;

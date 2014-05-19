@@ -148,6 +148,35 @@ module akra.scene {
 			return this._m3fNormalMatrix;
 		}
 
+		getVectorUp(): IVec3 {
+			var vec = this._m4fWorldMatrix.multiplyVec4(math.Vec4.temp(0.,1.,0.,0.));
+			return new math.Vec3(vec.x,vec.y,vec.z);
+		}
+
+		getVectorRight(): IVec3 {
+			var vec = this._m4fWorldMatrix.multiplyVec4(math.Vec4.temp(-1.,0.,0.,0.));
+			return new math.Vec3(vec.x,vec.y,vec.z);
+		}
+
+		getVectorForward(): IVec3 {
+			var vec = this._m4fWorldMatrix.multiplyVec4(math.Vec4.temp(0.,0.,1.,0.));
+			return new math.Vec3(vec.x,vec.y,vec.z);
+		}
+
+		getTempVectorUp(): IVec3 {
+			var vec = this._m4fWorldMatrix.multiplyVec4(math.Vec4.temp(0.,1.,0.,0.));
+			return math.Vec3.temp(vec.x,vec.y,vec.z);
+		}
+
+		getTempVectorRight(): IVec3 {
+			var vec = this._m4fWorldMatrix.multiplyVec4(math.Vec4.temp(-1.,0.,0.,0.));
+			return math.Vec3.temp(vec.x,vec.y,vec.z);
+		}
+
+		getTempVectorForward(): IVec3 {
+			var vec = this._m4fWorldMatrix.multiplyVec4(math.Vec4.temp(0.,0.,1.,0.));
+			return math.Vec3.temp(vec.x,vec.y,vec.z);
+		}
 
 		update(): boolean {
 			// derived classes update the local matrix

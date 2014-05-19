@@ -99,6 +99,10 @@ void fs_mesh_texture_deferre_pass_1(VS_OUT_2 IN){
     if(!normalFix){
         pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     }
+
+    if(IS_USED_MIRROR_REFLECTION){
+        applyMirrorReflection();
+    }
 }
 
 void fs_mesh_texture_deferre_pass_2(VS_OUT_2 IN){
@@ -124,6 +128,10 @@ void fs_mesh_texture_material(VS_OUT_2 IN){
     pixelData.material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
+
+    if(IS_USED_MIRROR_REFLECTION){
+        applyMirrorReflection();
+    }
 }
 
 void fs_mesh_texture_full(VS_OUT_2 IN){
@@ -137,6 +145,10 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
     pixelData.material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
+
+    if(IS_USED_MIRROR_REFLECTION){
+        applyMirrorReflection();
+    }
 }
 
 float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
@@ -172,6 +184,20 @@ foreign bool OPTIMIZE_FOR_DEFERRED_PASS0;
 foreign bool OPTIMIZE_FOR_DEFERRED_PASS1;
 foreign bool OPTIMIZE_FOR_LPP_PREPARE;
 foreign bool OPTIMIZE_FOR_LPP_APPLY;
+
+foreign bool IS_USED_MIRROR_REFLECTION = false;
+float2 viewportSize: VIEWPORT_SIZE;
+
+texture mirrorTexture: MIRROR_TEXTURE;
+sampler mirrorSampler = sampler_state{
+    Texture = <mirrorTexture>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+void applyMirrorReflection(){
+    pixelData.material.emissive += tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
+}
 
 technique mesh_texture {
     import akra.system.mesh_geometry;

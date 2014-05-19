@@ -40,7 +40,14 @@ module akra {
 		
 		getInverseWorldMatrix(): IMat4;
 		getNormalMatrix(): IMat3;
-	
+
+		getVectorUp(): IVec3;
+		getVectorRight(): IVec3;
+		getVectorForward(): IVec3;
+		getTempVectorUp(): IVec3;
+		getTempVectorRight(): IVec3;
+		getTempVectorForward(): IVec3;
+		
 		create(): boolean;
 	
 		setInheritance(eInheritance: ENodeInheritance);

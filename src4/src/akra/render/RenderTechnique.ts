@@ -49,6 +49,10 @@ module akra.render {
 			this.render = this.render || new Signal(this);
 		}
 
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique): void {
+			this._pComposer.copyTechniqueOwnComponentBlend(pFrom, this);
+		}
+
 		getModified(): uint {
 			return this.guid;
 		}

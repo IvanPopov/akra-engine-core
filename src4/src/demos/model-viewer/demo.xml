@@ -51,7 +51,7 @@
         <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>
         <!-- <ResourceFile Path="data/models/teapot.dae" Name="TEAPOT.DAE"/> -->
         <!-- <ResourceFile Path="data/models/Donut.dae" Name="DONUT.DAE"/> -->
-        <ResourceFile Path="data/models/Sphere.dae" Name="SPHERE.DAE"/>
+        <!-- <ResourceFile Path="data/models/Sphere.dae" Name="SPHERE.DAE"/> -->
         <!-- <ResourceFile Path="data/models/oil/oil.DAE" Name="OIL.DAE"/> -->
         <!-- <ResourceFile Path="data/models/miner/miner.DAE" Name="MINER.DAE"/> -->
         <!-- <ResourceFile Path="data/models/rock/rock-1-low-p.DAE" Name="ROCK.DAE"/> -->

@@ -310,7 +310,7 @@ module akra.render {
 		}
 
 		getTechnique(sName: string = DEFAULT_RT): IRenderTechnique {
-			return this._pTechniqueMap[sName] || null;
+			return this._pTechniqueMap[sName || DEFAULT_RT] || null;
 		}
 
 		getTechniqueDefault(): IRenderTechnique {

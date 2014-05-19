@@ -24,7 +24,8 @@ module akra {
 		COLORVIEWPORT,
 		TEXTUREVIEWPORT,
 		LPPVIEWPORT,
-		FORWARDVIEWPORT
+		FORWARDVIEWPORT,
+		MIRRORVIEWPORT
 	}
 	
 	export interface IViewport extends IEventProvider, IClickable {

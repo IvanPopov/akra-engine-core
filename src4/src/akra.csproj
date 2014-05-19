@@ -537,6 +537,7 @@
     <TypeScriptCompile Include="akra\render\Screen.ts" />
     <TypeScriptCompile Include="akra\render\ShadowViewport.ts" />
     <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
+    <TypeScriptCompile Include="akra\render\ViewportWithTransparencyMode.ts" />
     <TypeScriptCompile Include="akra\scene\light\CalculatePlanesForLighting.ts" />
     <TypeScriptCompile Include="akra\scene\light\OmniLight.ts" />
     <TypeScriptCompile Include="akra\scene\light\ProjectLight.ts" />
