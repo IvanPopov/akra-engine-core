@@ -465,7 +465,7 @@ module akra.render {
 				ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 			pRenderTarget = pNormalBufferTexture.getBuffer().getRenderTarget();
 			pRenderTarget.setAutoUpdated(false);
-			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), "lpp_normal_pass",
+			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), this._csDefaultRenderMethod + "lpp_normal_pass",
 				0, 0, this.getActualWidth() / pNormalBufferTexture.getWidth(), this.getActualHeight() / pNormalBufferTexture.getHeight()));
 
 			var pDepthTexture = pResMgr.createTexture(".lpp-depth-buffer-" + this.guid);
@@ -517,7 +517,7 @@ module akra.render {
 			pRenderTarget = this._pResultLPPTexture.getBuffer().getRenderTarget();
 			pRenderTarget.setAutoUpdated(false);
 			pRenderTarget.attachDepthTexture(this._pDepthBufferTexture);
-			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), "apply_lpp_shading",
+			pViewport = pRenderTarget.addViewport(new Viewport(this.getCamera(), this._csDefaultRenderMethod + "apply_lpp_shading",
 				0, 0, this.getActualWidth() / this._pResultLPPTexture.getWidth(), this.getActualHeight() / this._pResultLPPTexture.getHeight()));
 			pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
 			pViewport.setDepthParams(true, false, ECompareFunction.EQUAL);
@@ -570,18 +570,19 @@ module akra.render {
 
 				for (var k: int = 0; k < pSceneObject.getTotalRenderable(); k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
-					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+					var pTechCurr: IRenderTechnique = pRenderable.getTechnique(this._csDefaultRenderMethod);
 
-					var sMethod: string = "lpp_normal_pass";
+					var sMethod: string = this._csDefaultRenderMethod + "lpp_normal_pass";
 					var pTechnique: IRenderTechnique = null;
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
-						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
+						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(this._csDefaultRenderMethod), sMethod)) {
 							logger.critical("cannot create render method for first pass of LPP");
 						}
 
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
+						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
 						//var iTotalPasses = pTechnique.getTotalPasses();
 						//for (var i: uint = 0; i < iTotalPasses; i++) {
@@ -589,15 +590,16 @@ module akra.render {
 						//}
 					}
 
-					sMethod = "apply_lpp_shading";
+					sMethod = this._csDefaultRenderMethod + "apply_lpp_shading";
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
-						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
+						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(this._csDefaultRenderMethod), sMethod)) {
 							logger.critical("cannot create render method for first pass of LPP");
 						}
 
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
+						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 						pTechnique.addComponent("akra.system.apply_lpp_shading");
 						pTechnique.addComponent("akra.system.pbsReflection");
 					}

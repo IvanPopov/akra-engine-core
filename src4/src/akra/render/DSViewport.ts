@@ -166,7 +166,7 @@ module akra.render {
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
-				pViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i,
+				pViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), this._csDefaultRenderMethod + "deferred_shading_pass_" + i,
 					0, 0, this.getActualWidth() / pDeferredTextures[i].getWidth(), this.getActualHeight() / pDeferredTextures[i].getHeight()));
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
@@ -268,20 +268,21 @@ module akra.render {
 
 				for (var k: int = 0; k < pSceneObject.getTotalRenderable(); k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
-					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+					var pTechCurr: IRenderTechnique = pRenderable.getTechnique(this._csDefaultRenderMethod);
 
 					for (var j: int = 0; j < 2; j++) {
-						var sMethod: string = "deferred_shading_pass_" + j;
+						var sMethod: string = this._csDefaultRenderMethod + "deferred_shading_pass_" + j;
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
 						if (isNull(pTechnique) || pTechCurr.getModified() > pTechnique.getModified()) {
-							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
+							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(this._csDefaultRenderMethod), sMethod)) {
 								logger.critical("cannot clone active render method");
 							}
 
 							pTechnique = pRenderable.getTechnique(sMethod);
 							//TODO: need something else
 							pTechnique.render._syncSignal(pTechCurr.render);
+							pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 							//pTechnique._syncTable(pTechCurr);
 
 							var iTotalPasses = pTechnique.getTotalPasses();
