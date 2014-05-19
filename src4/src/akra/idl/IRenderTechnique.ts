@@ -30,6 +30,8 @@ module akra {
 		setShadowSamplerArray(sName: string, pValue: any): void;
 		setVec2BySemantic(sName: string, pValue: any): void;
 
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique) : void;
+
 		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
 		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
 		addComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;

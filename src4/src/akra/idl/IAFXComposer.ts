@@ -37,6 +37,8 @@ module akra {
 	
 		getPassInputBlendForEffect(pEffectResource: IEffect, iPass: uint): IAFXPassInputBlend;
 		//API for RenderTechnique
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique) : void;
+
 		getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): int;
 	
 		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): uint;

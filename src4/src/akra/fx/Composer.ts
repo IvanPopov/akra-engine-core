@@ -334,6 +334,27 @@ module akra.fx {
 		//----------------------------API for RenderTechnique--------------------------//
 		//-----------------------------------------------------------------------------//
 
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique) : void {
+			var iFromId: uint = pFrom.guid;
+			var iToId: uint = pTo.guid;
+
+			var pCurrentBlendTo: IAFXComponentBlend = null;
+			var pCurrentBlendFrom: IAFXComponentBlend = null;
+			
+			if (isDef(this._pTechniqueToOwnBlendMap[iFromId])) {
+				pCurrentBlendFrom = this._pTechniqueToOwnBlendMap[iFromId];
+			}
+			
+			if (isDef(this._pTechniqueToOwnBlendMap[iToId])) {
+				pCurrentBlendTo = this._pTechniqueToOwnBlendMap[iToId];
+			}
+
+			var pNewBlend: IAFXComponentBlend = this._pBlender.addBlendToBlend(pCurrentBlendTo, pCurrentBlendFrom, 0);
+
+			this._pTechniqueToOwnBlendMap[iToId] = pNewBlend;
+			this._pTechniqueNeedUpdateMap[iToId] = true;
+		}
+
 		getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): int {
 			var id: uint = pRenderTechnique.guid;
 			var pBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id];
