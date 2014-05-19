@@ -15442,11 +15442,13 @@ declare module akra.render {
     class MirrorViewport extends Viewport implements IMirrorViewport {
         private _pReflectionPlane;
         private _pInternal3dViewport;
+        private _v4fReflPlaneStruct;
         public getReflectionPlane(): IPlane3d;
         public getInternalViewport(): IViewport;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public _setTarget(pTarget: IRenderTarget): void;
         public _updateImpl(): void;
+        public _onRenderReflection(pTech: IRenderTechnique, iPass: any, pRenderable: any, pSceneObject: any, pViewport: any): void;
         private prepareForMirrorRender();
     }
 }
