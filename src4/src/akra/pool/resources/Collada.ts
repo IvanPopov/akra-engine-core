@@ -2233,13 +2233,12 @@ module akra.pool.resources {
 		// materials & meshes
 
 		private buildDefaultMaterials(pMesh: IMesh): IMesh {
-			var pDefaultMaterial: IMaterial = material.create("default");
+			var pDefaultMaterial: IMaterial = material.create();
 
 			for (var j: int = 0; j < pMesh.getLength(); ++j) {
 				var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 				pSubMesh.getMaterial().set(pDefaultMaterial);
 				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-				// pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
 			}
 
 			return pMesh;
@@ -2269,7 +2268,6 @@ module akra.pool.resources {
 				for (var j: int = 0; j < pMesh.getLength(); ++j) {
 					var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
-					//if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
 					if (pSubMesh.getMaterial().name === sMaterial) {
 						//setup materials
 						pSubMesh.getMaterial().set(pMaterial);

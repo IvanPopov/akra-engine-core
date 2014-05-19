@@ -3617,15 +3617,22 @@ declare module akra {
         specular: IColorValue;
         emissive: IColorValue;
         shininess: number;
+        /**
+        * Determines whether the object is transparent.
+        * @note 1. - opaque, 0. - fully transparent.
+        */
+        transparency: number;
     }
     interface IMaterial extends IMaterialBase {
+        /** Name of material */
         name: string;
+        diffuse: IColor;
+        ambient: IColor;
+        specular: IColor;
+        emissive: IColor;
         set(pMat: IMaterialBase): IMaterial;
         isEqual(pMat: IMaterialBase): boolean;
-    }
-    /** @deprecated */
-    interface IFlexMaterial extends IMaterial {
-        data: IVertexData;
+        isTransparent(): boolean;
     }
 }
 declare module akra {
@@ -6796,6 +6803,7 @@ declare module akra.config {
             "specular": number;
             "emissive": number;
             "shininess": number;
+            "transparency": number;
         };
     };
     var fx: {
@@ -12071,10 +12079,12 @@ declare module akra.material {
         public ambient: IColor;
         public specular: IColor;
         public emissive: IColor;
+        public transparency: number;
         public shininess: number;
         constructor(sName?: string, pMat?: IMaterialBase);
         public set(pMat: IMaterialBase): IMaterial;
         public isEqual(pMat: IMaterialBase): boolean;
+        public isTransparent(): boolean;
         public toString(): string;
     }
 }
@@ -13323,31 +13333,7 @@ declare module akra.geometry {
     */
     function computeBoundingSphereMinimal(pVertexData: IVertexData, pSphere: ISphere): boolean;
 }
-declare module akra.data {
-    class VertexDeclaration implements IVertexDeclaration {
-        public stride: number;
-        private _pElements;
-        public getLength(): number;
-        constructor(...pElements: IVertexElementInterface[]);
-        constructor(pElements?: IVertexElementInterface[]);
-        public element(i: number): IVertexElement;
-        public append(...pElements: IVertexElementInterface[]): boolean;
-        public append(pElements?: IVertexElementInterface[]): boolean;
-        public _update(): boolean;
-        public extend(decl: IVertexDeclaration): boolean;
-        public hasSemantics(sSemantics: string): boolean;
-        public findElement(sSemantics: string, iCount?: number): IVertexElement;
-        public clone(): IVertexDeclaration;
-        public toString(): string;
-        static normalize(): IVertexDeclaration;
-        static normalize(pElement: IVertexElement): IVertexDeclaration;
-        static normalize(pElements: IVertexElementInterface[]): IVertexDeclaration;
-        static normalize(pDecl: IVertexDeclaration): IVertexDeclaration;
-    }
-}
 declare module akra.material {
-    /** @const */
-    var VERTEX_DECL: IVertexDeclaration;
     function create(sName?: string, pMat?: IMaterialBase): IMaterial;
 }
 declare module akra {
@@ -13749,6 +13735,28 @@ declare module akra.render {
         samplersOmni: IAFXSamplerState[];
         samplersProject: IAFXSamplerState[];
         samplersSun: IAFXSamplerState[];
+    }
+}
+declare module akra.data {
+    class VertexDeclaration implements IVertexDeclaration {
+        public stride: number;
+        private _pElements;
+        public getLength(): number;
+        constructor(...pElements: IVertexElementInterface[]);
+        constructor(pElements?: IVertexElementInterface[]);
+        public element(i: number): IVertexElement;
+        public append(...pElements: IVertexElementInterface[]): boolean;
+        public append(pElements?: IVertexElementInterface[]): boolean;
+        public _update(): boolean;
+        public extend(decl: IVertexDeclaration): boolean;
+        public hasSemantics(sSemantics: string): boolean;
+        public findElement(sSemantics: string, iCount?: number): IVertexElement;
+        public clone(): IVertexDeclaration;
+        public toString(): string;
+        static normalize(): IVertexDeclaration;
+        static normalize(pElement: IVertexElement): IVertexDeclaration;
+        static normalize(pElements: IVertexElementInterface[]): IVertexDeclaration;
+        static normalize(pDecl: IVertexDeclaration): IVertexDeclaration;
     }
 }
 declare module akra.render {
