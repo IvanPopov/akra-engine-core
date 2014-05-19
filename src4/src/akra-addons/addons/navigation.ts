@@ -19,7 +19,7 @@ module akra.addons {
 	}
 
 	function _navigation(
-		pGeneralViewport: IViewport,
+		pGeneralViewport: IViewport3D,
 		pParameters: INavigationsParameters,
 		pCallback: (e: Error) => void): void {
 
@@ -53,14 +53,14 @@ module akra.addons {
 
 		var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(<IViewport>(new render.DSViewport(pCamera, 0.7, .05, .25, .25, 100)));
 
-		pViewport.setFXAA(true);
+		pViewport.setAntialiasing(true);
 		pViewport.setClearEveryFrame(false);
 		//detection of center point
 
 		var pPlaneXZ: IPlane3d = new geometry.Plane3d(Vec3.temp(1., 0., 0.), Vec3.temp(0.), Vec3.temp(0., 0., 1.));
 		var pCameraDir: IRay3d = new geometry.Ray3d;
 
-		function detectCenterPoint(pGeneralViewport: IViewport): IVec3 {
+		function detectCenterPoint(pGeneralViewport: IViewport3D): IVec3 {
 			var vDest: IVec3 = Vec3.temp(0.);
 			var fDistXY: float;
 			var fUnprojDist: float;
@@ -97,7 +97,7 @@ module akra.addons {
 			return vDest;
 		}
 
-		function detectSpeedRation(pGeneralViewport: IViewport): float {
+		function detectSpeedRation(pGeneralViewport: IViewport3D): float {
 			var pCamera: ICamera = pGeneralViewport.getCamera();
 			var fLength: float = detectCenterPoint(pGeneralViewport).subtract(pCamera.getWorldPosition()).length();
 			var fSpeedRation: float = detectCenterPoint(pGeneralViewport).subtract(pCamera.getWorldPosition()).length() / 5.;
@@ -110,7 +110,7 @@ module akra.addons {
 		});
 
 		//movemenet backend!
-		pGeneralViewport.enableSupportFor3DEvent(E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP);
+		pGeneralViewport.enableSupportForUserEvent(EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP | EUserEvents.DRAGGING);
 
 		var vWorldPosition: IVec3 = new Vec3;
 		var pStartPos: IPoint = { x: 0, y: 0 };
@@ -170,9 +170,10 @@ module akra.addons {
 			}
 		});
 
-		pViewport.enableSupportFor3DEvent(
-			E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER |
-			E3DEventTypes.MOUSEOUT | E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.MOUSEWHEEL);
+		pViewport.enableSupportForUserEvent(
+			EUserEvents.CLICK | EUserEvents.MOUSEOVER |
+			EUserEvents.MOUSEOUT | EUserEvents.DRAGSTART |
+			EUserEvents.DRAGSTOP | EUserEvents.DRAGGING | EUserEvents.MOUSEWHEEL);
 
 		//cube scene synchronization backend
 
@@ -210,7 +211,6 @@ module akra.addons {
 
 		syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
 
-
 		pCubeModel.dragstart.connect((pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
 			var pCamera: ICamera = pGeneralViewport.getCamera();
 
@@ -239,6 +239,7 @@ module akra.addons {
 			pViewport.highlight(null, null);
 			pViewport.touch();
 		});
+
 
 
 		function orbitRotation2(pNode: INode, vCenter, vFrom: IVec3, fX, fY, bLookAt: boolean = true): void {
@@ -347,28 +348,28 @@ module akra.addons {
 				switch (pSubset.getName()) {
 					case "submesh-0":
 						alignTo(Vec3.temp(0., -1., 0.), Vec3.temp(0., 0., 1.));
-						console.log("bottom");
+						//console.log("bottom");
 						break;
 					case "submesh-1":
 						alignTo(Vec3.temp(1., 0., 0.), Vec3.temp(0., 1., 0.));
-						console.log("right");
+						//console.log("right");
 						break;
 					case "submesh-2":
-						console.log("left");
+						//console.log("left");
 						alignTo(Vec3.temp(-1., 0., 0.), Vec3.temp(0., 1., 0.));
 						break;
 					case "submesh-3":
-						console.log("top");
+						//console.log("top");
 						alignTo(Vec3.temp(0., 1., 0.), Vec3.temp(0., 0., -1.));
 						break;
 					case "submesh-4":
-						console.log("front");
+						//console.log("front");
 						alignTo(Vec3.temp(0., 0., 1.), Vec3.temp(0., 1., 0.));
 						break;
 
 					case "submesh-5":
 						alignTo(Vec3.temp(0., 0., -1.), Vec3.temp(0., 1., 0.));
-						console.log("back");
+						//console.log("back");
 						break;
 				}
 
@@ -395,7 +396,7 @@ module akra.addons {
 	 * @param pCallback Loading callback.
 	 */
 	export function navigation(
-		pGeneralViewport: IViewport,
+		pGeneralViewport: IViewport3D,
 		pParameters: INavigationsParameters = null,
 		pCallback: (e: Error) => void = null): void {
 

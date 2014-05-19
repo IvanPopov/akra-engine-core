@@ -1,4 +1,5 @@
 /// <reference path="../idl/ISceneObject.ts" />
+/// <reference path="../idl/IControllable.ts" />
 
 /// <reference path="../idl/IRenderableObject.ts" />
 /// <reference path="../geometry/Rect3d.ts" />
@@ -30,17 +31,20 @@ module akra.scene {
 		mouseup: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 		mouseover: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 		mouseout: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
-
+		mousewheel: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int, fDelta: float): void; }>
 
 		dragstart: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 		dragstop: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 		dragging: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>;
 
 		protected _iObjectFlags: int = 0;
-		protected _pLocalBounds: IRect3d = new geometry.Rect3d();
-		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
 		protected _iViewModes: int = 0;
 
+		protected _pLocalBounds: IRect3d = new geometry.Rect3d();
+		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
+
+		//user event handing
+		private _iUserEvents: int = EUserEvents.ANY;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
 			super(pScene, eType);
@@ -58,6 +62,7 @@ module akra.scene {
 			this.mouseup = this.mouseup || new Signal(this);
 			this.mouseover = this.mouseover || new Signal(this);
 			this.mouseout = this.mouseout || new Signal(this);
+			this.mousewheel = this.mousewheel || new Signal(this);
 
 			this.dragstart = this.dragstart || new Signal(this);
 			this.dragstop = this.dragstop || new Signal(this);
@@ -66,6 +71,19 @@ module akra.scene {
 			super.setupSignals();
 		}
 
+		enableSupportForUserEvent(iType: int): int {
+			//get events that have not yet been activated
+			var iNotActivate: int = (this._iUserEvents ^ 0x7fffffff) & iType;
+
+			this._iUserEvents = bf.setAll(this._iUserEvents, iNotActivate);
+
+			return iNotActivate;
+		}
+
+		isUserEventSupported(eType: EUserEvents): boolean {
+			return bf.testAny(this._iUserEvents, <int>eType);
+		}
+		
 
 		getTotalRenderable(): uint {
 			return 0;
@@ -74,10 +92,6 @@ module akra.scene {
 		getWorldBounds(): IRect3d {
 			return this._pWorldBounds;
 		}
-
-		//setWorldBounds(pBox: IRect3d): void {
-		//	this._pWorldBounds = pBox;
-		//}
 
 		getLocalBounds(): IRect3d {
 			return this._pLocalBounds;
@@ -108,6 +122,10 @@ module akra.scene {
 			return (this._iViewModes & EObjectViewModes.k_Billboard) != 0;
 		}
 
+		isBillboard(): boolean {
+			return this.getBillboard();
+		}
+
 		getRenderable(i?: uint): IRenderableObject {
 			return null;
 		}
@@ -132,10 +150,6 @@ module akra.scene {
 
 		isWorldBoundsNew(): boolean {
 			return bf.testBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds);
-		}
-
-		destroy(): void {
-			super.destroy();
 		}
 
 		prepareForUpdate(): void {
@@ -182,10 +196,6 @@ module akra.scene {
 		_setWorldBoundsUpdated(): int {
 			// set the flag that our bounding box has changed
 			return bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
-		}
-
-		isBillboard(): boolean {
-			return this.getBillboard();
 		}
 
 		getObjectFlags(): int {

@@ -6,4 +6,5 @@ declare module akra.addons {
     function basis(pScene: IScene3d, eOptions?: number, fSize?: number): ISceneModel;
     function bone(pJoint: IJoint): ISceneModel;
     function lineCube(pScene: IScene3d, eOptions?: number): ISceneModel;
+    function cube(pScene: IScene3d, eOptions?: number): ISceneModel;
 }

@@ -58,12 +58,9 @@ module akra {
 	}
 
 
-	export interface IColladaCache {
-		meshMap: IMeshMap;
-		sharedBuffer: IRenderDataCollection;
-	}
 	
 	export interface IColladaAnimationLoadOptions {
+		/** @unsupported */
 		pose?: boolean;
 	}
 	
@@ -72,28 +69,42 @@ module akra {
 	}
 	
 	export interface IColladaLoadOptions extends IModelLoadOptions {
-		/** Add nodes, that visualize joints in animated models. */
-		drawJoints?: boolean;
-		/** Convert all meshed to wireframe. */
+		/** Display all meshes with wireframe overlay. Default to FALSE.*/
 		wireframe?: boolean;
+
+
+		/** Enable/Disable shadows for all models. Dfault to TRUE.*/
 		shadows?: boolean;
+
 		/** 
-		 * Use common buffer for all data 
-		 * @deprecated
+		 * Determines whether to load animations. 
+		 * Use NULL to skip animation loading. 
+		 * Default to not null;
 		 */
-		sharedBuffer?: boolean;
-	
 		animation?: IColladaAnimationLoadOptions;
+
+		/** Determines whether to create visual scene, written in Collada. Default to TRUE.*/
 		scene?: boolean;
+
+		/** 
+		 * Determines whether to extends all animation with default mesh poses. 
+		 * Default to TRUE.
+		 * @system
+		 */
 		extractPoses?: boolean;
+
+		/** 
+		 * Upload skeletons from collada. 
+		 * @system
+		 * @deprectaed
+		 */
 		skeletons?: ISkeleton[];
-	
+
+		/** @note: unsupported now... */
 		images?: IColladaImageLoadOptions;
-	
+
+		/** Name of scene root node. */
 		name?: string;
-	
-		/** @debug */
-		debug?: boolean; /*remove me*/
 	}
 	
 	// xml
@@ -290,6 +301,7 @@ module akra {
 	
 		type?: EPrimitiveTypes;
 	
+		//number of poly groups
 		count: uint;
 	}
 	

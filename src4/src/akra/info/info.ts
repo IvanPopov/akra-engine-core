@@ -6,6 +6,7 @@
 /// <reference path="BrowserInfo.ts" />
 /// <reference path="ApiInfo.ts" />
 /// <reference path="ScreenInfo.ts" />
+/// <reference path="VisibilityInfo.ts" />
 
 module akra.info {
 
@@ -24,6 +25,7 @@ module akra.info {
 	export var browser: IBrowserInfo = new BrowserInfo;
 	export var api: IApiInfo = new ApiInfo;
 	export var screen: IScreenInfo = new ScreenInfo;
+	export var visibility = new VisibilityInfo;
 	export var uri: IURI = akra.uri.parse(document.location.href);
 
 	export module is {

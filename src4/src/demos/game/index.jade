@@ -14,20 +14,10 @@ html
     link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css')
     link(rel='stylesheet', href='http://talkslab.com/metro-bootstrap/css/metro-bootstrap.css')
 
-    style(type='text/css').
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: gray;
-      }
-      #progress {
-        position: absolute; 
-        left: 50%; 
-        top: 50%; 
-        z-index: 9999;
-      }
+    link(rel='stylesheet', href='../css/demo.css')
   body
     #progress
+    include noncompatible
     button.btn.btn-primary.btn-lg(type='button', data-toggle='modal', data-target='#cfg', style='position: fixed; bottom: 25px; right: 25px; z-index: 100;')
       span.glyphicon.glyphicon-cog
     #cfg.modal.fade(tabindex='-1', role='dialog', aria-labelledby='CfgLabel', aria-hidden='true')

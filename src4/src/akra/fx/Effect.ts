@@ -77,6 +77,8 @@ module akra.fx {
 	var TEMPLATE_TYPE = "template";
 
 	final export class Effect implements IAFXEffect {
+		guid: uint = guid();
+
 		private _pComposer: IAFXComposer = null;
 
 		private _pParseTree: parser.IParseTree = null;
@@ -3270,6 +3272,7 @@ module akra.fx {
 
 			pFuncName = new instructions.IdInstruction();
 			pFuncName._setName(sFuncName);
+			pFuncName._setRealName(sFuncName + "_" + this.guid);
 
 			pFunctionDef.setReturnType(pReturnType);
 			pFunctionDef.setFunctionName(pFuncName);

@@ -1,5 +1,6 @@
 ﻿/// <reference path="../idl/IForwardViewport.ts" />
 /// <reference path="Viewport.ts" />
+/// <reference path="Viewport3D.ts" />
 /// <reference path="../scene/Scene3d.ts" />
 /// <reference path="LightingUniforms.ts" />
 
@@ -15,7 +16,7 @@ module akra.render {
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
-	export class ForwardViewport extends Viewport implements IForwardViewport {
+	export class ForwardViewport extends Viewport3D implements IForwardViewport {
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
 
 		/** Buffer with objectID */
@@ -241,7 +242,8 @@ module akra.render {
 					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable) &&
-						!(this.isTransparencySupported() && pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent)) {
+						pRenderable.getRenderMethodByName(csMethod) &&
+						!(this.isTransparencySupported() && material.isTransparent(pRenderable.getRenderMethodByName(csMethod).getMaterial()))) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}
@@ -262,7 +264,9 @@ module akra.render {
 				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 
-					if (!isNull(pRenderable) && pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent) {
+					if (!isNull(pRenderable) &&
+						pRenderable.getRenderMethodByName(csMethod) &&
+						material.isTransparent(pRenderable.getRenderMethodByName(csMethod).getMaterial())) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}
@@ -308,6 +312,14 @@ module akra.render {
 
 		isFXAA(): boolean {
 			return this.getEffect().hasComponent("akra.system.fxaa");
+		}
+
+		setAntialiasing(bEnabled: boolean = true): void {
+			this.setFXAA(true);
+		}
+
+		isAntialiased(): boolean {
+			return this.isFXAA();
 		}
 
 		highlight(a): void {

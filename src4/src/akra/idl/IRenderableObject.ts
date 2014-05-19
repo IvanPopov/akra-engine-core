@@ -4,7 +4,7 @@
 /// <reference path="ISceneObject.ts" />
 /// <reference path="IRenderData.ts" />
 /// <reference path="IViewport.ts" />
-
+/// <reference path="IClickable.ts" />
 
 module akra {
 	export enum ERenderableTypes {
@@ -15,7 +15,7 @@ module akra {
 		SPRITE
 	}
 
-	export interface IRenderableObject extends IEventProvider {
+	export interface IRenderableObject extends IEventProvider, IClickable {
 		getRenderMethod(): IRenderMethod;
 		setRenderMethod(pMethod: IRenderMethod): void;
 
@@ -53,7 +53,12 @@ module akra {
 		isAllMethodsLoaded(): boolean;
 		isFrozen(): boolean;
 
-		wireframe(enable?: boolean, bOverlay?: boolean): boolean;
+		/** 
+		 * Display with wireframe.
+		 * @param bEnable Enable/Disable wireframe display mode.
+		 * @param bOverlay If TRUE, wireframe will be overlayed into default material; Default is TRUE.
+		 */
+		wireframe(bEnable?: boolean, bOverlay?: boolean): boolean;
 
 		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 

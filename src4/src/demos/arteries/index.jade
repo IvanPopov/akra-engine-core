@@ -1,6 +1,7 @@
 ﻿doctype html
 html(lang="en")
   head            
+    meta(charset="UTF-8")
     title= demo.name
     meta(name='description', content=demo.description)
     
@@ -15,18 +16,11 @@ html(lang="en")
 
     - for (var i in demo.styles)
       link(href=demo.styles[i], rel='stylesheet')
+                             
 
-    style.
-      body {
-        background: gray;
-      }
-      #progress {
-        position: absolute; 
-        left: 50%; 
-        top: 50%; 
-        z-index: 9999;
-      }                             
+    link(href='../css/demo.css', rel='stylesheet')
   body
+    include noncompatible
     button(type="button", class="btn btn-primary btn-lg", data-toggle="modal", data-target="#cfg", style="position: fixed; top: 25px; left: 25px; z-index: 100;")
       span(class="glyphicon glyphicon-info-sign")
 

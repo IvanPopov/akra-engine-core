@@ -57,6 +57,18 @@ module.exports = function (grunt) {
 		return grunt.file.copy(from, to);
 	}
 
+	function copyDir(from, to) {
+		var files =
+			grunt.file.expand({ filter: 'isFile' }, [path.join(from, '**/*')]);
+
+		
+		//console.log(path.relative(to, from));
+
+		files.forEach(function (file) {
+			copy(file, path.join(to, path.relative(path.resolve(from), file)));
+		});
+	}
+
 	function exists(file) {
 		return grunt.file.exists(file);
 	}
@@ -341,7 +353,7 @@ module.exports = function (grunt) {
 				dest = dest.replace(/\.min\.js$/, ".js");
 			}
 			else {
-				warn("TypeScript out file must be specified.");
+				//warn("TypeScript out file must be specified.");
 				info.forceRebuild = forceRebuild;
 				info.destinationFile = path.resolve(path.join(configDir, config.getAttribute("OutDir"), "unknown"));
 				return buildProject(config, cb, modulesInfo);
@@ -695,26 +707,29 @@ module.exports = function (grunt) {
 		if (Object.keys(variables).length === 0 || !info.forceRebuild) {
 			return cb(true, modulesInfo);
 		}
+		
+		if (outFile) {		
+			var data = read(outFile);
+			var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g) || [];
 
-		var data = read(outFile);
-		var list = data.match(/(AE_[\w\d\-\.\_\:]*)/g) || [];
+			var i = 0;
 
-		var i = 0;
+			do {
+				var name = list[i++];
+				var value = variables[name];
 
-		do {
-			var name = list[i++];
-			var value = variables[name];
+				if (value !== undefined) {
+					data = data.replace(name, value);
+					debug("> " + name + "=" + (typeof value === "string" && value.length > 32 ? value.substr(0, 32) + '...' : value));
+				}
 
-			if (value !== undefined) {
-				data = data.replace(name, value);
-				debug("> " + name + "=" + (typeof value === "string" && value.length > 32 ? value.substr(0, 32) + '...' : value));
-			}
+			} while (i < list.length);
 
-		} while (i < list.length);
+			write(outFile, data);
+		}
 
-		write(outFile, data);
 		console.timeEnd("Build project " + config.getAttribute("Name"));
-
+		
 		cb(true, modulesInfo);
 
 	}
@@ -1277,6 +1292,7 @@ module.exports = function (grunt) {
 			var destFolder = path.join(configDir, config.getAttribute("OutDir"));//path.dirname(destJs);
 			var destHtml = path.join(destFolder, path.basename(template, path.extname(template)) + '.html');
 
+			debug("Dest. html: ", destHtml);
 			debug("Dest. folder: ", destFolder);
 			debug("Dest. js: ", destJs);
 			debug("Name:", name);
@@ -1314,15 +1330,26 @@ module.exports = function (grunt) {
 			//		return path.relative(destFolder, script).replace(/\\/g, '/');
 			//	}));
 
+			//copy to parent dir, because all demos builds in demos/*
+			copyDir(path.join(__dirname, "css"), path.join(destFolder, "../css"));
+			copyDir(path.join(__dirname, "img"), path.join(destFolder, "../img"));
+
+			var basicTemplate = path.join(__dirname, "demo.jade");
+
 			if (!exists(template)) {
-				code = read(path.join(__dirname, "demo.jade"));
+				template = basicTemplate;
 			}
-			else {
-				code = read(template);
-			}
+			
+			code = read(template);
+			
 
 			// Compile a function
-			var fn = jade.compile(code, { pretty: true, debug: false, compileDebug: false });
+			var fn = jade.compile(code, {
+				pretty: true,
+				debug: false,
+				compileDebug: false,
+				filename: basicTemplate
+			});
 
 			// Render the function
 			var html = fn({

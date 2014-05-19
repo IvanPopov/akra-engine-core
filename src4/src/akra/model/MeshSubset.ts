@@ -338,8 +338,39 @@ module akra.model {
 			return this._pSkinLocalBounds[iBone];
 		}
 
-		computeNormals() {
+		//computeNormals() {
 			//TODO: calc normals
+		//}
+
+		computeNormals(): boolean {
+			var pData: IRenderData = this.getData();
+			var pVertexData: IVertexData = this.getVertexData(DeclUsages.POSITION);
+			var pNormalData: IVertexData = this.getVertexData(DeclUsages.NORMAL);
+
+			var pVertexBuffer: Float32Array = <Float32Array>pVertexData.getTypedData(DeclUsages.POSITION);
+			var pNormalBuffer: Float32Array;
+
+			//var nFaces: uint = this.getData().getPrimitiveCount();
+
+			if (!isNull(pNormalData)) {
+				debug.warn("Could not compute face normals. Normals already exists.");
+				return false;
+			}
+
+			if (pData.useSingleIndex()) {
+				logger.error("TODO: single index not supported yet.");
+				return false;
+			}
+
+			if (pData.useMultiIndex()) {
+				pNormalBuffer = new Float32Array(pVertexData.getLength() * 3);
+
+			}
+
+			logger.error("TODO");
+
+
+			return false;
 		}
 
 		computeTangents() {
@@ -356,6 +387,20 @@ module akra.model {
 
 		isOptimizedSkinned(): boolean {
 			return this.isSkinned() && this._isOptimizedSkinned;
+		}
+
+		getVertexData(sUsage: string): IVertexData;
+		getVertexData(sUsage: 'TEXCOORD'): IVertexData;
+		getVertexData(sUsage: 'NORMAL'): IVertexData;
+		getVertexData(sUsage: 'POSITION'): IVertexData;
+		getVertexData(sUsage): IVertexData {
+			var pFlow: IDataFlow = this.getData()._getFlow(sUsage);
+
+			if (!isDefAndNotNull(pFlow)) {
+				return null;
+			}
+
+			return pFlow.data;
 		}
 
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.

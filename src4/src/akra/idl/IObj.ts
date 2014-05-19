@@ -16,5 +16,8 @@ module akra {
 		loadResource(sFilename?: string, pOptions?: IObjLoadOptions): boolean;
 		uploadVertexes(pPositions: Float32Array, pIndexes?: Float32Array): void;
 		setOptions(pOptions: IObjLoadOptions): void;
+
+		attachToScene(pNode: ISceneNode): IModelEntry;
+		attachToScene(pScene: IScene3d): IModelEntry;
 	}
 }

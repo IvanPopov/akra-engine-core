@@ -554,7 +554,7 @@ module akra.deps {
 								return;
 							}
 
-							logger.info("%cDependences loaded: ", "color: green;", sArchivePath);
+							//debug.info("%cDependences loaded: ", "color: green;", sArchivePath);
 
 							pZipReader.close();
 							//id data-uri used, archive is null

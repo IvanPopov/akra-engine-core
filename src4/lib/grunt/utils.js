@@ -62,7 +62,13 @@ module.exports = {
 		}
 
 		function getTaggedReleaseCodeName(tagName) {
-			var tagMessage = shell.exec('git cat-file -p ' + tagName + ' | grep "codename"', { silent: true }).output;
+			var grep = 'grep';
+
+			if (!which('grep')) {
+				grep = 'findstr';
+			}
+
+			var tagMessage = shell.exec('git cat-file -p ' + tagName + ' | ' + grep + ' "codename"', { silent: true }).output;
 			var codeName = tagMessage && tagMessage.match(/codename\((.*)\)/)[1];
 			if (!codeName) {
 				throw new Error("Could not extract release code name. The message of tag " + tagName +

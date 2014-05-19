@@ -84,14 +84,6 @@ module akra.scene {
 			return null;
 		}
 
-		//update(): boolean {
-		//	if (this._pMesh.isGeometryChanged()) {
-		//		this.accessLocalBounds().set(this._pMesh.getBoundingBox());
-		//	}
-
-		//	return super.update();
-		//}
-
 		protected recalcWorldBounds(): boolean {
 			if (this._pMesh.isGeometryChanged()) {
 				// Mesh::isGeometryChanged() can be TRUE only for Skinned meshes.

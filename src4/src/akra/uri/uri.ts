@@ -233,8 +233,17 @@ module akra.uri {
 		return new URI(sUri);
 	}
 
+	export function currentScript(): HTMLScriptElement {
+		if (isDef(document['currentScript'])) {
+			return document['currentScript'];
+		}
+
+		var pScripts: NodeListOf<HTMLScriptElement> = document.getElementsByTagName("script");
+		return pScripts[pScripts.length - 1];
+	}
+
 	export function currentPath(): string {
-		var pUri = uri.parse(document["currentScript"]["src"]);
+		var pUri = uri.parse(currentScript().src);
 		var sDirname: string = path.parse(pUri.getPath()).getDirName();
 		return pUri.getURL() + sDirname + "/";
 	}

@@ -1,7 +1,7 @@
-﻿/// <reference path="I3DViewport.ts" />
+﻿/// <reference path="IViewport3D.ts" />
 
 module akra {
-	export interface IForwardViewport extends I3DViewport {
+	export interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
 		_renderOnlyTransparentObjects(bValue: boolean): void;
 	}
 } 

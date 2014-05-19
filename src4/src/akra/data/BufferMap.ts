@@ -142,6 +142,7 @@ module akra.data {
 			isNull(this._pIndex) ? this.drawArrays() : this.drawElements();
 		}
 
+		//TODO: move to WebGL namespace
 		private drawArrays(): void {
 			if (config.WEBGL) {
 				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
@@ -155,10 +156,11 @@ module akra.data {
 			}
 		}
 
+		//TODO: move to WebGL namespace
 		private drawElements(): void {
 			if (config.WEBGL) {
 				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
-					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
+					webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
 					this._pIndex.getLength(),
 					webgl.getWebglElementType(this._pIndex.getType()),
 					this._pIndex.getByteOffset() / 4);

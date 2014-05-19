@@ -24,7 +24,6 @@ module akra.data {
 			return this._pDataBuffer.getByteLength();
 		}
 
-
 		constructor(pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0) {
 			super();
 			this._pEngine = pEngine;

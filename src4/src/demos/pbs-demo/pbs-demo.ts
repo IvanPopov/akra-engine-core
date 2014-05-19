@@ -111,7 +111,7 @@ module akra {
 var teapotSpecular = new Color(0.999, 0.71, 0.29, 1.0);
 var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 
-	function createViewport(): I3DViewport {
+	function createViewport(): IViewport3D {
 		var pViewport: ILPPViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -291,7 +291,7 @@ var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			var pDeferredTexture: ITexture = (<I3DViewport>pViewport).getTextureWithObjectID();
+			var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
 			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 

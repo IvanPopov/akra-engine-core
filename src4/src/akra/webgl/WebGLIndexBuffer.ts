@@ -134,6 +134,8 @@ module akra.webgl {
 
 			pU8Data = pU8Data.subarray(0, iSize);
 
+			//if ((pU8Data.byteLength + iOffset) / )
+
 			pWebGLContext.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, iOffset, pU8Data);
 
 			if (this.isBackupPresent()) {
@@ -143,6 +145,24 @@ module akra.webgl {
 			this.notifyAltered();
 
 			return true;
+		}
+
+		getIndexData(iOffset, iCount, ePrimitiveType, eElementsTyps): IIndexData {
+			if (eElementsTyps === EDataTypes.UNSIGNED_INT) {
+				loadExtension(
+					(<WebGLRenderer>this.getEngine().getRenderer()).getWebGLContext(), OES_ELEMENT_INDEX_UINT);
+			}
+
+			return super.getIndexData(iOffset, iCount, ePrimitiveType, eElementsTyps);
+		}
+
+		getEmptyIndexData(iCount, ePrimitiveType, eElementsTyps): IIndexData {
+			if (eElementsTyps === EDataTypes.UNSIGNED_INT) {
+				loadExtension(
+					(<WebGLRenderer>this.getEngine().getRenderer()).getWebGLContext(), OES_ELEMENT_INDEX_UINT);
+			}
+
+			return super.getEmptyIndexData(iCount, ePrimitiveType, eElementsTyps);
 		}
 
 		resize(iSize: uint): boolean {

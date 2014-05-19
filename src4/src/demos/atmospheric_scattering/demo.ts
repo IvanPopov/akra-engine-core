@@ -1,6 +1,7 @@
 /// <reference path="../../../built/Lib/akra.d.ts"/>
 /// <reference path="../../../built/Lib/progress.addon.d.ts"/>
 /// <reference path="../../../built/Lib/base3dObjects.addon.d.ts"/>
+/// <reference path="../../../built/Lib/compatibility.addon.d.ts"/>
 
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
 
@@ -8,6 +9,8 @@ declare var AE_RESOURCES: akra.IDep;
 
 
 module akra {
+	addons.compatibility.verify("non-compatible");
+
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
@@ -75,7 +78,7 @@ module akra {
 	}
 
 	function createViewports(): void {
-		pViewport = pCanvas.addViewport(new render.DSViewport(pCamera));
+		pViewport = pCanvas.addViewport(new render.LPPViewport(pCamera));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -205,7 +208,7 @@ module akra {
 		createViewports();
 
 		createSceneEnvironment();
-		//createModelEntry("CUBE.DAE");
+		//pDragon = createModelEntry("CUBE.DAE");
 		pDragon = createModelEntry("SEYMOURPLANE.DAE");
 		//pDragon.addOrbitRotationByXYZAxis(-math.HALF_PI, 0., 0).update();
 		pDragon.setPosition(0., 1, 0.).scale(.25).update();
