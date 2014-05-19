@@ -101,8 +101,8 @@ module akra {
 					
 			var dist = math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition());
 			var up = pMirror.getTempVectorUp();
-			var right = pMirror.getTempVectorRight();
-			var forward = pMirror.getTempVectorForward();
+			// var right = pMirror.getTempVectorRight();
+			// var forward = pMirror.getTempVectorForward();
 
 			pReflectionCamera.setPosition( math.Vec3.temp(pCamera.getWorldPosition()).add( math.Vec3.temp(up).scale(-2.*(up.dot(dist))) ) );
 			pReflectionCamera.setRotationByForwardUp(
@@ -377,6 +377,7 @@ module akra {
 
 	function createMirror(): INode {
 		var pNode:INode = pScene.createNode().setPosition(0.,-1.5,0.);
+		pNode.setInheritance(ENodeInheritance.ROTPOSITION);
 		pReflectionCamera = createMirrorCamera(pNode);
 		pReflectionViewport = createMirrorViewport(pNode);
 
@@ -756,9 +757,13 @@ module akra {
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
 			if(pViewport === akra.pViewport){
+				var normal = pMirror.getTempVectorUp();
+				var dist = pMirror.getWorldPosition().dot(normal);
+				(<IMirrorViewport>pReflectionViewport).getReflectionPlane().set(normal, dist);
 				pReflectionTexture.getBuffer().getRenderTarget().update();
 			}
 		});
+		
 		pProgress.destroy();
 		pEngine.exec();
 
