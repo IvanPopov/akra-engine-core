@@ -130,12 +130,13 @@ module akra.data {
 		/**
 		 * Allocate attribute.
 		 * Attribute - data without index.
+		 * @param bSilent Do not add attribute to buffer map as data.
 		 */
-		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: any, pData: any, eType: ERenderDataAttributeTypes = ERenderDataAttributeTypes.STATIC): boolean {
+		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: any, pData: any, eType: ERenderDataAttributeTypes = ERenderDataAttributeTypes.STATIC, bSilent: boolean = false): boolean {
 			var pAttrDecl: IVertexDeclaration = VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
 			var pIndexData = this._pIndexData;
 			var pAttribData: IVertexData = this._pAttribData;
@@ -160,7 +161,11 @@ module akra.data {
 
 				this._pAttribData = pAttribBuffer.allocateData(pAttrDecl, pData);
 				this._pIndicesArray[this._iIndexSet].pAttribData = this._pAttribData;
-				this._pMap.flow(this._pAttribData);
+
+				if (!bSilent) {
+					this._pMap.flow(this._pAttribData);
+				}
+
 				return this._pAttribData !== null;
 			}
 
@@ -438,6 +443,9 @@ module akra.data {
 			var iStride: int;
 			var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
+			if (this.useSingleIndex()) {
+				pIndexData = this._pAttribData;
+			}
 		
 			if (this.useAdvancedIndex()) {
 				pRealData = this._getData(<string>arguments[0]);
@@ -456,6 +464,10 @@ module akra.data {
 				sSemantics = "INDEX_" + sSemantics;
 			}
 			else if (isString(arguments[0])) {
+				//if (arguments[0] === "BARYCENTRIC") {
+				//	debugger;
+				//}
+
 				if (arguments[0] === "TEXCOORD") {
 					iData = this.getDataLocation("TEXCOORD0");
 					pFlow = this._getFlow("TEXCOORD0", false);
@@ -467,6 +479,7 @@ module akra.data {
 
 				debug.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
 			}
+
 
 			if (!pFlow) {
 				pFlow = this._getFlow(iData);
@@ -484,6 +497,7 @@ module akra.data {
 				logger.assert(this._addData(pData) !== -1, "could not add automatcly add data to map");
 				pFlow = this._getFlow(iData);
 			}
+
 
 			iFlow = pFlow.flow;
 			iIndexOffset = (<IVertexData>pIndexData).getVertexDeclaration().findElement(sSemantics).offset;
@@ -562,9 +576,9 @@ module akra.data {
 		}
 
 
-		private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
-		private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int;
-		private _allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
+		_allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
+		_allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int;
+		_allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
 			if (eType === ERenderDataTypes.DIRECT) {
 				return this.allocateAttribute(pDataDecl, pData) ? 0 : -1;
 			}
