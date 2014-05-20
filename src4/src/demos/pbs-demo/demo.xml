@@ -32,6 +32,7 @@
         <ResourceFile Path="data/effects/lensflare.afx"/>
         <ResourceFile Path="data/effects/blur.afx"/>
         <ResourceFile Path="data/effects/dof.afx"/>
+        <ResourceFile Path="data/effects/fresnel_texture.afx"/>
 
         <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.dae" Name="WOOD_SOLDIER.DAE"/>
         <ResourceFile Path="data/models/rock/rock-1-low-p.DAE" Name="ROCK.DAE"/>

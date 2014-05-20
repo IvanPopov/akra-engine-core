@@ -1,0 +1,30 @@
+include "common.afx";
+
+// Light Schlick approximation
+//float4 fs_shader(float2 texcoord: TEXCOORD0): COLOR {
+    //float sc = texcoord.x;
+    //float voh = texcoord.y;
+    //return float4(sc + ( saturate( 50.0 * sc ) - sc ) * exp2( (-5.55473 * voh - 6.98316) * voh ));
+//}
+
+float Square( float x )
+{
+    return x*x;
+}
+
+// Hardcore Fresnel reflection
+float4 fs_shader(float2 texcoord: TEXCOORD0): COLOR {
+    float sc = texcoord.x;
+    float voh = texcoord.y;
+    float SpecularColorSqrt = sqrt( clamp( sc, 0., 0.99) );
+    float n = ( 1. + SpecularColorSqrt ) / ( 1. - SpecularColorSqrt );
+    float g = sqrt( n*n + voh*voh - 1. );
+    return float4(0.5 * Square( (g - voh) / (g + voh) )
+               * ( 1. + Square( ((g+voh)*voh - 1.) / ((g-voh)*voh + 1.) ) ));
+}
+
+technique precalculate_fresnel {
+    pass {
+        PixelShader = compile fs_shader();
+    }
+}

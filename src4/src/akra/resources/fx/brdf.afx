@@ -1,12 +1,48 @@
 include "common.afx";
 
-float fixFloatPresision(float value){
-	//if(abs(value) < 0.01){
-	//	return sign(value) * 0.01;
-	//}
+bool bUseFresnelTexture : USE_FRESNEL_TEXTURE;
 
-	return value;
-}
+// Physically based shading model
+// parameterized with the below options
+
+// Geometric attenuation or shadowing
+// 0: Implicit
+// 1: Neumann
+// 2: Kelemen
+// 3: Schlick -- default
+// 4: Smith (matched to GGX)
+//int PhysicalSpecG : PHYSICAL_SPEC_G;
+foreign int PhysicalSpecG;
+
+// Diffuse model
+// 0: Lambert -- default
+// 1: Burley
+// 2: Oren-Nayar
+//int PhysicalDiffuse : PHYSICAL_DIFFUSE;
+foreign int PhysicalDiffuse;
+
+// Microfacet distribution function
+// 0: Blinn
+// 1: Beckmann
+// 2: GGX -- default
+//int PhysicalSpecD : PHYSICAL_SPEC_D;
+foreign int PhysicalSpecD;
+
+// Fresnel
+// 0: None
+// 1: Schlick -- default
+// 2: Fresnel
+//int PhysicalSpecF : PHYSICAL_SPEC_F;
+foreign int PhysicalSpecF;
+
+texture fresnelTexture : FRESNEL_TEXTURE;
+sampler2D fresSampler : FRES_SAMPLER = sampler_state
+{
+    Texture = <fresnelTexture>;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
 
 float GFunc(float3 l, float3 v, float3 n, float k){
 	//float divisor = fixFloatPresision(4. * dot_saturate(n, l) * dot_saturate(n, v));
@@ -60,21 +96,19 @@ float3 Diffuse_OrenNayar( float3 DiffuseColor, float Roughness, float NoV,
 float3 Diffuse_Func( float3 DiffuseColor, float Roughness, float NoV,
 					float NoL, float VoH )
 {
-	// Diffuse model
-	// 0: Lambert -- default
-	// 1: Burley
-	// 2: Oren-Nayar
-	int PHYSICAL_DIFFUSE = 0;
-
-	if (PHYSICAL_DIFFUSE == 0){
+	if (PhysicalDiffuse == 0){
 		return Diffuse_Lambert( DiffuseColor );  // 1 rcp 1 mul
 	}
-	else if (PHYSICAL_DIFFUSE == 1){
+	
+	if (PhysicalDiffuse == 1){
 		return Diffuse_Burley( DiffuseColor, Roughness, NoV, NoL, VoH );
 	}
-	else if (PHYSICAL_DIFFUSE == 2){
+	
+	if (PhysicalDiffuse == 2){
 		return Diffuse_OrenNayar( DiffuseColor, Roughness, NoV, NoL, VoH );
 	}
+
+	return float3(0.);
 }
 
 //************************* D FUNCTIONS ************************************* */
@@ -108,21 +142,19 @@ float D_GGX( float Roughness, float NoH )
 
 float D_Func( float Roughness, float NoH )
 {
-	// Microfacet distribution function
-	// 0: Blinn
-	// 1: Beckmann
-	// 2: GGX -- default
-	int PHYSICAL_SPEC_D = 2;
-
-	if (PHYSICAL_SPEC_D == 0){
+	if (PhysicalSpecD == 0){
 		return D_Blinn( Roughness, NoH );
 	}
-	else if (PHYSICAL_SPEC_D == 1){
+	
+	if (PhysicalSpecD == 1){
 		return D_Beckmann( Roughness, NoH );
 	}
-	else if (PHYSICAL_SPEC_D == 2){
+	
+	if (PhysicalSpecD == 2){
 		return D_GGX( Roughness, NoH );	// 2 add 6 mul 1 rcp
 	}
+
+	return 0.;
 }
 
 
@@ -159,8 +191,7 @@ float G_Schlick( float Roughness, float NoV, float NoL )
 // [Burley 2012, "Physically-Based Shading at Disney"]
 float G_Smith( float Roughness, float NoV, float NoL )
 {
-	float a = Roughness * Roughness;
-	float a2 = a*a;
+	float a2 = Roughness * Roughness * Roughness * Roughness;
 
 	float G_SmithV = NoV + sqrt( NoV * (NoV - NoV * a2) + a2 );
 	float G_SmithL = NoL + sqrt( NoL * (NoL - NoL * a2) + a2 );
@@ -170,29 +201,28 @@ float G_Smith( float Roughness, float NoV, float NoL )
 float GeometricVisibility( float Roughness, float NoV, float NoL,
 						   float3 L, float3 V )
 {
-	// Geometric attenuation or shadowing
-	// 0: Implicit
-	// 1: Neumann
-	// 2: Kelemen
-	// 3: Schlick -- default
-	// 4: Smith (matched to GGX)
-	int PHYSICAL_SPEC_G = 3;
-
-	if (PHYSICAL_SPEC_G == 0){
+	// FIX too much instructions?
+	if (PhysicalSpecG == 0){
 		return G_Implicit();
 	}
-	else if (PHYSICAL_SPEC_G == 1){
-		return G_Neumann( NoV, NoL );
-	}
-	else if (PHYSICAL_SPEC_G == 2){
-		return G_Kelemen( L, V );
-	}
-	else if (PHYSICAL_SPEC_G == 3){
+
+	//if (PhysicalSpecG == 1){
+		//return G_Neumann( NoV, NoL );
+	//}
+//	
+	//if (PhysicalSpecG == 2){
+		//return G_Kelemen( L, V );
+//	}
+	
+	if (PhysicalSpecG == 3){
 		return G_Schlick( Roughness, NoV, NoL );//4 add 7 mul 1 rcp
 	}
-	else if (PHYSICAL_SPEC_G == 4){
+	
+	if (PhysicalSpecG == 4){
 		return G_Smith( Roughness, NoV, NoL );
 	}
+
+	return 0.;
 }
 
 //*********************** Fresnel ******************************************* */
@@ -213,6 +243,32 @@ float3 F_Schlick( float3 SpecularColor, float VoH )
 	//return Fc + (1 - Fc) * SpecularColor;					// 1 add, 3 mad
 }	//3 add 3 mul 1 exp
 
+// Loads Schlick parameters from precalculated texture
+float3 F_Texture( float3 SpecularColor, float VoH )
+{
+	float r = tex2D(fresSampler, float2(SpecularColor.r, VoH)).r;
+	float g, b;
+
+	if (abs(SpecularColor.r - SpecularColor.g) < 0.01){
+		g = r;
+	}
+	else {
+		g = tex2D(fresSampler, float2(SpecularColor.g, VoH)).r;
+	}
+
+	if (abs(SpecularColor.r - SpecularColor.b) < 0.01){
+		b = r;
+	}
+	else if (abs(SpecularColor.b - SpecularColor.g) < 0.01){
+		b = g;
+	}
+	else {
+		b = tex2D(fresSampler, float2(SpecularColor.b, VoH)).r;
+	}
+
+	return float3(r, g, b);
+}
+
 float3 F_Fresnel( float3 SpecularColor, float VoH )
 {
 	float3 SpecularColorSqrt = sqrt( clamp( SpecularColor, 0., 0.99) );
@@ -224,21 +280,24 @@ float3 F_Fresnel( float3 SpecularColor, float VoH )
 
 float3 Fresnel( float3 SpecularColor, float VoH )
 {
-	// Fresnel
-	// 0: None
-	// 1: Schlick -- default
-	// 2: Fresnel
-	int PHYSICAL_SPEC_F = 1;
+	if (bUseFresnelTexture){
+		return F_Texture( SpecularColor, VoH );
+	}
+	else {
+		if (PhysicalSpecF == 0){
+			return F_None( SpecularColor );
+		}
+		
+		if (PhysicalSpecF == 1){
+			return F_Schlick( SpecularColor, VoH ); //3 add 3 mul 1 exp
+		}
+		
+		if (PhysicalSpecF == 2){
+			return F_Fresnel( SpecularColor, VoH );
+		}
+	}
 
-	if (PHYSICAL_SPEC_F == 0){
-		return F_None( SpecularColor );
-	}
-	else if (PHYSICAL_SPEC_F == 1){
-		return F_Schlick( SpecularColor, VoH ); //3 add 3 mul 1 exp
-	}
-	else if (PHYSICAL_SPEC_F == 2){
-		return F_Fresnel( SpecularColor, VoH );
-	}
+	return float3(0.);
 }
 
 //******** for LPP **** */
