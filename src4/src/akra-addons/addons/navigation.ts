@@ -150,7 +150,7 @@ module akra.addons {
 
 		//cube alpha 
 		var eSrcBlend: ERenderStateValues = ERenderStateValues.SRCALPHA;
-		var eDestBlend: ERenderStateValues = ERenderStateValues.DESTALPHA;
+		var eDestBlend: ERenderStateValues = ERenderStateValues.ONE;
 
 		pViewport.render.connect((
 			pViewport: IViewport,
@@ -235,7 +235,7 @@ module akra.addons {
 			(<webgl.WebGLCanvas>pViewport.getTarget()).hideCursor(false);
 
 			eSrcBlend = ERenderStateValues.SRCALPHA;
-			eDestBlend = ERenderStateValues.DESTALPHA;
+			eDestBlend = ERenderStateValues.ONE;
 			pViewport.highlight(null, null);
 			pViewport.touch();
 		});
@@ -338,7 +338,7 @@ module akra.addons {
 				else {
 					pViewport.highlight(null, null);
 					eSrcBlend = ERenderStateValues.SRCALPHA;
-					eDestBlend = ERenderStateValues.DESTALPHA;
+					eDestBlend = ERenderStateValues.ONE;
 				}
 			});
 

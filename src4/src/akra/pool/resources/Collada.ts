@@ -1373,7 +1373,7 @@ module akra.pool.resources {
 				reflective: new Color(0.),
 				reflectivity: 0.0,
 				transparent: new Color(0.),
-				transparency: 0.0,
+				transparency: 1.0,
 
 				indexOfRefraction: 0.0,
 

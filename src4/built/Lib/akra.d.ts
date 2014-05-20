@@ -13565,6 +13565,8 @@ declare module akra {
         setShadingModel(eModel: EShadingModel): any;
         getShadingModel(): EShadingModel;
         getLightSources(): IObjectArray<ILightPoint>;
+        setDefaultEnvironmentMap(pTexture: ITexture): void;
+        getDefaultEnvironmentMap(): ITexture;
     }
 }
 declare module akra {

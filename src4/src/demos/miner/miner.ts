@@ -133,8 +133,8 @@ module akra {
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
-			pLightOmni.getParams().diffuse.set(math.random(), math.random(), math.random());
-			pLightOmni.getParams().specular.set(math.random());
+			pLightOmni.getParams().diffuse.set(math.random() / 10, math.random() / 10, math.random() / 10);
+			pLightOmni.getParams().specular.set(math.random() / 10);
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
 			((pSprite: ISprite, pLightOmni: IOmniLight) => {
@@ -232,7 +232,7 @@ module akra {
 
 
 
-		pMiner.getOptions().wireframe = true;
+		//pMiner.getOptions().wireframe = true;
 		var pModel: ISceneNode = pMiner.extractFullScene(pScene);
 		pModel.addController(pController);
 		pModel.scale(.5);
@@ -299,18 +299,18 @@ module akra {
 		});
 
 
-		pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
-			pModel.explore((pEntity: IEntity): boolean => {
-				if (scene.SceneModel.isModel(pEntity)) {
-					var pNode = <ISceneModel>pEntity;
-					for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
-						pNode.getRenderable(i).wireframe(bValue);
-					}
-				}
+		//pGUI.add({ wireframe: true }, 'wireframe').onChange((bValue: boolean) => {
+		//	pModel.explore((pEntity: IEntity): boolean => {
+		//		if (scene.SceneModel.isModel(pEntity)) {
+		//			var pNode = <ISceneModel>pEntity;
+		//			for (var i: int = 0; i < pNode.getTotalRenderable(); ++i) {
+		//				pNode.getRenderable(i).wireframe(bValue);
+		//			}
+		//		}
 
-				return true;
-			});
-		});
+		//		return true;
+		//	});
+		//});
 
 
 		pGUI.add({ usePhong: true }, 'usePhong').onChange(function (bValue: boolean) {

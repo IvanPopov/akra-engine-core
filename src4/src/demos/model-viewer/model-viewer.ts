@@ -28,7 +28,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport: IViewport = null;
+	export var pViewport: IViewport3D = null;
 	export var pReflectionCamera: ICamera = null;
 	export var pReflectionViewport: IViewport = null;
 	export var pReflectionTexture: ITexture = null;
@@ -154,7 +154,7 @@ module akra {
 				pCamera.addRelPosition(0, -fSpeed, 0);
             }
         });
-        pViewport.enableSupportFor3DEvent(E3DEventTypes.MOUSEWHEEL);
+		pViewport.enable3DEvents(true);//E3DEventTypes.MOUSEWHEEL);
         pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
             //console.log("mousewheel moved: ",x,y,fDelta);
             pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius + fDelta/pViewport.getActualHeight()*2., 2., 15.);
@@ -163,7 +163,7 @@ module akra {
 
 	var pGUI;
 
-	function createViewport(): I3DViewport {
+	function createViewport(): IViewport3D {
 		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -334,12 +334,12 @@ module akra {
 	         (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
         });
 
-        (<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+        (<IShadedViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			var pDeferredTexture: ITexture = (<I3DViewport>pViewport).getTextureWithObjectID();
+			var pDeferredTexture: ITexture = (<IDSViewport>pViewport).getTextureWithObjectID();
 			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
@@ -507,7 +507,7 @@ module akra {
         
         // pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), pEnvTexture.getWidth() / pViewport.getActualWidth(), pEnvTexture.getHeight() / pViewport.getActualHeight(),10));
 
-		(<I3DViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<IShadedViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 		// (<I3DViewport>pReflectionViewport).setDefaultEnvironmentMap(pEnvTexture);
     }
 

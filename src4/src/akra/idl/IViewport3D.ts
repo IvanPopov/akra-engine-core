@@ -101,5 +101,7 @@ module akra {
 		getShadingModel(): EShadingModel;
 
 		getLightSources(): IObjectArray<ILightPoint>;
+		setDefaultEnvironmentMap(pTexture: ITexture): void;
+		getDefaultEnvironmentMap(): ITexture;
 	}
 }
