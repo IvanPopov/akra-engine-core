@@ -57,13 +57,14 @@ module akra.addons {
 
 		name = name || config.defaultName;
 
-		var pDeclData: IVertexElementInterface[] = [VE.float3(Usage.POSITION)];
+		var pDeclData: IVertexElementInterface[] = [];
 		var iByteLength: uint = 0;
 		var pLoop = { vertices: Usage.POSITION, normals: Usage.NORMAL, texcoords: "TEXCOORD0" };
 
 		Object.keys(pLoop).forEach((sProperty: string) => {
 			if (isDefAndNotNull(pGeometry[sProperty])) {
-				pDeclData.push(VE.float3(pLoop[sProperty]));
+				var sSemantics = pLoop[sProperty]
+				pDeclData.push(sSemantics === "TEXCOORD0" ? VE.float2(sSemantics) : VE.float3(sSemantics));
 
 				if (!isArrayBuffer(pGeometry[sProperty])) {
 					pGeometry[sProperty] = <any>new Float32Array(pGeometry[sProperty]);
@@ -463,4 +464,89 @@ module akra.addons {
 
 		return createModelFromMesh(pScene, pMesh);
 	}
+
+	export function cylinder(pScene3d: IScene3d, radiusTop: float = 2.5, radiusBottom: float = 2.5, height: float = 5, segmentsRadius: uint = 8, segmentsHeight: uint = 1, openEnded: boolean = true): ISceneModel {
+
+
+		var heightHalf = height / 2;
+		var segmentsX = segmentsRadius || 8;
+		var segmentsY = segmentsHeight || 1;
+
+		radiusTop = math.max(1e-10, radiusTop);
+		radiusBottom = math.max(1e-10, radiusBottom);
+
+		var x, y, vertices = [], uvs = [], normals = [], indices = [];
+
+		for (y = 0; y <= segmentsY; y++) {
+
+			var v = y / segmentsY;
+			var radius = v * (radiusBottom - radiusTop) + radiusTop;
+
+			for (x = 0; x <= segmentsX; x++) {
+
+				var u = x / segmentsX;
+
+				var xpos = radius * Math.sin(u * Math.PI * 2);
+				var ypos = - v * height + heightHalf;
+				var zpos = radius * Math.cos(u * Math.PI * 2);
+
+				vertices.push(xpos, ypos, zpos);
+				uvs.push(u, v);
+			}
+		}
+
+		function vert(x, y): IVec3 {
+			if (x > segmentsX) x = x % (segmentsX + 1);
+			if (x < 0) x = (segmentsX + 1) + x;
+
+			var n = (y * (segmentsX + 1) + x) * 3;
+			return Vec3.temp(vertices[n], vertices[n + 1], vertices[n + 2]);
+		}
+
+
+		for (y = 0; y <= segmentsY; y++) {
+			for (x = 0; x <= segmentsX; x++) {
+				var V = vert(x, 0);
+
+				var Vyu = vert(x, 1)
+				
+				var Vxl = vert(x - 1, 0);
+				var Vxr = vert(x + 1, 0);
+
+				var nl = Vxl.subtract(V, Vec3.temp()).cross(Vyu.subtract(V), Vec3.temp()).normalize();
+				var nr = Vxr.subtract(V, Vec3.temp()).cross(Vyu.subtract(V), Vec3.temp()).normalize();
+
+				var n = nl.add(nr).normalize();
+
+				normals.push(n.x, n.y, n.z);
+			}
+		}
+
+
+		for (y = 0; y < segmentsY; y++) {
+			for (x = 0; x < segmentsX; x++) {
+				var x0y0 = y * (segmentsX + 1) + x;
+				var x1y0 = y * (segmentsX + 1) + x + 1;
+				var x0y1 = (y + 1) * (segmentsX + 1) + x;
+				var x1y1 = (y + 1) * (segmentsX + 1) + x + 1;
+
+				indices.push(x0y0, x0y1, x1y1);
+				indices.push(x0y0, x1y1, x1y0);
+			}
+		}
+		
+		return createModelFromMesh(pScene3d,
+			createSimpleMeshFromSimpleGeometry(
+				pScene3d.getManager().getEngine(),
+				{
+					type: EPrimitiveTypes.TRIANGLELIST,
+					vertices: vertices,
+					normals: normals,
+					texcoords: uvs,
+					indices: indices
+				},
+				material.create(),
+				"cylinder"));
+	}
 }
+

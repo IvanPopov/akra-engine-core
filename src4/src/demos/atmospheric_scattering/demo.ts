@@ -167,15 +167,8 @@ module akra {
 	}
 
 	function createSceneEnvironment(pRoot: ISceneNode = pScene.getRootNode()): void {
-		var pSceneQuad: ISceneModel = addons.createQuad(pScene, 600.);
-		pSceneQuad.attachToParent(pRoot);
-
-
-		// var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
-		// pSceneSurface.scale(10.);
-		// pSceneSurface.addPosition(0, 0.01, 0);
-		// pSceneSurface.attachToParent(pScene.getRootNode());
-		// pSceneSurface.mesh.getSubset(0).setVisible(true);
+		addons.createQuad(pScene, 600.).attachToParent(pRoot);
+		addons.cylinder(pScene, 0., 5., 5., 100, 1, true).setPosition(0, 4., 0).attachToParent(pRoot);
 	}
 
 	// var T = 0.0;

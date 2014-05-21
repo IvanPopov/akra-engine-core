@@ -16,4 +16,5 @@ declare module akra.addons {
     function bone(pJoint: IJoint): ISceneModel;
     function lineCube(pScene: IScene3d, eOptions?: number): ISceneModel;
     function cube(pScene: IScene3d): ISceneModel;
+    function cylinder(pScene3d: IScene3d, radiusTop?: number, radiusBottom?: number, height?: number, segmentsRadius?: number, segmentsHeight?: number, openEnded?: boolean): ISceneModel;
 }
