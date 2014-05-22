@@ -503,25 +503,39 @@ module akra.addons {
 			return Vec3.temp(vertices[n], vertices[n + 1], vertices[n + 2]);
 		}
 
+		normals.length = vertices.length;
 
-		for (y = 0; y <= segmentsY; y++) {
-			for (x = 0; x <= segmentsX; x++) {
-				var V = vert(x, 0);
+		
+		for (x = 0; x <= segmentsX; x++) {
+			var V = vert(x, 0);
 
-				var Vyu = vert(x, 1)
+			var Vyu = vert(x, 1)
 				
-				var Vxl = vert(x - 1, 0);
-				var Vxr = vert(x + 1, 0);
+			var Vxl = vert(x - 1, 0);
+			var Vxr = vert(x + 1, 0);
 
-				var nl = Vxl.subtract(V, Vec3.temp()).cross(Vyu.subtract(V), Vec3.temp()).normalize();
-				var nr = Vxr.subtract(V, Vec3.temp()).cross(Vyu.subtract(V), Vec3.temp()).normalize();
+			var t = Vyu.subtract(V, Vec3.temp());
+			var nl = Vxl.subtract(V, Vec3.temp()).cross(t, Vec3.temp());
+			var nr = t.cross(Vxr.subtract(V, Vec3.temp()), Vec3.temp());
 
-				var n = nl.add(nr).normalize();
+			var n = nl.add(nr).normalize();
 
-				normals.push(n.x, n.y, n.z);
-			}
+			var i = x * 3;
+
+			normals[i] = n.x;
+			normals[i + 1] = n.y;
+			normals[i + 2] = n.z;
 		}
 
+		for (y = 1; y <= segmentsY; y++) {
+			for (x = 0; x <= segmentsX; x++) {
+				var i = (y * (segmentsX + 1) + x) * 3;
+
+				normals[i] = normals[x * 3];
+				normals[i + 1] = normals[x * 3 + 1];
+				normals[i + 2] = normals[x * 3 + 2];
+			}
+		}
 
 		for (y = 0; y < segmentsY; y++) {
 			for (x = 0; x < segmentsX; x++) {
@@ -534,7 +548,12 @@ module akra.addons {
 				indices.push(x0y0, x1y1, x1y0);
 			}
 		}
-		
+
+		var pMat = material.create();
+		pMat.diffuse.set(1., 0., 0., 1.);
+		pMat.ambient.set(0.);
+		pMat.emissive.set(0.);
+
 		return createModelFromMesh(pScene3d,
 			createSimpleMeshFromSimpleGeometry(
 				pScene3d.getManager().getEngine(),
@@ -545,7 +564,7 @@ module akra.addons {
 					texcoords: uvs,
 					indices: indices
 				},
-				material.create(),
+				pMat,
 				"cylinder"));
 	}
 }

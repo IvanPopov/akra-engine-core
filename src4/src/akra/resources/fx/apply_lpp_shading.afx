@@ -79,7 +79,7 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
         color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
         color += Fragment_material.specular * float4(lightsDataA.www, 1.);
     }
-    //return float4(Normal, 1.);
+	//return float4((Normal + 1.) / 2., 1.);
     return float4(color.xyz, 1.);
 }
 
