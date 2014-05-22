@@ -567,5 +567,53 @@ module akra.addons {
 				pMat,
 				"cylinder"));
 	}
+
+	export function trifan(pScene3d: IScene3d, radius: float = 2.5, segments: uint = 8): ISceneModel {
+
+		var segments = segments || 8;
+
+		radius = math.max(1e-10, radius);
+
+		var x, y, u, v, vertices = [], uvs = [], normals = [], indices = [];
+
+		vertices.push(0., 0., 0.);
+		uvs.push(.5, .5);
+
+		for (var i = 0; i < segments; i++) {
+			x = Math.sin( Math.PI*2*i/segments );
+			y = Math.cos( Math.PI*2*i/segments );
+			u = .5 + .5 * x;
+			v = .5 + .5 * y;
+
+			vertices.push(radius * x, 0., radius * y);
+			uvs.push(u, v);
+		}
+
+		for (var i = 0; i <= segments; i++) {
+			normals.push(0., 1., 0.); 
+		}
+
+		for (var i = 0; i < segments; i++) {
+			indices.push( 0, i+1, (i+1)%segments+1 );
+		}
+
+		var pMat = material.create();
+		pMat.diffuse.set(0.5, 0.5, 0.5, 1.);
+		pMat.ambient.set(0.);
+		pMat.emissive.set(0.);
+
+		return createModelFromMesh(pScene3d,
+			createSimpleMeshFromSimpleGeometry(
+				pScene3d.getManager().getEngine(),
+				{
+					type: EPrimitiveTypes.TRIANGLELIST,
+					vertices: vertices,
+					normals: normals,
+					texcoords: uvs,
+					indices: indices
+				},
+				pMat,
+				"trifan"));
+	}
 }
 
