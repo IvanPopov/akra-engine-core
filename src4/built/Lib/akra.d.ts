@@ -2832,6 +2832,9 @@ declare module akra {
         NOTEQUAL = 25,
         GREATEREQUAL = 26,
         ALWAYS = 27,
+        FUNCADD = 28,
+        FUNCSUBTRACT = 29,
+        FUNCREVERSESUBTRACT = 30,
     }
 }
 declare module akra {
@@ -3640,7 +3643,6 @@ declare module akra {
         emissive: IColor;
         set(pMat: IMaterialBase): IMaterial;
         isEqual(pMat: IMaterialBase): boolean;
-        isTransparent(): boolean;
     }
 }
 declare module akra {
@@ -3699,11 +3701,21 @@ declare module akra {
         POLYGONOFFSETFILLENABLE = 7,
         CULLFACE = 8,
         FRONTFACE = 9,
-        SRCBLEND = 10,
-        DESTBLEND = 11,
-        ZFUNC = 12,
-        ALPHABLENDENABLE = 13,
-        ALPHATESTENABLE = 14,
+        SRCBLENDCOLOR = 10,
+        DESTBLENDCOLOR = 11,
+        SRCBLENDALPHA = 12,
+        DESTBLENDALPHA = 13,
+        BLENDEQUATIONCOLOR = 14,
+        BLENDEQUATIONALPHA = 15,
+        ZFUNC = 16,
+        ALPHABLENDENABLE = 17,
+        ALPHATESTENABLE = 18,
+        SRCBLEND = 19,
+        DESTBLEND = 20,
+        BLENDFUNC = 21,
+        BLENDFUNCSEPARATE = 22,
+        BLENDEQUATION = 23,
+        BLENDEQUATIONSEPARATE = 24,
     }
 }
 declare module akra {
@@ -4561,7 +4573,8 @@ declare module akra {
         COLORVIEWPORT = 3,
         TEXTUREVIEWPORT = 4,
         LPPVIEWPORT = 5,
-        MIRRORVIEWPORT = 6,
+        FORWARDVIEWPORT = 6,
+        MIRRORVIEWPORT = 7,
     }
     interface IViewport extends IEventProvider, IClickable, IControllable {
         getLeft(): number;
@@ -6811,7 +6824,7 @@ declare module akra.config {
     };
     var material: {
         "name": string;
-        default: {
+        "default": {
             "diffuse": number;
             "ambient": number;
             "specular": number;
@@ -10439,6 +10452,7 @@ declare module akra.fx.instructions {
         private _isContainPointer;
         private _isContainComplexType;
         constructor();
+        public toString(): string;
         public _toDeclString(): string;
         public _toFinalCode(): string;
         public _isBuiltIn(): boolean;
@@ -11448,6 +11462,7 @@ declare module akra.fx.instructions {
         private _bIsBuiltIn;
         private _sDeclString;
         constructor();
+        public toString(): string;
         public _toDeclString(): string;
         public _toFinalCode(): string;
         public _isBuiltIn(): boolean;
@@ -11574,6 +11589,7 @@ declare module akra.fx.instructions {
 }
 declare module akra.fx {
     class Effect implements IAFXEffect {
+        public guid: number;
         private _pComposer;
         private _pParseTree;
         private _pAnalyzedNode;
@@ -11769,6 +11785,8 @@ declare module akra.fx {
         private resumePassAnalysis(pPass);
         private analyzePassStateBlock(pNode, pPass);
         private analyzePassState(pNode, pPass);
+        private getRenderState(sState);
+        private getRenderStateValue(eState, sValue);
         private analyzePassStateIf(pNode, pPass);
         private analyzePassStateSwitch(pNode, pPass);
         private analyzePassCaseBlock(pNode, pPass);
@@ -13358,6 +13376,7 @@ declare module akra.geometry {
 }
 declare module akra.material {
     function create(sName?: string, pMat?: IMaterialBase): IMaterial;
+    function isTransparent(pMat: IMaterial): boolean;
 }
 declare module akra {
     interface IAFXPreRenderState {
@@ -13549,6 +13568,8 @@ declare module akra {
         setShadingModel(eModel: EShadingModel): any;
         getShadingModel(): EShadingModel;
         getLightSources(): IObjectArray<ILightPoint>;
+        setDefaultEnvironmentMap(pTexture: ITexture): void;
+        getDefaultEnvironmentMap(): ITexture;
     }
 }
 declare module akra {
@@ -13588,6 +13609,13 @@ declare module akra {
         getDepthTexture(): ITexture;
         getRenderTarget(): IRenderTarget;
         _prepareForLighting(pCamera: ICamera): boolean;
+    }
+}
+declare module akra.render {
+    class ViewportWithTransparencyMode extends Viewport {
+        private _bTransparencyMode;
+        public setTransparencyMode(bValue: boolean): void;
+        public renderAsNormal(csMethod: string, pCamera: ICamera): void;
     }
 }
 declare module akra.render {
@@ -15463,6 +15491,8 @@ declare module akra.render {
         private _pHighlightedObject;
         private _eShadingModel;
         private _pDefaultEnvMap;
+        private _isTransparencySupported;
+        private _pTextureForTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15476,6 +15506,8 @@ declare module akra.render {
         public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15498,6 +15530,7 @@ declare module akra.render {
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
+        private initTextureForTransparentObjects();
     }
 }
 declare module akra {
@@ -15530,6 +15563,8 @@ declare module akra.render {
         private _pSkyboxTexture;
         private _eShadingModel;
         private _pDefaultEnvMap;
+        private _isTransparencySupported;
+        private _pTextureForTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15543,6 +15578,8 @@ declare module akra.render {
         public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _getRenderId(x: number, y: number): number;
@@ -15568,6 +15605,71 @@ declare module akra.render {
         private prepareRenderMethods();
         private updateRenderTextureDimensions(pTexture);
         private prepareForLPPShading();
+        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
+        private resetUniforms();
+        private initTextureForTransparentObjects();
+    }
+}
+declare module akra {
+    interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
+        _renderOnlyTransparentObjects(bValue: boolean): void;
+    }
+}
+declare module akra.render {
+    class ForwardViewport extends Viewport3D implements IForwardViewport {
+        public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
+        /** Buffer with objectID */
+        private _pTextureWithObjectID;
+        /** Depth buffer of scene */
+        private _pDepthBufferTexture;
+        /** Texture with result of rendereingd(for global posteffects) */
+        private _pResultTexture;
+        private _pViewScreen;
+        private _pLightPoints;
+        private _v2fTextureRatio;
+        private _v2fScreenSize;
+        private _pLightingUnifoms;
+        private _pSkyboxTexture;
+        private _eShadingModel;
+        private _pDefaultEnvMap;
+        private _pTextureToScreenViewport;
+        private _isTransparencySupported;
+        private _bRenderOnlyTransparentObjects;
+        constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
+        public setupSignals(): void;
+        public getType(): EViewportTypes;
+        public getView(): IRenderableObject;
+        public getDepthTexture(): ITexture;
+        public getEffect(): IEffect;
+        public getSkybox(): ITexture;
+        public getTextureWithObjectID(): ITexture;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
+        public _renderOnlyTransparentObjects(bValue: boolean): void;
+        public _setTarget(pTarget: IRenderTarget): void;
+        public _getRenderId(x: number, y: number): number;
+        public _updateDimensions(bEmitEvent?: boolean): void;
+        public _updateImpl(): void;
+        public renderAsNormal(csMethod: string, pCamera: ICamera): void;
+        public renderTransparentObjects(csMethod: string, pCamera: ICamera): void;
+        public endFrame(): void;
+        public setSkybox(pSkyTexture: ITexture): boolean;
+        public setFXAA(bValue?: boolean): void;
+        public isFXAA(): boolean;
+        public setAntialiasing(bEnabled?: boolean): void;
+        public isAntialiased(): boolean;
+        public highlight(a: any): void;
+        public _onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
+        private prepareForForwardShading();
+        private updateRenderTextureDimensions(pTexture);
+        private prepareRenderMethods();
+        private createResultRenderTarget(iWidth, iHeight);
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         private resetUniforms();
     }

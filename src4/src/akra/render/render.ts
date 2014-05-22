@@ -6,22 +6,7 @@ module akra.render {
 
     export function createRenderStateMap(): IMap<ERenderStateValues> {
         var pMap: IMap<ERenderStateValues> = <IMap<ERenderStateValues>>{};
-
-        pMap[ERenderStates.BLENDENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.CULLFACEENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.ZENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.ZWRITEENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.DITHERENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.SCISSORTESTENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.STENCILTESTENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.POLYGONOFFSETFILLENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.CULLFACE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.FRONTFACE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.SRCBLEND] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.DESTBLEND] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.ZFUNC] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.ALPHABLENDENABLE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.ALPHATESTENABLE] = ERenderStateValues.UNDEF;
+		clearRenderStateMap(pMap);
 
         return pMap;
     }
@@ -41,8 +26,12 @@ module akra.render {
         pTo[ERenderStates.POLYGONOFFSETFILLENABLE] = pFrom[ERenderStates.POLYGONOFFSETFILLENABLE] || pTo[ERenderStates.POLYGONOFFSETFILLENABLE];
         pTo[ERenderStates.CULLFACE] = pFrom[ERenderStates.CULLFACE] || pTo[ERenderStates.CULLFACE];
         pTo[ERenderStates.FRONTFACE] = pFrom[ERenderStates.FRONTFACE] || pTo[ERenderStates.FRONTFACE];
-        pTo[ERenderStates.SRCBLEND] = pFrom[ERenderStates.SRCBLEND] || pTo[ERenderStates.SRCBLEND];
-        pTo[ERenderStates.DESTBLEND] = pFrom[ERenderStates.DESTBLEND] || pTo[ERenderStates.DESTBLEND];
+		pTo[ERenderStates.SRCBLENDCOLOR] = pFrom[ERenderStates.SRCBLENDCOLOR] || pTo[ERenderStates.SRCBLENDCOLOR];
+		pTo[ERenderStates.DESTBLENDCOLOR] = pFrom[ERenderStates.DESTBLENDCOLOR] || pTo[ERenderStates.DESTBLENDCOLOR];
+		pTo[ERenderStates.SRCBLENDALPHA] = pFrom[ERenderStates.SRCBLENDALPHA] || pTo[ERenderStates.SRCBLENDALPHA];
+		pTo[ERenderStates.DESTBLENDALPHA] = pFrom[ERenderStates.DESTBLENDALPHA] || pTo[ERenderStates.DESTBLENDALPHA];
+		pTo[ERenderStates.BLENDEQUATIONCOLOR] = pFrom[ERenderStates.BLENDEQUATIONCOLOR] || pTo[ERenderStates.BLENDEQUATIONCOLOR];
+		pTo[ERenderStates.BLENDEQUATIONALPHA] = pFrom[ERenderStates.BLENDEQUATIONALPHA] || pTo[ERenderStates.BLENDEQUATIONALPHA];
         pTo[ERenderStates.ZFUNC] = pFrom[ERenderStates.ZFUNC] || pTo[ERenderStates.ZFUNC];
         pTo[ERenderStates.ALPHABLENDENABLE] = pFrom[ERenderStates.ALPHABLENDENABLE] || pTo[ERenderStates.ALPHABLENDENABLE];
         pTo[ERenderStates.ALPHATESTENABLE] = pFrom[ERenderStates.ALPHATESTENABLE] || pTo[ERenderStates.ALPHATESTENABLE];
@@ -62,8 +51,12 @@ module akra.render {
         pTo[ERenderStates.POLYGONOFFSETFILLENABLE] = pFromA[ERenderStates.POLYGONOFFSETFILLENABLE] || pFromB[ERenderStates.POLYGONOFFSETFILLENABLE];
         pTo[ERenderStates.CULLFACE] = pFromA[ERenderStates.CULLFACE] || pFromB[ERenderStates.CULLFACE];
         pTo[ERenderStates.FRONTFACE] = pFromA[ERenderStates.FRONTFACE] || pFromB[ERenderStates.FRONTFACE];
-        pTo[ERenderStates.SRCBLEND] = pFromA[ERenderStates.SRCBLEND] || pFromB[ERenderStates.SRCBLEND];
-        pTo[ERenderStates.DESTBLEND] = pFromA[ERenderStates.DESTBLEND] || pFromB[ERenderStates.DESTBLEND];
+		pTo[ERenderStates.SRCBLENDCOLOR] = pFromA[ERenderStates.SRCBLENDCOLOR] || pFromB[ERenderStates.SRCBLENDCOLOR];
+		pTo[ERenderStates.DESTBLENDCOLOR] = pFromA[ERenderStates.DESTBLENDCOLOR] || pFromB[ERenderStates.DESTBLENDCOLOR];
+		pTo[ERenderStates.SRCBLENDALPHA] = pFromA[ERenderStates.SRCBLENDALPHA] || pFromB[ERenderStates.SRCBLENDALPHA];
+		pTo[ERenderStates.DESTBLENDALPHA] = pFromA[ERenderStates.DESTBLENDALPHA] || pFromB[ERenderStates.DESTBLENDALPHA];
+		pTo[ERenderStates.BLENDEQUATIONCOLOR] = pFromA[ERenderStates.BLENDEQUATIONCOLOR] || pFromB[ERenderStates.BLENDEQUATIONCOLOR];
+		pTo[ERenderStates.BLENDEQUATIONALPHA] = pFromA[ERenderStates.BLENDEQUATIONALPHA] || pFromB[ERenderStates.BLENDEQUATIONALPHA];
         pTo[ERenderStates.ZFUNC] = pFromA[ERenderStates.ZFUNC] || pFromB[ERenderStates.ZFUNC];
         pTo[ERenderStates.ALPHABLENDENABLE] = pFromA[ERenderStates.ALPHABLENDENABLE] || pFromB[ERenderStates.ALPHABLENDENABLE];
         pTo[ERenderStates.ALPHATESTENABLE] = pFromA[ERenderStates.ALPHATESTENABLE] || pFromB[ERenderStates.ALPHATESTENABLE];
@@ -80,8 +73,12 @@ module akra.render {
         pMap[ERenderStates.POLYGONOFFSETFILLENABLE] = ERenderStateValues.UNDEF;
         pMap[ERenderStates.CULLFACE] = ERenderStateValues.UNDEF;
         pMap[ERenderStates.FRONTFACE] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.SRCBLEND] = ERenderStateValues.UNDEF;
-        pMap[ERenderStates.DESTBLEND] = ERenderStateValues.UNDEF;
+        pMap[ERenderStates.SRCBLENDCOLOR] = ERenderStateValues.UNDEF;
+		pMap[ERenderStates.DESTBLENDCOLOR] = ERenderStateValues.UNDEF;
+		pMap[ERenderStates.SRCBLENDALPHA] = ERenderStateValues.UNDEF;
+		pMap[ERenderStates.DESTBLENDALPHA] = ERenderStateValues.UNDEF;
+		pMap[ERenderStates.BLENDEQUATIONCOLOR] = ERenderStateValues.UNDEF;
+		pMap[ERenderStates.BLENDEQUATIONALPHA] = ERenderStateValues.UNDEF;
         pMap[ERenderStates.ZFUNC] = ERenderStateValues.UNDEF;
         pMap[ERenderStates.ALPHABLENDENABLE] = ERenderStateValues.UNDEF;
         pMap[ERenderStates.ALPHATESTENABLE] = ERenderStateValues.UNDEF;

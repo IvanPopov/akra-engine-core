@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 float4x4 viewProjectionInverseMatrix: VIEW_PROJ_INV_MATRIX;
 //float4x4 previousViewProjectionMatrix: PREV_VIEW_PROJ_MATRIX;
 float4x4 invView: INV_VIEW_CAMERA_MAT;
@@ -46,18 +48,6 @@ VS_OUT vs_motion_blur(float2 pos: POSITION)
 
 
 
-
-float3 unproj(float4x4 projMat,float3 screenCoords){
-  
-  //mat4[i] - i-й столбец матрицы 
-  //не строка, а именно столбец
-  
-    float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
-    float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
-    float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
-  
-    return float3(x,y,z);
-};
 
 float uVelocityScale = 1.;
 float2 screenSize : INPUT_TEXTURE_SIZE;

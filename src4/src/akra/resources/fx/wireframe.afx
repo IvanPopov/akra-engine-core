@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 bool overlay: WIREFRAME_OVERLAY;
 
 struct VS_IN
@@ -32,13 +34,7 @@ VS_OUT vs_wireframe(VS_IN IN)
     return Out;
 }
 
-struct base_material
-{
-    float4 emissive: EMISSIVE;
-    float4 diffuse: DIFFUSE;
-};
-
-shared base_material Fragment_material;
+shared PixelData pixelData;
 
 void fs_wireframe(VS_OUT IN){
 	float3 vBC = IN.edgeTest;
@@ -57,7 +53,7 @@ void fs_wireframe(VS_OUT IN){
         }
     }
     else {
-        Fragment_material.emissive = color;
+        pixelData.material.emissive = color;
     }
 }
 

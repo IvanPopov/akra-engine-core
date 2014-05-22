@@ -115,7 +115,8 @@ module akra.fx {
 		private _pComposerState = {
 			"mesh": {
 				"isSkinned": false,
-				"isOptimizedSkinned": false
+				"isOptimizedSkinned": false,
+				"transparent": false
 			},
 			"object": {
 				"isBillboard": false
@@ -903,10 +904,6 @@ module akra.fx {
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_cGlobalDensity]] = this.cGlobalDensity;
 
 			pPassInput.setUniform("isBillboard", this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard());
-
-			if (this._pCurrentViewport.getType() === EViewportTypes.DSVIEWPORT || this._pCurrentViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-				pPassInput.setForeign("isUsedPhong", (<IShadedViewport>this._pCurrentViewport).getShadingModel() === EShadingModel.PHONG);
-			}
 		}
 
 		private prepareComposerState(): void {
@@ -922,6 +919,13 @@ module akra.fx {
 				else {
 					this._pComposerState.mesh.isSkinned = false;
 					this._pComposerState.mesh.isOptimizedSkinned = false;
+				}
+
+				if (this._pCurrentSurfaceMaterial && material.isTransparent(this._pCurrentSurfaceMaterial.getMaterial())) {
+					this._pComposerState.mesh.transparent = true;
+				}
+				else {
+					this._pComposerState.mesh.transparent = false;
 				}
 			}
 

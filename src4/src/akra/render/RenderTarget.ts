@@ -7,6 +7,7 @@
 /// <reference path="TextureViewport.ts" />
 /// <reference path="DSViewport.ts" />
 /// <reference path="LPPViewport.ts" />
+/// <reference path="ForwardViewport.ts" />
 /// <reference path="MirrorViewport.ts" />
 /// <reference path="ColorViewport.ts" />
 /// <reference path="ShadowViewport.ts" />

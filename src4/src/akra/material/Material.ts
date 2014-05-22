@@ -13,7 +13,7 @@ module akra.material {
 		ambient: IColor = new Color;
 		specular: IColor = new Color;
 		emissive: IColor = new Color;
-		transparency: float = 0.;
+		transparency: float = 1.;
 		shininess: float = 1.;
 
 		constructor(

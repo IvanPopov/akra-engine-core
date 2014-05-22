@@ -85,9 +85,8 @@ module akra {
 
 		std.createKeymap(pViewport);
 
-
 		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
-		pLight.setShadowCaster(false);
+		pLight.setShadowCaster(true);
 
 		//loadManyModels(400, "CUBE.DAE");
 		loadManyCubes(800);

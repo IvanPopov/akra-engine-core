@@ -1488,21 +1488,61 @@ module akra.webgl {
 				}
 			}
 
-			if (pStates[ERenderStates.SRCBLEND] !== ERenderStateValues.UNDEF ||
-				pStates[ERenderStates.DESTBLEND] !== ERenderStateValues.UNDEF) {
+			if (pStates[ERenderStates.SRCBLENDCOLOR] !== ERenderStateValues.UNDEF ||
+				pStates[ERenderStates.DESTBLENDCOLOR] !== ERenderStateValues.UNDEF ||
+				pStates[ERenderStates.SRCBLENDALPHA] !== ERenderStateValues.UNDEF ||
+				pStates[ERenderStates.DESTBLENDALPHA] !== ERenderStateValues.UNDEF) {
 
-				var iWebGLValue1: uint = this.convertRenderStateValue(pStates[ERenderStates.SRCBLEND]);
-				var iWebGLValue2: uint = this.convertRenderStateValue(pStates[ERenderStates.DESTBLEND]);
+				var iWebGLSColor: uint = (pStates[ERenderStates.SRCBLENDCOLOR] !== ERenderStateValues.UNDEF) ?
+					this.convertRenderStateValue(pStates[ERenderStates.SRCBLENDCOLOR]) : this._pCurrentContextStates.blend_src_rgb;
+				var iWebGLSAlpha: uint = (pStates[ERenderStates.SRCBLENDALPHA] !== ERenderStateValues.UNDEF) ?
+					this.convertRenderStateValue(pStates[ERenderStates.SRCBLENDALPHA]) : this._pCurrentContextStates.blend_src_alpha;
+				var iWebGLDColor: uint = (pStates[ERenderStates.DESTBLENDCOLOR] !== ERenderStateValues.UNDEF) ?
+					this.convertRenderStateValue(pStates[ERenderStates.DESTBLENDCOLOR]) : this._pCurrentContextStates.blend_dst_rgb;
+				var iWebGLDAlpha: uint = (pStates[ERenderStates.DESTBLENDALPHA] !== ERenderStateValues.UNDEF) ?
+					this.convertRenderStateValue(pStates[ERenderStates.DESTBLENDALPHA]) : this._pCurrentContextStates.blend_dst_alpha;
 
-				!isStatesChanged && this._pushRenderStates();
-				isStatesChanged = true;
+				if (this._pCurrentContextStates.blend_src_rgb !== iWebGLSColor ||
+					this._pCurrentContextStates.blend_src_alpha !== iWebGLSAlpha ||
+					this._pCurrentContextStates.blend_dst_rgb !== iWebGLDColor ||
+					this._pCurrentContextStates.blend_dst_alpha !== iWebGLDAlpha) {
 
-				this._pCurrentContextStates.blend_src_rgb = iWebGLValue1;
-				this._pCurrentContextStates.blend_src_alpha = iWebGLValue1;
-				this._pCurrentContextStates.blend_dst_rgb = iWebGLValue2;
-				this._pCurrentContextStates.blend_dst_alpha = iWebGLValue2;
+					!isStatesChanged && this._pushRenderStates();
+					isStatesChanged = true;
 
-				this._pWebGLContext.blendFunc(iWebGLValue1, iWebGLValue2);
+					this._pCurrentContextStates.blend_src_rgb = iWebGLSColor;
+					this._pCurrentContextStates.blend_src_alpha = iWebGLSAlpha;
+					this._pCurrentContextStates.blend_dst_rgb = iWebGLDColor;
+					this._pCurrentContextStates.blend_dst_alpha = iWebGLDAlpha;
+
+					if (iWebGLSColor === iWebGLSAlpha && iWebGLDColor === iWebGLDAlpha) {
+						this._pWebGLContext.blendFunc(iWebGLSColor, iWebGLDColor);
+					}
+					else {
+						this._pWebGLContext.blendFuncSeparate(iWebGLSColor, iWebGLDColor, iWebGLSAlpha, iWebGLDAlpha);
+					}
+				}
+			}
+
+			if (pStates[ERenderStates.BLENDEQUATIONCOLOR] !== ERenderStateValues.UNDEF ||
+				pStates[ERenderStates.BLENDEQUATIONALPHA] !== ERenderStateValues.UNDEF) {
+
+				var iModeRGB: uint = (pStates[ERenderStates.BLENDEQUATIONCOLOR] !== ERenderStateValues.UNDEF) ?
+					this.convertRenderStateValue(pStates[ERenderStates.BLENDEQUATIONCOLOR]) : this._pCurrentContextStates.blend_equation_rgb;
+				var iModeAlpha: uint = (pStates[ERenderStates.BLENDEQUATIONALPHA] !== ERenderStateValues.UNDEF) ?
+					this.convertRenderStateValue(pStates[ERenderStates.BLENDEQUATIONALPHA]) : this._pCurrentContextStates.blend_equation_alpha;
+
+				if (this._pCurrentContextStates.blend_equation_rgb !== iModeRGB ||
+					this._pCurrentContextStates.blend_equation_alpha !== iModeAlpha) {
+
+					!isStatesChanged && this._pushRenderStates();
+					isStatesChanged = true;
+
+					this._pCurrentContextStates.blend_equation_rgb = iModeRGB;
+					this._pCurrentContextStates.blend_equation_alpha = iModeAlpha;
+
+					this._pWebGLContext.blendEquationSeparate(iModeRGB, iModeAlpha);
+				}
 			}
 
 			return isStatesChanged;
@@ -1564,6 +1604,12 @@ module akra.webgl {
 					return gl.GEQUAL;
 				case ERenderStateValues.ALWAYS:
 					return gl.ALWAYS;
+				case ERenderStateValues.FUNCADD:
+					return gl.FUNC_ADD;
+				case ERenderStateValues.FUNCSUBTRACT:
+					return gl.FUNC_SUBTRACT;
+				case ERenderStateValues.FUNCREVERSESUBTRACT:
+					return gl.FUNC_REVERSE_SUBTRACT;
 			}
 		}
 

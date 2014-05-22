@@ -1,5 +1,7 @@
 provide akra.system;
 
+include "common.afx";
+
 struct pos_tex{
     float3 pos:POSITION;
 //    float3 norm: NORMAL;
@@ -76,27 +78,9 @@ VS_OUT vs_terrain_roam(VS_IN_ROAM IN) {
     return Out;
 }
 
-struct base_material{
-    float4 diffuse:DIFFUSE;
-    float4 ambient:AMBIENT;
-    float4 emissive:EMISSIVE;
-    float4 specular:SPECULAR;
-    float shininess:SHININESS;
-};;
+UniformMaterial defaultMaterial:MATERIAL;
+shared PixelData pixelData;
 
-shared base_material Fragment_material;
-shared float3 Normal;
-
-struct Material {
-    float4 ambient:AMBIENT;
-    float4 diffuse:DIFFUSE;
-    float4 specular:SPECULAR;
-    float4 emissive:EMISSIVE;
-    float shininess:SHININESS;
-};
-
-
-Material defaultMaterial:MATERIAL;
 
 sampler ptNormal:S_NORMAL_MAP = sampler_state
 {
@@ -107,11 +91,11 @@ sampler ptNormal:S_NORMAL_MAP = sampler_state
 
 bool isDebug, isRealNormal, isWithBalckSectors, showTriangles;
 
-foreign int nTotalLevels;
+foreign int NUM_TOTAL_LEVELS;
 
-sampler textureTerrain[nTotalLevels]: S_TERRAIN;
-float2 textureCoordOffset[nTotalLevels]: TEXTURE_LEVEL_OFFSET;
-bool testureLoadStatus[nTotalLevels]: TEXTURE_LOAD_STATUS;
+sampler textureTerrain[NUM_TOTAL_LEVELS]: S_TERRAIN;
+float2 textureCoordOffset[NUM_TOTAL_LEVELS]: TEXTURE_LEVEL_OFFSET;
+bool testureLoadStatus[NUM_TOTAL_LEVELS]: TEXTURE_LOAD_STATUS;
 
 int minTextureLevel: MIN_MEGATEXTURE_LEVEL;
 
@@ -128,9 +112,9 @@ void fs_terrain(VS_OUT IN){
     bool isMainColored = (mainColor.xyz != float3(0.));
     bool isNeedColored = true;
 
-    float texcoordMultiplier = exp2(float(nTotalLevels + minTextureLevel - 1));
-    //int i = nTotalLevels - 1;
-    for(int i = nTotalLevels - 1; i>0; i--){
+    float texcoordMultiplier = exp2(float(NUM_TOTAL_LEVELS + minTextureLevel - 1));
+    //int i = NUM_TOTAL_LEVELS - 1;
+    for(int i = NUM_TOTAL_LEVELS - 1; i>0; i--){
         if(isNeedColored){
             new_texcoord = (IN.texcoord-textureCoordOffset[i]) * texcoordMultiplier;
 
@@ -197,18 +181,18 @@ void fs_terrain(VS_OUT IN){
 
     normal.xy = normal.xy * 2. - 1.;
     normal = (view_mat * model_mat * float4(normal, 0.)).xyz;//float4(normalize(normal), 0.)).xyz);
-    Normal = normalize(normal);
+    pixelData.normal = normalize(normal);
 
-    // Normal = IN.norm;
+    // pixelData.normal = IN.norm;
 
     if(isDebug){
         if(isRealNormal){
-            Fragment_material.emissive = float4(tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb, 0.);
-            Fragment_material.diffuse = float4(0.);
+            pixelData.material.emissive = float4(tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb, 0.);
+            pixelData.material.diffuse = float4(0.);
         }
         else {
-            Fragment_material.emissive = float4((Normal.xyz + 1.)/2., 0.);
-            Fragment_material.diffuse = float4(0.);
+            pixelData.material.emissive = float4((pixelData.normal.xyz + 1.)/2., 0.);
+            pixelData.material.diffuse = float4(0.);
         }
     }
     else {
@@ -222,26 +206,26 @@ void fs_terrain(VS_OUT IN){
 
             /*if(any(lessThan(IN.edgeTest, float3(0.02))))
             {
-                Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
+                pixelData.material.emissive = float4(0.5, 0.5, 0.5, 1.);
             }
             else {
-                Fragment_material.emissive = defaultMaterial.emissive;
+                pixelData.material.emissive = defaultMaterial.emissive;
             }*/
-            Fragment_material.emissive = float4(mix(float3(1.0), float3(0.), edgeFactor), 1.);
+            pixelData.material.emissive = float4(mix(float3(1.0), float3(0.), edgeFactor), 1.);
         }
         else
         {
-            Fragment_material.emissive = defaultMaterial.emissive; 
+            pixelData.material.emissive = defaultMaterial.emissive; 
         }
         
-        Fragment_material.diffuse = color;
+        pixelData.material.diffuse = color;
     }
     
-    //Fragment_material.ambient = defaultMaterial.ambient;
+    //pixelData.material.ambient = defaultMaterial.ambient;
 
-    Fragment_material.ambient = float4(0.);
-    //Fragment_material.shininess = defaultMaterial.shininess;
-    //Fragment_material.specular = defaultMaterial.specular;
+    pixelData.material.ambient = float4(0.);
+    //pixelData.material.shininess = defaultMaterial.shininess;
+    //pixelData.material.specular = defaultMaterial.specular;
 }
 
 technique terrain{

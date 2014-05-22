@@ -1,43 +1,31 @@
 provide akra.system;
 
-float PI = 3.14159265359;
+include "common.afx";
+include "brdf.afx";
 
-struct base_material{
-    float4 diffuse:DIFFUSE;
-    float4 ambient:AMBIENT;
-    float4 emissive:EMISSIVE;
-    float4 specular:SPECULAR;
-    float shininess:SHININESS;
-};
+shared PixelData pixelData;
 
-struct pixel_data{
-    float4 diffuse  : DIFFUSE;
-    float4 ambient  : AMBIENT;
-    float4 specular : SPECULAR;
-    float3 position : POSITION; //in camera space
-    float3 normal   : NORMAL;
-    float shininess : SHININESS;
-    float  depth    : DEPTH;
-    int    id       : RENDER_OBJECT_ID;
-};
-
-shared float3 Normal;
-shared base_material Fragment_material;
-shared pixel_data pixelData;
-
-texture tex0:LPP_LIGHT_BUFFER_A;
-texture tex1:LPP_LIGHT_BUFFER_B;
+texture tex0 : LPP_LIGHT_BUFFER_A;
+texture tex1 : LPP_LIGHT_BUFFER_B;
+texture tex2 : LPP_NORMAL_BUFFER_TEXTURE;
 
 sampler sampler_lpp_dif_spec:LPP_LIGHT_SAMPLER_A  = sampler_state
 {
     Texture = <tex0>;
     MinFilter = NEAREST;
-    MagFilter = NEAREST;
+	MagFilter = NEAREST;
 };
 
 sampler sampler_lpp_amb_shad:LPP_LIGHT_SAMPLER_B  = sampler_state
 {
     Texture = <tex1>;
+    MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+sampler sampler_lpp_normal_buffer : SAMPLER_NORMAL_BUFFER = sampler_state
+{
+    Texture = <tex2>;
     MinFilter = NEAREST;
     MagFilter = NEAREST;
 };
@@ -45,67 +33,68 @@ sampler sampler_lpp_amb_shad:LPP_LIGHT_SAMPLER_B  = sampler_state
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 float2 screenSize: SCREEN_SIZE;
 
-foreign bool isUsedBlinnPhong = false;
-foreign bool isUsedPhong = false;//true;
-foreign bool isUsedPBSSimple = true;//false;
+foreign bool IS_USED_BLINN_PNONG = false;
+foreign bool IS_USED_PNONG = true;
+foreign bool IS_USED_PBS_SIMPLE = false;
+foreign bool IS_USED_PBS_REFLECTIONS = false;
 
-float3 schlick_specular_modifier(float3 SpecularColorMat){
-    return ( saturate( 50.0 * SpecularColorMat.g ) - SpecularColorMat );
-}
-
-float3 Diffuse_Lambert( float3 DiffuseColor )
-{
-    return DiffuseColor / PI;
-}
+const float MAX_SHININESS = 1.;
 
 float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
-    float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
-    float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
-    float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
+	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
+	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
+	float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
 
-    float4 color = Fragment_material.emissive;
+	float4 color = pixelData.material.emissive;
 
-    if(isUsedPBSSimple){
+    if(IS_USED_PBS_SIMPLE){
         //float3 lightDif = lightsDataA.xyz;
         //float k1 = lightsDataA.w;
         //float k1_k2 = lightsDataB.x;
 //
-        //float3 F0 = Fragment_material.specular.xyz;
+        //float3 F0 = pixelData.material.specular.xyz;
         //float3 specular = F0 * k1 + ( float3(1.)-F0 ) * k1_k2;
         //float visibilityFunction = 1.;
 
         //lightDif *= (float3(1.) - specular);
-        //color += Fragment_material.diffuse * float4(lightDif * specular, 1.) * visibilityFunction;
+        //color += pixelData.material.diffuse * float4(lightDif * specular, 1.) * visibilityFunction;
         //color += float4(float3(k1)/10., 1.); 
 
-        float3 SpecularColorMat = Fragment_material.specular.xyz;
+        float3 SpecularColorMat = pixelData.material.specular.xyz;
         float3 SchliSpecMult = schlick_specular_modifier(SpecularColorMat);
         float3 specular = SpecularColorMat * lightsDataA.rgb + 
                             SchliSpecMult * lightsDataA.rgb * lightsDataA.a;
 
-        float3 diffuse = Diffuse_Lambert(Fragment_material.diffuse.rgb) * lightsDataB.rgb;
+        float3 diffuse = Diffuse_Lambert(pixelData.material.diffuse.rgb) * lightsDataB.rgb;
+        //diffuse *= (1. - specular);
 
         color += float4(specular + diffuse, 1.);
-
-        pixelData.position = vert;
-        pixelData.normal = Normal;
-        pixelData.shininess = Fragment_material.shininess;
-        pixelData.specular = Fragment_material.specular;
     }
     else {
-        if(isUsedPhong){
-            color += Fragment_material.ambient * float4(lightsDataB.xyz, 1.);
-        }
-        
-        color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
-        color += Fragment_material.specular * float4(lightsDataA.www, 1.);
+    	if(IS_USED_PNONG){
+    		color += pixelData.material.ambient * float4(lightsDataB.xyz, 1.);
+    	}
+    	
+    	color += pixelData.material.diffuse * float4(lightsDataA.xyz, 1.);
+    	color += pixelData.material.specular * float4(lightsDataA.www, 1.);
     }
-	//return float4((Normal + 1.) / 2., 1.);
-    return float4(color.xyz, 1.);
+
+    if(IS_USED_PBS_REFLECTIONS){
+        float4 normalBufferData = tex2D(sampler_lpp_normal_buffer, texcoords);
+        pixelData.position = vert;
+
+        pixelData.normal = float3(normalBufferData.xy, sqrt(1. - dot(normalBufferData.xy, normalBufferData.xy)));
+
+        if(normalBufferData.z > MAX_SHININESS){
+            pixelData.normal.z *= -1.;
+        }
+    }
+
+	return float4(color.xyz, 1.);
 }
 
 technique apply_lpp_shading{
-    pass p1 {
-        PixelShader = compile fs_apply_lpp_shading();
-    }
+	pass p1 {
+		PixelShader = compile fs_apply_lpp_shading();
+	}
 }

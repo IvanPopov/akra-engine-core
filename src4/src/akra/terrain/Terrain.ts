@@ -559,11 +559,11 @@ module akra.terrain {
 				}
 				else {
 					pPass.setUniform("S_TERRAIN", null);
-					pPass.setForeign("nTotalLevels", 0);
+					pPass.setForeign("NUM_TOTAL_LEVELS", 0);
 				}
 			}
 			else {
-				pPass.setForeign("nTotalLevels", 0);
+				pPass.setForeign("NUM_TOTAL_LEVELS", 0);
 			}
 		}
 

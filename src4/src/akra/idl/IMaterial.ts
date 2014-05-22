@@ -9,7 +9,6 @@ module akra {
 		emissive: IColorValue;
 
 		shininess: float;
-
 		/** 
 		 * Determines whether the object is transparent. 
 		 * @note 1. - opaque, 0. - fully transparent.
@@ -29,7 +28,6 @@ module akra {
 		set(pMat: IMaterialBase): IMaterial;
 
 		isEqual(pMat: IMaterialBase): boolean;
-		isTransparent(): boolean;
 	}
 
 }

@@ -1373,7 +1373,7 @@ module akra.pool.resources {
 				reflective: new Color(0.),
 				reflectivity: 0.0,
 				transparent: new Color(0.),
-				transparency: 0.0,
+				transparency: 1.0,
 
 				indexOfRefraction: 0.0,
 
@@ -1467,6 +1467,9 @@ module akra.pool.resources {
 					}
 					pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
 					break;
+					//debug.assert(pMat.shininess <= 1. && pMat.shininess >= 0., "Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
+					//pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
+					//break;
 			}
 
 			pTech.value = pMat;

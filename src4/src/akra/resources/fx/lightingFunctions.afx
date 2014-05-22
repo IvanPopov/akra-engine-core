@@ -1,4 +1,7 @@
-struct light_data {
+include "common.afx";
+include "brdf.afx";
+
+struct LightData {
 	float4 diffuse     : DIFFUSE;
 	float4 ambient     : AMBIENT;
 	float4 specular    : SPECULAR;
@@ -6,7 +9,7 @@ struct light_data {
 	float3 position    : POSITION; //in camera space
 };
 
-struct sun_light_data {
+struct SunLightData {
 	float3 sunDir: SUN_DIRECTION;
 	float3 eyePos: EYE_POSITION;
 	float3 ground0: GROUNDC0;
@@ -15,57 +18,46 @@ struct sun_light_data {
 	int skyDomeId: SKY_DOME_ID; 
 };
 
-struct pixel_data{
-	float4 diffuse  : DIFFUSE;
-	float4 ambient  : AMBIENT;
-	float4 specular : SPECULAR;
-	float3 position : POSITION; //in camera space
-	float3 normal   : NORMAL;
-	float shininess : SHININESS;
-	float  depth    : DEPTH;
-	int    id       : RENDER_OBJECT_ID;
+struct LightOmni{
+	LightData lightData : LIGHT_DATA;
 };
 
-struct light_omni{
-	light_data lightData : LIGHT_DATA;
-};
-
-struct light_project{
-	light_data lightData   : LIGHT_DATA;
+struct LightProject{
+	LightData lightData   : LIGHT_DATA;
 	float4x4 shadow_matrix : SHADOW_MATRIX;
 };
 
-struct light_omni_shadows{
-	light_data lightData      : LIGHT_DATA;
+struct LightOmniShadows{
+	LightData lightData      : LIGHT_DATA;
 	float4x4 toLightSpace[6] : TO_LIGHT_SPACE;
 	float4x4 optimized_projection_matrix[6] : OPTIMIZED_PROJECTION_MATRIX;
 };
 
-struct light_project_shadows{
-	light_data lightData   : LIGHT_DATA;
+struct LightProjectShadows{
+	LightData lightData   : LIGHT_DATA;
 	float4x4 toLightSpace : TO_LIGHT_SPACE;
 	float4x4 real_projection_matrix : REAL_PROJECTION_MATRIX;
 	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
-struct light_sun{
-	sun_light_data lightData : LIGHT_DATA;
+struct LightSun{
+	SunLightData lightData : LIGHT_DATA;
 };
 
-struct light_sun_shadows{
-	sun_light_data lightData : LIGHT_DATA;
+struct LightSunShadows{
+	SunLightData lightData : LIGHT_DATA;
 	float4x4 toLightSpace : TO_LIGHT_SPACE;
 	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
 
-struct calc_light_Params {
+struct CalculatedLightParams {
 	float3 ambient;
 	float3 diffuse;
 	float3 specular;
 };
 
-struct calc_light_Params_PBS {
+struct CalculatedLightParamsPBS {
 	float3 diffuse;
 	float k1;
 	float k2;
@@ -76,8 +68,9 @@ float calcAttenuation(float light_dir_length, float3 attenuation) {
     return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);
 }
 
+foreign bool SKIP_ALPHA = true;
 float4 returnColor(float4 color) {
-	if(isPrepareAll){
+	if(SKIP_ALPHA){
 		return float4(color.xyz, 1.);
 	}
 	else {
@@ -85,84 +78,86 @@ float4 returnColor(float4 color) {
 	}
 }
 
-foreign bool isForLPPPass0 = false;
-foreign bool isForLPPPass1 = false;
-foreign bool isPrepareAll = true;
-foreign bool isUsedBlinnPhong = false;
-foreign bool isUsedPhong = true;
-foreign bool isUsedPBSSimple = false;
-foreign bool isUsedPBSReflections = false;
+foreign bool IS_FOR_LPP_PASS0 = false;
+foreign bool IS_FOR_LPP_PASS1 = false;
+foreign bool IS_FOR_REAL_SHADING = true;
+foreign bool IS_USED_BLINN_PNONG = false;
+foreign bool IS_USED_PNONG = true;
+foreign bool IS_USED_PBS_SIMPLE = false;
+foreign bool IS_USED_PBS_REFLECTIONS = false;
+foreign bool USE_LINEAR_FOG = false;
+foreign bool USE_EXPONENTIAL_FOG = false;
 
-calc_light_Params prepareBaseLightParams(pixel_data pixelData, light_data lightData) {
-	calc_light_Params lightParams;
+CalculatedLightParams prepareBaseLightParams(PixelData pixelData, LightData lightData) {
+	CalculatedLightParams lightParams;
 
 	float3 light_dir = lightData.position - pixelData.position;
     float attenuation = calcAttenuation(length(light_dir), lightData.attenuation);
 
     light_dir = normalize(light_dir);
 
-    if(isPrepareAll || isForLPPPass0){
+    if(IS_FOR_REAL_SHADING || IS_FOR_LPP_PASS0){
     	float light_distancedotVpow = 0.5;
 
-	    if(pixelData.shininess != 0.){
+	    if(pixelData.material.shininess != 0.){
 	        float3 view_dir = normalize(-pixelData.position);
 	        float3 reflect_dir = normalize(reflect(-light_dir, pixelData.normal));
 
-	        light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess * 128.);
+	        light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.material.shininess * 128.);
 	    }
 
 	    lightParams.diffuse = lightData.diffuse.xyz * max(dot(pixelData.normal, light_dir), .0) * attenuation;
 	    lightParams.specular = lightData.specular.xyz * light_distancedotVpow * attenuation;
     }
 
-    if(isUsedPhong && (isPrepareAll || isForLPPPass1)) {
+    if(IS_USED_PNONG && (IS_FOR_REAL_SHADING || IS_FOR_LPP_PASS1)) {
     	lightParams.ambient = lightData.ambient.xyz * attenuation;
     }
 
     return lightParams;
 }
 
-calc_light_Params prepareBaseLightParamsSun(pixel_data pixelData, float3 light_dir, float4 diffuse, float4 ambient, float4 specular){
-	calc_light_Params lightParams;
+CalculatedLightParams prepareBaseLightParamsSun(PixelData pixelData, float3 light_dir, float4 diffuse, float4 ambient, float4 specular){
+	CalculatedLightParams lightParams;
 	
-	if(isPrepareAll || isForLPPPass0){
+	if(IS_FOR_REAL_SHADING || IS_FOR_LPP_PASS0){
 		light_dir = normalize(light_dir);
 		float3 fixNormal = lerp(light_dir, pixelData.normal, kFixNormal);
 		float light_distancedotVpow = 0.;
 
-		if(pixelData.shininess != 0. && specular.xyz != float3(0.)){
+		if(pixelData.material.shininess != 0. && specular.xyz != float3(0.)){
 			float3 view_dir = normalize(-pixelData.position);
 			float3 reflect_dir = normalize(reflect(-light_dir, fixNormal));
 
-			light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.shininess * 128.);
+			light_distancedotVpow = pow(max(0., min(1., dot(reflect_dir, view_dir))), pixelData.material.shininess * 128.);
 		}
 
 		lightParams.diffuse = diffuse.xyz * max(dot(fixNormal, light_dir), .0);
 		lightParams.specular = specular.xyz * light_distancedotVpow;
 	}
 
-	if(isUsedPhong && (isPrepareAll || isForLPPPass1)) {
+	if(IS_USED_PNONG && (IS_FOR_REAL_SHADING || IS_FOR_LPP_PASS1)) {
     	lightParams.ambient = ambient.xyz;
     }
 	
 	return lightParams;
 }
 
-float4 applyBaseLightParams(pixel_data pixelData, light_data lightData){
-	if(isUsedPBSSimple){
+float4 applyBaseLightParams(PixelData pixelData, LightData lightData){
+	if(IS_USED_PBS_SIMPLE){
 		return applyPBSLightParams(pixelData, lightData.position, lightData.diffuse.xyz, lightData.attenuation);
 	}
 
 	float4 color = float4(0.);
-	calc_light_Params lightParams = prepareBaseLightParams(pixelData, lightData);
+	CalculatedLightParams lightParams = prepareBaseLightParams(pixelData, lightData);
 
-	if(isPrepareAll){
-		color = pixelData.ambient * float4(lightParams.ambient, 1.0) + pixelData.diffuse * float4(lightParams.diffuse, 1.0) + pixelData.specular * float4(lightParams.specular, 1.0);
+	if(IS_FOR_REAL_SHADING){
+		color = pixelData.material.ambient * float4(lightParams.ambient, 0.0) + pixelData.material.diffuse * float4(lightParams.diffuse, 0.0) + pixelData.material.specular * float4(lightParams.specular, 0.0);
 	}
-	else if(isForLPPPass0) {
+	else if(IS_FOR_LPP_PASS0) {
 		color = float4(lightParams.diffuse, lightParams.specular.x);
 	}
-	else if(isForLPPPass1) {
+	else if(IS_FOR_LPP_PASS1) {
 		color = float4(lightParams.ambient, 0.);
 	}
 
@@ -176,9 +171,9 @@ float3 camPos: CAMERA_POSITION;
 float4x4 invView: INV_VIEW_CAMERA_MAT;
 float4x4 view: VIEW_MATRIX;
 
-float4 applyBaseLightParamsSun(pixel_data pixelData, sun_light_data lightData, float3 worldPos) {
+float4 applyBaseLightParamsSun(PixelData pixelData, SunLightData lightData, float3 worldPos) {
 /*	
-	if(isUsedPBSSimple){
+	if(IS_USED_PBS_SIMPLE){
 		return applyPBSLightParams(pixelData, lightData.position, lightData.diffuse.xyz, lightData.attenuation);
 	}
 */
@@ -196,15 +191,15 @@ float4 applyBaseLightParamsSun(pixel_data pixelData, sun_light_data lightData, f
 	lightDiffuse.rgb = HDR(lightDiffuse.rgb);
 	float fFogValue = ComputeVolumetricFog(worldPos - camPos);
 	
-	calc_light_Params lightParams = prepareBaseLightParamsSun(pixelData, float4(view * float4(lightData.sunDir, 0.)).xyz, lightDiffuse, float4(fSunAmbient), float4(fSunSpecular));
+	CalculatedLightParams lightParams = prepareBaseLightParamsSun(pixelData, float4(view * float4(lightData.sunDir, 0.)).xyz, lightDiffuse, float4(fSunAmbient), float4(fSunSpecular));
 
-	if(isPrepareAll){
-		color = pixelData.ambient * float4(lightParams.ambient, 1.0) + pixelData.diffuse * float4(lightParams.diffuse, 1.0) + pixelData.specular * float4(lightParams.specular, 1.0);
+	if(IS_FOR_REAL_SHADING){
+		color = pixelData.material.ambient * float4(lightParams.ambient, 1.0) + pixelData.material.diffuse * float4(lightParams.diffuse, 1.0) + pixelData.material.specular * float4(lightParams.specular, 1.0);
 	}
-	else if(isForLPPPass0) {
+	else if(IS_FOR_LPP_PASS0) {
 		color = float4(lightParams.diffuse, lightParams.specular.x);
 	}
-	else if(isForLPPPass1) {
+	else if(IS_FOR_LPP_PASS1) {
 		color = float4(lightParams.ambient, 0.);
 	}
 
@@ -245,15 +240,6 @@ bool isUnderShadowInfluence(float4x4 toLightSpace, float4x4 projMat, float3 posi
 	
 	return false;
 }
-
-float unprojZ(float4x4 projMat, float screenZ){
-	return -projMat[3][2]/(projMat[2][2] + screenZ);
-};
-
-float unprojOrthoZ(float4x4 projMat, float screenZ){
-	return (screenZ - projMat[3][2])/projMat[2][2];
-	//return -projMat[3][2]/(projMat[2][2] + screenZ);
-};
 
 float fMinShadow : MIN_SHADOW_VALUE = 0.5;
 float shadowConstant : SHADOW_CONSTANT = 5.e+2;
@@ -396,28 +382,6 @@ float calculateSunShadowMultiplierUpgraded(sampler shadowSampler, float2 v2fShad
 };
 
 
-float3 EnvBRDFApprox( float3 SpecularColor, float Roughness, float NoV )
-{
-	// [ Lazarov 2013, "Getting More Physical in Call of Duty: Black Ops II" ]
-	// Adaptation to fit our G term.
-	const float4 c0 = { -1., -0.0275, -0.572, 0.022 };
-	const float4 c1 = { 1., 0.0425, 1.04, -0.04 };
-	float4 r = Roughness * c0 + c1;
-	float a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
-	float2 AB = float2( -1.04, 1.04 ) * a004 + r.zw;
-
-	return SpecularColor * AB.x + AB.y;
-}
-
-float EnvBRDFApproxNonmetal( float Roughness, float NoV )
-{
-	// Same as EnvBRDFApprox( 0.04, Roughness, NoV )
-	const float2 c0 = { -1., -0.0275 };
-	const float2 c1 = { 1., 0.0425 };
-	float2 r = Roughness * c0 + c1;
-	return min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
-}
-
 float4 calulatePBSReflection(float3 position, float3 normal, 
 							 float3 specular, float shininess, 
 							 sampler2D envSampler){
@@ -429,17 +393,15 @@ float4 calulatePBSReflection(float3 position, float3 normal,
 	float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
 	float NoV = saturate(dot(normal_dir, view_dir));
 
-	//float shi = pixelData.specular.x * pixelData.specular.y * pixelData.specular.z;
-	float shi = shininess;
 	float3 fresnelReflectance;
 
 	// Too bright envmap! multiplier
-	float3 envColor = getEnvMapColor(directionInsideCube, shi, envSampler) * 0.5;
+	float3 envColor = getEnvMapColor(directionInsideCube, shininess, envSampler) * 0.5;
 	//if (specular.g < 0.2){
 		//fresnelReflectance = float3(EnvBRDFApproxNonmetal( 1. - shi, NoV ));
 	//}
 	//else {
-		fresnelReflectance = EnvBRDFApprox( specular.xyz, 1. - shi, NoV );
+		fresnelReflectance = EnvBRDFApprox( specular.xyz, 1. - shininess, NoV );//3 add 3 mul 1 pow
 	//}
 
 	float4 reflection = float4(fresnelReflectance * envColor, 1.);
@@ -461,10 +423,6 @@ float4 calulatePBSReflection(float3 position, float3 normal,
 };
 
 
-float dot_saturate (float3 a, float3 b) {
-	return clamp(dot(a,b),0.,1.);
-}
-
 float PBS_gloss : PBS_GLOSS = 0.; // temporarily used as transparency (how dirty is object from inside)
 float3 PBS_F0 : PBS_F0 = float3(0.); // temporarily used as reverse (1. - ) spectral transparency
 //float3 PBS_Diffuse : PBS_DIFFUSE = float3(0.);
@@ -477,43 +435,43 @@ float3 FresnelSchlickWithRoughness(float3 SpecularColor, float NoV, float Gloss)
 	// Other possible function (used by Treyarch, Black Ops 2, Dimitar Lazarov):
 	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
     return SpecularColor + (float3(1.) - SpecularColor) * pow(1. - NoV, 5.) / (4. - 3. * Gloss);
-}
+}// 4 add 3 mul 1 rcp 1 pow
 
 // Functions for getting pixel position from cubemap formatted as follows:
 // zone3	nextlvl	zone4	zone5
 // zone1	zone2	zone6	nextlvl
 float2 getZone1z(float2 uv, int lod) {
-	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
+	uv.x = .5 + (uv.x * 0.5 - 1.)  * exp2( -float(lod)-1.);
+	uv.y = (1.0 + uv.y)*exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone2x(float2 uv, int lod) {
-	uv.x = .5 - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
+	uv.x = .5 + (uv.x - 1.) * exp2( -float(lod)-2.);
+	uv.y = (1. + uv.y) * exp2(-float(lod)-1.);
 	return uv;
 }
 
 float2 getZone3y(float2 uv, int lod) {
-	uv.x = .5 - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = uv.y*exp2(-float(lod)-1.);
+	uv.x = .5 + (uv.x * 0.5 - 1.)  * exp2( -float(lod)-1.);
+	uv.y = uv.y * exp2(-float(lod)-1.);
 	return uv;
 }
 float2 getZone4z(float2 uv, int lod) {
-	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
+	uv.x = 1. + (uv.x*0.5 - 1.) * exp2(-float(lod)-1.);
+	uv.y = 1. + (uv.y*0.5 - 1.) * exp2(-float(lod));
 	return uv;
 }
 
 float2 getZone5x(float2 uv, int lod) {
-	uv.x = 1. - exp2( -float(lod)-2.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = 1. - exp2( -float(lod)) + uv.y*exp2(-float(lod)-1.);
+	uv.x = 1. + (uv.x - 1.) * exp2(-float(lod)-2.);
+	uv.y = 1. + (uv.y*0.5 - 1.) * exp2(-float(lod));
 	return uv;
 }
 
 float2 getZone6y(float2 uv, int lod) {
-	uv.x = 1. - exp2( -float(lod)-1.) + uv.x*exp2(-float(lod)-2.);
-	uv.y = 1. - exp2( -float(lod)-1.) + uv.y*exp2(-float(lod)-1.);
+	uv.x = 1. + (uv.x*0.5 - 1.) * exp2(-float(lod)-1.);
+	uv.y = 1. + (uv.y - 1.) * exp2(-float(lod)-1.);
 	return uv;
 }
 
@@ -606,284 +564,28 @@ float3 getEnvMapColor(float3 R, float Gloss, sampler2D envSampler)
     return Envcolor;
 }
 
-
-float3 func_Shlick(float3 F0, float3 lightDir, float3 normal) {
-	// F0 = Fresnel reflectance at 0° (reflectance at normal incidence)
-	return F0 + ( float3(1.)-F0 ) * pow((1.-(dot_saturate(lightDir,normal))), 5.);
-}
-
-float fixFloatPresision(float value){
-	//if(abs(value) < 0.01){
-	//	return sign(value) * 0.01;
-	//}
-
-	return value;
-}
-
-float GFunc(float3 l, float3 v, float3 n, float k){
-	//float divisor = fixFloatPresision(4. * dot_saturate(n, l) * dot_saturate(n, v));
-	//return G1Func(l, n, k) * G1Func(v, n, k) / divisor;
-
-	//return G1Func(l, n, k);// * G1Func(v, n, k) ;
-	//return 0.25 / (G1Func(l, n, k) * G1Func(v, n, k));
-	return 1. / (G1Func(l, n, k) * G1Func(v, n, k));
-}
-
-float G1Func(float3 v, float3 n, float k){
-	//return dot_saturate(n, v) / fixFloatPresision(dot_saturate(n, v) * (1. - k) + k);
-	float NoV = dot_saturate(n, v);
-	return NoV + sqrt( NoV * (NoV - NoV * k) + k );
-}
-
-
-float PI = 3.14159265359;
-float3 Squaref3( float3 x )
-{
-	return x*x;
-}
-//************************* DIFFUSE MODEL *********************************** */
-float3 Diffuse_Lambert( float3 DiffuseColor )
-{
-	return DiffuseColor / PI;
-}
-
-// [Burley 2012, "Physically-Based Shading at Disney"]
-float3 Diffuse_Burley( float3 DiffuseColor, float Roughness, float NoV,
-					   float NoL, float VoH )
-{
-	float FD90 = 0.5 + 2. * VoH * VoH * Roughness;
-	float FdV = 1. + (FD90 - 1.) * exp2((-5.55473 * NoV - 6.98316) * NoV );
-	float FdL = 1. + (FD90 - 1.) * exp2((-5.55473 * NoL - 6.98316) * NoL );
-	return DiffuseColor / PI * FdV * FdL;
-}
-
-// [Gotanda 2012, "Beyond a Simple Physically Based Blinn-Phong Model in Real-Time"]
-float3 Diffuse_OrenNayar( float3 DiffuseColor, float Roughness, float NoV,
-						  float NoL, float VoH )
-{
-	float VoL = 2. * VoH - 1.;
-	float m = Roughness * Roughness;
-	float m2 = m * m;
-	float C1 = 1. - 0.5 * m2 / (m2 + 0.33);
-	float Cosri = VoL - NoV * NoL;
-	float C2 = 0.45 * m2 / (m2 + 0.09) * Cosri * (
-		Cosri >= 0. ? min( 1., NoL / NoV ) : NoL );
-	return DiffuseColor / PI * ( NoL * C1 + C2 );
-}
-
-float3 Diffuse_Func( float3 DiffuseColor, float Roughness, float NoV,
-					float NoL, float VoH )
-{
-	// Diffuse model
-	// 0: Lambert -- default
-	// 1: Burley
-	// 2: Oren-Nayar
-	int PHYSICAL_DIFFUSE = 0;
-
-	if (PHYSICAL_DIFFUSE == 0){
-		return Diffuse_Lambert( DiffuseColor );
-	}
-	else if (PHYSICAL_DIFFUSE == 1){
-		return Diffuse_Burley( DiffuseColor, Roughness, NoV, NoL, VoH );
-	}
-	else if (PHYSICAL_DIFFUSE == 2){
-		return Diffuse_OrenNayar( DiffuseColor, Roughness, NoV, NoL, VoH );
-	}
-}
-
-//************************* D FUNCTIONS ************************************* */
-// [Blinn 1977, "Models of light reflection for computer synthesized pictures"]
-float D_Blinn( float Roughness, float NoH )
-{
-	float m = Roughness * Roughness;
-	float m2 = m * m;
-	float n = 2. / m2 - 2.;
-	return (n+2.) / 2. * pow( saturate(NoH), n ); // 1 mad, 1 exp, 1 mul, 1 log
-}
-
-// [Beckmann 1963, "The scattering of electromagnetic waves from rough surfaces"]
-float D_Beckmann( float Roughness, float NoH )
-{
-	float m = Roughness * Roughness;
-	float m2 = m * m;
-	float NoH2 = NoH * NoH;
-	return exp( (NoH2 - 1.) / (m2 * NoH2) ) / ( m2 * NoH2 * NoH2 );
-}
-
-// GGX / Trowbridge-Reitz
-// [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
-float D_GGX( float Roughness, float NoH )
-{
-	float m = Roughness * Roughness;
-	float m2 = m * m;
-	float d = ( NoH * m2 - NoH ) * NoH + 1.;	// 2 mad
-	return m2 / max( d*d, 0.00001 );					// 2 mul, 1 rcp
-}
-
-float D_Func( float Roughness, float NoH )
-{
-	// Microfacet distribution function
-	// 0: Blinn
-	// 1: Beckmann
-	// 2: GGX -- default
-	int PHYSICAL_SPEC_D = 2;
-
-	if (PHYSICAL_SPEC_D == 0){
-		return D_Blinn( Roughness, NoH );
-	}
-	else if (PHYSICAL_SPEC_D == 1){
-		return D_Beckmann( Roughness, NoH );
-	}
-	else if (PHYSICAL_SPEC_D == 2){
-		return D_GGX( Roughness, NoH );
-	}
-}
-
-
-//************************* GEOMETRIC FUNCTIONS ***************************** */
-float G_Implicit()
-{
-	return 0.25;
-}
-
-// [Neumann et al. 1999, "Compact metallic reflectance models"]
-float G_Neumann( float NoV, float NoL )
-{
-	return 1. / ( 4. * max( NoL, NoV ) );
-}
-
-// [Kelemen 2001, "A microfacet based coupled specular-matte brdf model with importance sampling"]
-float G_Kelemen( float3 L, float3 V )
-{
-	return 1. / ( 2. + 2. * dot(L, V) );
-}
-
-// Tuned to match behavior of G_Smith
-// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
-float G_Schlick( float Roughness, float NoV, float NoL )
-{
-	float k = Roughness * Roughness * 0.5;
-	float G_SchlickV = NoV * (1. - k) + k;
-	float G_SchlickL = NoL * (1. - k) + k;
-	return 0.25 / ( G_SchlickV * G_SchlickL);
-}
-
-// Smith term for GGX modified by Disney to be less "hot" for small roughness values
-// [Smith 1967, "Geometrical shadowing of a random rough surface"]
-// [Burley 2012, "Physically-Based Shading at Disney"]
-float G_Smith( float Roughness, float NoV, float NoL )
-{
-	float a = Roughness * Roughness;
-	float a2 = a*a;
-
-	float G_SmithV = NoV + sqrt( NoV * (NoV - NoV * a2) + a2 );
-	float G_SmithL = NoL + sqrt( NoL * (NoL - NoL * a2) + a2 );
-	return 1. / ( G_SmithV * G_SmithL );
-}
-
-float GeometricVisibility( float Roughness, float NoV, float NoL,
-						   float3 L, float3 V )
-{
-	// Geometric attenuation or shadowing
-	// 0: Implicit
-	// 1: Neumann
-	// 2: Kelemen
-	// 3: Schlick -- default
-	// 4: Smith (matched to GGX)
-	int PHYSICAL_SPEC_G = 3;
-
-	if (PHYSICAL_SPEC_G == 0){
-		return G_Implicit();
-	}
-	else if (PHYSICAL_SPEC_G == 1){
-		return G_Neumann( NoV, NoL );
-	}
-	else if (PHYSICAL_SPEC_G == 2){
-		return G_Kelemen( L, V );
-	}
-	else if (PHYSICAL_SPEC_G == 3){
-		return G_Schlick( Roughness, NoV, NoL );
-	}
-	else if (PHYSICAL_SPEC_G == 4){
-		return G_Smith( Roughness, NoV, NoL );
-	}
-}
-
-//*********************** Fresnel ******************************************* */
-float3 F_None( float3 SpecularColor )
-{
-	return SpecularColor;
-}
-
-// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
-// [Lagarde 2012, "Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel"]
-float3 F_Schlick( float3 SpecularColor, float VoH )
-{
-	// Anything less than 2% is physically impossible and is instead considered to be shadowing 
-	return SpecularColor + ( saturate( 50.0 * SpecularColor.g ) - SpecularColor )
-							* exp2( (-5.55473 * VoH - 6.98316) * VoH );
-
-	//float Fc = exp2( (-5.55473 * VoH - 6.98316) * VoH );	// 1 mad, 1 mul, 1 exp
-	//return Fc + (1 - Fc) * SpecularColor;					// 1 add, 3 mad
-}
-
-float3 F_Fresnel( float3 SpecularColor, float VoH )
-{
-	float3 SpecularColorSqrt = sqrt( clamp( SpecularColor, 0., 0.99) );
-	float3 n = ( 1. + SpecularColorSqrt ) / ( 1. - SpecularColorSqrt );
-	float3 g = sqrt( n*n + VoH*VoH - 1. );
-	return 0.5 * Squaref3( (g - VoH) / (g + VoH) )
-			   * ( 1. + Squaref3( ((g+VoH)*VoH - 1.) / ((g-VoH)*VoH + 1.) ) );
-}
-
-float3 Fresnel( float3 SpecularColor, float VoH )
-{
-	// Fresnel
-	// 0: None
-	// 1: Schlick -- default
-	// 2: Fresnel
-	int PHYSICAL_SPEC_F = 1;
-
-	if (PHYSICAL_SPEC_F == 0){
-		return F_None( SpecularColor );
-	}
-	else if (PHYSICAL_SPEC_F == 1){
-		return F_Schlick( SpecularColor, VoH );
-	}
-	else if (PHYSICAL_SPEC_F == 2){
-		return F_Fresnel( SpecularColor, VoH );
-	}
-}
-
-//******** for LPP **** */
-float LPP_F_Schlick_Exp(float VoH)
-{
-	return exp2( (-5.55473 * VoH - 6.98316) * VoH );
-}
-
-float4 applyPBSLightParams(pixel_data pixelData, 
+int nLights: NUM_LIGHTS_WITH_PBS = 0;
+// @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
+float4 applyPBSLightParams(PixelData pixelData, 
 						   float3 lightPosition, 
 						   float3 lightDiffOrig, 
 						   float3 lightAttenuation) {
 	float4 color = float4(0.);
-
-	// Physically based shading model
-	// parameterized with the below options
 	
 	// ESSENTIAL CONSTANTS DEF
 	float3 light_dir = normalize(lightPosition - pixelData.position);
 	float3 view_dir = normalize(-pixelData.position);
 	float3 normal_dir = normalize(pixelData.normal);
 	float3 half_vector = normalize(view_dir + light_dir);
-	
+
 	float NoL = saturate(dot(normal_dir, light_dir));
 	float NoH = saturate(dot(normal_dir, half_vector));
 	float NoV = saturate(dot(normal_dir, view_dir));
 	float VoH = saturate(dot(view_dir, half_vector));
 
-	float Roughness = 1. - pixelData.shininess;
-	float3 DiffuseColor = pixelData.diffuse.xyz;
-	float3 SpecularColor = pixelData.specular.xyz;
+	float Roughness = 1. - pixelData.material.shininess;
+	float3 DiffuseColor = pixelData.material.diffuse.xyz;
+	float3 SpecularColor = pixelData.material.specular.xyz;
 
 	// ATTENUATION
 	// multiplicator for better visibility REMOVED(bill-phong is much more shiny)
@@ -897,103 +599,41 @@ float4 applyPBSLightParams(pixel_data pixelData,
 	float Energy = 1.;
 	// additional conservation needed for prolonged light sources
 
-	if (isForLPPPass0){
+	if (IS_FOR_LPP_PASS0){
 		float D = D_Func( Roughness, NoH );
 		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir );
-		float3 xi = D * Geom * NoL * ShadowedAttenuation * lightDiffOrig;
-		float schlickE = LPP_F_Schlick_Exp(VoH);
+		float3 xi = Energy * D * Geom * NoL * ShadowedAttenuation * lightDiffOrig;
+		//Fix only for lpp. Approximate correct sum of params
+		float schlickE = LPP_F_Schlick_Exp(VoH)/float(nLights);
+
+		// if (dot(light_dir, normal_dir) <= -0.0){	//tambourine
+		// 	return float4(0., 1., 0., 0.);
+		// }
+
 		return float4(xi, schlickE);
 	}
 
-	if (isForLPPPass1){
+	if (IS_FOR_LPP_PASS1){
 		float3 xi = ShadowedAttenuation * NoL * lightDiffOrig;
 		return float4(xi, 0.);
 	}
 
+	if (IS_FOR_REAL_SHADING) {
+		float D = D_Func( Roughness, NoH ); //6 mul 1 rcp
+		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir ); //7 mul 1 rcp
+		float3 Fres = Fresnel( SpecularColor, VoH );	//3 mul 1 exp
+		float3 SpecularLighting = Energy * Fres * D * Geom; //3 mul
 
-	if (isPrepareAll) {
-		float D = D_Func( Roughness, NoH );
-		float Geom = GeometricVisibility( Roughness, NoV, NoL, light_dir, view_dir );
-		float3 Fres = Fresnel( SpecularColor, VoH );
-		float3 SpecularLighting = Energy * Fres * D * Geom;
-
-		float3 DiffuseLighting = Diffuse_Func( DiffuseColor, Roughness, NoV, NoL, VoH );
+		float3 DiffuseLighting = Diffuse_Func( DiffuseColor, Roughness, NoV, NoL, VoH ); // 1 rcp 1 mul
 		//DiffuseLighting *= (1. - SpecularLighting);
 
 
 		color = float4( (SpecularLighting + DiffuseLighting)
-						* lightDiffOrig * ShadowedAttenuation * NoL, 1. );
+						* lightDiffOrig * ShadowedAttenuation * NoL, 1. ); // 3 mul
 		//color = float4( float3(D/10.), 1. );
+
 		return color;
-	}
-
-
-
-//	// SPECULAR POWER (theoretical: (0., +infinity))
-//	// @c http://seblagarde.wordpress.com/2011/08/17/hello-world/
-//	float alpha_p = 2. * pow(1024., pixelData.shininess);
-//	// Other possible value (used by Treyarch, Black Ops 2, Dimitar Lazarov):
-//	// @c http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-//	float alpha_p = pow(8192., pixelData.shininess);
-//
-//	float3 view_dir = normalize(-pixelData.position);
-//	if(isForLPPPass0 || isForLPPPass1){
-//		view_dir = normalize(-pixelData.position);
-//	}
-//	float3 halfVector = normalize(view_dir + light_dir);
-//
-//	float HoN = dot_saturate(halfVector, pixelData.normal);
-//
-//	float3 computedLightDiff;
-//	float k1;
-//	float k2;
-//
-//	//(k1)*F0 + ( float3(1.)-F0 ) * (k1) * (k2);
-//
-//	if(isPrepareAll || isForLPPPass0){
-//		//Prepare light diffuse and k1
-//		// Blinn-Phong BRDF
-//		//computedLightDiff = lightDiffOrig * NoL;//* (alpha_p + 2.) / 2. / 3.14159265359;// pow(NoL, alpha_p);
-//		//computedLightDiff = lightDiffOrig * (alpha_p + 2.) / 2. / 3.14159265359 * pow(NoL, alpha_p);
-//		// GGX (Trowbridge and Reitz) BRDF
-//		float roughness = (1. - pixelData.shininess);
-//		float alpha_sq = pow(roughness, 4.);
-//		float HoN_sq = pow(HoN, 2.);
-//		float divisor = fixFloatPresision(3.1415926 * pow(HoN_sq * (alpha_sq - 1.) + 1., 2.));
-//		computedLightDiff = lightDiffOrig * alpha_sq / divisor;
-//
-//
-//		computedLightDiff = computedLightDiff.xyz * attenuation;
-//		//k1 = (alpha_p+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
-//		float k =  pow(roughness, 4.); //* 0.5;
-//
-//		//k1 = (pow(pixelData.shininess, 2.)+2.)/8. * pow(HoN, alpha_p ) * NoL * attenuation;
-//		k1 = GFunc(light_dir, view_dir, pixelData.normal, k);
-//
-//		color = float4(computedLightDiff, k1);
-//	}
-//
-//	if(isPrepareAll || isForLPPPass1){
-//		//k2 = pow((1.-(dot_saturate(light_dir, halfVector))), 5.);
-//		k2 = pow(2., (-5.55473 * dot_saturate(view_dir, pixelData.normal) - 6.98316 ) * dot_saturate(view_dir, pixelData.normal));
-//		color = float4(k1*k2, 0., 0., 0.);
-//	}
-//
-//	if(isPrepareAll){
-//		float3 lightSpec = lerp(pixelData.specular.xyz, float3(1.), k2) * k1;
-//		//computedLightDiff *= (float3(1.) - lightSpec);
-//
-//		// // Cook-Torrance Kelemen approximation of visibility term (geometry included)
-//		//float visibilityFunction = pow(HoN, 2.);
-//		// Implicit visibility term
-//		float visibilityFunction = 1.;
-//
-//		//color = pixelData.diffuse * float4(computedLightDiff + lightSpec, 1.) * visibilityFunction;
-//		//color = /*pixelData.diffuse * */float4(lightSpec/8., 1.) * visibilityFunction;
-//		//color = float4(lightSpec, 1.);
-//		color = pixelData.diffuse * float4(computedLightDiff * lightSpec/1., 1.) * visibilityFunction;
-//		color.a = 1.;
-//	}
+	}	//23 mul 3 rcp 1 exp
 
 	return color;	
 }

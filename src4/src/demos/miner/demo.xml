@@ -31,6 +31,7 @@
         <Folder Path="textures" />
         <ResourceFile Path="miner.map"/>
         <ResourceFile Path="grid.jpg" Name="GRID_JPG"/>
+        <ResourceFile Path="../cubeWithTexture.DAE" Name="CUBE.DAE"/>
       </Data>
     </Resource>
   </PropertyGroup>

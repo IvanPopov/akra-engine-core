@@ -35,6 +35,10 @@ module akra.fx.instructions {
 			this._eInstructionType = EAFXInstructionTypes.k_ComplexTypeInstruction;
 		}
 
+		toString(): string {
+			return this._getName() || this._getHash();
+		}
+
 		_toDeclString(): string {
 			var sCode: string = "struct " + this._sRealName + "{";
 

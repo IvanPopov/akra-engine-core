@@ -392,7 +392,7 @@ module akra {
 			var pModel: IObj = <IObj>pRmgr.getObjPool().createResource("modified_artery");
 			(<any>pModel).setOptions({ shadows: false });
 			(<any>pModel).uploadVertexes(pPositions, pIndexes);
-			var pNode: ISceneNode = pModel.attachToScene(pScene);
+			var pNode: ISceneNode = (<any>pModel).attachToScene(pScene);
 		}
 
 		io.fopen("data/coords/coord_real_ag.txt", "r").read((err, data) => {
@@ -408,6 +408,7 @@ module akra {
 			var sName: string = path.parse(sPath).getFileName();
 			var pRealArtery: IObj = <IObj>pRmgr.loadModel(sPath);
 			var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
+
 			pRealArteryObj.setLocalMatrix(Mat4.temp(
 					[1, 0, 0, 0],
 					[0, 0, 1, 0],

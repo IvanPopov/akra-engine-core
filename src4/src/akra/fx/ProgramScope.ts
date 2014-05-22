@@ -188,6 +188,7 @@ module akra.fx {
 
 								continue;
 							}
+
 							if (pArgumentTypes.length > pTestedArguments.length ||
 								pArgumentTypes.length < pTestedFunction._getNumNeededArguments()) {
 								continue;

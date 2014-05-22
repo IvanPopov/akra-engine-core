@@ -1,5 +1,7 @@
 provide akra.custom;
 
+include "common.afx";
+
 texture depthTex: ARTERIES_DEPTH;
 
 sampler sampler_depth = sampler_state
@@ -9,13 +11,7 @@ sampler sampler_depth = sampler_state
 	MagFilter = NEAREST;
 };
 
-struct base_material 
-{
-    float4 emissive:EMISSIVE;
-    float4 diffuse:DIFFUSE;
-};
-
-shared base_material Fragment_material;
+shared PixelData pixelData;
 
 struct VS_OUT 
 {
@@ -35,7 +31,7 @@ void fs_arteries(VS_OUT IN): COLOR
 
 	depth /= 10.;
 
-	Fragment_material.emissive = float4(float3(depth), 1.);
+	pixelData.material.emissive = float4(float3(depth), 1.);
 }
 
 technique arteries
@@ -63,13 +59,13 @@ void fs_highlight_mri_slice(float4 pos: POSITION, float3 vertex: VERTEX): COLOR 
 	float4 v = invView * float4(vertex, 1.);
 	float l = length(v.xyz - projectPointToPlane(sliceNormal, spliceD, v.xyz));
 	if (l < .025) {
-		Fragment_material.emissive = float4(1., 0., 0., 1.);
+		pixelData.material.emissive = float4(1., 0., 0., 1.);
 		if (l < .005) {
-			Fragment_material.emissive = float4(1., 1., 0., 1.);
+			pixelData.material.emissive = float4(1., 1., 0., 1.);
 		}
 	}
 	else {
-		Fragment_material.diffuse = float4(abs(float3(v.xyz - worldPos)), 1.);
+		pixelData.material.diffuse = float4(abs(float3(v.xyz - worldPos)), 1.);
 	}
 }
 
@@ -103,9 +99,9 @@ sampler sampler_B = sampler_state
 };
 
 void fs_arteries_slice(float3 tc: TEXCOORD0): COLOR {
-	Fragment_material.emissive = tex2D(sampler_A, tc.xy) * (1. - slice_K) + tex2D(sampler_B, tc.xy) * slice_K;
+	pixelData.material.emissive = tex2D(sampler_A, tc.xy) * (1. - slice_K) + tex2D(sampler_B, tc.xy) * slice_K;
 
-	if (Fragment_material.emissive.r < slice_opacity) {
+	if (pixelData.material.emissive.r < slice_opacity) {
 		discard;
 	}
 }

@@ -556,6 +556,7 @@ module akra.model {
 			this._v2fTex.set(<float> this._nSize, 1.0 / this._nSize);
 
 			pPass.setUniform("WorldViewProjection", MP);
+			pPass.setUniform("WorldView", pModelView);
 			pPass.setUniform("fKrESun", this._fKrESun);
 			pPass.setUniform("fKmESun", this._fKmESun);
 			pPass.setUniform("Tex", this._v2fTex);
