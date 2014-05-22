@@ -72,6 +72,7 @@ module akra {
 	export var pModelTable = null;
 	export var pModels = null;
 	export var pCurrentModel = null;
+	export var pPodiumModel = null;
 
 	function createCamera(): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
@@ -90,7 +91,7 @@ module akra {
 			pReflectionCamera.update();
 
             var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
-            var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.15);
+            var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
             
             pCameraParams.current.rotation.set(newRot);
             pCameraParams.current.orbitRadius = newRad;
@@ -152,16 +153,16 @@ module akra {
 				pCamera.addRelPosition(0, -fSpeed, 0);
             }
         });
-        pViewport.enableSupportFor3DEvent(E3DEventTypes.MOUSEWHEEL);
+        (<render.LPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
         pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
             //console.log("mousewheel moved: ",x,y,fDelta);
-            pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius + fDelta/pViewport.getActualHeight()*2., 2., 15.);
+            pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta/pViewport.getActualHeight()*2., 2., 15.);
         });
 	}
 
 	var pGUI;
 
-	function createViewport(): I3DViewport {
+	function createViewport(): IViewport3D {
 		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -321,12 +322,12 @@ module akra {
 	         (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
         });
 
-        (<I3DViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+        (<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			var pDeferredTexture: ITexture = (<I3DViewport>pViewport).getTextureWithObjectID();
+			var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
 			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
@@ -480,7 +481,7 @@ module akra {
             ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
         pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
         
-		(<I3DViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
     }
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -584,20 +585,20 @@ module akra {
     	console.log("------------- Start preloading models");
     	console.log("------------- + Models table");
 
-		pModelTable = <ISceneNode>loadModel("CUBE.DAE",
-			(model) => {
-				model.explore( function(node) {
-					if(scene.SceneModel.isModel(node)) {
-						node.getMesh().getSubset(0).getMaterial().shininess=0.7;
-						node.getMesh().getSubset(0).getMaterial().specular=plasticColorSpecular;
-						node.getMesh().getSubset(0).getMaterial().diffuse=plasticColorDiffuse;
-						node.getMesh().getSubset(0).getTechnique().render.connect( (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
-							pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
-							pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
-						});
-						}
-					})
-				}, 'cube-01', pScene.getRootNode()).scale(.5,0.05,.5).setPosition(0.,-1.5,0.);
+		pModelTable = addons.trifan(pScene, 2.5, 96);
+		pModelTable.attachToParent( pScene.getRootNode() );
+		pModelTable.setPosition( 0., -1.25, 0. );
+		pModelTable.explore( function(node) {
+				if(scene.SceneModel.isModel(node)) {
+					node.getMesh().getSubset(0).getMaterial().shininess=0.7;
+					node.getMesh().getSubset(0).getMaterial().specular=plasticColorSpecular;
+					node.getMesh().getSubset(0).getMaterial().diffuse=plasticColorDiffuse;
+					node.getMesh().getSubset(0).getTechnique().render.connect( (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
+						pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
+						pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
+					});
+				}
+			});
 
         var pModelsKeys = [
         	'miner',
@@ -647,7 +648,7 @@ module akra {
         };
         pModels = { };
 
-    	pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition( 0., .25, 0. ).addPosition(0.,-1000.,0.);
+    	pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
         pCurrentModel = pModels["miner"];
         pCurrentModel.addPosition(0.,1000.,0.);
 
@@ -656,7 +657,7 @@ module akra {
         (<dat.OptionController>pModelsFolder.add({Model:"miner"}, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
         	pCurrentModel.addPosition(0.,-1000.,0.);
         	if(pModels[sKey] == null) {
-        		pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition( 0., .25, 0. ).addPosition(0.,-1000.,0.);
+        		pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
         		pModelsFiles[sKey].init(pModels[sKey]);
         	}
         	pCurrentModel = pModels[sKey];
@@ -666,16 +667,16 @@ module akra {
         pCurrentModel.attachToParent(pModelTable);
 
 		pMirror.attachToParent(pModelTable);
-		pMirror.setPosition(0.,.25,0.);
-
-
+		pMirror.setPosition(0.,0.,0.);
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
 			if(pViewport === akra.pViewport){
 				var normal = pMirror.getTempVectorUp();
 				var dist = pMirror.getWorldPosition().dot(normal);
 				(<IMirrorViewport>pReflectionViewport).getReflectionPlane().set(normal, dist);
-				pReflectionTexture.getBuffer().getRenderTarget().update();
+				if (pMirror.getTempVectorUp().dot( math.Vec3.temp( pCamera.getWorldPosition() ).subtract( pMirror.getWorldPosition() ) ) > 0.) {
+					pReflectionTexture.getBuffer().getRenderTarget().update();
+				}
 			}
 		});
 
