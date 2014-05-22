@@ -103,6 +103,8 @@ module.exports = function (grunt) {
 		grunt.config("BuiltDir", path.join(grunt.config("BuiltDir"), grunt.config("Configuration")));
 	}
 
+
+	grunt.log.writeln("Version: " + grunt.config.get("Version").full);
 	
 
 	grunt.log.writeln("Configuration: " + grunt.config.get("Configuration"));

@@ -230,7 +230,7 @@ module akra.terrain {
 				return;
 			}
 
-			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
+			var tCurrentTime: uint = time() >>> 0;
 
 			if (tCurrentTime - this._tLastUpdateTime < 30){
 				return;
@@ -516,7 +516,7 @@ module akra.terrain {
 			var me: MegaTexture = this;
 			var sExt: string = "dds";
 
-			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
+			this._pSectorLoadInfo[0][0] = time() >>> 0;
 			this._iTryCount++;
 
 			if(this._iTryCount > 5){
@@ -588,7 +588,7 @@ module akra.terrain {
 			iAreaEndY = math.min(iAreaEndY, this.getHeightOrig(iLevelTex));
 
 			var isLoaded: boolean = true;
-			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
+			var tCurrentTime: uint = time() >>> 0;
 
 			for (var i: uint = iOrigTexY; i < iOrigTexEndY; i += iBlockSize) {
 				for (var j: uint = iOrigTexX; j < iOrigTexEndX; j += iBlockSize) {

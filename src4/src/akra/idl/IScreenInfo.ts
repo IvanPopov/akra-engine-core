@@ -7,6 +7,8 @@ module akra {
 		getAspect(): float;
 		getPixelDepth(): int;
 		getColorDepth(): int;
+		getAvailHeight(): int;
+		getAvailWidth(): int;
 	}
 	
 	

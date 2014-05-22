@@ -130,12 +130,13 @@ module akra.data {
 		/**
 		 * Allocate attribute.
 		 * Attribute - data without index.
+		 * @param bSilent Do not add attribute to buffer map as data.
 		 */
-		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pDecl: any, pData: any, eType: ERenderDataAttributeTypes = ERenderDataAttributeTypes.STATIC): boolean {
+		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pDecl: any, pData: any, eType: ERenderDataAttributeTypes = ERenderDataAttributeTypes.STATIC, bSilent: boolean = false): boolean {
 			var pAttrDecl: IVertexDeclaration = VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
 			var pIndexData = this._pIndexData;
 			var pAttribData: IVertexData = this._pAttribData;
@@ -155,12 +156,16 @@ module akra.data {
 						this._pAttribVideoBuffer = pAttribBuffer;
 					}
 
-					
+
 				}
 
 				this._pAttribData = pAttribBuffer.allocateData(pAttrDecl, pData);
 				this._pIndicesArray[this._iIndexSet].pAttribData = this._pAttribData;
-				this._pMap.flow(this._pAttribData);
+
+				if (!bSilent) {
+					this._pMap.flow(this._pAttribData);
+				}
+
 				return this._pAttribData !== null;
 			}
 
@@ -188,6 +193,10 @@ module akra.data {
 			if (this.useAdvancedIndex()) {
 				return this._allocateAdvancedIndex(pAttrDecl, pData);
 			}
+
+			logger.assert(!this.useSingleIndex() || isNull(pAttrDecl) || pAttrDecl.getLength() === 1,
+				"Index declaration(VertexDeclaration) will be ignored when SINGLE_INDEX mode used for render data");
+
 			return this._allocateIndex(pAttrDecl, pData);
 		}
 
@@ -363,6 +372,8 @@ module akra.data {
 			return this._pIndexData;
 		}
 
+
+		/** Get real index, that will be used in shader program. */
 		getIndexFor(sSemantics: string): ArrayBufferView;
 		getIndexFor(iDataLocation: int): ArrayBufferView;
 		getIndexFor(sSemantics?): ArrayBufferView {
@@ -374,6 +385,29 @@ module akra.data {
 
 			return null;
 		}
+
+
+		getInitialIndexFor(sSemantics: string): ArrayBufferView;
+		getInitialIndexFor(iDataLocation: int): ArrayBufferView;
+		getInitialIndexFor(sSemantics?): ArrayBufferView {
+			var pFlow: IDataFlow = this._getFlow(<string>sSemantics);
+
+			if (!isNull(pFlow.mapper)) {
+				return null;
+			}
+
+			var pIndices: Float32Array = <Float32Array>pFlow.mapper.data.getTypedData(pFlow.mapper.semantics);
+			var pData: Float32Array = <Float32Array>pFlow.data.getTypedData(sSemantics);
+			var iStride: int = pFlow.data.getStride();
+			var iAddition: int = pFlow.data.getByteOffset();
+
+			for (var i: uint = 0; i < pIndices.length; i++) {
+				pIndices[i] = (pIndices[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAddition) / iStride;
+			}
+
+			return pIndices;
+		}
+
 
 		/**
 		 * Get number of primitives for rendering.
@@ -388,6 +422,11 @@ module akra.data {
 
 		/**
 		 * Setup index.
+		 *
+		 * @param sData Data semantics.
+		 * @param useSame All data will be addressed with same(zero by default) index. Default to FALSE. (??)
+		 * @param iBeginWith If @useSame will be setted to TRUE, all data will be addressed with @iBeginWith address. Default to zero.
+		 * @param bForceUsage If FALSE, original indices will be recalculated according to them data memory location. Default to FALSE.
 		 */
 		index(sData: string, sSemantics: string, useSame?: boolean, iBeginWith?: int, bForceUsage?: boolean): boolean;
 		index(iData: int, sSemantics: string, useSame?: boolean, iBeginWith?: int, bForceUsage?: boolean): boolean;
@@ -404,6 +443,10 @@ module akra.data {
 			var iStride: int;
 			var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
+			if (this.useSingleIndex()) {
+				pIndexData = this._pAttribData;
+			}
+		
 			if (this.useAdvancedIndex()) {
 				pRealData = this._getData(<string>arguments[0]);
 				iAddition = pRealData.getByteOffset();
@@ -411,7 +454,7 @@ module akra.data {
 				//индекс, который подал юзер
 				pData = this._getData(sSemantics, true);
 
-				pData.applyModifier(sSemantics, function (pTypedData: Float32Array) {
+				pData.applyModifier(sSemantics, (pTypedData: Float32Array) => {
 					for (var i: int = 0; i < pTypedData.length; i++) {
 						pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
 					}
@@ -421,6 +464,10 @@ module akra.data {
 				sSemantics = "INDEX_" + sSemantics;
 			}
 			else if (isString(arguments[0])) {
+				//if (arguments[0] === "BARYCENTRIC") {
+				//	debugger;
+				//}
+
 				if (arguments[0] === "TEXCOORD") {
 					iData = this.getDataLocation("TEXCOORD0");
 					pFlow = this._getFlow("TEXCOORD0", false);
@@ -433,7 +480,7 @@ module akra.data {
 				debug.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
 			}
 
-			
+
 			if (!pFlow) {
 				pFlow = this._getFlow(iData);
 			}
@@ -450,6 +497,7 @@ module akra.data {
 				logger.assert(this._addData(pData) !== -1, "could not add automatcly add data to map");
 				pFlow = this._getFlow(iData);
 			}
+
 
 			iFlow = pFlow.flow;
 			iIndexOffset = (<IVertexData>pIndexData).getVertexDeclaration().findElement(sSemantics).offset;
@@ -522,15 +570,15 @@ module akra.data {
 				pAdditionCache: <IMap<int>>null
 			});
 
-			debug.assert(this.useSingleIndex() === false, "single indexed data not implimented");
+			//debug.assert(this.useSingleIndex() === false, "single indexed data not implimented");
 
 			return true;
 		}
 
 
-		private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
-		private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int;
-		private _allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
+		_allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
+		_allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int;
+		_allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
 			if (eType === ERenderDataTypes.DIRECT) {
 				return this.allocateAttribute(pDataDecl, pData) ? 0 : -1;
 			}
@@ -636,17 +684,39 @@ module akra.data {
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData: any): boolean {
 			'use strict';
 
-			if (!this._pIndexBuffer) {
-				if (this.useMultiIndex()) {
+
+			if (this.useMultiIndex()) {
+				//MULTIPLE INDEXES
+				if (!this._pIndexBuffer) {
 					this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + guid());
 					this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength), <int>EHardwareBufferFlags.BACKUP_COPY);
 				}
-				else {
-					//TODO: add support for single indexed mesh.
+
+				this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
+			}
+			else {
+				debug.assert(isNull(pAttrDecl) || pAttrDecl.getLength() === 1,
+					"Index declaration(VertexDeclaration) will be ignored when SINGLE_INDEX mode used for render data");
+				logger.assert(pData instanceof Uint16Array || pData instanceof Uint32Array, "Indexes must be packed to Uint[16, 32]Array");
+
+				//SINGLE INDEX
+				if (!this._pIndexBuffer) {
+					this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createIndexBuffer('subset_' + guid());
+					this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength),
+						<int>EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.STATIC);
 				}
+
+				var eDataType: EDataTypes = EDataTypes.UNSIGNED_SHORT;
+
+				if (pData instanceof Uint32Array) {
+					eDataType = EDataTypes.UNSIGNED_INT;
+				}
+
+				this._pIndexData = (<IIndexBuffer>this._pIndexBuffer).allocateData(this._pMap.getPrimType(), eDataType, pData);
+
+				this._pMap.setIndex(<IIndexData>this._pIndexData);
 			}
 
-			this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
 			this.getCurrentIndexSet().pIndexData = this._pIndexData;
 			this.getCurrentIndexSet().pAdditionCache = <IMap<int>>{}
 			return this._pIndexData !== null;
@@ -669,7 +739,7 @@ module akra.data {
 			var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
 			var pBuffer: IRenderDataCollection = this._pBuffer;
 
-			if (config.DEBUG) {
+			if (config.DEBUG && !isNull(pDecl)) {
 				for (var i: int = 0; i < pAttrDecl.getLength(); i++) {
 					if (pAttrDecl.element(i).type !== EDataTypes.FLOAT) {
 						return false;
@@ -680,12 +750,17 @@ module akra.data {
 			if (!this._pIndexData) {
 				return this._createIndex(pAttrDecl, pData);
 			}
+			else {
+				logger.assert(!this.useSingleIndex(), "Multiple indexes not allowed for SINGLE_INDEX'ed render data.");
+			}
 
+			
 			if (!(<IVertexData>this._pIndexData).extend(pAttrDecl, pData)) {
 				logger.log('invalid data for allocation:', arguments);
 				logger.warn('cannot allocate index in data subset..');
 				return false;
 			}
+			
 
 			return true;
 		}

@@ -23,7 +23,7 @@
         <File Path="resources/js/FileSaver/FileSaver.min.js"/>
         <CollapsePath>True</CollapsePath>
         <Format>Enclosure</Format>
-        <OutDir>zip.js</OutDir>
+        <OutDir>js</OutDir>
         <Type>javascript</Type>
       </Attachment>
     </Dependencies>

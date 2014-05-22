@@ -174,10 +174,15 @@ module akra.data {
 			return null;
 		}
 
+		static normalize(): IVertexDeclaration;
 		static normalize(pElement: IVertexElement): IVertexDeclaration;
 		static normalize(pElements: IVertexElementInterface[]): IVertexDeclaration;
 		static normalize(pDecl: IVertexDeclaration): IVertexDeclaration;
 		static normalize(pData?): IVertexDeclaration {
+			if (isNull(pData)) {
+				return null;
+			}
+
 			if (!(pData instanceof VertexDeclaration)) {
 				if (!Array.isArray(pData) && isDefAndNotNull(pData)) {
 					pData = [pData];

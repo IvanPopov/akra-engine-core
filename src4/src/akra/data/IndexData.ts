@@ -80,7 +80,7 @@ module akra.data {
 			return null;
 		}
 
-		getTypedData(iStart: int, iCount: int): ArrayBufferView {
+		getTypedData(iStart: int = 0, iCount: int = this.getLength()): ArrayBufferView {
 			debug.assert((iStart + iCount) <= this._iLength, "out of buffer limits");
 
 			var iTypeSize: uint = sizeof(this._eElementsType);

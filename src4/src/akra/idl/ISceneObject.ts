@@ -1,13 +1,14 @@
 
 /// <reference path="ISceneNode.ts" />
-
+/// <reference path="IControllable.ts" />
+/// <reference path="IClickable.ts" />
 
 /// <reference path="IRect3d.ts" />
 /// <reference path="IRenderableObject.ts" />
 /// <reference path="IViewport.ts" />
 
 module akra {
-	export interface ISceneObject extends ISceneNode {
+	export interface ISceneObject extends ISceneNode, IControllable, IClickable {
 		getTotalRenderable(): uint;
 
 		getWorldBounds(): IRect3d;

@@ -12,8 +12,7 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
-	addons.checkCompatibility();
-	console.log(addons.buildCompatibilityLog());
+	addons.compatibility.verify("non-compatible");
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
@@ -34,7 +33,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
-	export var pViewport: I3DViewport = null;
+	export var pViewport: ILPPViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pScene: IScene3d = pEngine.getScene();
 
@@ -68,8 +67,6 @@ module akra {
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
 
-		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
-		//var pLPPViewport = new render.LPPViewport(pCamera, 0, 0, 0.5, 1., 1);
 		pViewport = new render.LPPViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 
@@ -77,12 +74,11 @@ module akra {
 		//pCanvas.addViewport(pLPPViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
-		pViewport.setFXAA(true);
 		
-		//pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT);
+		pViewport.enableSupportForUserEvent(EUserEvents.CLICK/* | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT*/);
 		pViewport.setClearEveryFrame(true);
 		pViewport.setBackgroundColor(color.BLACK);
-		pViewport.setFXAA(false);
+		pViewport.setAntialiasing(false);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -240,23 +236,23 @@ module akra {
 				pMinerBody = <model.MeshSubset>pMinerMesh.getSubset(0);
 
 				//////////////////////////
-				//var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
+				var pSubset = <model.MeshSubset>pMinerMesh.getSubset(0);
 
-				//for (var i = 0; i < pSubset.getTotalBones(); ++i) {
-				//	if (!pSubset.getBoneLocalBound(i)) {
-				//		continue;
-				//	}
+				for (var i = 0; i < pSubset.getTotalBones(); ++i) {
+					if (!pSubset.getBoneLocalBound(i)) {
+						continue;
+					}
 
-				//	var pBox = pSubset.getBoneLocalBound(i);
-				//	var pBone = pSubset.getSkin().getAffectedNode(i);
+					var pBox = pSubset.getBoneLocalBound(i);
+					var pBone = pSubset.getSkin().getAffectedNode(i);
 
-				//	var pCube = addons.lineCube(pScene);
-				//	pCube.attachToParent(pBone);
-				//	pCube.setInheritance(ENodeInheritance.ALL);
-				//	pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
-				//	pCube.setPosition(pBox.midPoint(Vec3.temp()));
-				//	(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
-				//}
+					var pCube = addons.lineCube(pScene);
+					pCube.attachToParent(pBone);
+					pCube.setInheritance(ENodeInheritance.ALL);
+					pCube.setLocalScale(pBox.size(Vec3.temp())).scale(.5);
+					pCube.setPosition(pBox.midPoint(Vec3.temp()));
+					(<IColor>pCube.getMesh().getSubset(0).getMaterial().emissive).set(color.random(true));
+				}
 			}
 
 			return true;

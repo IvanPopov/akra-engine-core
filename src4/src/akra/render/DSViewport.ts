@@ -8,7 +8,7 @@
 /// <reference path="../idl/IShadowCaster.ts" />
 /// <reference path="../idl/IEffect.ts" />
 
-/// <reference path="Viewport.ts" />
+/// <reference path="Viewport3D.ts" />
 /// <reference path="LightingUniforms.ts" />
 /// <reference path="RenderableObject.ts" />
 /// <reference path="Screen.ts" />
@@ -33,7 +33,7 @@ module akra.render {
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
-	export class DSViewport extends Viewport implements IDSViewport {
+	export class DSViewport extends Viewport3D implements IDSViewport {
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
 		addedBackground: ISignal<{ (pViewport: IViewport, pTexture: ITexture): void; }>;
 
@@ -322,43 +322,6 @@ module akra.render {
 		//}
 
 
-
-		getObject(x: uint, y: uint): ISceneObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
-		}
-
-		getRenderable(x: uint, y: uint): IRenderableObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
-		}
-
-		pick(x: uint, y: uint): IRIDPair {
-			if (this._b3DRequirePick) {
-				var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
-				var iRid: int = this._getRenderId(x, y);
-				var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
-				var pRenderable: IRenderableObject = null;
-
-				if (isNull(pObject) || !pObject.isFrozen()) {
-					pRenderable = pComposer._getRenderableByRid(iRid);
-				}
-				else {
-					pObject = null;
-				}
-
-				//save last pick result
-				this._p3DEventPickPrev.renderable = this._p3DEventPickLast.renderable;
-				this._p3DEventPickPrev.object = this._p3DEventPickLast.object;
-
-				//save new pick result
-				this._p3DEventPickLast.renderable = pRenderable;
-				this._p3DEventPickLast.object = pObject;
-
-				this._b3DRequirePick = false;
-			}
-
-			return this._p3DEventPickLast;
-		}
-
 		_getRenderId(x: int, y: int): int {
 			return this._getDeferredTexValue(0, x, y).a;
 		}
@@ -483,6 +446,14 @@ module akra.render {
 
 		isFXAA(): boolean {
 			return this.getEffect().hasComponent("akra.system.fxaa");
+		}
+
+		isAntialiased(): boolean {
+			return this.isFXAA();
+		}
+
+		setAntialiasing(bEnabled: boolean = true): void {
+			this.setFXAA(bEnabled);
 		}
 
 

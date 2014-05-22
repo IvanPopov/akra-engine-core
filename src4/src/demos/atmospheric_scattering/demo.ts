@@ -1,6 +1,7 @@
 /// <reference path="../../../built/Lib/akra.d.ts"/>
 /// <reference path="../../../built/Lib/progress.addon.d.ts"/>
 /// <reference path="../../../built/Lib/base3dObjects.addon.d.ts"/>
+/// <reference path="../../../built/Lib/compatibility.addon.d.ts"/>
 
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
 
@@ -8,6 +9,8 @@ declare var AE_RESOURCES: akra.IDep;
 
 
 module akra {
+	addons.compatibility.verify("non-compatible");
+
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
@@ -75,7 +78,7 @@ module akra {
 	}
 
 	function createViewports(): void {
-		pViewport = pCanvas.addViewport(new render.DSViewport(pCamera));
+		pViewport = pCanvas.addViewport(new render.LPPViewport(pCamera));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -162,17 +165,16 @@ module akra {
 			pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
 		}
 	}
+	export var pCylinder: ISceneModel = null;
 
 	function createSceneEnvironment(pRoot: ISceneNode = pScene.getRootNode()): void {
-		var pSceneQuad: ISceneModel = addons.createQuad(pScene, 600.);
-		pSceneQuad.attachToParent(pRoot);
-
-
-		// var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
-		// pSceneSurface.scale(10.);
-		// pSceneSurface.addPosition(0, 0.01, 0);
-		// pSceneSurface.attachToParent(pScene.getRootNode());
-		// pSceneSurface.mesh.getSubset(0).setVisible(true);
+		addons.createQuad(pScene, 600.).attachToParent(pRoot);
+		//pCylinder = addons.cylinder(pScene, 5., 5., 5., 100, 1, true);
+		//pCylinder.setPosition(0, 4., 0);
+		//pCylinder.attachToParent(pRoot);
+		//pCylinder.getScene().beforeUpdate.connect(() => {
+		//	pCylinder.addRotationByXYZAxis(0.002, 0.002, 0.002);
+		//});
 	}
 
 	// var T = 0.0;
@@ -198,6 +200,8 @@ module akra {
 		"_fMieScaleDepth",
 	];
 
+	export var pLight: IOmniLight = null;
+
 	function main(pEngine: IEngine) {
 		setup();
 
@@ -205,7 +209,7 @@ module akra {
 		createViewports();
 
 		createSceneEnvironment();
-		//createModelEntry("CUBE.DAE");
+		//pDragon = createModelEntry("CUBE.DAE");
 		pDragon = createModelEntry("SEYMOURPLANE.DAE");
 		//pDragon.addOrbitRotationByXYZAxis(-math.HALF_PI, 0., 0).update();
 		pDragon.setPosition(0., 1, 0.).scale(.25).update();
@@ -214,6 +218,7 @@ module akra {
 
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
 		pSky.setTime(13);
+		//pSky.sun.setEnabled(false);
 
 
 		pCamera.setRotationByForwardUp(pSky.getSunDirection().negate(Vec3.temp()), Vec3.temp(0, 1., 0));
@@ -238,6 +243,14 @@ module akra {
 		pKeymap.bind("M", () => {
 			pSceneModel.getMesh().getSubset(0).wireframe(false);
 		});
+
+
+		//pLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
+		//pLight.attachToParent(pScene.getRootNode());
+		//pLight.setPosition(0, 10, 0);
+		//pLight.setEnabled(true);
+		//pLight.getParams().diffuse.set(1);
+		//pLight.getParams().attenuation.set(1, 0, 0);
 
 		var pGUI = new dat.GUI(); 
 		pGUI.add(pComposer, "kFixNormal", 0., 1.).step(0.01).name("light transmission");

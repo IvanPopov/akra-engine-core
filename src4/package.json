@@ -1,7 +1,7 @@
 {
   "name": "AkraEngine",
   "branchVersion": "0.4.*",
-  "cdnVersion": "0.4.3",
+  "cdnVersion": "0.4.4",
   "homepage": "http://odserve.org",
   "repository": {
     "type": "git",

@@ -1,6 +1,7 @@
 ﻿/// <reference path="../../../built/Lib/akra.d.ts"/>
 /// <reference path="../../../built/Lib/akra-ui.d.ts"/>
 /// <reference path="../../../built/Lib/progress.addon.d.ts"/>
+/// <reference path="../../../built/Lib/compatibility.addon.d.ts"/>
 
 /// <reference path="../../../built/Lib/akra-ui.d.ts"/>
 
@@ -33,6 +34,8 @@
 declare var AE_GAME_RESOURCES: akra.IDep;
 
 module akra {
+
+	addons.compatibility.verify("non-compatible");
 
 	export interface IGameParameters extends
 	IGameTimeParameters,

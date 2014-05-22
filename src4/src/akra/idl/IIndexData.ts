@@ -12,7 +12,7 @@ module akra {
 		getID(): uint;
 	
 		getData(iOffset: int, iSize: int): ArrayBuffer;
-		getTypedData(iStart: uint, iCount: uint): ArrayBufferView;
+		getTypedData(iStart?: uint, iCount?: uint): ArrayBufferView;
 		
 		setData(pData: ArrayBufferView): boolean;
 		setData(pData: ArrayBufferView, iOffset: int): boolean;

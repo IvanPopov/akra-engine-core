@@ -28,6 +28,8 @@ module akra.render {
 		mouseup: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		mouseover: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		mouseout: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
+		mousewheel: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y, fDelta): void; }>;
+
 		dragstart: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		dragstop: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
 		dragging: ISignal<{ (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x, y): void; }>;
@@ -53,11 +55,14 @@ module akra.render {
 			this.beforeRender = this.beforeRender || new Signal(this);
 
 			this.click = this.click || new Signal(this);
+
 			this.mousemove = this.mousemove || new Signal(this);
 			this.mousedown = this.mousedown || new Signal(this);
 			this.mouseup = this.mouseup || new Signal(this);
 			this.mouseover = this.mouseover || new Signal(this);
 			this.mouseout = this.mouseout || new Signal(this);
+			this.mousewheel = this.mousewheel || new Signal(this);
+
 			this.dragstart = this.dragstart || new Signal(this);
 			this.dragstop = this.dragstop || new Signal(this);
 			this.dragging = this.dragging || new Signal(this);
@@ -260,6 +265,34 @@ module akra.render {
 				return;
 			}
 
+			if (this.getData().useSingleIndex()) {
+				return false;
+				//TODO: calc right positions, for wireframed data.
+				if (!this.getData().hasSemantics("BARYCENTRIC")) {
+					//var ePrimType: EPrimitiveTypes = this.getData().getPrimitiveType();
+
+					//if (ePrimType !== EPrimitiveTypes.TRIANGLELIST/* && ePrimType !== EPrimitiveTypes.TRIANGLESTRIP*/) {
+					//	logger.warn("wireframe supported only for TRIANGLELIST");
+					//	return false;
+					//}
+
+					//var pIndicesU16: Uint16Array = <Uint16Array>(<IIndexData>this.getData().getIndices()).getTypedData();
+					//var pBarycentric: Float32Array = new Float32Array(pIndicesU16.length);
+					//var pIndices: Float32Array = new Float32Array(pIndicesU16.length);
+
+					//if (ePrimType == EPrimitiveTypes.TRIANGLELIST) {
+					//	for (var n = 0; n < pIndicesU16.length; ++n) {
+					//		pIndices[pIndicesU16[n]] = n;
+					//		pBarycentric[n] = pIndicesU16[n] % 3;
+					//	}
+					//}
+
+					//this.getData()._allocateData(<any>[VE.float('BARYCENTRIC')], pBarycentric, ERenderDataTypes.INDEXED);
+					//this.getData().allocateAttribute([VE.float('BARYCENTRIC_INDEX')], pIndices, ERenderDataAttributeTypes.STATIC, true);
+					//this.getData().index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
+				}
+			}
+			else
 			if (this.getData().getDataLocation("BARYCENTRIC") == -1) {
 				var ePrimType: EPrimitiveTypes = this.getData().getPrimitiveType();
 
@@ -268,7 +301,7 @@ module akra.render {
 					return false;
 				}
 
-				var iPosition: int = this.getData().getDataLocation('POSITION');
+				//var iPosition: int = this.getData().getDataLocation('POSITION');
 				var pIndices: Float32Array = <Float32Array>this.getData().getIndexFor("POSITION");
 
 				// var pIndices: Float32Array = <any>this.data._getFlow("POSITION").mapper.data.getTypedData(this.data._getFlow("POSITION").mapper.semantics);

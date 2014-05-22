@@ -32,14 +32,14 @@ sampler sampler_lpp_dif_spec:LPP_LIGHT_SAMPLER_A  = sampler_state
 {
     Texture = <tex0>;
     MinFilter = NEAREST;
-	MagFilter = NEAREST;
+    MagFilter = NEAREST;
 };
 
 sampler sampler_lpp_amb_shad:LPP_LIGHT_SAMPLER_B  = sampler_state
 {
     Texture = <tex1>;
     MinFilter = NEAREST;
-	MagFilter = NEAREST;
+    MagFilter = NEAREST;
 };
 
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
@@ -59,11 +59,11 @@ float3 Diffuse_Lambert( float3 DiffuseColor )
 }
 
 float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
-	float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
-	float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
-	float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
+    float2 texcoords = fragCoord.xy / screenSize * screenTextureRatio;
+    float4 lightsDataA = tex2D(sampler_lpp_dif_spec, texcoords);
+    float4 lightsDataB = tex2D(sampler_lpp_amb_shad, texcoords);
 
-	float4 color = Fragment_material.emissive;
+    float4 color = Fragment_material.emissive;
 
     if(isUsedPBSSimple){
         //float3 lightDif = lightsDataA.xyz;
@@ -93,19 +93,19 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
         pixelData.specular = Fragment_material.specular;
     }
     else {
-    	if(isUsedPhong){
-    		color += Fragment_material.ambient * float4(lightsDataB.xyz, 1.);
-    	}
-    	
-    	color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
-    	color += Fragment_material.specular * float4(lightsDataA.www, 1.);
+        if(isUsedPhong){
+            color += Fragment_material.ambient * float4(lightsDataB.xyz, 1.);
+        }
+        
+        color += Fragment_material.diffuse * float4(lightsDataA.xyz, 1.);
+        color += Fragment_material.specular * float4(lightsDataA.www, 1.);
     }
-
-	return float4(color.xyz, 1.);
+	//return float4((Normal + 1.) / 2., 1.);
+    return float4(color.xyz, 1.);
 }
 
 technique apply_lpp_shading{
-	pass p1 {
-		PixelShader = compile fs_apply_lpp_shading();
-	}
+    pass p1 {
+        PixelShader = compile fs_apply_lpp_shading();
+    }
 }

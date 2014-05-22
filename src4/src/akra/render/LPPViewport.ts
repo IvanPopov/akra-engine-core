@@ -1,5 +1,5 @@
 ﻿/// <reference path="../idl/ILPPViewport.ts" />
-/// <reference path="Viewport.ts" />
+/// <reference path="Viewport3D.ts" />
 /// <reference path="../scene/Scene3d.ts" />
 /// <reference path="LightingUniforms.ts" />
 
@@ -15,7 +15,7 @@ module akra.render {
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
-	export class LPPViewport extends Viewport implements ILPPViewport {
+	export class LPPViewport extends Viewport3D implements ILPPViewport {
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
 
 		/** Buffer with normal, shininess and objectID */
@@ -156,30 +156,6 @@ module akra.render {
 			return isOk;
 		}
 
-		getObject(x: uint, y: uint): ISceneObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
-		}
-
-		getRenderable(x: uint, y: uint): IRenderableObject {
-			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
-		}
-
-		pick(x: uint, y: uint): IRIDPair {
-			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
-			var iRid: int = this._getRenderId(x, y);
-			var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
-			var pRenderable: IRenderableObject = null;
-
-			if (isNull(pObject) || !pObject.isFrozen()) {
-				pRenderable = pComposer._getRenderableByRid(iRid);
-			}
-			else {
-				pObject = null;
-			}
-
-			return { renderable: pRenderable, object: pObject };
-		}
-
 		_getRenderId(x: int, y: int): int {
 			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(),
 				"invalid pixel: {" + x + "(" + this.getActualWidth() + ")" + ", " + y + "(" + this.getActualHeight() + ")" + "}");
@@ -247,6 +223,16 @@ module akra.render {
 
 			pRenderer.executeQueue(false);
 
+			var pRenderViewport: IViewport = this._pResultLPPTexture.getBuffer().getRenderTarget().getViewport(0);
+			var pState: IViewportState = this._getViewportState();
+
+			if ((pState.clearBuffers & EFrameBufferTypes.COLOR) !== 0 && this.getClearEveryFrame()) {
+				pRenderViewport.setBackgroundColor(pState.clearColor);
+			}
+			else {
+				pRenderViewport.setBackgroundColor(color.ZERO);
+			}
+
 			this._pResultLPPTexture.getBuffer().getRenderTarget().update();
 
 			this._pViewScreen.render(this);
@@ -288,6 +274,14 @@ module akra.render {
 
 		isFXAA(): boolean {
 			return this.getEffect().hasComponent("akra.system.fxaa");
+		}
+
+		setAntialiasing(bEnabled: boolean = true): void {
+			this.setFXAA(true);
+		}
+
+		isAntialiased(): boolean {
+			return this.isFXAA();
 		}
 
 		highlight(iRid: int): void;

@@ -48,7 +48,7 @@ module akra.render {
 
 		protected _pFrameStats: IFrameStats;
 
-		protected _pTimer: IUtilTimer;
+		//protected _pTimer: IUtilTimer;
 		protected _fLastSecond: uint;
 		protected _fLastTime: uint;
 		protected _iFrameCount: uint;
@@ -60,13 +60,13 @@ module akra.render {
 
 		protected _pViewportList: IViewport[] = [];
 
-		//3d event handing
-		private _i3DEvents: int = 0;
+		//user event handing
+		private _iUserEvents: int = 0;
 
 		constructor(pRenderer: IRenderer) {
 			this.setupSignals();
 			this._pRenderer = pRenderer;
-			this._pTimer = pRenderer.getEngine().getTimer();
+			//this._pTimer = pRenderer.getEngine().getTimer();
 			this._pFrameStats = {
 				fps: {
 					last: 0.,
@@ -129,27 +129,17 @@ module akra.render {
 			this._sName = sName;
 		}
 
-		enableSupportFor3DEvent(iType: int): int {
-			if (bf.testAny(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
-				iType = bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
-					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
-			}
-
-			//mouse over and mouse out events require mouse move
-			if (bf.testAny(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
-				iType = bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
-			}
-
+		enableSupportForUserEvent(iType: int): int {
 			//get events that have not yet been activated
-			var iNotActivate: int = (this._i3DEvents ^ 0x7fffffff) & iType;
+			var iNotActivate: int = (this._iUserEvents ^ 0x7fffffff) & iType;
 
-			this._i3DEvents = bf.setAll(this._i3DEvents, iNotActivate);
+			this._iUserEvents = bf.setAll(this._iUserEvents, iNotActivate);
 
 			return iNotActivate;
 		}
 
-		is3DEventSupported(eType: E3DEventTypes): boolean {
-			return bf.testAny(this._i3DEvents, <int>eType);
+		isUserEventSupported(eType: EUserEvents): boolean {
+			return bf.testAny(this._iUserEvents, <int>eType);
 		}
 
 		getRenderer(): IRenderer { return this._pRenderer; }
@@ -380,7 +370,7 @@ module akra.render {
 			pStats.time.worst = 0;
 
 			//FIXME: get right time!!!
-			this._fLastTime = this._pTimer.getAppTime();
+			this._fLastTime = this._pRenderer.getEngine().getTime();
 			this._fLastSecond = this._fLastTime;
 			this._iFrameCount = 0;
 		}
@@ -388,7 +378,7 @@ module akra.render {
 		updateStats(): void {
 			this._iFrameCount++;
 
-			var fThisTime: float = this._pTimer.getAppTime();
+			var fThisTime: float = this._pRenderer.getEngine().getTime();
 
 			var fFrameTime: float = fThisTime - this._fLastTime;
 

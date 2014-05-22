@@ -1,0 +1,65 @@
+#progress, #non-compatible {
+  position: absolute; 
+  left: 50%; 
+  top: 50%; 
+  z-index: 2;
+}
+
+#non-compatible {
+  display: none;
+}
+
+#non-compatible div.splashscreen {
+  text-align: center;
+  margin-top: -85px;
+  padding-top: 170px;
+  position: relative;
+  left: -413px;
+  top: -174px;
+  width: 826px;
+  height: 347px;
+  background: url(../img/compatibility.png);
+  background-repeat: no-repeat;
+  color: white;
+}
+
+#non-compatible .h3 {
+  /*margin-top: -27px;*/
+  font-family: Arial;
+  font-weight: 100;
+  font-size: 25px;
+  color: #555;
+  text-shadow: none;
+}
+
+#non-compatible .h3 small {
+  font-size: 17px;
+  color: rgba(85, 85, 85, 0.75);
+  font-weight: bolder;
+}
+
+#non-compatible .h2 {
+  /*margin-top: -20px;*/
+  font-family: Arial;
+  font-size: 30px;
+  font-weight: 100;
+  text-shadow: 0 0 2px rgb(255, 255, 255);
+  color: white;
+}
+
+#non-compatible img {
+  margin-top: -18px;
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+#non-compatible h1 {
+  font-family: Arial; 
+  text-shadow: 0 0 2px white; 
+  font-size: 44px;
+}
+
+#non-compatible a, #non-compatible img {
+  text-decoration: none; 
+  border: 0px;
+}
