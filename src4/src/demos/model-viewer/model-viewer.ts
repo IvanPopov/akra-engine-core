@@ -7,8 +7,11 @@
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
 
 declare var AE_RESOURCES: akra.IDep;
+declare var AE_MODELS: any;
 
 module akra {
+	var modelsPath = AE_MODELS.content;
+
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {
@@ -86,8 +89,8 @@ module akra {
 			pCamera.update();
 			pReflectionCamera.update();
 
-            var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.03));
-            var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+            var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
+            var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.15);
             
             pCameraParams.current.rotation.set(newRot);
             pCameraParams.current.orbitRadius = newRad;
@@ -101,8 +104,6 @@ module akra {
 					
 			var dist = math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition());
 			var up = pMirror.getTempVectorUp();
-			// var right = pMirror.getTempVectorRight();
-			// var forward = pMirror.getTempVectorForward();
 
 			pReflectionCamera.setPosition( math.Vec3.temp(pCamera.getWorldPosition()).add( math.Vec3.temp(up).scale(-2.*(up.dot(dist))) ) );
 			pReflectionCamera.setRotationByForwardUp(
@@ -124,9 +125,6 @@ module akra {
 				if (pKeymap.isMouseMoved()) {
 					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-
-					//pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
-					//pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
 					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
 					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
 
@@ -312,15 +310,7 @@ module akra {
 		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
 		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
 
-		// var pPBSFolder = pGUI.addFolder("pbs");
-		// (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
-		// (<dat.NumberControllerSlider>pPBSFolder.add(pPBSData, '_Gloss')).step(0.01).min(0).max(1).name("gloss");
-		// (<dat.OptionController>pPBSFolder.add({Material:"Plastic"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
-		// 	pPBSData._Material = pMaterialPresets[sKey];
-		// });
-
 		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
-		//var iCounter: int = 0;
 
         var pPBSFolder = pGUI.addFolder("pbs");
         (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
@@ -328,9 +318,6 @@ module akra {
 	        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
 	            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 	        }
-	        // if (pReflectionViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-	            // (<render.LPPViewport>pReflectionViewport).setSkybox(pSkyboxTextures[sKey]);
-	        // }
 	         (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
         });
 
@@ -406,7 +393,6 @@ module akra {
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 
 		pEffect.addComponent("akra.system.blur");
-		// (<render.LPPViewport>pTexViewport.getInternalViewport()).setFXAA(false);
 
 		(<render.LPPViewport>pTexViewport.getInternalViewport()).render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -470,10 +456,6 @@ module akra {
 				}, "test-omni-0-model", pOmniLight).scale(0.15);
 		pOmniLightSphere.setPosition(0.,0.,0.);
 		pOmniLight.setPosition(lightPos2);
-
-		//loadModel(data + "models/cube.DAE", null, 'camera').setPosition(1, 5, 3).scale(0.1);
-
-		//pLight = pOmniLight;
 	}
 
 	function createSky(): void {
@@ -493,19 +475,12 @@ module akra {
             (<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
         }
 
-        // if (pReflectionViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-            // (<render.LPPViewport>pReflectionViewport).setSkybox(pSkyboxTexture);
-        // }
-
         pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
         pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
             ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
         pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
         
-        // pCanvas.addViewport(new render.TextureViewport(pEnvTexture, 10. / pViewport.getActualWidth(), 10. / pViewport.getActualHeight(), pEnvTexture.getWidth() / pViewport.getActualWidth(), pEnvTexture.getHeight() / pViewport.getActualHeight(),10));
-
 		(<I3DViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
-		// (<I3DViewport>pReflectionViewport).setDefaultEnvironmentMap(pEnvTexture);
     }
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -593,59 +568,7 @@ module akra {
 		//createSky();
 		createLighting();
 
-
-		//var pSceneQuad: ISceneModel = addons.createQuad(pScene, 100.);
-		//pSceneQuad.attachToParent(pScene.getRootNode());
-
         createSkyBox();
-
-		//loadModel("WOOD_SOLDIER.DAE", null, 'WoodSoldier-01');
-		//loadModel("ROCK.DAE", null, 'Rock-01').addPosition(-2, 1, -4).addRotationByXYZAxis(0, math.PI, 0);
-		//loadModel("ROCK.DAE", null, 'Rock-02').addPosition(2, 1, -4);
-		//loadModel("ROCK.DAE", null, 'Rock-03').addPosition(2, 5, -4);
-		//loadModel("ROCK.DAE", null, 'Rock-04', pCamera).scale(0.2).setPosition(0.4, -0.2, -2);
-		//var pTorus: ISceneNode = loadModel("TORUSKNOT.DAE", null, 'TorusKnot-01', pScene.getRootNode());
-		//var pRock1: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-01', pScene.getRootNode());
-		//pRock1.setPosition(-3., 0., 10.);
-		//var pRock2: ISceneNode = loadModel("ROCK.DAE", null, 'Rock-02', pScene.getRootNode());
-		//pRock2.setPosition(5., 0., -10.);
-
-		// LIGHT POSITION pOmniLight.addPosition(0, 6, 3);
-		//var room: ISceneNode = loadModel("ROOMWITHROOM.DAE", null, 'Room', pScene.getRootNode());
-		//var cube1: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-01', pScene.getRootNode()).scale(0.3).addRelPosition( 2., .3, 4. );
-		//var cube2: ISceneNode = <ISceneNode>loadModel("CUBE.DAE", null, 'Cube-02', pScene.getRootNode()).scale(0.3).addRelPosition(5., 0.3, 3.);
-		
-		// LIGHT SOURCES MARKS: (crazy water)
-	// loadModel("SPHERE.DAE", 
-		//     (model)=>{
-		//         model.explore( function(node) {
-		//             if(akra.scene.SceneModel.isModel(node)) {
-		//                 node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-		//                 node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
-		//                 node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
-		//                 }
-		//             });
-		//         }, 'sphere-light-00', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos1 );
-		// loadModel("SPHERE.DAE", 
-		//     (model)=>{
-		//         model.explore( function(node) {
-		//             if(akra.scene.SceneModel.isModel(node)) {
-		//                 node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-		//                 node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
-		//                 node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
-		//                 }
-		//             });
-		//         }, 'sphere-light-01', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos2 );
-		// loadModel("SPHERE.DAE", 
-		//     (model)=>{
-		//         model.explore( function(node) {
-		//             if(akra.scene.SceneModel.isModel(node)) {
-		//                 node.getMesh().getSubset(0).getMaterial().shininess=0.50;
-		//                 node.getMesh().getSubset(0).getMaterial().specular=new Color(0.02, 0.02, 0.02, 1.0);
-		//                 node.getMesh().getSubset(0).getMaterial().diffuse=new Color(1.15, 1.15, 1.15, 1.0);
-		//                 }
-		//             });
-		//         }, 'sphere-light-02', pScene.getRootNode()).scale(0.5).addRelPosition( lightPos3 );
 
 		// PLASTIC PARAMS:
 		var plasticColorSpecular: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
@@ -690,35 +613,35 @@ module akra {
         ];
         var pModelsFiles = {
         	miner: {
-        		path: "data/models/miner/miner.DAE",
+        		path: modelsPath+"/miner/miner.DAE",
         		init: function(model) { },
         	},
         	character: {
-        		path: "data/models/character/character.DAE",
+        		path: modelsPath+"/character/character.DAE",
         		init: function(model) { model.scale(1.5); },
         	},
         	teapot: {
-        		path: "data/models/teapot.DAE",
+        		path: modelsPath+"/teapot.DAE",
         		init: function(model) { },
         	},
         	donut: {
-        		path: "data/models/Donut.DAE",
+        		path: modelsPath+"/Donut.DAE",
         		init: function(model) { },
         	},
         	sphere: {
-        		path: "data/models/Sphere.dae",
+        		path: modelsPath+"/Sphere.dae",
         		init: function(model) { },
         	},
         	rock: {
-        		path: "data/models/rock/rock-1-low-p.DAE",
+        		path: modelsPath+"/rock/rock-1-low-p.DAE",
         		init: function(model) { model.addPosition(0,0.8,0); },
         	},
         	windspot: {
-        		path: "data/models/windspot/WINDSPOT.DAE",
+        		path: modelsPath+"/windspot/WINDSPOT.DAE",
         		init: function(model) { },
         	},
         	can: {
-        		path: "data/models/can/can.DAE",
+        		path: modelsPath+"/can/can.DAE",
         		init: function(model) { model.addPosition(0,0.3,0); },
         	},
         };
@@ -726,13 +649,11 @@ module akra {
 
     	pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition( 0., .25, 0. ).addPosition(0.,-1000.,0.);
         pCurrentModel = pModels["miner"];
-    	// pCurrentModel.attachToParent(pScene.getRootNode());
         pCurrentModel.addPosition(0.,1000.,0.);
 
         var pModelsFolder = pGUI.addFolder("models");
 
         (<dat.OptionController>pModelsFolder.add({Model:"miner"}, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
-        	// pCurrentModel.detachFromParent();
         	pCurrentModel.addPosition(0.,-1000.,0.);
         	if(pModels[sKey] == null) {
         		pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition( 0., .25, 0. ).addPosition(0.,-1000.,0.);
@@ -740,8 +661,6 @@ module akra {
         	}
         	pCurrentModel = pModels[sKey];
         	pCurrentModel.addPosition(0.,1000.,0.);
-        	// pCurrentModel.attachToParent(pScene.getRootNode());
-            // console.log("Unwrapping cubemap: ", (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]));
         });
 
         pCurrentModel.attachToParent(pModelTable);
@@ -762,8 +681,6 @@ module akra {
 
 		pProgress.destroy();
 		pEngine.exec();
-
-		//animateTimeOfDay();
 	}
 
 	pEngine.depsLoaded.connect(main);
