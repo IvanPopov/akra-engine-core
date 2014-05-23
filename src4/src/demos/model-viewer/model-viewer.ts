@@ -17,7 +17,8 @@ module akra {
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
 		preserveDrawingBuffer: true,
-		antialias: true
+		antialias: true,
+		depth: true
 	};
 
 	var pOptions: IEngineOptions = {
@@ -93,28 +94,28 @@ module akra {
 
 			var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
 			var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
-			
+
 			pCameraParams.current.rotation.set(newRot);
 			pCameraParams.current.orbitRadius = newRad;
 			pCamera.setPosition(
-				newRad*-math.sin(newRot.x)*math.cos(newRot.y),
-				newRad*math.sin(newRot.y),
-				newRad*math.cos(newRot.x)*math.cos(newRot.y));
-			pCamera.lookAt(math.Vec3.temp(0,0,0));
+				newRad * -math.sin(newRot.x) * math.cos(newRot.y),
+				newRad * math.sin(newRot.y),
+				newRad * math.cos(newRot.x) * math.cos(newRot.y));
+			pCamera.lookAt(math.Vec3.temp(0, 0, 0));
 
 			pCamera.update();
-					
+
 			var dist = math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition());
 			var up = pMirror.getTempVectorUp();
 
-			pReflectionCamera.setPosition( math.Vec3.temp(pCamera.getWorldPosition()).add( math.Vec3.temp(up).scale(-2.*(up.dot(dist))) ) );
+			pReflectionCamera.setPosition(math.Vec3.temp(pCamera.getWorldPosition()).add(math.Vec3.temp(up).scale(-2. * (up.dot(dist)))));
 			pReflectionCamera.setRotationByForwardUp(
-				pCamera.getTempVectorForward().add( math.Vec3.temp(up).scale(-2.*up.dot(pCamera.getTempVectorForward())) ),
-				pCamera.getTempVectorUp().add( math.Vec3.temp(up).scale(-2.*up.dot(pCamera.getTempVectorUp())) ) );
+				pCamera.getTempVectorForward().add(math.Vec3.temp(up).scale(-2. * up.dot(pCamera.getTempVectorForward()))),
+				pCamera.getTempVectorUp().add(math.Vec3.temp(up).scale(-2. * up.dot(pCamera.getTempVectorUp()))));
 			pReflectionCamera.setAspect(pCamera.getAspect());
 
 			pReflectionCamera.update();
-			});
+		});
 	}
 
 	function createKeymap(pCamera: ICamera): void {
@@ -157,14 +158,14 @@ module akra {
 		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
-			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta/pViewport.getActualHeight()*2., 2., 15.);
+			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
 		});
 	}
 
 	var pGUI;
 
 	function createViewport(): IViewport3D {
-		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IViewport3D = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -192,11 +193,11 @@ module akra {
 			'church',
 			'basilica',
 		];
-		pSkyboxTextures = { };
-		for(var i=0; i<pSkyboxTexturesKeys.length; i++) {
+		pSkyboxTextures = {};
+		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			// console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
-			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-"+pSkyboxTexturesKeys[i]);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_"+pSkyboxTexturesKeys[i].toUpperCase());
+			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
 			// console.log("Done!");
 		};
 
@@ -316,11 +317,11 @@ module akra {
 
 		var pPBSFolder = pGUI.addFolder("pbs");
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
-		(<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
 				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			}
-			 (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
+			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
@@ -328,36 +329,36 @@ module akra {
 		//pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 		//	iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			//var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
-			//var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
-			//var pPass: IRenderPass = pTechnique.getPass(iPass);
+		//var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
+		//var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
+		//var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			//pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
-			//pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
-			//pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
-			//pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
-			//pPass.setUniform('LENSFLARE_LIGHT_POSITION', pLensflareData.LENSFLARE_LIGHT_POSITION);
-			//pPass.setUniform('LENSFLARE_LIGHT_ANGLE', pLensflareData.LENSFLARE_LIGHT_ANGLE);
-			//pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
-			//pPass.setUniform('LENSFLARE_DECAY', pLensflareData.LENSFLARE_DECAY);
-			//pPass.setUniform('LENSFLARE_SKYDOME_ID', 0.);
-			//pPass.setUniform('LENSFLARE_ABERRATION_SCALE', pLensflareData.LENSFLARE_ABERRATION_SCALE);
-			//pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
-			//pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
+		//pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
+		//pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
+		//pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
+		//pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
+		//pPass.setUniform('LENSFLARE_LIGHT_POSITION', pLensflareData.LENSFLARE_LIGHT_POSITION);
+		//pPass.setUniform('LENSFLARE_LIGHT_ANGLE', pLensflareData.LENSFLARE_LIGHT_ANGLE);
+		//pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
+		//pPass.setUniform('LENSFLARE_DECAY', pLensflareData.LENSFLARE_DECAY);
+		//pPass.setUniform('LENSFLARE_SKYDOME_ID', 0.);
+		//pPass.setUniform('LENSFLARE_ABERRATION_SCALE', pLensflareData.LENSFLARE_ABERRATION_SCALE);
+		//pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
+		//pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
-			//pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
+		//pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
 
-			//pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
-			//pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
-			//pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
-			//pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
+		//pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
+		//pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
+		//pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
+		//pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
 
-			//pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+		//pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
 
-			//pPass.setUniform("INPUT_TEXTURE_RATIO",
-			//	math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
-			//pPass.setUniform("SCREEN_ASPECT_RATIO",
-			//	math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
+		//pPass.setUniform("INPUT_TEXTURE_RATIO",
+		//	math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
+		//pPass.setUniform("SCREEN_ASPECT_RATIO",
+		//	math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
 
 
 		//});
@@ -365,7 +366,7 @@ module akra {
 	}
 
 	function createMirror(): INode {
-		var pNode:INode = pScene.createNode().setPosition(0.,-1.5,0.);
+		var pNode: INode = pScene.createNode().setPosition(0., -1.5, 0.);
 		pNode.setInheritance(ENodeInheritance.ROTPOSITION);
 		pReflectionCamera = createMirrorCamera(pNode);
 		pReflectionViewport = createMirrorViewport(pNode);
@@ -400,7 +401,7 @@ module akra {
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			pPass.setUniform("BLUR_RADIUS", 5.0);
-			});
+		});
 
 		return pTexViewport;
 	}
@@ -473,7 +474,7 @@ module akra {
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
-		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
 			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		}
 
@@ -481,7 +482,7 @@ module akra {
 		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
-		
+
 		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 	}
 
@@ -490,7 +491,7 @@ module akra {
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
 
 		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
-		if(pRoot != null) {
+		if (pRoot != null) {
 			pModelRoot.attachToParent(pRoot);
 		}
 		pModelRoot.setInheritance(ENodeInheritance.ROTPOSITION);
@@ -539,7 +540,8 @@ module akra {
 			"max-height: 40px;" +
 			"max-width: 120px;" +
 			"color: green;" +
-			"margin: 5px;");
+			"margin: 5px;" +
+			"font-family: Arial;");
 
 		return pStatsDiv;
 	}
@@ -587,95 +589,95 @@ module akra {
 		console.log("------------- + Models table");
 
 		pModelTable = addons.trifan(pScene, 2.5, 96);
-		pModelTable.attachToParent( pScene.getRootNode() );
-		pModelTable.setPosition( 0., -1.25, 0. );
-		pModelTable.explore( function(node) {
-				if(scene.SceneModel.isModel(node)) {
-					node.getMesh().getSubset(0).getMaterial().shininess=0.7;
-					node.getMesh().getSubset(0).getMaterial().specular=plasticColorSpecular;
-					node.getMesh().getSubset(0).getMaterial().diffuse=plasticColorDiffuse;
-					node.getMesh().getSubset(0).getTechnique().render.connect( (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
-						pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
-						pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
-					});
-				}
-			});
+		pModelTable.attachToParent(pScene.getRootNode());
+		pModelTable.setPosition(0., -1.25, 0.);
 
-		var pModelsKeys = [
-			'miner',
-			'character',
-			'teapot',
-			'donut',
-			'sphere',
-			'rock',
-			'windspot',
-			'can',
-			// 'box',
-			// 'barrel',
-		];
+		var pModelTableSubset = pModelTable.getMesh().getSubset(0);
+
+		pModelTableSubset.getMaterial().shininess = 0.7;
+		pModelTableSubset.getMaterial().specular = plasticColorSpecular;
+		pModelTableSubset.getMaterial().diffuse = plasticColorDiffuse;
+		pModelTableSubset.getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
+			pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
+			pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
+		});
+
+		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, .35, 96, 1.);
+		pCylinder.attachToParent(pScene.getRootNode());
+		pCylinder.setPosition(0., -1.25 - 0.35 / 2, 0.);
+		var pCylinderSubset = pCylinder.getMesh().getSubset(0);
+		pCylinderSubset.getMaterial().shininess = 0.7;
+		pCylinderSubset.getMaterial().specular = plasticColorSpecular;
+		pCylinderSubset.getMaterial().diffuse = plasticColorDiffuse;
+
 		var pModelsFiles = {
+			mercedes: {
+				path: modelsPath + "/../../../mercedes/models/mercedes.DAE",
+				init: () => { }
+			},
 			miner: {
-				path: modelsPath+"/miner/miner.DAE",
-				init: function(model) { },
+				path: modelsPath + "/miner/miner.DAE",
+				init: function (model) { },
 			},
 			character: {
-				path: modelsPath+"/character/character.DAE",
-				init: function(model) { model.scale(1.5); },
+				path: modelsPath + "/character/character.DAE",
+				init: function (model) { model.scale(1.5); },
 			},
 			teapot: {
-				path: modelsPath+"/teapot.DAE",
-				init: function(model) { },
+				path: modelsPath + "/teapot.DAE",
+				init: function (model) { },
 			},
 			donut: {
-				path: modelsPath+"/Donut.DAE",
-				init: function(model) { },
+				path: modelsPath + "/Donut.DAE",
+				init: function (model) { },
 			},
 			sphere: {
-				path: modelsPath+"/Sphere.dae",
-				init: function(model) { },
+				path: modelsPath + "/Sphere.dae",
+				init: function (model) { },
 			},
 			rock: {
-				path: modelsPath+"/rock/rock-1-low-p.DAE",
-				init: function(model) { model.addPosition(0,0.8,0); },
+				path: modelsPath + "/rock/rock-1-low-p.DAE",
+				init: function (model) { model.addPosition(0, 0.8, 0); },
 			},
 			windspot: {
-				path: modelsPath+"/windspot/WINDSPOT.DAE",
-				init: function(model) { },
+				path: modelsPath + "/windspot/WINDSPOT.DAE",
+				init: function (model) { },
 			},
 			can: {
-				path: modelsPath+"/can/can.DAE",
-				init: function(model) { model.addPosition(0,0.3,0); },
+				path: modelsPath + "/can/can.DAE",
+				init: function (model) { model.addPosition(0, 0.3, 0); },
 			},
 		};
-		pModels = { };
+		
+		pModels = {};
 
-		pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
+		pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
 		pCurrentModel = pModels["miner"];
-		pCurrentModel.addPosition(0.,1000.,0.);
+		pCurrentModel.addPosition(0., 1000., 0.);
 
 		var pModelsFolder = pGUI.addFolder("models");
 
-		(<dat.OptionController>pModelsFolder.add({Model:"miner"}, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
-			pCurrentModel.addPosition(0.,-1000.,0.);
-			if(pModels[sKey] == null) {
-				pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
+		(<dat.OptionController>pModelsFolder.add({ Model: "miner" }, 'Model', Object.keys(pModelsFiles))).name("Model").onChange((sKey) => {
+			pCurrentModel.addPosition(0., -1000., 0.);
+			if (pModels[sKey] == null) {
+				pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
 				pModelsFiles[sKey].init(pModels[sKey]);
 			}
 			pCurrentModel = pModels[sKey];
-			pCurrentModel.addPosition(0.,1000.,0.);
+			pCurrentModel.addPosition(0., 1000., 0.);
 		});
 
 		pCurrentModel.attachToParent(pModelTable);
 
 		pMirror.attachToParent(pModelTable);
-		pMirror.setPosition(0.,0.,0.);
+		pMirror.setPosition(0., 0., 0.);
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
-			if(pViewport === akra.pViewport){
+			if (pViewport === akra.pViewport) {
 				var normal = pMirror.getTempVectorUp();
 				var dist = pMirror.getWorldPosition().dot(normal);
 				(<IMirrorViewport>pReflectionViewport).getReflectionPlane().set(normal, dist);
-				if (pMirror.getTempVectorUp().dot( math.Vec3.temp( pCamera.getWorldPosition() ).subtract( pMirror.getWorldPosition() ) ) > 0.) {
+				if (pMirror.getTempVectorUp().dot(math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition())) > 0.) {
 					pReflectionTexture.getBuffer().getRenderTarget().update();
 				}
 			}

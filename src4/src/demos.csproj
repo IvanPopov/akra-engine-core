@@ -84,6 +84,20 @@
     <Content Include="demos\light-shafts\data\textures\lensflare_cookies.png" />
     <Content Include="demos\light-shafts\data\textures\lensflare_cookies_new.png" />
     <Content Include="demos\light-shafts\demo.xml" />
+    <Content Include="demos\mercedes\dat.gui\dat.gui.js" />
+    <Content Include="demos\mercedes\demo.xml" />
+    <Content Include="demos\mercedes\grid.jpg" />
+    <Content Include="demos\mercedes\models\images\0_grille1_alpha.png" />
+    <Content Include="demos\mercedes\models\images\1_nodamage_lod0.png" />
+    <Content Include="demos\mercedes\models\images\2_interior_lod0.png" />
+    <Content Include="demos\mercedes\models\images\3_undercarriage.png" />
+    <Content Include="demos\mercedes\models\images\4_carbonfiber.png" />
+    <Content Include="demos\mercedes\models\images\5_sls_interior.png" />
+    <Content Include="demos\mercedes\models\images\6_engine.png" />
+    <Content Include="demos\mercedes\models\images\7_lights_lod0.png" />
+    <Content Include="demos\mercedes\models\images\8_tire%283%29.png" />
+    <Content Include="demos\mercedes\textures\light_icon.png" />
+    <Content Include="demos\mercedes\textures\light_icon1.png" />
     <Content Include="demos\miner\dat.gui\dat.gui.js" />
     <Content Include="demos\miner\demo.xml" />
     <Content Include="demos\miner\grid.jpg" />
@@ -628,6 +642,9 @@
     <Content Include="demos\distance-fog\data\models\teapot.dae" />
     <Content Include="demos\distance-fog\data\models\torusknot.DAE" />
     <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\mercedes\mercedes.map" />
+    <Content Include="demos\mercedes\models\mercedes.DAE" />
+    <Content Include="demos\mercedes\textures\desert-3.dds" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -671,6 +688,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="demos\distance-fog\distance-fog.ts" />
+    <TypeScriptCompile Include="demos\mercedes\mercedes.ts" />
     <TypeScriptCompile Include="demos\miner\miner.ts" />
     <TypeScriptCompile Include="demos\model-viewer\model-viewer.ts" />
   </ItemGroup>
