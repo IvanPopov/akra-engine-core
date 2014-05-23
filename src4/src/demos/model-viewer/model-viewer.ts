@@ -49,11 +49,12 @@ module akra {
 	export var pEnvTexture = null;
 	export var pDepthViewport = null;
 
-	var pState = {
-		animate: true,
-		lightShafts: true,
-		lensFlare: true
-	};
+	var pGUI = null;
+	//var pState = {
+	//	animate: true,
+	//	lightShafts: true,
+	//	lensFlare: true
+	//};
 
 	export var animateTimeOfDay = () => {
 		pSky.setTime(new Date().getTime() % 24000 / 500 - 24);
@@ -122,7 +123,7 @@ module akra {
 		var pKeymap: IKeyMap = control.createKeymap();
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
-
+		
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress()) {
 				if (pKeymap.isMouseMoved()) {
@@ -162,7 +163,28 @@ module akra {
 		});
 	}
 
-	var pGUI;
+	
+	
+
+	function setupMaterialPicking(pViewport: ILPPViewport): void {
+		var pControls = pGUI.addFolder("material");
+		(<any>pControls).open();
+
+		var pMat = { name: "unknown", glossiness:  };
+
+		pControls.add(pMat, "name").listen();;
+
+		pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
+		pViewport.enable3DEvents(false);
+		pViewport.click.connect((pViewport: ILPPViewport, x, y) => {
+			var pResult = pViewport.pick(x, y);
+			pViewport.highlight(pResult);
+
+			if (pResult.renderable) {
+				pMat.name = pResult.renderable.getMaterial().name;
+			}
+		});
+	}
 
 	function createViewport(): IViewport3D {
 		var pViewport: IViewport3D = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
@@ -180,9 +202,12 @@ module akra {
 		//pEffect.addComponent("akra.system.blur");
 		// pEffect.addComponent("akra.system.lensflare");
 
-		pGUI = new dat.GUI();
+		
 
-		pGUI.add(pState, 'animate');
+		pGUI = new dat.GUI();
+		setupMaterialPicking(<ILPPViewport>pViewport);
+
+		//pGUI.add(pState, 'animate');
 
 		var pSkyboxTexturesKeys = [
 			'desert',
@@ -193,7 +218,9 @@ module akra {
 			'church',
 			'basilica',
 		];
+
 		pSkyboxTextures = {};
+
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			// console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
 			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
@@ -319,7 +346,7 @@ module akra {
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-				//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			}
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
@@ -364,6 +391,9 @@ module akra {
 		//});
 		return pViewport;
 	}
+
+	
+
 
 	function createMirror(): INode {
 		var pNode: INode = pScene.createNode().setPosition(0., -1.5, 0.);
@@ -475,7 +505,7 @@ module akra {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
 		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
