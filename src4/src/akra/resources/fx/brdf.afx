@@ -12,28 +12,28 @@ bool bUseFresnelTexture : USE_FRESNEL_TEXTURE;
 // 3: Schlick -- default
 // 4: Smith (matched to GGX)
 //int PhysicalSpecG : PHYSICAL_SPEC_G;
-foreign int PhysicalSpecG;
+foreign int PhysicalSpecG = 3;
 
 // Diffuse model
 // 0: Lambert -- default
 // 1: Burley
 // 2: Oren-Nayar
 //int PhysicalDiffuse : PHYSICAL_DIFFUSE;
-foreign int PhysicalDiffuse;
+foreign int PhysicalDiffuse = 0;
 
 // Microfacet distribution function
 // 0: Blinn
 // 1: Beckmann
 // 2: GGX -- default
 //int PhysicalSpecD : PHYSICAL_SPEC_D;
-foreign int PhysicalSpecD;
+foreign int PhysicalSpecD = 2;
 
 // Fresnel
 // 0: None
 // 1: Schlick -- default
 // 2: Fresnel
 //int PhysicalSpecF : PHYSICAL_SPEC_F;
-foreign int PhysicalSpecF;
+foreign int PhysicalSpecF = 1;
 
 texture fresnelTexture : FRESNEL_TEXTURE;
 sampler2D fresSampler : FRES_SAMPLER = sampler_state

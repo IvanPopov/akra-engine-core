@@ -36,8 +36,10 @@ shared float4 result_color = float4(0.);
 shared PixelData pixelData;
 
 float4 applyMaterialAlpha() : COLOR {
-	result_color.a = pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a;
-	return result_color;
+	float4 color = resultAFXColor;
+	//color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
+	color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
+	return color;
 }
 
 float4 applyLightOmni() : COLOR {
