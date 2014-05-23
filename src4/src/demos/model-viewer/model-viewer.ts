@@ -601,6 +601,7 @@ module akra {
 			});
 
         var pModelsKeys = [
+        	'mercedes',
         	'miner',
         	'character',
         	'teapot',
@@ -609,10 +610,18 @@ module akra {
         	'rock',
         	'windspot',
         	'can',
+        	'kawasaki',
+        	'globalhawk',
+        	'snowspeeder',
+        	'train',
         	// 'box',
         	// 'barrel',
         ];
         var pModelsFiles = {
+        	mercedes: {
+        		path: modelsPath + "/../../../mercedes/models/mercedes.DAE",
+        		init: () => { }
+    		},
         	miner: {
         		path: modelsPath+"/miner/miner.DAE",
         		init: function(model) { },
@@ -644,6 +653,22 @@ module akra {
         	can: {
         		path: modelsPath+"/can/can.DAE",
         		init: function(model) { model.addPosition(0,0.3,0); },
+        	},
+        	kawasaki: {
+        		path: modelsPath+"/kawasaki.DAE",
+        		init: () => {}
+        	},
+        	globalhawk: {
+        		path: modelsPath+"/globalhawk.DAE",
+        		init: () => {}
+        	},
+        	snowspeeder: {
+        		path: modelsPath+"/snowspeeder.DAE",
+        		init: () => {}
+        	},
+        	train: {
+        		path: modelsPath+"/train.DAE",
+        		init: () => {}
         	},
         };
         pModels = { };
