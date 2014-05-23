@@ -1,6 +1,10 @@
 provide akra.system;
 
+include "common.afx";
+
 texture tex0 : INPUT_TEXTURE;
+texture tex1 : DEPTH_TEXTURE;
+float4x4 projMat : PROJ_MATRIX;
 
 sampler screenSampler : INPUT_SAMPLER = sampler_state
 {
@@ -8,6 +12,11 @@ sampler screenSampler : INPUT_SAMPLER = sampler_state
 	MipFilter = LINEAR;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
+};
+
+sampler depthSampler : SAMPLER_SCENE_DEPTH = sampler_state
+{
+	Texture = <tex1>;
 };
 
 struct VS_OUT{
@@ -67,14 +76,34 @@ float fxaaLuma(float3 rgb)
 	// return rgb.g;
 }
 
+float4 fxaaTexture(float2 textureCoords)
+{
+	return tex2D(screenSampler, textureCoords);
+}
+
 float4 fxaaTextureOffset( float N, float W, float2 textureCoords, float2 invScreenSize)
 {
-	return tex2D(screenSampler, textureCoords + (float2( -W, -N) * invScreenSize));
+	return fxaaTexture(textureCoords + (float2(-W, -N) * invScreenSize));
 }
 
 float fxaaLumaTex(float2 textureCoords, float2 invScreenSize)
 {
 	return fxaaLuma(tex2D(screenSampler, textureCoords).xyz);
+}
+
+float fxaaDepthTexture(float2 textureCoords)
+{
+	return tex2D(depthSampler, textureCoords).r;
+}
+
+float fxaaDistance(float2 textureCoords)
+{
+	return unprojZ(projMat, fxaaDepthTexture(textureCoords));
+}
+
+float fxaaDepthTextureOffset( float N, float W, float2 textureCoords, float2 invScreenSize)
+{
+	return fxaaDepthTexture(textureCoords + (float2(-W, -N) * invScreenSize));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +206,7 @@ float4 transformedFxaa(float2 pos)
 	float2 posM;
 	posM.x = pos.x;
 	posM.y = pos.y;
-	float4 rgbyM = fxaaTextureOffset( 0.,  0., posM, rcpScreenSize);
+	float4 rgbyM = fxaaTexture(posM);
 	float3 rgbM = rgbyM.xyz;
 	float lumaM = fxaaLuma(rgbM);
 
@@ -441,23 +470,33 @@ if(doneN && doneP && FXAA_QUALITY_PS > 8) {
 
 	float pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
 	float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
-	if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
-	if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
+	float2 toPosM = float2(posM);
+	if(!horzSpan){
+		posM.x += pixelOffsetSubpix * lengthSign;
+		toPosM.x += lengthSign;
+	}
+	if( horzSpan){
+		posM.y += pixelOffsetSubpix * lengthSign;
+		toPosM.y += lengthSign;
+	}
+
+	float dist = abs(fxaaDepthTexture(toPosM) - fxaaDepthTexture(pos));
 
 	//if (pos.x != posM.x) return float4(0., 1., 0., 1.);
 	//if (pos.y != posM.y) return float4(0., 0., 1., 1.);
 
-	float3 shit = fxaaTextureOffset( 0., 0., posM, rcpScreenSize).xyz;
+	float3 shit = fxaaTexture(posM).xyz;
 	float3 shit2 = rgbM;
 
-	if (shit.x < shit2.x) shit.x += (shit2.x - shit.x)*0.4;
-	if (shit.y < shit2.y) shit.y += (shit2.y - shit.y)*0.4;
-	if (shit.z < shit2.z) shit.z += (shit2.z - shit.z)*0.4;
+	if (dist > 0.001){
+		if (shit.x < shit2.x) shit.x += (shit2.x - shit.x)*0.4;
+		if (shit.y < shit2.y) shit.y += (shit2.y - shit.y)*0.4;
+		if (shit.z < shit2.z) shit.z += (shit2.z - shit.z)*0.4;
 
-	if (shit.x > shit2.x) shit.x -= (shit2.x - shit.x)*0.4;
-	if (shit.y > shit2.y) shit.y -= (shit2.y - shit.y)*0.4;
-	if (shit.z > shit2.z) shit.z -= (shit2.z - shit.z)*0.4;
-
+		if (shit.x > shit2.x) shit.x -= (shit2.x - shit.x)*0.4;
+		if (shit.y > shit2.y) shit.y -= (shit2.y - shit.y)*0.4;
+		if (shit.z > shit2.z) shit.z -= (shit2.z - shit.z)*0.4;
+	}
 	//if (shit.x != shit2.x || 
 		//shit.y != shit2.y || 
 		//shit.z != shit2.z) return float4(0., 1., 0., 1.);

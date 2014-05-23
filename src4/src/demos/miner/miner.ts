@@ -314,6 +314,10 @@ module akra {
 			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
 		});
 
+		pDSViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			pTechnique.getPass(iPass).setTexture("DEPTH_TEXTURE", (<render.DSViewport>pViewport).getDepthTexture());
+		});
+
 		var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");
 		var pCubeModel = pCubeCollada.extractModel();
 
