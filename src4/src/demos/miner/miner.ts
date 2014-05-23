@@ -33,13 +33,13 @@ module akra {
 		deps: { files: [AE_RESOURCES], root: "./", deps: addons.getNavigationDependences() }
 	};
 
-	export var pEngine: IEngine = createEngine(pOptions);
+	var pEngine: IEngine = createEngine(pOptions);
 
-	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
-	export var pCamera: ICamera = null;
-	export var pViewport: ILPPViewport = null;
-	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
-	export var pScene: IScene3d = pEngine.getScene();
+	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
+	var pCamera: ICamera = null;
+	var pViewport: ILPPViewport = null;
+	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+	var pScene: IScene3d = pEngine.getScene();
 
 	function animateLight(pLight: IOmniLight, pSprite: ISprite): void {
 		var i = 1000;
