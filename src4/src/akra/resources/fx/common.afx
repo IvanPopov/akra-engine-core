@@ -6,6 +6,7 @@ struct FragmentMaterial {
 	float4 emissive:EMISSIVE;
 	float4 specular:SPECULAR;
 	float shininess:SHININESS;
+	float transparency:TRANSPARENCY;
 };
 
 struct PixelData {
@@ -23,6 +24,7 @@ struct UniformMaterial {
     float4 specular:SPECULAR;
     float4 emissive:EMISSIVE;
     float shininess:SHININESS;
+    float transparency: TRANSPARENCY;
 };
 
 float rand(float2 co){
