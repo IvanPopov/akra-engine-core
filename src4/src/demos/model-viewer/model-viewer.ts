@@ -671,6 +671,13 @@ module akra {
 		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, 0.5, 96);
 		pCylinder.attachToParent(pModelTable);
 		pCylinder.setPosition(0., -0.25, 0.);
+		// pCylinder.explore( function(node) {
+		// 		if(scene.SceneModel.isModel(node)) {
+		// 			node.getMesh().getSubset(0).getMaterial().shininess=0.7;
+		// 			node.getMesh().getSubset(0).getMaterial().specular=plasticColorSpecular;
+		// 			node.getMesh().getSubset(0).getMaterial().diffuse=plasticColorDiffuse;
+		// 		}
+		// 	});
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
 			if(pViewport === akra.pViewport){
