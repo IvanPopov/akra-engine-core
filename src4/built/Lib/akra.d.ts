@@ -3461,7 +3461,9 @@ declare module akra {
 }
 declare module akra {
     interface IVertexDeclaration {
+        /** Get byte length.*/
         stride: number;
+        /** Get number of vertex elements. */
         getLength(): number;
         append(...pElement: IVertexElementInterface[]): boolean;
         append(pElements: IVertexElementInterface[]): boolean;
@@ -3887,7 +3889,7 @@ declare module akra {
         getBytesPerIndex(): number;
         getID(): number;
         getData(iOffset: number, iSize: number): ArrayBuffer;
-        getTypedData(iStart: number, iCount: number): ArrayBufferView;
+        getTypedData(iStart?: number, iCount?: number): ArrayBufferView;
         setData(pData: ArrayBufferView): boolean;
         setData(pData: ArrayBufferView, iOffset: number): boolean;
         setData(pData: ArrayBufferView, iOffset: number, iCount: number): boolean;
@@ -4476,10 +4478,10 @@ declare module akra {
         * Remove data from this render data.
         */
         releaseData(iDataLocation: number): void;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): boolean;
@@ -4516,6 +4518,7 @@ declare module akra {
         index(sData: string, sSemantics: string, useSame?: boolean, iBeginWith?: number, bForceUsage?: boolean): boolean;
         index(iData: number, sSemantics: string, useSame?: boolean, iBeginWith?: number, bForceUsage?: boolean): boolean;
         toString(): string;
+        _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): number;
         _draw(pTechnique: IRenderTechnique, pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         _getFlow(iDataLocation: number): IDataFlow;
         _getFlow(sSemantics: string, bSearchComplete?: boolean): IDataFlow;
@@ -14640,11 +14643,12 @@ declare module akra.data {
         /**
         * Allocate attribute.
         * Attribute - data without index.
+        * @param bSilent Do not add attribute to buffer map as data.
         */
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+        public allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+        public allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
         /**
         * Allocate index.
         */
@@ -14714,7 +14718,8 @@ declare module akra.data {
         public index(sData: string, sSemantics: string, useSame?: boolean, iBeginWith?: number, bForceUsage?: boolean): boolean;
         public index(iData: number, sSemantics: string, useSame?: boolean, iBeginWith?: number, bForceUsage?: boolean): boolean;
         public _setup(pCollection: IRenderDataCollection, iId: number, ePrimType?: EPrimitiveTypes, eOptions?: number): boolean;
-        private _allocateData(pDataDecl, pData, eType);
+        public _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): number;
+        public _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): number;
         /**
         * Add vertex data to this render data.
         */
@@ -15679,11 +15684,13 @@ declare module akra.render {
     class MirrorViewport extends Viewport implements IMirrorViewport {
         private _pReflectionPlane;
         private _pInternal3dViewport;
+        private _v4fReflPlaneStruct;
         public getReflectionPlane(): IPlane3d;
         public getInternalViewport(): IViewport;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public _setTarget(pTarget: IRenderTarget): void;
         public _updateImpl(): void;
+        public _onRenderReflection(pTech: IRenderTechnique, iPass: any, pRenderable: any, pSceneObject: any, pViewport: any): void;
         private prepareForMirrorRender();
     }
 }
@@ -17137,7 +17144,7 @@ declare module akra.data {
         public getBuffer(): IIndexBuffer;
         constructor(pIndexBuffer: IIndexBuffer, id: number, iOffset: number, iCount: number, ePrimitiveType?: EPrimitiveTypes, eElementsType?: EDataTypes);
         public getData(iOffset: number, iSize: number): ArrayBuffer;
-        public getTypedData(iStart: number, iCount: number): ArrayBufferView;
+        public getTypedData(iStart?: number, iCount?: number): ArrayBufferView;
         public setData(pData: ArrayBufferView, iOffset?: number, iCount?: number): boolean;
         public destroy(): void;
         public getPrimitiveType(): EPrimitiveTypes;

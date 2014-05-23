@@ -18,6 +18,7 @@ module akra.render {
 	export class MirrorViewport extends Viewport implements IMirrorViewport {
 		private _pReflectionPlane: IPlane3d = new geometry.Plane3d(Vec3.temp(0.,1.,0.), -1.24);
 		private _pInternal3dViewport: IViewport = null;
+		private _v4fReflPlaneStruct: IVec4 = new math.Vec4();
 
 		getReflectionPlane(): IPlane3d {
 			return this._pReflectionPlane;
@@ -42,16 +43,13 @@ module akra.render {
 		}
 
 		_updateImpl(): void {
-			if(config.__VIEW_INTERNALS__){
-				debug.log("----------------------- start render mirror----------------------");
-			}
+			this._v4fReflPlaneStruct.set(this._pReflectionPlane.normal, this._pReflectionPlane.distance);
 			this.prepareForMirrorRender();
 			this._pInternal3dViewport.update();
-			if(config.__VIEW_INTERNALS__){
-				debug.log("----------------------- end render mirror----------------------");
-			}
 		}
-
+		_onRenderReflection(pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void {
+			pTech.getPass(iPass).setUniform("MESH_CULLING_PLANE", this._v4fReflPlaneStruct);
+		}
 		private prepareForMirrorRender(): void {
 			var pNodeList: IObjectArray<ISceneObject> = this.getCamera().display();
 
@@ -74,6 +72,7 @@ module akra.render {
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 						pTechnique.addComponent("akra.system.render_plane_culling");
+                        pTechnique.render.connect( this, this._onRenderReflection );
 					}
 				}
 			}

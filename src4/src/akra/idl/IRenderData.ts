@@ -49,10 +49,10 @@ module akra {
 		 */
 		releaseData(iDataLocation: int): void;
 
-		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
-		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes): boolean;
+		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
+		allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView, eType?: ERenderDataAttributeTypes, bSilent?: boolean): boolean;
 
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): boolean;
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): boolean;
@@ -101,6 +101,7 @@ module akra {
 		toString(): string;
 
 		//applyMe(): boolean;
+		_allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
 
 		_draw(pTechnique: IRenderTechnique, pViewport: IViewport,
 			pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;

@@ -3,12 +3,115 @@
 
 module akra.addons {
 	import VE = data.VertexElement;
+	import Usage = data.Usages;
 	import Color = color.Color;
 
-	//addons['base3dObjects'] = addons['base3dObjects'] || { path: null };
-	//addons['base3dObjects'].path = addons['base3dObjects'].path || uri.currentPath();
 
-	//debug.log("config['addons']['base3dObjects'] = ", JSON.stringify(addons['base3dObjects']));
+	export interface ISimpleGeometry {
+		vertices: float[];
+		type: EPrimitiveTypes;
+		normals?: float[];
+		texcoords?: float[];
+		indices?: uint[];
+	}
+
+	function createModelFromMesh(pScene: IScene3d, pMesh: IMesh, name?: string): ISceneModel {
+		var pSceneModel: ISceneModel = pScene.createModel(name || pMesh.getName() || config.defaultName);
+		pSceneModel.setMesh(pMesh);
+
+		return pSceneModel;
+	}
+
+	export function createSimpleMeshFromUnknownData(pEngine: IEngine, name: string, pDecl: IVertexDeclaration, pData: Float32Array, eType: EPrimitiveTypes, pIndices?: Uint16Array, pMaterial?: IMaterial): IMesh {
+		pDecl = data.VertexDeclaration.normalize(pDecl);
+
+		var pMesh: IMesh = null;
+		var pSubMesh: IMeshSubset = null;
+
+		pMesh = model.createMesh(pEngine, name, EMeshOptions.HB_READABLE);
+		pSubMesh = pMesh.createSubset(name + "-subset_1", eType, ERenderDataBufferOptions.RD_SINGLE_INDEX);
+
+		pSubMesh.getData().allocateData(pDecl, pData);
+
+		if (isDefAndNotNull(pIndices)) {
+			pSubMesh.getData().allocateIndex(null, <Uint16Array><any>pIndices);
+		}
+
+		if (pEngine.isLoaded()) {
+			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
+		}
+		else {
+			pEngine.depsLoaded.connect(() => {
+				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
+			});
+		}
+
+		if (isDefAndNotNull(pMaterial)) {
+			pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial().set(pMaterial);
+		}
+
+		return pMesh;
+	}
+
+	export function createSimpleMeshFromSimpleGeometry(pEngine: IEngine, pGeometry: ISimpleGeometry, pMaterial?: IMaterial, name?: string): IMesh {
+
+		name = name || config.defaultName;
+
+		var pDeclData: IVertexElementInterface[] = [];
+		var iByteLength: uint = 0;
+		var pLoop = { vertices: Usage.POSITION, normals: Usage.NORMAL, texcoords: "TEXCOORD0" };
+
+		Object.keys(pLoop).forEach((sProperty: string) => {
+			if (isDefAndNotNull(pGeometry[sProperty])) {
+				var sSemantics = pLoop[sProperty]
+				pDeclData.push(sSemantics === "TEXCOORD0" ? VE.float2(sSemantics) : VE.float3(sSemantics));
+
+				if (!isArrayBuffer(pGeometry[sProperty])) {
+					pGeometry[sProperty] = <any>new Float32Array(pGeometry[sProperty]);
+				}
+
+				iByteLength += (<Float32Array><any>pGeometry[sProperty]).byteLength;
+				return;
+			}
+
+			pGeometry[sProperty] = null;
+		});
+
+		var pData = new Float32Array(iByteLength);
+		var pDecl = data.VertexDeclaration.normalize(pDeclData);
+		var iStride: uint = pDecl.stride / Float32Array.BYTES_PER_ELEMENT;
+
+		for (var i = 0; i < pGeometry.vertices.length / 3; i++) {
+			var i3 = i * 3;
+			var i2 = i * 2;
+			var n = i * iStride;
+			var e = 0;
+
+			pData[n + (e++)] = pGeometry.vertices[i3];
+			pData[n + (e++)] = pGeometry.vertices[i3 + 1];
+			pData[n + (e++)] = pGeometry.vertices[i3 + 2];
+
+			if (!isNull(pGeometry.normals)) {
+				pData[n + (e++)] = pGeometry.normals[i3];
+				pData[n + (e++)] = pGeometry.normals[i3 + 1];
+				pData[n + (e++)] = pGeometry.normals[i3 + 2];
+			}
+
+			if (!isNull(pGeometry.texcoords)) {
+				pData[n + (e++)] = pGeometry.texcoords[i2];
+				pData[n + (e++)] = pGeometry.texcoords[i2 + 1];
+			}
+		}
+
+
+		if (isDefAndNotNull(pGeometry.indices)) {
+			if (!isArrayBuffer(pGeometry.indices)) {
+				pGeometry.indices = <any>new Uint16Array(pGeometry.indices);
+			}
+		}
+
+		return createSimpleMeshFromUnknownData(pEngine, name, pDecl, pData, pGeometry.type, <any>pGeometry.indices, pMaterial);
+	}
 
 	export function createSceneSurface(pScene: IScene3d, nCell?: uint): ISceneModel;
 	export function createSceneSurface(pScene: IScene3d, nCellW?: uint, nCellH?: uint): ISceneModel;
@@ -56,7 +159,7 @@ module akra.addons {
 
 
 
-		var pVertexIndicesData: Float32Array = new Float32Array((nCellW + nCellH) * 2);
+		var pVertexIndicesData: Uint16Array = new Uint16Array((nCellW + nCellH) * 2);
 
 		n = 0;
 		for (var z: uint = 0; z < nCellH; ++z) {
@@ -95,49 +198,31 @@ module akra.addons {
 	}
 
 	export function createQuad(pScene: IScene3d, fSize: float = 20., v2UV: IVec2 = Vec2.temp(1.)): ISceneModel {
-
-		//pScene.getManager().getEngine().getResourceManager().getImagePool().findResource();
-
-		var pMesh: IMesh = null,
-			pSubMesh: IMeshSubset = null;
-
 		var pData: Float32Array = new Float32Array([
-			-fSize, 0., -fSize,			0., 0.,				0., 1., 0.,
-			fSize, 0., -fSize,			v2UV.x, 0.,			0., 1., 0.,
-			-fSize, 0., fSize,			0., v2UV.y,			0., 1., 0.,
-			fSize, 0., fSize,			v2UV.x, v2UV.y,		0., 1., 0.
+			-fSize, 0., -fSize, 0., 0., 0., 1., 0.,
+			fSize, 0., -fSize, v2UV.x, 0., 0., 1., 0.,
+			-fSize, 0., fSize, 0., v2UV.y, 0., 1., 0.,
+			fSize, 0., fSize, v2UV.x, v2UV.y, 0., 1., 0.
 		]);
 
-		var pEngine: IEngine = pScene.getManager().getEngine();
-
-		pMesh = model.createMesh(pEngine, 'quad', EMeshOptions.HB_READABLE);
-		pSubMesh = pMesh.createSubset('quad::main', EPrimitiveTypes.TRIANGLESTRIP, ERenderDataBufferOptions.RD_SINGLE_INDEX);
-
-		pSubMesh.getData().allocateData([VE.float3('POSITION'), VE.float2('TEXCOORD0'), VE.float3('NORMAL')], pData);
-
-
-		pSubMesh.setShadow(false);
-
-		if (pEngine.isLoaded()) {
-			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-		}
-		else {
-			pScene.getManager().getEngine().depsLoaded.connect(() => {
-				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-			});
-		}
-
-		var pMatrial: IMaterial = pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial();
+		var pMatrial: IMaterial = material.create();
 		pMatrial.diffuse = new Color(color.LIGHT_GRAY);
 		pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 		pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
 		pMatrial.emissive = new Color(0., 0., 0., 1.);
 		pMatrial.shininess = 30. / 128.;
 
-		var pSceneModel: ISceneModel = pScene.createModel("quad");
-		pSceneModel.setMesh(pMesh);
+		var pMesh = createSimpleMeshFromUnknownData(
+			pScene.getManager().getEngine(),
+			"quad",
+			<any>[VE.float3('POSITION'), VE.float2('TEXCOORD0'), VE.float3('NORMAL')],
+			pData,
+			EPrimitiveTypes.TRIANGLESTRIP,
+			null,
+			pMatrial);
+		pMesh.setShadow(false);
 
-		return pSceneModel;
+		return createModelFromMesh(pScene, pMesh);
 	}
 
 	export function basis(pScene: IScene3d, eOptions: int = EMeshOptions.HB_READABLE, fSize: float = 1.): ISceneModel {
@@ -198,138 +283,97 @@ module akra.addons {
 		pParent.update();
 		pJoint.update();
 
-		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
-		var iPos: int, iNorm: int;
-		var pEngine: IEngine = pScene.getManager().getEngine();
+		var pMesh: IMesh, pMaterial: IMaterial;
 		var v: IVec3 = pJoint.getWorldPosition().subtract(pParent.getWorldPosition(), math.Vec3.temp());
 
-		pMesh = model.createMesh(pEngine, "bone-" + pJoint.getName(), EMeshOptions.HB_READABLE);
-		pSubMesh = pMesh.createSubset("bone", EPrimitiveTypes.LINELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
+		pMesh = createSimpleMeshFromSimpleGeometry(pScene.getManager().getEngine(), { vertices: [0, 0, 0, v.x, v.y, v.z], indices: [0, 1], type: EPrimitiveTypes.LINELIST }, null, "bone-" + pJoint.getName());
 
-		pSubMesh.getData().allocateData([VE.float3("POSITION")], new Float32Array([0, 0, 0, v.x, v.y, v.z]));
-		pSubMesh.getData().allocateIndex([VE.float("INDEX0")], new Float32Array([0, 1]));
-
-		//pSubMesh.getData().index("POSITION", "INDEX0");
-
-		pMaterial = pSubMesh.getMaterial();
+		pMaterial = pMesh.getSubset(0).getMaterial();
 		(<IColor>pMaterial.emissive).set(Color.WHITE);
 
-		pSubMesh.setShadow(false);
+		pMesh.setShadow(false);
 
-		if (pEngine.isLoaded()) {
-			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-		}
-		else {
-			pScene.getManager().getEngine().depsLoaded.connect(() => {
-				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-			});
-		}
-
-
-		var pSceneModel: ISceneModel = pScene.createModel("bone-" + pJoint.getName());
-		pSceneModel.setMesh(pMesh);
-
-		return pSceneModel;
+		return createModelFromMesh(pScene, pMesh);
 	}
 
 	export function lineCube(pScene: IScene3d, eOptions?: int): ISceneModel {
-		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
-		var iPos: int
-		var pEngine: IEngine = pScene.getManager().getEngine();
+		var pMesh: IMesh, pMaterial: IMaterial;
 
-		pMesh = model.createMesh(pEngine, "line-cube", eOptions || EMeshOptions.HB_READABLE);
+		pMesh = createSimpleMeshFromSimpleGeometry(pScene.getManager().getEngine(), {
+			vertices: [
+				//front
+				-1, -1, -1,
+				1, -1, -1,
 
-		pSubMesh = pMesh.createSubset("cube", EPrimitiveTypes.LINELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
+				1, -1, -1,
+				1, 1, -1,
 
-		pSubMesh.getData().allocateData([VE.float3("POSITION")], new Float32Array([
-			//front
-			-1, -1, -1,
-			1, -1, -1,
+				1, 1, -1,
+				-1, 1, -1,
 
-			1, -1, -1,
-			1, 1, -1,
+				-1, 1, -1,
+				-1, -1, -1,
 
-			1, 1, -1,
-			-1, 1, -1,
+				//bottom
+				-1, -1, 1,
+				1, -1, 1,
 
-			-1, 1, -1,
-			-1, -1, -1,
+				1, -1, 1,
+				1, 1, 1,
 
-			//bottom
-			-1, -1, 1,
-			1, -1, 1,
+				1, 1, 1,
+				-1, 1, 1,
 
-			1, -1, 1,
-			1, 1, 1,
-
-			1, 1, 1,
-			-1, 1, 1,
-
-			-1, 1, 1,
-			-1, -1, 1,
+				-1, 1, 1,
+				-1, -1, 1,
 
 
-			//left
-			-1, -1, -1,
-			-1, 1, -1,
+				//left
+				-1, -1, -1,
+				-1, 1, -1,
 
-			-1, 1, -1,
-			-1, 1, 1,
+				-1, 1, -1,
+				-1, 1, 1,
 
-			-1, 1, 1,
-			-1, -1, 1,
+				-1, 1, 1,
+				-1, -1, 1,
 
-			-1, -1, 1,
-			-1, -1, -1,
+				-1, -1, 1,
+				-1, -1, -1,
 
-		//right
-			1, -1, -1,
-			1, 1, -1,
+			//right
+				1, -1, -1,
+				1, 1, -1,
 
-			1, 1, -1,
-			1, 1, 1,
+				1, 1, -1,
+				1, 1, 1,
 
-			1, 1, 1,
-			1, -1, 1,
+				1, 1, 1,
+				1, -1, 1,
 
-			1, -1, 1,
-			1, -1, -1
-		]));
+				1, -1, 1,
+				1, -1, -1
+			], type: EPrimitiveTypes.LINELIST
+		}, null, "line-cube");
 
-		pMaterial = pSubMesh.getMaterial();
+		pMaterial = pMesh.getSubset(0).getMaterial();
 		(<IColor>pMaterial.emissive).set(1.);
 		(<IColor>pMaterial.ambient).set(1.);
 		(<IColor>pMaterial.diffuse).set(1.);
 		pMaterial.shininess = 100.;
 
-		pSubMesh.setShadow(false);
+		pMesh.setShadow(false);
 
-		if (pEngine.isLoaded()) {
-			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-		}
-		else {
-			pScene.getManager().getEngine().depsLoaded.connect(() => {
-				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
-			});
-		}
-
-		var pSceneModel: ISceneModel = pScene.createModel("line-cube");
-		pSceneModel.setMesh(pMesh);
-
-		return pSceneModel;
+		return createModelFromMesh(pScene, pMesh);
 	}
 
-	import Usage = data.Usages;
-
-	export function cube(pScene: IScene3d, eOptions: int = 0): ISceneModel {
-		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
+	export function cube(pScene: IScene3d): ISceneModel {
 		var pEngine: IEngine = pScene.getManager().getEngine();
 
-		pMesh = model.createMesh(pEngine, "cube", eOptions);// || EMeshOptions.HB_READABLE
-		pSubMesh = pMesh.createSubset("cube", EPrimitiveTypes.TRIANGLELIST, ERenderDataBufferOptions.RD_SINGLE_INDEX);
+		var pMesh = createSimpleMeshFromSimpleGeometry(pEngine, {
+			type: EPrimitiveTypes.TRIANGLELIST,
 
-		pSubMesh.getData().allocateData([VE.float3(Usage.POSITION)],
-			new Float32Array([
+			vertices: [
 				// Front face
 				-1.0, -1.0, 1.0,
 				1.0, -1.0, 1.0,
@@ -365,10 +409,8 @@ module akra.addons {
 				-1.0, -1.0, 1.0,
 				-1.0, 1.0, 1.0,
 				-1.0, 1.0, -1.0,
-			]));
-
-		pSubMesh.getData().allocateData([VE.float3(Usage.NORMAL)],
-			new Float32Array([
+			],
+			normals: [
 			// Front face
 				0.0, 0.0, 1.0,
 				0.0, 0.0, 1.0,
@@ -404,25 +446,174 @@ module akra.addons {
 				-1.0, 0.0, 0.0,
 				-1.0, 0.0, 0.0,
 				-1.0, 0.0, 0.0,
-			]));
-
-		pSubMesh.getData().allocateIndex(null, new Uint32Array([
-			0, 1, 2, 0, 2, 3,    // Front face
-			4, 5, 6, 4, 6, 7,    // Back face
-			8, 9, 10, 8, 10, 11,  // Top face
-			12, 13, 14, 12, 14, 15, // Bottom face
-			16, 17, 18, 16, 18, 19, // Right face
-			20, 21, 22, 20, 22, 23  // Left face
-		]));
-
-		pSubMesh.getEffect().addComponent("akra.system.mesh_texture");
-		(<IColor>pSubMesh.getMaterial().diffuse).set(1., 1., 1.);
-		pSubMesh.getMaterial().shininess = 1.;
+			],
+			indices: [
+				0, 1, 2, 0, 2, 3,    // Front face
+				4, 5, 6, 4, 6, 7,    // Back face
+				8, 9, 10, 8, 10, 11,  // Top face
+				12, 13, 14, 12, 14, 15, // Bottom face
+				16, 17, 18, 16, 18, 19, // Right face
+				20, 21, 22, 20, 22, 23  // Left face
+			]
+		}, null, "cube");
 
 
-		var pSceneModel: ISceneModel = pScene.createModel();
-		pSceneModel.setMesh(pMesh);
+		var pMat: IMaterial = pMesh.getSubset(0).getMaterial();
+		pMat.diffuse.set(1.);
+		pMat.shininess = 1.;
 
-		return pSceneModel; 
+		return createModelFromMesh(pScene, pMesh);
+	}
+
+	export function cylinder(pScene3d: IScene3d, radiusTop: float = 2.5, radiusBottom: float = 2.5, height: float = 5, segmentsRadius: uint = 8, segmentsHeight: uint = 1, openEnded: boolean = true): ISceneModel {
+
+
+		var heightHalf = height / 2;
+		var segmentsX = segmentsRadius || 8;
+		var segmentsY = segmentsHeight || 1;
+
+		radiusTop = math.max(1e-10, radiusTop);
+		radiusBottom = math.max(1e-10, radiusBottom);
+
+		var x, y, vertices = [], uvs = [], normals = [], indices = [];
+
+		for (y = 0; y <= segmentsY; y++) {
+
+			var v = y / segmentsY;
+			var radius = v * (radiusBottom - radiusTop) + radiusTop;
+
+			for (x = 0; x <= segmentsX; x++) {
+
+				var u = x / segmentsX;
+
+				var xpos = radius * Math.sin(u * Math.PI * 2);
+				var ypos = - v * height + heightHalf;
+				var zpos = radius * Math.cos(u * Math.PI * 2);
+
+				vertices.push(xpos, ypos, zpos);
+				uvs.push(u, v);
+			}
+		}
+
+		function vert(x, y): IVec3 {
+			if (x > segmentsX) x = x % (segmentsX + 1);
+			if (x < 0) x = (segmentsX + 1) + x;
+
+			var n = (y * (segmentsX + 1) + x) * 3;
+			return Vec3.temp(vertices[n], vertices[n + 1], vertices[n + 2]);
+		}
+
+		normals.length = vertices.length;
+
+		
+		for (x = 0; x <= segmentsX; x++) {
+			var V = vert(x, 0);
+
+			var Vyu = vert(x, 1)
+				
+			var Vxl = vert(x - 1, 0);
+			var Vxr = vert(x + 1, 0);
+
+			var t = Vyu.subtract(V, Vec3.temp());
+			var nl = Vxl.subtract(V, Vec3.temp()).cross(t, Vec3.temp());
+			var nr = t.cross(Vxr.subtract(V, Vec3.temp()), Vec3.temp());
+
+			var n = nl.add(nr).normalize();
+
+			var i = x * 3;
+
+			normals[i] = n.x;
+			normals[i + 1] = n.y;
+			normals[i + 2] = n.z;
+		}
+
+		for (y = 1; y <= segmentsY; y++) {
+			for (x = 0; x <= segmentsX; x++) {
+				var i = (y * (segmentsX + 1) + x) * 3;
+
+				normals[i] = normals[x * 3];
+				normals[i + 1] = normals[x * 3 + 1];
+				normals[i + 2] = normals[x * 3 + 2];
+			}
+		}
+
+		for (y = 0; y < segmentsY; y++) {
+			for (x = 0; x < segmentsX; x++) {
+				var x0y0 = y * (segmentsX + 1) + x;
+				var x1y0 = y * (segmentsX + 1) + x + 1;
+				var x0y1 = (y + 1) * (segmentsX + 1) + x;
+				var x1y1 = (y + 1) * (segmentsX + 1) + x + 1;
+
+				indices.push(x0y0, x0y1, x1y1);
+				indices.push(x0y0, x1y1, x1y0);
+			}
+		}
+
+		var pMat = material.create();
+		pMat.diffuse.set(1., 0., 0., 1.);
+		pMat.ambient.set(0.);
+		pMat.emissive.set(0.);
+
+		return createModelFromMesh(pScene3d,
+			createSimpleMeshFromSimpleGeometry(
+				pScene3d.getManager().getEngine(),
+				{
+					type: EPrimitiveTypes.TRIANGLELIST,
+					vertices: vertices,
+					normals: normals,
+					texcoords: uvs,
+					indices: indices
+				},
+				pMat,
+				"cylinder"));
+	}
+
+	export function trifan(pScene3d: IScene3d, radius: float = 2.5, segments: uint = 8): ISceneModel {
+
+		var segments = segments || 8;
+
+		radius = math.max(1e-10, radius);
+
+		var x, y, u, v, vertices = [], uvs = [], normals = [], indices = [];
+
+		vertices.push(0., 0., 0.);
+		uvs.push(.5, .5);
+
+		for (var i = 0; i < segments; i++) {
+			x = Math.sin( Math.PI*2*i/segments );
+			y = Math.cos( Math.PI*2*i/segments );
+			u = .5 + .5 * x;
+			v = .5 + .5 * y;
+
+			vertices.push(radius * x, 0., radius * y);
+			uvs.push(u, v);
+		}
+
+		for (var i = 0; i <= segments; i++) {
+			normals.push(0., 1., 0.); 
+		}
+
+		for (var i = 0; i < segments; i++) {
+			indices.push( 0, i+1, (i+1)%segments+1 );
+		}
+
+		var pMat = material.create();
+		pMat.diffuse.set(0.5, 0.5, 0.5, 1.);
+		pMat.ambient.set(0.);
+		pMat.emissive.set(0.);
+
+		return createModelFromMesh(pScene3d,
+			createSimpleMeshFromSimpleGeometry(
+				pScene3d.getManager().getEngine(),
+				{
+					type: EPrimitiveTypes.TRIANGLELIST,
+					vertices: vertices,
+					normals: normals,
+					texcoords: uvs,
+					indices: indices
+				},
+				pMat,
+				"trifan"));
 	}
 }
+

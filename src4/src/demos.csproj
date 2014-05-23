@@ -645,6 +645,7 @@
     <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.DAE" />
     <Content Include="demos\mercedes\mercedes.map" />
     <Content Include="demos\mercedes\models\mercedes.DAE" />
+    <Content Include="demos\mercedes\textures\desert-3.dds" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

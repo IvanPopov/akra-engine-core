@@ -2349,12 +2349,15 @@ module akra.pool.resources {
 
 			var pMesh: IMesh = null;
 			var pGeometry: IColladaGeometrie = pGeometryInstance.geometry;
-			var pNodeData: IColladaMesh = pGeometry.mesh;
+			var pNodeData: IColladaMesh;
 			var sMeshName: string = pGeometry.id;
 
 			//we cant optimize skinned mesh, because animation can be placed in file differen from current
-			if (!isSkinned && !Collada.isCOLLADAMeshOptimized(pNodeData)) {
-				pNodeData = Collada.optimizeCOLLADAMesh(pNodeData);
+			if (!isSkinned && !Collada.isCOLLADAMeshOptimized(pGeometry.mesh)) {
+				pNodeData = Collada.optimizeCOLLADAMesh(pGeometry.mesh);
+			}
+			else {
+				pNodeData = pGeometry.mesh;
 			}
 
 			if (isNull(pNodeData)) {
