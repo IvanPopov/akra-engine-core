@@ -110,6 +110,9 @@ module akra.render {
 
 		setShadingModel(eModel: EShadingModel) {
 			this._eShadingModel = eModel;
+			if (isDefAndNotNull(this._pTextureForTransparentObjects)) {
+				(<IShadedViewport>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setShadingModel(eModel);
+			}
 		}
 
 		getShadingModel(): EShadingModel {
@@ -215,7 +218,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 			pDSEffect.addComponent("akra.system.pbsReflection");
 
-			pDSEffect.addComponent("akra.system.applyTransparency", 1, 0);
+			pDSEffect.addComponent("akra.system.applyTransparency", 2, 0);
 
 			pDSMethod.setEffect(pDSEffect);
 
@@ -416,10 +419,10 @@ module akra.render {
 			var pEffect: IEffect = this._pDeferredEffect;
 
 			if (pSkyTexture) {
-				pEffect.addComponent("akra.system.skybox", 2, 0);
+				pEffect.addComponent("akra.system.skybox", 1, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.skybox", 2, 0);
+				pEffect.delComponent("akra.system.skybox", 1, 0);
 			}
 
 			this._pDeferredSkyTexture = pSkyTexture;
@@ -470,14 +473,14 @@ module akra.render {
 			}
 
 			if (p.object && isNull(pObjectPrev)) {
-				pEffect.addComponent("akra.system.outline", 2, 0);
+				pEffect.addComponent("akra.system.outline", 1, 0);
 			}
 			else if (isNull(p.object) && pObjectPrev) {
-				pEffect.delComponent("akra.system.outline", 2, 0);
+				pEffect.delComponent("akra.system.outline", 1, 0);
 
 				//FIX ME: Need do understood how to know that skybox added like single effect, and not as imported component
 				if (!isNull(this._pDeferredSkyTexture)) {
-					pEffect.addComponent("akra.system.skybox", 2, 0);
+					pEffect.addComponent("akra.system.skybox", 1, 0);
 				}
 			}
 		}
@@ -762,6 +765,7 @@ module akra.render {
 			pViewport.setBackgroundColor(new color.Color(0, 0, 0, 0));
 
 			this._pTextureForTransparentObjects = pTexture;
+			pViewport.setShadingModel(this.getShadingModel());
 		}
 	}
 }
