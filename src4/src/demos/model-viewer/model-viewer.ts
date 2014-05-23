@@ -17,6 +17,7 @@ module akra {
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
 		preserveDrawingBuffer: true,
+		antialias: true
 	};
 
 	var pOptions: IEngineOptions = {
@@ -38,14 +39,14 @@ module akra {
 	export var pMirror: INode = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pSky: model.Sky = null;
-	export var pLensflareData = null;
-	export var pBlurData = null;
-    export var pDofData = null;
-    export var pPBSData = null;
-    export var pSkyboxTexture = null;
-    export var pSkyboxTextures = null;
-    export var pEnvTexture = null;
-    export var pDepthViewport = null;
+	//export var pLensflareData = null;
+	//export var pBlurData = null;
+	//export var pDofData = null;
+	export var pPBSData = null;
+	export var pSkyboxTexture = null;
+	export var pSkyboxTextures = null;
+	export var pEnvTexture = null;
+	export var pDepthViewport = null;
 
 	var pState = {
 		animate: true,
@@ -59,14 +60,14 @@ module akra {
 	}
 
 	export var pCameraParams = {
-        current: {
-            orbitRadius: 4.2,
-            rotation: new math.Vec2(0., 0.)
-        },
-        target: {
-            orbitRadius: 4.2,
-            rotation: new math.Vec2(0., 0.)
-        }
+		current: {
+			orbitRadius: 4.2,
+			rotation: new math.Vec2(0., 0.)
+		},
+		target: {
+			orbitRadius: 4.2,
+			rotation: new math.Vec2(0., 0.)
+		}
 	}
 
 	export var pModelTable = null;
@@ -90,15 +91,15 @@ module akra {
 			pCamera.update();
 			pReflectionCamera.update();
 
-            var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
-            var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
-            
-            pCameraParams.current.rotation.set(newRot);
-            pCameraParams.current.orbitRadius = newRad;
+			var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
+			var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+			
+			pCameraParams.current.rotation.set(newRot);
+			pCameraParams.current.orbitRadius = newRad;
 			pCamera.setPosition(
 				newRad*-math.sin(newRot.x)*math.cos(newRot.y),
-                newRad*math.sin(newRot.y),
-                newRad*math.cos(newRot.x)*math.cos(newRot.y));
+				newRad*math.sin(newRot.y),
+				newRad*math.cos(newRot.x)*math.cos(newRot.y));
 			pCamera.lookAt(math.Vec3.temp(0,0,0));
 
 			pCamera.update();
@@ -151,19 +152,19 @@ module akra {
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
 				pCamera.addRelPosition(0, -fSpeed, 0);
-            }
-        });
-        (<render.LPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
-        pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
-            //console.log("mousewheel moved: ",x,y,fDelta);
-            pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta/pViewport.getActualHeight()*2., 2., 15.);
-        });
+			}
+		});
+		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
+			//console.log("mousewheel moved: ",x,y,fDelta);
+			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta/pViewport.getActualHeight()*2., 2., 15.);
+		});
 	}
 
 	var pGUI;
 
 	function createViewport(): IViewport3D {
-		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -171,33 +172,33 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.LPPViewport>pViewport).setFXAA(false);
+		//(<render.LPPViewport>pViewport).setFXAA(false);
 		var counter = 0;
-		var pEffect = (<render.LPPViewport>pViewport).getEffect();
+		var pEffect = (<render.ForwardViewport>pViewport).getEffect();
 		//pEffect.addComponent("akra.system.dof");
-		pEffect.addComponent("akra.system.blur");
+		//pEffect.addComponent("akra.system.blur");
 		// pEffect.addComponent("akra.system.lensflare");
 
 		pGUI = new dat.GUI();
 
-        pGUI.add(pState, 'animate');
+		pGUI.add(pState, 'animate');
 
-        var pSkyboxTexturesKeys = [
-        	'desert',
-        	'nature',
-        	'colosseum',
-        	'beach',
-        	'plains',
-        	'church',
-        	'basilica',
-        ];
-        pSkyboxTextures = { };
-        for(var i=0; i<pSkyboxTexturesKeys.length; i++) {
-        	// console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
-        	pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-"+pSkyboxTexturesKeys[i]);
-        	(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_"+pSkyboxTexturesKeys[i].toUpperCase());
-        	// console.log("Done!");
-        };
+		var pSkyboxTexturesKeys = [
+			'desert',
+			'nature',
+			'colosseum',
+			'beach',
+			'plains',
+			'church',
+			'basilica',
+		];
+		pSkyboxTextures = { };
+		for(var i=0; i<pSkyboxTexturesKeys.length; i++) {
+			// console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
+			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-"+pSkyboxTexturesKeys[i]);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_"+pSkyboxTexturesKeys[i].toUpperCase());
+			// console.log("Done!");
+		};
 
 		var pMaterialPresets = {
 			Gold: {
@@ -234,132 +235,132 @@ module akra {
 			}
 		};
 
-        pPBSData = {
+		pPBSData = {
 			isUsePBS: true,
 			_Material: pMaterialPresets.Aluminium,
 			_Gloss: 0,
-        }
+		}
 
-		pGUI.add(pState, 'lensFlare').name('lensFlare').onChange((bEnabled) => {
-			if (bEnabled) {
-				// pEffect.addComponent("akra.system.lensflare");
+		//pGUI.add(pState, 'lensFlare').name('lensFlare').onChange((bEnabled) => {
+		//	if (bEnabled) {
+		//		// pEffect.addComponent("akra.system.lensflare");
+		//	}
+		//	else {
+		//		// pEffect.delComponent("akra.system.lensflare", fx.ANY_SHIFT, fx.ANY_PASS);
+		//	}
+		//});
+
+		//pLensflareData = {
+		//	LENSFLARE_COOKIES_TEXTURE: pEngine.getResourceManager().createTexture("LENSFLARE_COOKIES_TEXTURE"),
+		//	LENSFLARE_TEXTURE_LOCATIONS: {
+		//		COOKIE1: new math.Vec4(.0, .5, .5, .0),
+		//		COOKIE2: new math.Vec4(.5, .5, 1., .0),
+		//		COOKIE3: new math.Vec4(.0, .5625, 1., .5),
+		//		//COOKIE4: new math.Vec4(.25, .5, .5, .25),
+		//		//COOKIE5: new math.Vec4(.5, .5, 1., .0),
+		//		//COOKIE6: new math.Vec4(.0, 1., .5, .5),
+		//		//COOKIE7: new math.Vec4(.5, 1., 1., .5),
+		//	},
+		//	LENSFLARE_COOKIE_PARAMS: null,
+		//	LENSFLARE_LIGHT_POSITION: null,
+		//	LENSFLARE_LIGHT_ANGLE: null,
+		//	LENSFLARE_DECAY: 16.,
+		//	LENSFLARE_INTENSITY: 0.17,
+		//	LENSFLARE_ABERRATION_SCALE: 0.07,
+		//	LENSFLARE_ABERRATION_SAMPLES: 5,
+		//	LENSFLARE_ABERRATION_FACTOR: 1.6,
+		//};
+
+		//pLensflareData.LENSFLARE_COOKIE_PARAMS = [
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(140., 140., 2.3, 0.2) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., 1.9, 0.2) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 1.65, 0.3) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(64., 64., 1.4, 0.4) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(1024., 1024., 1., 2.0) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new math.Vec4(2048., 64., 1., 1.0) },
+		//	//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(200., 200., 0.45, 0.5) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., 0.5, 0.4) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 0.2, 0.3) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., 0.05, 0.2) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.1, 0.3) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., -0.3, 0.4) },
+		//	//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., -0.35, 0.3) },
+		//	//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.45, 0.4) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(240., 240., -0.65, 0.2) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.85, 0.35) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., -1.1, 0.2) },
+		//	{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., -1.7, 0.4) },
+		//];
+
+		//pBlurData = {
+		//	BLUR_RADIUS: 0,
+		//};
+
+		//pDofData = {
+		//	DOF_RADIUS: 0,
+		//	DOF_FOCAL_PLANE: 10.,
+		//	DOF_FOCUS_POWER: 0.6,
+		//	DOF_QUALITY: 0.7,
+		//};
+
+		//var pBlurFolder = pGUI.addFolder("blur");
+		//(<dat.NumberControllerSlider>pBlurFolder.add(pBlurData, 'BLUR_RADIUS')).min(0.).max(250.).name("radius");
+
+		//var pDofFolder = pGUI.addFolder("dof");
+		//(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
+		//(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_POWER')).min(0.1).max(1.2).name("focus power");
+		//(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
+		//(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
+
+		//console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
+
+		var pPBSFolder = pGUI.addFolder("pbs");
+		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
+		(<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			}
-			else {
-				// pEffect.delComponent("akra.system.lensflare", fx.ANY_SHIFT, fx.ANY_PASS);
-			}
+			 (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
-		pLensflareData = {
-			LENSFLARE_COOKIES_TEXTURE: pEngine.getResourceManager().createTexture("LENSFLARE_COOKIES_TEXTURE"),
-			LENSFLARE_TEXTURE_LOCATIONS: {
-				COOKIE1: new math.Vec4(.0, .5, .5, .0),
-				COOKIE2: new math.Vec4(.5, .5, 1., .0),
-				COOKIE3: new math.Vec4(.0, .5625, 1., .5),
-				//COOKIE4: new math.Vec4(.25, .5, .5, .25),
-				//COOKIE5: new math.Vec4(.5, .5, 1., .0),
-				//COOKIE6: new math.Vec4(.0, 1., .5, .5),
-				//COOKIE7: new math.Vec4(.5, 1., 1., .5),
-			},
-			LENSFLARE_COOKIE_PARAMS: null,
-			LENSFLARE_LIGHT_POSITION: null,
-			LENSFLARE_LIGHT_ANGLE: null,
-			LENSFLARE_DECAY: 16.,
-			LENSFLARE_INTENSITY: 0.17,
-			LENSFLARE_ABERRATION_SCALE: 0.07,
-			LENSFLARE_ABERRATION_SAMPLES: 5,
-			LENSFLARE_ABERRATION_FACTOR: 1.6,
-		};
+		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
-		pLensflareData.LENSFLARE_COOKIE_PARAMS = [
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(140., 140., 2.3, 0.2) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., 1.9, 0.2) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 1.65, 0.3) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(64., 64., 1.4, 0.4) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(1024., 1024., 1., 2.0) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new math.Vec4(2048., 64., 1., 1.0) },
-			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(200., 200., 0.45, 0.5) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., 0.5, 0.4) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 0.2, 0.3) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., 0.05, 0.2) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.1, 0.3) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., -0.3, 0.4) },
-			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., -0.35, 0.3) },
-			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.45, 0.4) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(240., 240., -0.65, 0.2) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.85, 0.35) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., -1.1, 0.2) },
-			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., -1.7, 0.4) },
-		];
+		//pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+		//	iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-		pBlurData = {
-			BLUR_RADIUS: 0,
-		};
+			//var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
+			//var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
+			//var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-		pDofData = {
-			DOF_RADIUS: 0,
-			DOF_FOCAL_PLANE: 10.,
-			DOF_FOCUS_POWER: 0.6,
-			DOF_QUALITY: 0.7,
-		};
+			//pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
+			//pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
+			//pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
+			//pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
+			//pPass.setUniform('LENSFLARE_LIGHT_POSITION', pLensflareData.LENSFLARE_LIGHT_POSITION);
+			//pPass.setUniform('LENSFLARE_LIGHT_ANGLE', pLensflareData.LENSFLARE_LIGHT_ANGLE);
+			//pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
+			//pPass.setUniform('LENSFLARE_DECAY', pLensflareData.LENSFLARE_DECAY);
+			//pPass.setUniform('LENSFLARE_SKYDOME_ID', 0.);
+			//pPass.setUniform('LENSFLARE_ABERRATION_SCALE', pLensflareData.LENSFLARE_ABERRATION_SCALE);
+			//pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
+			//pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
 
-		var pBlurFolder = pGUI.addFolder("blur");
-		(<dat.NumberControllerSlider>pBlurFolder.add(pBlurData, 'BLUR_RADIUS')).min(0.).max(250.).name("radius");
+			//pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
 
-		var pDofFolder = pGUI.addFolder("dof");
-		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_RADIUS')).min(0.).max(50.).name("dof radius");
-		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCUS_POWER')).min(0.1).max(1.2).name("focus power");
-		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
-		(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
+			//pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
+			//pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
+			//pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
+			//pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
 
-		console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
+			//pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
 
-        var pPBSFolder = pGUI.addFolder("pbs");
-        (<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
-        (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-	        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-	            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-	        }
-	         (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
-        });
-
-        (<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
-
-		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
-			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
-
-			var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
-			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
-			var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-			pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
-			pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
-			pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
-			pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
-			pPass.setUniform('LENSFLARE_LIGHT_POSITION', pLensflareData.LENSFLARE_LIGHT_POSITION);
-			pPass.setUniform('LENSFLARE_LIGHT_ANGLE', pLensflareData.LENSFLARE_LIGHT_ANGLE);
-			pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
-			pPass.setUniform('LENSFLARE_DECAY', pLensflareData.LENSFLARE_DECAY);
-			pPass.setUniform('LENSFLARE_SKYDOME_ID', 0.);
-			pPass.setUniform('LENSFLARE_ABERRATION_SCALE', pLensflareData.LENSFLARE_ABERRATION_SCALE);
-			pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
-			pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
-
-			pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
-
-			pPass.setUniform('DOF_RADIUS', pDofData.DOF_RADIUS);
-			pPass.setUniform('DOF_FOCAL_PLANE', pDofData.DOF_FOCAL_PLANE);
-			pPass.setUniform('DOF_FOCUS_POWER', pDofData.DOF_FOCUS_POWER);
-			pPass.setUniform('DOF_QUALITY', pDofData.DOF_QUALITY);
-
-			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
-
-			pPass.setUniform("INPUT_TEXTURE_RATIO",
-				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
-			pPass.setUniform("SCREEN_ASPECT_RATIO",
-				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
+			//pPass.setUniform("INPUT_TEXTURE_RATIO",
+			//	math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
+			//pPass.setUniform("SCREEN_ASPECT_RATIO",
+			//	math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
 
 
-		});
+		//});
 		return pViewport;
 	}
 
@@ -384,11 +385,11 @@ module akra {
 	function createMirrorViewport(pReflNode: INode): IViewport {
 
 		pReflectionTexture = pRmgr.createTexture(".reflection_texture");
-        pReflectionTexture.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
-            ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+		pReflectionTexture.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 
-        var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
-        pRenderTarget.setAutoUpdated(false);
+		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
+		pRenderTarget.setAutoUpdated(false);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
@@ -407,55 +408,55 @@ module akra {
 	var lightPos1: math.Vec3 = new math.Vec3(1, 2, 2);
 	var lightPos2: math.Vec3 = new math.Vec3(-1, -2, 2);
 
-    export var pOmniLights: INode = null;
-    function createLighting(): void {
-        pOmniLights = pScene.createNode('lights-root');
-        pOmniLights.attachToParent(pCamera);
+	export var pOmniLights: INode = null;
+	function createLighting(): void {
+		pOmniLights = pScene.createNode('lights-root');
+		pOmniLights.attachToParent(pCamera);
 		pOmniLights.setInheritance(ENodeInheritance.ALL);
 
-        var pOmniLight: IOmniLight;
-        var pOmniLightSphere;
+		var pOmniLight: IOmniLight;
+		var pOmniLightSphere;
 
 		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
 
-        pOmniLight.attachToParent(pOmniLights);
-        pOmniLight.setEnabled(true);
-        pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-        pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-        pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-        pOmniLight.setShadowCaster(true);
+		pOmniLight.attachToParent(pOmniLights);
+		pOmniLight.setEnabled(true);
+		pOmniLight.getParams().ambient.set(0.1);
+		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
+		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		pOmniLight.setShadowCaster(true);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel("data/models/Sphere.dae", 
-			(model) => {
-				model.explore( function(node) {
-					if(scene.SceneModel.isModel(node)) {
-						node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.,1.,1.);
-						}
-					})
-				}, "test-omni-0-model", pOmniLight).scale(0.15);
-		pOmniLightSphere.setPosition(0.,0.,0.);
+		//pOmniLightSphere = loadModel("data/models/Sphere.dae", 
+		//	(model) => {
+		//		model.explore( function(node) {
+		//			if(scene.SceneModel.isModel(node)) {
+		//				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.,1.,1.);
+		//				}
+		//			})
+		//		}, "test-omni-0-model", pOmniLight).scale(0.15);
+		//pOmniLightSphere.setPosition(0.,0.,0.);
 		pOmniLight.setPosition(lightPos1);
 
 		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-        pOmniLight.attachToParent(pOmniLights);
-        pOmniLight.setEnabled(true);
-        pOmniLight.getParams().ambient.set(0.1);
-        pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-        pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-        pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-        pOmniLight.setShadowCaster(false);
+		pOmniLight.attachToParent(pOmniLights);
+		pOmniLight.setEnabled(true);
+		pOmniLight.getParams().ambient.set(0.1);
+		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
+		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel("data/models/Sphere.dae", 
-			(model) => {
-				model.explore( function(node) {
-					if(scene.SceneModel.isModel(node)) {
-						node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.,1.,1.);
-						}
-					})
-				}, "test-omni-0-model", pOmniLight).scale(0.15);
-		pOmniLightSphere.setPosition(0.,0.,0.);
+		//pOmniLightSphere = loadModel("data/models/Sphere.dae", 
+		//	(model) => {
+		//		model.explore( function(node) {
+		//			if(scene.SceneModel.isModel(node)) {
+		//				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.,1.,1.);
+		//				}
+		//			})
+		//		}, "test-omni-0-model", pOmniLight).scale(0.15);
+		//pOmniLightSphere.setPosition(0.,0.,0.);
 		pOmniLight.setPosition(lightPos2);
 	}
 
@@ -469,20 +470,20 @@ module akra {
 		pSceneModel.attachToParent(pScene.getRootNode());
 	}
 
-    function createSkyBox(): void {
-        pSkyboxTexture = pSkyboxTextures['desert'];
+	function createSkyBox(): void {
+		pSkyboxTexture = pSkyboxTextures['desert'];
 
-        if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-            (<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
-        }
+		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+		}
 
-        pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
-        pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
-            ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
-        pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
-        
+		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
+		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
+			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
+		
 		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
-    }
+	}
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
@@ -569,21 +570,21 @@ module akra {
 		//createSky();
 		createLighting();
 
-        createSkyBox();
+		createSkyBox();
 
 		// PLASTIC PARAMS:
 		var plasticColorSpecular: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
 		// var plasticColorDiffuse: color.Color = silverColorDiffuse;
 		var plasticColorDiffuse: color.Color = new Color(0.35, 0.35, 0.35, 1.0);
 
-    	console.log("-------------");
-    	console.log("-------------");
-    	console.log("-------------");
-    	console.log("-------------");
-    	console.log("-------------");
-    	console.log("-------------");
-    	console.log("------------- Start preloading models");
-    	console.log("------------- + Models table");
+		console.log("-------------");
+		console.log("-------------");
+		console.log("-------------");
+		console.log("-------------");
+		console.log("-------------");
+		console.log("-------------");
+		console.log("------------- Start preloading models");
+		console.log("------------- + Models table");
 
 		pModelTable = addons.trifan(pScene, 2.5, 96);
 		pModelTable.attachToParent( pScene.getRootNode() );
@@ -600,71 +601,71 @@ module akra {
 				}
 			});
 
-        var pModelsKeys = [
-        	'miner',
-        	'character',
-        	'teapot',
-        	'donut',
-        	'sphere',
-        	'rock',
-        	'windspot',
-        	'can',
-        	// 'box',
-        	// 'barrel',
-        ];
-        var pModelsFiles = {
-        	miner: {
-        		path: modelsPath+"/miner/miner.DAE",
-        		init: function(model) { },
-        	},
-        	character: {
-        		path: modelsPath+"/character/character.DAE",
-        		init: function(model) { model.scale(1.5); },
-        	},
-        	teapot: {
-        		path: modelsPath+"/teapot.DAE",
-        		init: function(model) { },
-        	},
-        	donut: {
-        		path: modelsPath+"/Donut.DAE",
-        		init: function(model) { },
-        	},
-        	sphere: {
-        		path: modelsPath+"/Sphere.dae",
-        		init: function(model) { },
-        	},
-        	rock: {
-        		path: modelsPath+"/rock/rock-1-low-p.DAE",
-        		init: function(model) { model.addPosition(0,0.8,0); },
-        	},
-        	windspot: {
-        		path: modelsPath+"/windspot/WINDSPOT.DAE",
-        		init: function(model) { },
-        	},
-        	can: {
-        		path: modelsPath+"/can/can.DAE",
-        		init: function(model) { model.addPosition(0,0.3,0); },
-        	},
-        };
-        pModels = { };
+		var pModelsKeys = [
+			'miner',
+			'character',
+			'teapot',
+			'donut',
+			'sphere',
+			'rock',
+			'windspot',
+			'can',
+			// 'box',
+			// 'barrel',
+		];
+		var pModelsFiles = {
+			miner: {
+				path: modelsPath+"/miner/miner.DAE",
+				init: function(model) { },
+			},
+			character: {
+				path: modelsPath+"/character/character.DAE",
+				init: function(model) { model.scale(1.5); },
+			},
+			teapot: {
+				path: modelsPath+"/teapot.DAE",
+				init: function(model) { },
+			},
+			donut: {
+				path: modelsPath+"/Donut.DAE",
+				init: function(model) { },
+			},
+			sphere: {
+				path: modelsPath+"/Sphere.dae",
+				init: function(model) { },
+			},
+			rock: {
+				path: modelsPath+"/rock/rock-1-low-p.DAE",
+				init: function(model) { model.addPosition(0,0.8,0); },
+			},
+			windspot: {
+				path: modelsPath+"/windspot/WINDSPOT.DAE",
+				init: function(model) { },
+			},
+			can: {
+				path: modelsPath+"/can/can.DAE",
+				init: function(model) { model.addPosition(0,0.3,0); },
+			},
+		};
+		pModels = { };
 
-    	pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
-        pCurrentModel = pModels["miner"];
-        pCurrentModel.addPosition(0.,1000.,0.);
+		pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
+		pCurrentModel = pModels["miner"];
+		pCurrentModel.addPosition(0.,1000.,0.);
 
-        var pModelsFolder = pGUI.addFolder("models");
+		var pModelsFolder = pGUI.addFolder("models");
 
-        (<dat.OptionController>pModelsFolder.add({Model:"miner"}, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
-        	pCurrentModel.addPosition(0.,-1000.,0.);
-        	if(pModels[sKey] == null) {
-        		pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
-        		pModelsFiles[sKey].init(pModels[sKey]);
-        	}
-        	pCurrentModel = pModels[sKey];
-        	pCurrentModel.addPosition(0.,1000.,0.);
-        });
+		(<dat.OptionController>pModelsFolder.add({Model:"miner"}, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
+			pCurrentModel.addPosition(0.,-1000.,0.);
+			if(pModels[sKey] == null) {
+				pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition( 0., 0., 0. ).addPosition(0.,-1000.,0.);
+				pModelsFiles[sKey].init(pModels[sKey]);
+			}
+			pCurrentModel = pModels[sKey];
+			pCurrentModel.addPosition(0.,1000.,0.);
+		});
 
-        pCurrentModel.attachToParent(pModelTable);
+		pCurrentModel.attachToParent(pModelTable);
 
 		pMirror.attachToParent(pModelTable);
 		pMirror.setPosition(0.,0.,0.);
