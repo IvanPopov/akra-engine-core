@@ -121,6 +121,10 @@ module akra.render {
 
 		setDefaultEnvironmentMap(pEnvMap: ITexture): void {
 			this._pDefaultEnvMap = pEnvMap;
+
+			if (isDefAndNotNull(this._pTextureForTransparentObjects)) {
+				(<IShadedViewport>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setDefaultEnvironmentMap(pEnvMap);
+			}
 		}
 
 		getDefaultEnvironmentMap(): ITexture {
@@ -766,6 +770,7 @@ module akra.render {
 
 			this._pTextureForTransparentObjects = pTexture;
 			pViewport.setShadingModel(this.getShadingModel());
+			pViewport.setDefaultEnvironmentMap(this.getDefaultEnvironmentMap());
 		}
 	}
 }
