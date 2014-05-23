@@ -96,6 +96,7 @@
     <Content Include="demos\mercedes\models\images\6_engine.png" />
     <Content Include="demos\mercedes\models\images\7_lights_lod0.png" />
     <Content Include="demos\mercedes\models\images\8_tire%283%29.png" />
+    <Content Include="demos\mercedes\textures\desert-3.dds" />
     <Content Include="demos\mercedes\textures\light_icon.png" />
     <Content Include="demos\mercedes\textures\light_icon1.png" />
     <Content Include="demos\miner\dat.gui\dat.gui.js" />

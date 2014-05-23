@@ -13,6 +13,7 @@ module akra {
 	export var pEngine = createEngine({
 		progress: pProgress.getListener(),
 		renderer: {
+			depth: true,
 			alpha: false
 		}
 	});
@@ -70,7 +71,7 @@ module akra {
 		pCamera.setPosition(Vec3.temp(0., 7., 10.));
 		pCamera.lookAt(Vec3.temp(0, 0.8, -15));
 
-		pViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 1);
+		pViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 1);
 		pViewport.setShadingModel(EShadingModel.BLINNPHONG);
 
 		pCanvas.addViewport(pViewport);
@@ -86,10 +87,10 @@ module akra {
 		std.createKeymap(pViewport);
 
 		var pLight: ILightPoint = std.createLighting(pScene, ELightTypes.OMNI, Vec3.temp(1, 5, 3));
-		pLight.setShadowCaster(true);
+		pLight.setShadowCaster(false);
 
 		//loadManyModels(400, "CUBE.DAE");
-		loadManyCubes(800);
+		loadManyCubes(400);
 		pProgress.destroy();
 		pEngine.exec();
 	}
