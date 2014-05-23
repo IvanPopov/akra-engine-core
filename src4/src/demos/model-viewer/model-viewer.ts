@@ -668,6 +668,9 @@ module akra {
 
 		pMirror.attachToParent(pModelTable);
 		pMirror.setPosition(0.,0.,0.);
+		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, 0.5, 96);
+		pCylinder.attachToParent(pModelTable);
+		pCylinder.setPosition(0., -0.25, 0.);
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
 			if(pViewport === akra.pViewport){
