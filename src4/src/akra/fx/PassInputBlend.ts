@@ -30,7 +30,8 @@ module akra.fx {
 			"AMBIENT": new Vec4(),
 			"SPECULAR": new Vec4(),
 			"EMISSIVE": new Vec4(),
-			"SHININESS": 1.
+			"SHININESS": 1.,
+			"TRANSPARENCY": 1.
 		};
 
 		//need for accelerate setSurfaceMaterial
@@ -333,6 +334,7 @@ module akra.fx {
 				pMatContainer["SPECULAR"].set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
 				pMatContainer["EMISSIVE"].set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
 				pMatContainer["SHININESS"] = pMaterial.shininess;
+				pMatContainer["TRANSPARENCY"] = pMaterial.transparency;
 
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
