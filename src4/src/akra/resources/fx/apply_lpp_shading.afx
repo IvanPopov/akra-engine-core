@@ -79,7 +79,7 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
         color += pixelData.material.specular * float4(lightsDataA.www, 1.);
     }
 
-    if(IS_USED_PBS_REFLECTIONS){
+    if (IS_USED_PBS_REFLECTIONS) {
         float4 normalBufferData = tex2D(sampler_lpp_normal_buffer, texcoords);
         pixelData.position = vert;
 
@@ -90,7 +90,8 @@ float4 fs_apply_lpp_shading(float3 vert: VERTEX) : COLOR {
         }
     }
 
-    //return float4((pixelData.normal + 1.) / 2., 1.);
+    //float3 n = (pixelData.normal + 1.) / 2.;
+    //return float4(pow(n.x, 5.), pow(n.y, 5.), pow(n.z, 5.), 1.);
     return float4(color.xyz, 1.);
 }
 

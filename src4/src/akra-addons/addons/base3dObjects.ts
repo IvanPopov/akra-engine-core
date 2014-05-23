@@ -495,30 +495,36 @@ module akra.addons {
 			}
 		}
 
-		function vert(x, y): IVec3 {
-			if (x > segmentsX) x = x % (segmentsX + 1);
-			if (x < 0) x = (segmentsX + 1) + x;
-
-			var n = (y * (segmentsX + 1) + x) * 3;
-			return Vec3.temp(vertices[n], vertices[n + 1], vertices[n + 2]);
-		}
+		//function vert(x, y): IVec3 {
+		//	var x0 = x;
+		//	if (x > segmentsX) x = x % (segmentsX + 1);
+		//	if (x < 0) x = (segmentsX + 1) + x;
+			
+		//	var n = (y * (segmentsX + 1) + x) * 3;
+		//	return Vec3.temp(vertices[n], vertices[n + 1], vertices[n + 2]);
+		//}
 
 		normals.length = vertices.length;
 
-		
+		var Y = height;
+		var X = (radiusBottom - radiusTop);
+
 		for (x = 0; x <= segmentsX; x++) {
-			var V = vert(x, 0);
+			//var V = vert(x, 0);
 
-			var Vyu = vert(x, 1)
-				
-			var Vxl = vert(x - 1, 0);
-			var Vxr = vert(x + 1, 0);
+			//var Vyu = vert(x, 1)
 
-			var t = Vyu.subtract(V, Vec3.temp());
-			var nl = Vxl.subtract(V, Vec3.temp()).cross(t, Vec3.temp());
-			var nr = t.cross(Vxr.subtract(V, Vec3.temp()), Vec3.temp());
+			//var Vxl = vert(x - 1, 0);
+			//var Vxr = vert(x + 1, 0);
 
-			var n = nl.add(nr).normalize();
+			var u = x / segmentsX;
+			var n = Vec3.temp(Y * math.sin(u * Math.PI * 2), X, Y * math.cos(u * Math.PI * 2)).normalize();
+
+			//var t = Vyu.subtract(V, Vec3.temp());
+			//var nl = Vxl.subtract(V, Vec3.temp()).cross(t, Vec3.temp());
+			//var nr = t.cross(Vxr.subtract(V, Vec3.temp()), Vec3.temp());
+
+			//var n = nl.add(nr).normalize();
 
 			var i = x * 3;
 

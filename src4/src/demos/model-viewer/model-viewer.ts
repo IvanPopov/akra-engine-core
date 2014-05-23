@@ -319,7 +319,7 @@ module akra {
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+				//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			}
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
@@ -475,7 +475,7 @@ module akra {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
 		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+			//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
