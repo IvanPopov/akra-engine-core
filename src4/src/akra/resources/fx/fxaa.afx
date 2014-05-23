@@ -117,21 +117,53 @@ float fxaaQualityEdgeThreshold = 0.063;
 //   will appear very dark in the green channel!
 //   Tune by looking at mostly non-green content,
 //   then start at zero and increase until aliasing is a problem.
-float fxaaQualityEdgeThresholdMin = 0.0312;
+float fxaaQualityEdgeThresholdMin = 0.08;
 
-int FXAA_QUALITY_PS = 12;
+// 5 lookups minimum 
+// if edge: + 6 lookups
+// + 2 lookups * (FXAA_QUALITY_PS - 2) 
+
+//int FXAA_QUALITY_PS = 12;
+//float FXAA_QUALITY_P0 = 1.0;
+//float FXAA_QUALITY_P1 = 1.5;
+//float FXAA_QUALITY_P2 = 2.0;
+//float FXAA_QUALITY_P3 = 2.0;
+//float FXAA_QUALITY_P4 = 2.0;
+//float FXAA_QUALITY_P5 = 2.0;
+//float FXAA_QUALITY_P6 = 2.0;
+//float FXAA_QUALITY_P7 = 2.0;
+//float FXAA_QUALITY_P8 = 2.0;
+//float FXAA_QUALITY_P9 = 2.0;
+//float FXAA_QUALITY_P10 = 4.0;
+//float FXAA_QUALITY_P11 = 8.0;  //final val
+
+//int FXAA_QUALITY_PS = 5;
+//float FXAA_QUALITY_P0 = 1.0;
+//float FXAA_QUALITY_P1 = 1.5;
+//float FXAA_QUALITY_P2 = 2.0;
+//float FXAA_QUALITY_P3 = 4.0;
+//float FXAA_QUALITY_P4 = 12.0;  //final val
+//float FXAA_QUALITY_P5 = 0.0;
+//float FXAA_QUALITY_P6 = 0.0;
+//float FXAA_QUALITY_P7 = 0.0;
+//float FXAA_QUALITY_P8 = 0.0;
+//float FXAA_QUALITY_P9 = 0.0;
+//float FXAA_QUALITY_P10 = 0.0;
+//float FXAA_QUALITY_P11 = 0.0;
+
+int FXAA_QUALITY_PS = 6;
 float FXAA_QUALITY_P0 = 1.0;
 float FXAA_QUALITY_P1 = 1.5;
 float FXAA_QUALITY_P2 = 2.0;
 float FXAA_QUALITY_P3 = 2.0;
 float FXAA_QUALITY_P4 = 2.0;
-float FXAA_QUALITY_P5 = 2.0;
-float FXAA_QUALITY_P6 = 2.0;
-float FXAA_QUALITY_P7 = 2.0;
-float FXAA_QUALITY_P8 = 2.0;
-float FXAA_QUALITY_P9 = 2.0;
-float FXAA_QUALITY_P10 = 4.0;
-float FXAA_QUALITY_P11 = 8.0;
+float FXAA_QUALITY_P5 = 8.0;  //final val
+float FXAA_QUALITY_P6 = 0.0;
+float FXAA_QUALITY_P7 = 0.0;
+float FXAA_QUALITY_P8 = 0.0;
+float FXAA_QUALITY_P9 = 0.0;
+float FXAA_QUALITY_P10 = 0.0;
+float FXAA_QUALITY_P11 = 0.0;
 
 float4 transformedFxaa(float2 pos)
 {
@@ -150,22 +182,14 @@ float4 transformedFxaa(float2 pos)
 	float lumaM = fxaaLuma(rgbM);
 
 	float3 rgbN  = fxaaTextureOffset( 1.,  0., posM, rcpScreenSize).xyz;
-	float3 rgbNW = fxaaTextureOffset( 1.,  1., posM, rcpScreenSize).xyz;
 	float3 rgbW  = fxaaTextureOffset( 0.,  1., posM, rcpScreenSize).xyz;
-	float3 rgbSW = fxaaTextureOffset(-1.,  1., posM, rcpScreenSize).xyz;
 	float3 rgbS  = fxaaTextureOffset(-1.,  0., posM, rcpScreenSize).xyz;
-	float3 rgbSE = fxaaTextureOffset(-1., -1., posM, rcpScreenSize).xyz;
 	float3 rgbE  = fxaaTextureOffset( 0., -1., posM, rcpScreenSize).xyz;
-	float3 rgbNE = fxaaTextureOffset( 1., -1., posM, rcpScreenSize).xyz;
 
 	float lumaN  = fxaaLuma(rgbN);
-	float lumaNW = fxaaLuma(rgbNW);
 	float lumaW  = fxaaLuma(rgbW);
-	float lumaSW = fxaaLuma(rgbSW);
 	float lumaS  = fxaaLuma(rgbS);
-	float lumaSE = fxaaLuma(rgbSE);
 	float lumaE  = fxaaLuma(rgbE);
-	float lumaNE = fxaaLuma(rgbNE);
 
 	float rangeMax = max(max(lumaN, lumaW), max(lumaE, max(lumaS, lumaM)));
 	float rangeMin = min(min(lumaN, lumaW), min(lumaE, min(lumaS, lumaM)));
@@ -174,6 +198,15 @@ float4 transformedFxaa(float2 pos)
 	float rangeMaxClamped = max(fxaaQualityEdgeThresholdMin, rangeMaxScaled);
 
 	if (range < rangeMaxClamped) return rgbyM;
+
+	float3 rgbNW = fxaaTextureOffset( 1.,  1., posM, rcpScreenSize).xyz;
+	float3 rgbSW = fxaaTextureOffset(-1.,  1., posM, rcpScreenSize).xyz;
+	float3 rgbSE = fxaaTextureOffset(-1., -1., posM, rcpScreenSize).xyz;
+	float3 rgbNE = fxaaTextureOffset( 1., -1., posM, rcpScreenSize).xyz;
+	float lumaNW = fxaaLuma(rgbNW);
+	float lumaSW = fxaaLuma(rgbSW);
+	float lumaSE = fxaaLuma(rgbSE);
+	float lumaNE = fxaaLuma(rgbNE);
 
 	float lumaNS = lumaN + lumaS;
 	float lumaWE = lumaW + lumaE;
@@ -415,13 +448,21 @@ if(doneN && doneP && FXAA_QUALITY_PS > 8) {
 	//if (pos.y != posM.y) return float4(0., 0., 1., 1.);
 
 	float3 shit = fxaaTextureOffset( 0., 0., posM, rcpScreenSize).xyz;
-	float3 shit2 = fxaaTextureOffset( 0., 0., pos, rcpScreenSize).xyz;
+	float3 shit2 = rgbM;
+
+	if (shit.x < shit2.x) shit.x += (shit2.x - shit.x)*0.4;
+	if (shit.y < shit2.y) shit.y += (shit2.y - shit.y)*0.4;
+	if (shit.z < shit2.z) shit.z += (shit2.z - shit.z)*0.4;
+
+	if (shit.x > shit2.x) shit.x -= (shit2.x - shit.x)*0.4;
+	if (shit.y > shit2.y) shit.y -= (shit2.y - shit.y)*0.4;
+	if (shit.z > shit2.z) shit.z -= (shit2.z - shit.z)*0.4;
 
 	//if (shit.x != shit2.x || 
 		//shit.y != shit2.y || 
 		//shit.z != shit2.z) return float4(0., 1., 0., 1.);
-	if (abs(posM.x - pos.x) > rcpScreenSize.x || 
-		abs(posM.y - pos.y) > rcpScreenSize.y) return float4(0., 0., 1., 1.);
+//	if (abs(posM.x - pos.x) > rcpScreenSize.x || 
+//		abs(posM.y - pos.y) > rcpScreenSize.y) return float4(0., 0., 1., 1.);
 
 	return float4(shit, rgbyM.w);
 }

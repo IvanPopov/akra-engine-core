@@ -91,7 +91,7 @@ module akra {
 
 		pDSViewport.setClearEveryFrame(true);
 		pDSViewport.setBackgroundColor(color.GRAY);
-		pDSViewport.setFXAA(false);
+		pDSViewport.setFXAA(true);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -285,7 +285,7 @@ module akra {
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
 
-		pLibeCube.setVisible(false);
+		pLibeCube.setVisible(true);
 
 		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);
