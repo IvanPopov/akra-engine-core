@@ -319,7 +319,7 @@ module akra {
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-				//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			}
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
@@ -391,6 +391,14 @@ module akra {
 
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
 		pRenderTarget.setAutoUpdated(false);
+
+		//var pDepthRenderBuffer = <webgl.WebGLInternalRenderBuffer> pRmgr.getRenderBufferPool().createResource(".mirror-depth");
+		//(<webgl.WebGLInternalRenderBuffer>pDepthRenderBuffer).create(gl.DEPTH_COMPONENT, 512, 512, false);
+		//pRenderTarget.attachDepthPixelBuffer(pDepthRenderBuffer);
+
+		var pDepthTexture = pRmgr.createTexture(".mirror - depth");
+		pDepthTexture.create(512, 512, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+		pRenderTarget.attachDepthTexture(pDepthTexture);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
@@ -475,7 +483,7 @@ module akra {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
 		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");

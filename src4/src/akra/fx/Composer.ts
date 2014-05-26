@@ -1023,13 +1023,19 @@ module akra.fx {
 						// pEntry.renderTarget = null;
 					}
 					else {
-						if (this._pLastRenderTarget === this._pRenderTargetA) {
-							pEntry.renderTarget = this._pRenderTargetB;
-							this._pLastRenderTarget = this._pRenderTargetB;
+						if (pEntry.input.renderStates[ERenderStates.BLENDENABLE] === ERenderStateValues.TRUE) {
+							//FIXME: Fix for render apply texture with trasparent objects
+							pEntry.renderTarget = this._pLastRenderTarget;
 						}
 						else {
-							pEntry.renderTarget = this._pRenderTargetA;
-							this._pLastRenderTarget = this._pRenderTargetA;
+							if (this._pLastRenderTarget === this._pRenderTargetA) {
+								pEntry.renderTarget = this._pRenderTargetB;
+								this._pLastRenderTarget = this._pRenderTargetB;
+							}
+							else {
+								pEntry.renderTarget = this._pRenderTargetA;
+								this._pLastRenderTarget = this._pRenderTargetA;
+							}
 						}
 
 						pEntry.viewport = this._pPostEffectViewport;

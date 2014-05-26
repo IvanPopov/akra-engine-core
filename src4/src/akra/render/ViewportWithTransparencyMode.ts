@@ -24,7 +24,7 @@ module akra.render {
 
 					if (!isNull(pRenderable) &&
 						!isNull(pRenderable.getRenderMethodByName(csMethod)) &&
-						material.isTransparent(pRenderable.getRenderMethodByName(csMethod).getMaterial()) === this._bTransparencyMode) {
+						(this._bTransparencyMode || !material.isTransparent(pRenderable.getRenderMethodByName(csMethod).getMaterial()))) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}
