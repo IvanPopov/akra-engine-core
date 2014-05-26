@@ -182,6 +182,7 @@ module akra.pool.resources {
 					}
 				}
 
+				//filling changes back to COLLADA
 				//removing <p /> elements from <trifan /> element
 				pXML.removeChild(pXMLData);
 			});
@@ -221,6 +222,7 @@ module akra.pool.resources {
 					}
 				}
 
+				//filling changes back to COLLADA
 				//removing <p /> elements from <tristrip /> element
 				pXML.removeChild(pXMLData);
 			});
@@ -277,6 +279,7 @@ module akra.pool.resources {
 				m += pVcount[i];
 			}
 
+			//filling changes back to COLLADA
 			//removing <p />, <vcount /> elements from <polylist /> element
 			pXML.removeChild(pXMLvcount);
 			pXML.removeChild(pXMLp);
@@ -924,6 +927,9 @@ module akra.pool.resources {
 			var iCount: int = parseInt(attr(pXML, "count"));
 			var iStride: int = 0;
 
+			//filling changes back to COLLADA
+			//preparing origin node
+			var pOriginPolygons: Element = this.isCOLLADAChangesTracingEnabled() ? <Element>pXML.cloneNode(true) : null;
 
 			this.eachByTag(pXML, "input", (pXMLData: Element): void => {
 				pPolygons.inputs.push(this.COLLADAInput(pXMLData, iOffset));
@@ -974,14 +980,18 @@ module akra.pool.resources {
 			}
 
 			if (sType !== "triangles") {
-				//adding changes back to COLLADA
+				//filling changes back to COLLADA
 
 				pXML.tagName = "triangles";
 				pXML.setAttribute("count", String(pPolygons.p.length / 3));
+
 				var pXMLp: Element = <Element>conv.parseHTML("<p></p>")[0];
 				pXMLp.textContent = pPolygons.p.join(" ");
 				pXMLp.removeAttribute("xmlns"); //to clerify output
+
 				pXML.appendChild(pXMLp);
+
+				this.COLLADANodeChanged(pOriginPolygons, pXML);
 
 				//end of chages
 			}
@@ -1184,7 +1194,7 @@ module akra.pool.resources {
 
 				//filling changes back to COLLADA
 				var pXMLPolygons = firstChild(pPolygons.xml, "p");
-				var pOriginXMLPolygons: Element = config.DEBUG ? <Element>pXMLPolygons.cloneNode(true) : null;;
+				var pOriginXMLPolygons: Element = this.isCOLLADAChangesTracingEnabled() ? <Element>pXMLPolygons.cloneNode(true) : null;;
 
 
 				pXMLPolygons.textContent = pUnpackedIndices.join(" ");
@@ -1209,7 +1219,7 @@ module akra.pool.resources {
 
 					//filling changes back to COLLADA
 
-					var pOriginXMLInput: Element = config.DEBUG ? <Element>pInput.xml.cloneNode(true) : null;
+					var pOriginXMLInput: Element = this.isCOLLADAChangesTracingEnabled() ? <Element>pInput.xml.cloneNode(true) : null;
 
 
 					pInput.xml.setAttribute("offset", String(0));
@@ -1221,7 +1231,7 @@ module akra.pool.resources {
 					var pXMLFloatArray = firstChild(pInput.source.xml, "float_array");
 
 
-					var pOriginXMLFloatArray: Element = config.DEBUG ? <Element>pXMLFloatArray.cloneNode(true) : null;
+					var pOriginXMLFloatArray: Element = this.isCOLLADAChangesTracingEnabled() ? <Element>pXMLFloatArray.cloneNode(true) : null;
 
 
 					pXMLFloatArray.textContent = pUnpackedData[pInput.semantics].join(" ");
@@ -1234,7 +1244,7 @@ module akra.pool.resources {
 
 
 
-					var pOriginXMLAccessor: Element = config.DEBUG ? <Element>pInput.accessor.xml.cloneNode(true) : null;
+					var pOriginXMLAccessor: Element = this.isCOLLADAChangesTracingEnabled() ? <Element>pInput.accessor.xml.cloneNode(true) : null;
 
 
 					pInput.accessor.xml.setAttribute("count", String(iLength / pInput.accessor.stride));
@@ -1252,6 +1262,12 @@ module akra.pool.resources {
 
 		private COLLADANodeChanged(pBefore: Element, pAfter: Element): void {
 			//console.log(pBefore, "==>", pAfter);
+		}
+
+		//надо ли отправлять варианты BEFORE и AFTER в функцию COLLADANodeChanged
+		//для валидации
+		private isCOLLADAChangesTracingEnabled(): boolean {
+			return false;
 		}
 
 		private COLLADAGeometrie(pXML: Element): IColladaGeometrie {
@@ -3233,14 +3249,13 @@ module akra.pool.resources {
 			return true;
 		}
 
-		saveResource(sFilename?: string): boolean {
-			saveAs(new Blob([
+		toBlob(): Blob {
+			return new Blob([
 				'<?xml version="1.0" encoding="utf-8"?>',
 				'<COLLADA xmlns="http://www.collada.org/2008/03/COLLADASchema" version="' + (this.getVersion() || "1.5.0") + '">',
 				(<any>this._pXMLRoot).innerHTML,
 				'</COLLADA>'
-			], { mime: "text/xml" }), this.getBasename());
-			return false;
+			], { mime: "text/xml" });
 		}
 
 

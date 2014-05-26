@@ -16828,6 +16828,7 @@ declare module akra.pool.resources {
         private static isCOLLADAMeshOptimized(pMesh);
         private optimizeCOLLADAMesh(pMesh);
         private COLLADANodeChanged(pBefore, pAfter);
+        private isCOLLADAChangesTracingEnabled();
         private COLLADAGeometrie(pXML);
         private COLLADASkin(pXML);
         private COLLADAController(pXML);
@@ -16916,7 +16917,7 @@ declare module akra.pool.resources {
         private checkLibraries(pXML, pTemplates);
         public parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         public loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
-        public saveResource(sFilename?: string): boolean;
+        public toBlob(sFilename?: string): Blob;
         public extractMesh(sMeshName?: string): IMesh;
         public extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
         public extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;

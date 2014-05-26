@@ -45,21 +45,21 @@ float FXAA_REDUCE_MUL = 1.0/8.0;
 float FXAA_REDUCE_MIN = 1.0/128.0;
 
 float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
-    if (IN.textureCoords.x < 0.4985 * screenTextureRatio.x){
+  /*  if (IN.textureCoords.x < 0.4985 * screenTextureRatio.x){
         return transformedFxaa(IN.textureCoords);
     }
     else if ((IN.textureCoords.x <0.5015 * screenTextureRatio.x)){
         return float4(1., .8, 0., 1.);
-    }
+    }*/
     //else if ((IN.textureCoords.x <0.495)){
    //     return float4(tex2D(screenSampler, IN.textureCoords).xyz, 1.);
    // }
     //else if ((IN.textureCoords.x <0.667)){
     //    return float4(1., 0., 0., 1.);
     //}
-    else {
+   /* else {*/
         return oldFxaa(IN.textureCoords);
-    }
+   /* }*/
 };
 
 float fxaaLuma(float3 rgb)
