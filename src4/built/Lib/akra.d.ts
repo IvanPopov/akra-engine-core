@@ -12771,7 +12771,7 @@ declare module akra.render {
 declare module akra.render {
     class RenderTechnique implements IRenderTechnique {
         public guid: number;
-        public render: ISignal<(pTech: IRenderTechnique, iPass: any, pRenderable: any, pSceneObject: any, pViewport: any) => void>;
+        public render: ISignal<(pTech: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => void>;
         private _pMethod;
         private _isFreeze;
         private _pComposer;
@@ -15617,6 +15617,7 @@ declare module akra.render {
 declare module akra {
     interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
         _renderOnlyTransparentObjects(bValue: boolean): void;
+        _setSkyboxModel(pRenderable: IRenderableObject): void;
     }
 }
 declare module akra.render {
@@ -15632,6 +15633,7 @@ declare module akra.render {
         private _pSkyboxTexture;
         private _pTextureToScreenViewport;
         private _bRenderOnlyTransparentObjects;
+        private _pSkybox;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15648,6 +15650,7 @@ declare module akra.render {
         public renderTransparentObjects(csMethod: string, pCamera: ICamera): void;
         public endFrame(): void;
         public setSkybox(pSkyTexture: ITexture): boolean;
+        public _setSkyboxModel(pRenderable: IRenderableObject): void;
         public setFXAA(bValue?: boolean): void;
         public isFXAA(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;

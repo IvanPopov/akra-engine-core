@@ -165,7 +165,7 @@ module akra {
 	var pGUI;
 
 	function createViewport(): IViewport3D {
-		var pViewport: IViewport3D = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -318,9 +318,9 @@ module akra {
 		var pPBSFolder = pGUI.addFolder("pbs");
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-			}
+			//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+			//}
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
@@ -434,7 +434,7 @@ module akra {
 		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
 		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		pOmniLight.setShadowCaster(true);
+		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 		//pOmniLightSphere = loadModel("data/models/Sphere.dae", 
 		//	(model) => {
@@ -482,9 +482,16 @@ module akra {
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
-		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+		var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+		var pModel = pCube.extractModel("box");
+		//pModel.attachToParent(pScene.getRootNode());
+
+		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
 		}
+		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+		//}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
 		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,

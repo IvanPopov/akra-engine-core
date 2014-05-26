@@ -35,6 +35,8 @@ module akra.render {
 		private _pTextureToScreenViewport: IViewport = null;
 		private _bRenderOnlyTransparentObjects: boolean = false;
 
+		private _pSkybox: IRenderableObject = null;
+
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
@@ -144,6 +146,10 @@ module akra.render {
 			this.prepareForForwardShading();
 			this._pCamera._keepLastViewport(this);
 
+			if (this._pSkybox) {
+				this._pSkybox.render(this, ".skybox-render", null);
+			}
+
 			//render light map
 			var pLights: IObjectArray<ILightPoint> = <IObjectArray<any>>this.getCamera().display(scene.Scene3d.DL_LIGHTING);
 
@@ -236,20 +242,28 @@ module akra.render {
 				return null;
 			}
 
-			var pEffect: IEffect = this.getEffect();
-
-			if (pSkyTexture) {
-				pEffect.addComponent("akra.system.skybox", 1, 0);
-			}
-			else {
-				pEffect.delComponent("akra.system.skybox", 1, 0);
-			}
-
 			this._pSkyboxTexture = pSkyTexture;
 
 			this.addedSkybox.emit(pSkyTexture);
 
 			return true;
+		}
+
+		_setSkyboxModel(pRenderable: IRenderableObject): void {
+			this._pSkybox = pRenderable;
+			pRenderable.addRenderMethod(".skybox-render", ".skybox-render");
+			pRenderable.getRenderMethodByName(".skybox-render").getEffect().addComponent("akra.system.skybox_model");
+
+			var pMat: IMat4 = new Mat4();
+			pMat.identity();
+			
+			pRenderable.getTechnique(".skybox-render").render.connect(
+				(pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => {
+					pMat.set(pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), 1.);
+
+					pTech.getPass(iPass).setTexture("SKYBOX_TEXTURE", (<IViewportSkybox>pViewport).getSkybox());
+					pTech.getPass(iPass).setUniform("MODEL_MATRIX", pMat);
+			});
 		}
 
 		setFXAA(bValue: boolean = true): void {
