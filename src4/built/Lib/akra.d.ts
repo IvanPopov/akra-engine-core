@@ -4215,6 +4215,7 @@ declare module akra {
         setAbgr(iValue: number): void;
         getHtml(): string;
         getHtmlRgba(): string;
+        set(rgba: string): IColor;
         set(cColor: IColorValue): IColor;
         set(cColor: IColor): IColor;
         set(r?: number, g?: number, b?: number, a?: number): IColor;
@@ -16771,7 +16772,8 @@ declare module akra.pool.resources {
         private _pOptions;
         private _pLinks;
         private _pLib;
-        private _pCache;
+        private _pMeshCache;
+        private _pMaterialCache;
         private _pAsset;
         private _pVisualScene;
         private _pAnimations;
@@ -16872,6 +16874,8 @@ declare module akra.pool.resources {
         private getXMLRoot();
         private findMesh(sName);
         private addMesh(pMesh);
+        private findMaterial(sName);
+        private addMaterial(pMaterial);
         private prepareInput(pInput);
         public isVisualSceneLoaded(): boolean;
         public isAnimationLoaded(): boolean;

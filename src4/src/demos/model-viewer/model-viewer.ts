@@ -167,12 +167,42 @@ module akra {
 	
 
 	function setupMaterialPicking(pViewport: ILPPViewport): void {
-		var pControls = pGUI.addFolder("material");
+		var pControls: dat.GUI = pGUI.addFolder("material");
 		(<any>pControls).open();
 
-		var pMat = { name: "unknown", glossiness:  };
+		var pMat = {
+			origin: null,
+			name: "unknown", glossiness: 1e-2,
+			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000"
+		};
 
-		pControls.add(pMat, "name").listen();;
+		pControls.add(pMat, "name").listen();
+		pControls.add(pMat, "glossiness", 0., 1.).listen().onChange(() => {
+			if (pMat.origin) {
+				pMat.origin.shininess = pMat.glossiness;
+			}
+		});
+
+		pControls.addColor(pMat, "diffuse").listen().onChange(() => {
+			if (pMat.origin) {
+				(<IColor>pMat.origin.diffuse).set(pMat.diffuse);
+			}
+		});
+		//pControls.addColor(pMat, "ambient").listen().onChange(() => {
+		//	if (pMat.origin) {
+		//		(<IColor>pMat.origin.ambient).set(pMat.ambient);
+		//	}
+		//});
+		pControls.addColor(pMat, "emissive").listen().onChange(() => {
+			if (pMat.origin) {
+				(<IColor>pMat.origin.emissive).set(pMat.emissive);
+			}
+		});
+		pControls.addColor(pMat, "specular").listen().onChange(() => {
+			if (pMat.origin) {
+				(<IColor>pMat.origin.specular).set(pMat.specular);
+			}
+		});
 
 		pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
 		pViewport.enable3DEvents(false);
@@ -181,7 +211,15 @@ module akra {
 			pViewport.highlight(pResult);
 
 			if (pResult.renderable) {
-				pMat.name = pResult.renderable.getMaterial().name;
+				var pOrigin: IMaterial = pResult.renderable.getMaterial();
+
+				pMat.origin = pOrigin;
+				pMat.name = pOrigin.name;
+				pMat.glossiness = pOrigin.shininess;
+				pMat.diffuse = pOrigin.diffuse.getHtml();
+				//pMat.ambient = pOrigin.ambient.getHtml();
+				pMat.emissive = pOrigin.emissive.getHtml();
+				pMat.specular = pOrigin.specular.getHtml();
 			}
 		});
 	}

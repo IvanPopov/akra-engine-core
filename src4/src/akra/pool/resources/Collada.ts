@@ -114,7 +114,8 @@ module akra.pool.resources {
 
 		private _pLinks: IColladaLinkMap = {};
 		private _pLib: IColladaLibraryMap = {};
-		private _pCache: IMap<IMesh> = {};
+		private _pMeshCache: IMap<IMesh> = {};
+		private _pMaterialCache: IMap<IMaterial> = {};
 
 		private _pAsset: IColladaAsset = null;
 		private _pVisualScene: IColladaVisualScene = null;
@@ -2264,16 +2265,21 @@ module akra.pool.resources {
 				var sEffectId: string = pMaterialInst.material.instanceEffect.effect.id;
 				var pEffect: IColladaEffect = pEffects.effect[sEffectId];
 				var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
-				var pMaterial: IMaterial = material.create(sEffectId)
+				var pMaterial: IMaterial = this.findMaterial(sEffectId);
 
-				pMaterial.set(<IMaterialBase>pPhongMaterial);
+				if (isNull(pMaterial)) {
+					pMaterial = material.create(sEffectId);
+					this.addMaterial(pMaterial);
+					pMaterial.set(<IMaterialBase>pPhongMaterial);
+				}
 
 				for (var j: int = 0; j < pMesh.getLength(); ++j) {
 					var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
 					if (pSubMesh.getMaterial().name === sMaterial) {
 						//setup materials
-						pSubMesh.getMaterial().set(pMaterial);
+						//pSubMesh.getMaterial().set(pMaterial);
+						pSubMesh.getSurfaceMaterial().setMaterial(pMaterial);
 						pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 
 						//setup textures
@@ -2933,11 +2939,19 @@ module akra.pool.resources {
 		}
 
 		private findMesh(sName: string): IMesh {
-			return this._pCache[sName] || null;
+			return this._pMeshCache[sName] || null;
 		}
 
 		private addMesh(pMesh: IMesh): void {
-			this._pCache[pMesh.getName()] = pMesh;
+			this._pMeshCache[pMesh.getName()] = pMesh;
+		}
+
+		private findMaterial(sName: string): IMaterial {
+			return this._pMaterialCache[sName] || null;
+		}
+
+		private addMaterial(pMaterial: IMaterial): void {
+			this._pMaterialCache[pMaterial.name] = pMaterial;
 		}
 
 		private prepareInput(pInput: IColladaInput): IColladaInput {
