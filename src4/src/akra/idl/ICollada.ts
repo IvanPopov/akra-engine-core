@@ -125,6 +125,7 @@ module akra {
 		id?: string;
 		sid?: string;
 		name?: string;
+		xml?: Element;
 	}
 	
 	export interface IColladaEntryMap {

@@ -123,6 +123,7 @@ module akra.pool.resources {
 
 		private _sFilename: string = null;
 
+		private _pXMLDocument: Document = null;
 		private _pXMLRoot: Element = null;
 
 		private _iByteLength: uint = 0;
@@ -181,6 +182,8 @@ module akra.pool.resources {
 					}
 				}
 
+				//removing <p /> elements from <trifan /> element
+				pXML.removeChild(pXMLData);
 			});
 
 			return pIndexes;
@@ -217,6 +220,9 @@ module akra.pool.resources {
 						}
 					}
 				}
+
+				//removing <p /> elements from <tristrip /> element
+				pXML.removeChild(pXMLData);
 			});
 
 			return pIndexes;
@@ -270,6 +276,10 @@ module akra.pool.resources {
 
 				m += pVcount[i];
 			}
+
+			//removing <p />, <vcount /> elements from <polylist /> element
+			pXML.removeChild(pXMLvcount);
+			pXML.removeChild(pXMLp);
 
 			return pIndexes;
 		}
@@ -717,7 +727,9 @@ module akra.pool.resources {
 				data: <IColladaArray>this.source(attr(pXML, "source")),
 				count: parseInt(attr(pXML, "count")),
 				stride: parseInt(attr(pXML, "stride") || "1"),
-				params: []
+				params: [],
+
+				xml: pXML
 			};
 
 
@@ -737,9 +749,9 @@ module akra.pool.resources {
 				semantics: attr(pXML, "semantic"),
 				source: <IColladaSource>this.source(attr(pXML, "source")),
 				offset: -1,
-				set: attr(pXML, "set")
+				set: attr(pXML, "set"),
+				xml: pXML
 			};
-			//pInput.set = (pInput.set ? parseInt(pInput.set) : 0);
 
 			if (!isNull(attr(pXML, "offset"))) {
 				pInput.offset = parseInt(attr(pXML, "offset"));
@@ -779,7 +791,9 @@ module akra.pool.resources {
 				id: attr(pXML, "id"),
 				name: attr(pXML, "name"),
 				array: {},
-				techniqueCommon: null
+				techniqueCommon: null,
+
+				xml: pXML
 			};
 
 			this.link(pSource);
@@ -902,6 +916,8 @@ module akra.pool.resources {
 				material: attr(pXML, "material"),		/*идентификатор материала*/
 				name: null,								/*имя (встречается редко, не используется)*/
 				count: parseInt(attr(pXML, "count")),	/*полное число индексов*/
+
+				xml: pXML
 			};
 
 			var iOffset: int = 0, n: uint = 0;
@@ -955,6 +971,19 @@ module akra.pool.resources {
 
 				default:
 					logger.error("unsupported polygon[" + sType + "] type founded");
+			}
+
+			if (sType !== "triangles") {
+				//adding changes back to COLLADA
+
+				pXML.tagName = "triangles";
+				pXML.setAttribute("count", String(pPolygons.p.length / 3));
+				var pXMLp: Element = <Element>conv.parseHTML("<p></p>")[0];
+				pXMLp.textContent = pPolygons.p.join(" ");
+				pXMLp.removeAttribute("xmlns"); //to clerify output
+				pXML.appendChild(pXMLp);
+
+				//end of chages
 			}
 
 			if (!isDef(pPolygons.type)) {
@@ -1077,12 +1106,13 @@ module akra.pool.resources {
 			});
 		}
 
-		private static optimizeCOLLADAMesh(pMesh: IColladaMesh): IColladaMesh {
+		private optimizeCOLLADAMesh(pMesh: IColladaMesh): IColladaMesh {
 			var pPolyGroup = pMesh.polygons;
 
 			var pHashIndices: IIntMap = <any>{};
 			//map: data semantics -> data(any[])
 			var pUnpackedData: IMap<any[]> = <any>{};
+			var pF32UnpackedData: IMap<any[]> = <any>{};
 			var iLastIndex: uint = 0;
 
 			pPolyGroup.forEach((pPolygons: IColladaPolygons, n) => {
@@ -1151,11 +1181,21 @@ module akra.pool.resources {
 
 				//subst indices
 				pPolygons.p = pUnpackedIndices;
+
+				//filling changes back to COLLADA
+				var pXMLPolygons = firstChild(pPolygons.xml, "p");
+				var pOriginXMLPolygons: Element = config.DEBUG ? <Element>pXMLPolygons.cloneNode(true) : null;;
+
+
+				pXMLPolygons.textContent = pUnpackedIndices.join(" ");
+
+				this.COLLADANodeChanged(pOriginXMLPolygons, pXMLPolygons);
+
 			});
 
 			Object.keys(pUnpackedData).forEach((sSemantics: string) => {
 				//TODO: add support for non-float32 arrays
-				pUnpackedData[sSemantics] = <any>(new Float32Array(pUnpackedData[sSemantics]));
+				pF32UnpackedData[sSemantics] = <any>(new Float32Array(pUnpackedData[sSemantics]));
 			});
 
 			//after all indexes recalculated, replacing data.
@@ -1165,11 +1205,53 @@ module akra.pool.resources {
 					var pInput: IColladaInput = pPolygons.inputs[j];
 
 					pInput.offset = 0;
-					pInput.array = pUnpackedData[pInput.semantics];
+					pInput.array = pF32UnpackedData[pInput.semantics];
+
+					//filling changes back to COLLADA
+
+					var pOriginXMLInput: Element = config.DEBUG ? <Element>pInput.xml.cloneNode(true) : null;
+
+
+					pInput.xml.setAttribute("offset", String(0));
+
+
+					this.COLLADANodeChanged(pOriginXMLInput, pInput.xml);
+
+
+					var pXMLFloatArray = firstChild(pInput.source.xml, "float_array");
+
+
+					var pOriginXMLFloatArray: Element = config.DEBUG ? <Element>pXMLFloatArray.cloneNode(true) : null;
+
+
+					pXMLFloatArray.textContent = pUnpackedData[pInput.semantics].join(" ");
+
+					var iLength: uint = pUnpackedData[pInput.semantics].length;
+					pXMLFloatArray.setAttribute("count", String(iLength));
+
+
+					this.COLLADANodeChanged(pOriginXMLFloatArray, pXMLFloatArray);
+
+
+
+					var pOriginXMLAccessor: Element = config.DEBUG ? <Element>pInput.accessor.xml.cloneNode(true) : null;
+
+
+					pInput.accessor.xml.setAttribute("count", String(iLength / pInput.accessor.stride));
+
+
+					this.COLLADANodeChanged(pOriginXMLAccessor, pInput.accessor.xml);
+
+
+					//pInput.source.xml.parentNode.removeChild(pInput.source.xml);
 				}
 			});
 
 			return pMesh;
+		}
+
+		private COLLADANodeChanged(pBefore: Element, pAfter: Element): void {
+			//console.log(pBefore, "==>", pAfter);
 		}
 
 		private COLLADAGeometrie(pXML: Element): IColladaGeometrie {
@@ -1462,15 +1544,15 @@ module akra.pool.resources {
 					pMat.shininess = math.clamp(pMat.shininess, 0., 128.) / 128.;
 					break;
 				case "blinn":
-					if (pMat.shininess <= 1. && pMat.shininess >= 0.) {
+
+					if (!(pMat.shininess <= 1. && pMat.shininess >= 0.)) {
 						debug.warn("Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
-						pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
 					}
 					pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
 					break;
-					//debug.assert(pMat.shininess <= 1. && pMat.shininess >= 0., "Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
-					//pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
-					//break;
+				//debug.assert(pMat.shininess <= 1. && pMat.shininess >= 0., "Invalid shininess value in collada blinn material(" + pMat.name + ") - " + pMat.shininess + ". Expected value in the range from 0. to 1..");
+				//pMat.shininess = math.clamp(pMat.shininess, 0., 1.);
+				//break;
 			}
 
 			pTech.value = pMat;
@@ -2360,7 +2442,7 @@ module akra.pool.resources {
 
 			//we cant optimize skinned mesh, because animation can be placed in file differen from current
 			if (!isSkinned && !Collada.isCOLLADAMeshOptimized(pGeometry.mesh)) {
-				pNodeData = Collada.optimizeCOLLADAMesh(pGeometry.mesh);
+				pNodeData = this.optimizeCOLLADAMesh(pGeometry.mesh);
 			}
 			else {
 				pNodeData = pGeometry.mesh;
@@ -2930,6 +3012,14 @@ module akra.pool.resources {
 			}
 		}
 
+		private setXMLDocument(pDocument: Document): void {
+			this._pXMLDocument = pDocument;
+		}
+
+		private getXMLDocument(): Document {
+			return this._pXMLDocument;
+		}
+
 		private setXMLRoot(pXML: Element): void {
 			this._pXMLRoot = pXML;
 		}
@@ -3032,6 +3122,10 @@ module akra.pool.resources {
 			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
+		public getVersion(): string {
+			return this._pXMLRoot.getAttribute("version") || null;
+		}
+
 		public getFilename(): string {
 			return this._sFilename;
 		}
@@ -3074,6 +3168,7 @@ module akra.pool.resources {
 			var pXMLRoot: Element = <Element>pXMLDocument.getElementsByTagName("COLLADA")[0];
 
 			this.setOptions(pOptions);
+			this.setXMLDocument(pXMLDocument);
 			this.setXMLRoot(pXMLRoot);
 
 			this.checkLibraries(pXMLRoot, Collada.SCENE_TEMPLATE);
@@ -3136,6 +3231,16 @@ module akra.pool.resources {
 			});
 
 			return true;
+		}
+
+		saveResource(sFilename?: string): boolean {
+			saveAs(new Blob([
+				'<?xml version="1.0" encoding="utf-8"?>',
+				'<COLLADA xmlns="http://www.collada.org/2008/03/COLLADASchema" version="' + (this.getVersion() || "1.5.0") + '">',
+				(<any>this._pXMLRoot).innerHTML,
+				'</COLLADA>'
+			], { mime: "text/xml" }), this.getBasename());
+			return false;
 		}
 
 

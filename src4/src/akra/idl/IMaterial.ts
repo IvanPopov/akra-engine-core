@@ -25,9 +25,18 @@ module akra {
 		specular: IColor;
 		emissive: IColor;
 
+		set(sMat: "gold"): IMaterial;
+		set(sMat: "cooper"): IMaterial;
+		set(sMat: "plastic"): IMaterial;
+		set(sMat: "iron"): IMaterial;
+		set(sMat: "aluminium"): IMaterial;
+		set(sMat: "silver"): IMaterial;
+		set(sMat: "water"): IMaterial;
+		set(sMat: "glass"): IMaterial;
+		set(sMat: string): IMaterial;
 		set(pMat: IMaterialBase): IMaterial;
 
 		isEqual(pMat: IMaterialBase): boolean;
+		isTransparent(): boolean;
 	}
-
 }

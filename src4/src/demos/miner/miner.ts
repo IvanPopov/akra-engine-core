@@ -90,7 +90,8 @@ module akra {
 
 		pDSViewport.setClearEveryFrame(true);
 		pDSViewport.setBackgroundColor(color.GRAY);
-		pDSViewport.setAntialiasing(false);
+
+		pDSViewport.setFXAA(true);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -292,7 +293,7 @@ module akra {
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
 
-		pLibeCube.setVisible(false);
+		pLibeCube.setVisible(true);
 
 		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);
@@ -319,6 +320,10 @@ module akra {
 
 		pGUI.add({ usePBS: true }, 'usePBS').onChange(function (bValue: boolean) {
 			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
+		});
+
+		pDSViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			pTechnique.getPass(iPass).setTexture("DEPTH_TEXTURE", (<render.DSViewport>pViewport).getDepthTexture());
 		});
 
 		var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");

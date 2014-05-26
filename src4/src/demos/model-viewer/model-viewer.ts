@@ -557,6 +557,13 @@ module akra {
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
+		var pGUIData = {};
+		var key = "save [" + pModel.getBasename() + "]";
+		pGUIData[key] = () => {
+			pModel.saveResource();
+		};
+
+		pGUI.add(pGUIData, key);
 
 		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
 		if (pRoot != null) {

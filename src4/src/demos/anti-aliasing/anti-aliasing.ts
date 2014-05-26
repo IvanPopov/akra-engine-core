@@ -15,7 +15,7 @@ module akra {
 		alpha: true,
 		depth: true,
 		premultipliedAlpha: true,
-		antialias: true,
+		antialias: false,
 		//premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
@@ -107,6 +107,7 @@ module akra {
 		var pViewport: ILPPViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
+        pViewport.setFXAA(true);
 
         pViewport.getEffect().addComponent("akra.system.linearFog");
         pViewport.getEffect().addComponent("akra.system.exponentialFog");

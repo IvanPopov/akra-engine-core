@@ -9,8 +9,4 @@ module akra.material {
 		pMat: IMaterialBase = <any>(config.material.default)): IMaterial {
 		return new Material(sName, pMat);
 	}
-
-	export function isTransparent(pMat: IMaterial): boolean {
-		return pMat.transparency < 1;
-	}
 }
