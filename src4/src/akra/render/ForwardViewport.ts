@@ -256,10 +256,10 @@ module akra.render {
 
 			var pMat: IMat4 = new Mat4();
 			pMat.identity();
-			
+
 			pRenderable.getTechnique(".skybox-render").render.connect(
 				(pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => {
-					pMat.set(pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), 1.);
+					pMat.set(pViewport.getCamera().getFarPlane() * 2, pViewport.getCamera().getFarPlane() * 2, pViewport.getCamera().getFarPlane() * 2, 1.);
 
 					pTech.getPass(iPass).setTexture("SKYBOX_TEXTURE", (<IViewportSkybox>pViewport).getSkybox());
 					pTech.getPass(iPass).setUniform("MODEL_MATRIX", pMat);

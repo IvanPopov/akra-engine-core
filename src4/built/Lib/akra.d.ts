@@ -4890,6 +4890,10 @@ declare module akra {
         setShadowCaster(bValue: boolean): void;
         getLightingDistance(): number;
         setLightingDistance(fValue: number): void;
+        isRestricted(): boolean;
+        setRestrictedLocalBounds(pBox: IRect3d): void;
+        getRestrictedWorldBounds(): IRect3d;
+        restrictLight(bEnable: boolean, pBox?: IRect3d): void;
         create(isShadowCaster?: boolean, iMaxShadowResolution?: number): boolean;
         /** false if lighting not active or it's effect don't seen */
         _prepareForLighting(pCamera: ICamera): boolean;
@@ -14467,6 +14471,10 @@ declare module akra.scene.light {
         public _iMaxShadowResolution: number;
         public _eLightType: ELightTypes;
         public _pOptimizedCameraFrustum: IFrustum;
+        public _pLocalBounds: IRect3d;
+        public _pWorldBounds: IRect3d;
+        public _isRestricted: boolean;
+        public _iLightPointFlags: number;
         public getParams(): ILightParameters;
         public getLightType(): ELightTypes;
         public getOptimizedCameraFrustum(): IFrustum;
@@ -14476,8 +14484,15 @@ declare module akra.scene.light {
         public setShadowCaster(bValue: boolean): void;
         public getLightingDistance(): number;
         public setLightingDistance(fDistance: number): void;
+        public isRestricted(): boolean;
+        public setRestrictedLocalBounds(pBox: IRect3d): void;
+        public getRestrictedWorldBounds(): IRect3d;
         constructor(pScene: IScene3d, eType?: ELightTypes);
         public create(isShadowCaster?: boolean, iMaxShadowResolution?: number): boolean;
+        public restrictLight(bEnable: boolean, pBox?: IRect3d): void;
+        public prepareForUpdate(): void;
+        public update(): boolean;
+        public recalcRestrictBounds(): boolean;
         public _prepareForLighting(pCamera: ICamera): boolean;
         public _calculateShadows(): void;
         static isLightPoint(pNode: IEntity): boolean;

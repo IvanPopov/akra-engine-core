@@ -50,6 +50,20 @@ struct LightSunShadows{
 	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
+// struct LightOmniRestricted {
+// 	LightOmni light: LIGHT;
+// 	float3 point0: POINT0;
+// 	float3 point1: POINT1;
+// 	float4x4 toLightSpace : TO_LIGHT_SPACE;
+// };
+
+// struct LightProjectRestricted {
+// 	LightProject light: LIGHT;
+// 	float3 point0: POINT0;
+// 	float3 point1: POINT1;
+// 	float4x4 toLightSpace : TO_LIGHT_SPACE;
+// };
+
 
 struct CalculatedLightParams {
 	float3 ambient;
