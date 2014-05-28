@@ -539,9 +539,11 @@
     <TypeScriptCompile Include="akra\render\LightingUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
     <TypeScriptCompile Include="akra\render\LPPViewport.ts" />
+    <TypeScriptCompile Include="akra\render\MirrorViewport.ts" />
     <TypeScriptCompile Include="akra\render\Renderer.ts" />
     <TypeScriptCompile Include="akra\render\RenderTexture.ts" />
     <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\render\ShadedViewport.ts" />
     <TypeScriptCompile Include="akra\render\ShadowViewport.ts" />
     <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
     <TypeScriptCompile Include="akra\render\ViewportWithTransparencyMode.ts" />

@@ -12,7 +12,7 @@ module akra.render {
 	final export class RenderTechnique implements IRenderTechnique {
 		guid: uint = guid();
 
-		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>;
+		render: ISignal<{ (pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport): void }>;
 
 		private _pMethod: IRenderMethod = null;
 

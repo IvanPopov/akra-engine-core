@@ -839,6 +839,9 @@ module akra.geometry {
 				this.x1 + ", " + this.y1 + ", " + this.z1 + ")";
 		}
 
+		private static _pBuffer = gen.array<IRect3d>(128, Rect3d);
+		private static _iElement = 0;
+
 		static temp(): IRect3d;
 		static temp(pRect: IRect3d): IRect3d;
 		static temp(v3fSize: IVec3): IRect3d;
@@ -847,14 +850,10 @@ module akra.geometry {
 		static temp(fX0: float, fX1: float, fY0: float,
 			fY1: float, fZ0: float, fZ1: float): IRect3d;
 		static temp(): IRect3d {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
-			var p = pBuffer[iElement++];
+			Rect3d._iElement = (Rect3d._iElement === Rect3d._pBuffer.length - 1 ? 0 : Rect3d._iElement);
+			var p = Rect3d._pBuffer[Rect3d._iElement++];
 			return p.set.apply(p, arguments);
 		}
 
 	}
-
-
-	pBuffer = gen.array<IRect3d>(128, Rect3d);
-	iElement = 0;
 }

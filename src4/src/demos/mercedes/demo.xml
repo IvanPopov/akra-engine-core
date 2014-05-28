@@ -30,6 +30,7 @@
         <Folder Path="data" />
         <ResourceFile Path="mercedes.map"/>
         <ResourceFile Path="grid.jpg" Name="GRID_JPG"/>
+        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
       </Data>
     </Resource>
   </PropertyGroup>
