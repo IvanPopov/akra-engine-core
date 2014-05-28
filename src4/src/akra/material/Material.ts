@@ -24,14 +24,56 @@ module akra.material {
 			this.set(pMat);
 		}
 
-		set(pMat: IMaterialBase): IMaterial {
-			if (!isNull(pMat)) {
-				this.diffuse.set(pMat.diffuse);
-				this.ambient.set(pMat.ambient);
-				this.specular.set(pMat.specular);
-				this.emissive.set(pMat.emissive);
-				this.shininess = pMat.shininess;
-				this.transparency = pMat.transparency;
+		set(pMat: IMaterialBase): IMaterial;
+		set(sMat: string): IMaterial;
+		set(mat): IMaterial {
+			if (!isNull(mat)) {
+				if (isString(arguments[0])) {
+					switch (arguments[0]) {
+						case "gold":
+							this.specular.set(1., 0.71, 0.29);
+							this.diffuse.set(1.00, 0.86, 0.57);
+							break;
+						case "cooper":
+							this.specular.set(0.95, 0.64, 0.54);
+							this.diffuse.set(0.98, 0.82, 0.76);
+							break;
+						case "plastic":
+							this.specular.set(0.03);
+							this.diffuse.set(0.21);
+							break;
+						case "iron":
+							this.specular.set(0.56, 0.57, 0.58);
+							this.diffuse.set(0.77, 0.78, 0.78);
+							break;
+						case "aluminium":
+							this.specular.set(0.91, 0.92, 0.92);
+							this.diffuse.set(0.96, 0.96, 0.97);
+							break;
+						case "silver": 
+							this.specular.set(0.95, 0.93, 0.88);
+							this.diffuse.set(10.98, 0.97, 0.95);
+							break;
+						case "water":
+							this.specular.set(0.02);
+							this.diffuse.set(0.15);
+							break;
+						case "glass":
+							this.specular.set(0.08);
+							this.diffuse.set(0.31);
+							break;
+						default:
+							logger.error("unknonw material: " + arguments[0]);
+					}
+				}
+				else {
+					this.diffuse.set(mat.diffuse);
+					this.ambient.set(mat.ambient);
+					this.specular.set(mat.specular);
+					this.emissive.set(mat.emissive);
+					this.shininess = mat.shininess;
+					this.transparency = mat.transparency;
+				}
 			}
 
 			return this;

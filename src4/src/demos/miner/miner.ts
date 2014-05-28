@@ -33,7 +33,7 @@ module akra {
 		deps: { files: [AE_RESOURCES], root: "./", deps: addons.getNavigationDependences() }
 	};
 
-	export var pEngine: IEngine = createEngine(pOptions);
+	var pEngine: IEngine = createEngine(pOptions);
 
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera = null;
@@ -79,14 +79,7 @@ module akra {
 		pCanvas.addViewport(pDSViewport);
 
 		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		pDSViewport.setTransparencySupported(false);
-		//if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
-		//	var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
-		//	var pSkyboxModel = pCube.extractModel("box");
-		//	(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
-		//}
-
+		
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		
@@ -97,7 +90,8 @@ module akra {
 
 		pDSViewport.setClearEveryFrame(true);
 		pDSViewport.setBackgroundColor(color.GRAY);
-		pDSViewport.setAntialiasing(true);
+
+		pDSViewport.setFXAA(true);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -299,7 +293,7 @@ module akra {
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
 
-		pLibeCube.setVisible(false);
+		pLibeCube.setVisible(true);
 
 		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);
@@ -326,6 +320,10 @@ module akra {
 
 		pGUI.add({ usePBS: true }, 'usePBS').onChange(function (bValue: boolean) {
 			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
+		});
+
+		pDSViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+			pTechnique.getPass(iPass).setTexture("DEPTH_TEXTURE", (<render.DSViewport>pViewport).getDepthTexture());
 		});
 
 		var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");

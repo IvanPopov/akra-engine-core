@@ -74,7 +74,7 @@ module akra.render {
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 						pTechnique.addComponent("akra.system.render_plane_culling");
-                        pTechnique.render.connect( this, this._onRenderReflection );
+						pTechnique.render.connect( this, this._onRenderReflection );
 					}
 				}
 			}

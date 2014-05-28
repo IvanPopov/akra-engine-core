@@ -47,7 +47,7 @@ module akra.pool.resources {
 		}
 
 		setMaterial(pMaterial: IMaterial): void {
-			this._pMaterial.set(pMaterial);
+			this._pMaterial = pMaterial;
 		}
 
 		constructor() {

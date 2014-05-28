@@ -3,34 +3,34 @@ provide akra.system;
 include "common.afx";
 
 struct VS_IN_2{
-	float3 tex_coord0: TEXCOORD0;
-	float3 tex_coord1: TEXCOORD1;
-	float3 tex_coord2: TEXCOORD2;
-	float3 tex_coord3: TEXCOORD3;
-	float3 tex_coord4: TEXCOORD4;
-	float3 tex_coord5: TEXCOORD5;
-	float3 tex_coord6: TEXCOORD6;
-	float3 tex_coord7: TEXCOORD7;
-	float3 tex_coord8: TEXCOORD8;
-	float3 tex_coord9: TEXCOORD9;
-	float3 tex_coord10: TEXCOORD10;
-	float3 tex_coord11: TEXCOORD11;
-	float3 tex_coord12: TEXCOORD12;
-	float3 tex_coord13: TEXCOORD13;
-	float3 tex_coord14: TEXCOORD14;
-	float3 tex_coord15: TEXCOORD15;
+    float3 tex_coord0: TEXCOORD0;
+    float3 tex_coord1: TEXCOORD1;
+    float3 tex_coord2: TEXCOORD2;
+    float3 tex_coord3: TEXCOORD3;
+    float3 tex_coord4: TEXCOORD4;
+    float3 tex_coord5: TEXCOORD5;
+    float3 tex_coord6: TEXCOORD6;
+    float3 tex_coord7: TEXCOORD7;
+    float3 tex_coord8: TEXCOORD8;
+    float3 tex_coord9: TEXCOORD9;
+    float3 tex_coord10: TEXCOORD10;
+    float3 tex_coord11: TEXCOORD11;
+    float3 tex_coord12: TEXCOORD12;
+    float3 tex_coord13: TEXCOORD13;
+    float3 tex_coord14: TEXCOORD14;
+    float3 tex_coord15: TEXCOORD15;
 };
 
 struct VS_OUT_2{
-	float3 vert:VERTEX;
-	float3 norm:NORMAL;
+    float3 vert:VERTEX;
+    float3 norm:NORMAL;
 //    float4x4 normal_mat:NORMAL_MAT;
-	float3 tc_diffuse: TEXCOORD0;
-	float3 tc_ambient: TEXCOORD1;
-	float3 tc_specular: TEXCOORD2;
-	float3 tc_emissive: TEXCOORD3;
-	float3 tc_normal: TEXCOORD4;
-	float3 tc_shininess: TEXCOORD5;
+    float3 tc_diffuse: TEXCOORD0;
+    float3 tc_ambient: TEXCOORD1;
+    float3 tc_specular: TEXCOORD2;
+    float3 tc_emissive: TEXCOORD3;
+    float3 tc_normal: TEXCOORD4;
+    float3 tc_shininess: TEXCOORD5;
 };
 
 texture tex0:TEXTURE0;
@@ -42,41 +42,41 @@ texture tex5:TEXTURE5;
 
 sampler sampler_diffuse:S_DIFFUSE  = sampler_state
 {
-	Texture = <tex0>;
+    Texture = <tex0>;
 };
 sampler sampler_ambient:S_AMBIENT  = sampler_state
 {
-	Texture = <tex1>;
+    Texture = <tex1>;
 };
 sampler sampler_specular:S_SPECULAR  = sampler_state
 {
-	Texture = <tex2>;
+    Texture = <tex2>;
 };
 sampler sampler_emissive:S_EMISSIVE  = sampler_state
 {
-	Texture = <tex3>;
+    Texture = <tex3>;
 };
 sampler sampler_normal:S_NORMAL  = sampler_state
 {
-	Texture = <tex4>;
+    Texture = <tex4>;
 };
 
 sampler sampler_shininess: S_SHININESS = sampler_state
 {
-	Texture = <tex5>;
+    Texture = <tex5>;
 };
 
 VS_OUT_2 vs_mesh_texture(VS_IN_2 IN) {
-	VS_OUT_2 Out;
+    VS_OUT_2 Out;
 
-	Out.tc_diffuse = IN.tex_coord0;
-	Out.tc_ambient = IN.tex_coord1;
-	Out.tc_specular = IN.tex_coord2;
-	Out.tc_emissive = IN.tex_coord3;
-	Out.tc_normal = IN.tex_coord4;
-	Out.tc_shininess = IN.tex_coord5;
+    Out.tc_diffuse = IN.tex_coord0;
+    Out.tc_ambient = IN.tex_coord1;
+    Out.tc_specular = IN.tex_coord2;
+    Out.tc_emissive = IN.tex_coord3;
+    Out.tc_normal = IN.tex_coord4;
+    Out.tc_shininess = IN.tex_coord5;
 
-	return Out;
+    return Out;
 }
 
 shared PixelData pixelData;
@@ -109,9 +109,9 @@ void fs_mesh_texture_deferre_pass_2(VS_OUT_2 IN){
     pixelData.material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
     pixelData.material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
-	if(normalFix){
-		pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
-	}
+    if(normalFix){
+        pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
+    }
 }
 
 void fs_mesh_texture_normal_shininess(VS_OUT_2 IN){
@@ -129,7 +129,7 @@ void fs_mesh_texture_material(VS_OUT_2 IN){
 
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     pixelData.material.transparency = defaultMaterial.transparency;
-
+	
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
     }
@@ -147,6 +147,7 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
 
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     pixelData.material.transparency = defaultMaterial.transparency;
+	
     //pixelData.material.emissive = float4(pixelData.normal, 1.);;
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
@@ -174,7 +175,7 @@ float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
 
         texNormal.xy = (texNormal.xy - 0.5) * 2.;
 
-		texNormal = normalize(texNormal);
+        texNormal = normalize(texNormal);
 
         result_normal = m3fTransform * texNormal;
     }
@@ -198,7 +199,7 @@ sampler mirrorSampler = sampler_state{
 };
 
 void applyMirrorReflection(){
-    pixelData.material.emissive += tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
+    pixelData.material.emissive += .3 * tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
 }
 
 technique mesh_texture {

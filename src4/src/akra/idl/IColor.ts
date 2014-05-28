@@ -18,6 +18,7 @@ module akra {
 		getHtml(): string;
 		getHtmlRgba(): string;
 	
+		set(rgba: string): IColor;
 		set(cColor: IColorValue): IColor;
 		set(cColor: IColor): IColor;
 		set(r?: float, g?: float, b?: float, a?: float): IColor;
