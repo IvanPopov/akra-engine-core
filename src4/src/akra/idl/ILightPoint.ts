@@ -36,6 +36,12 @@ module akra {
 		getLightingDistance(): float;
 		setLightingDistance(fValue: float): void;		
 	
+		isRestricted(): boolean;
+		setRestrictedLocalBounds(pBox: IRect3d): void;
+		getRestrictedLocalBounds(): IRect3d;
+
+		restrictLight(bEnable: boolean, pBox?: IRect3d): void;
+
 		create(isShadowCaster?: boolean, iMaxShadowResolution?: uint): boolean;
 	
 		/** false if lighting not active or it's effect don't seen */

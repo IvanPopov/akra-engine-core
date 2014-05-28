@@ -257,10 +257,10 @@ module akra.render {
 
 			var pMat: IMat4 = new Mat4();
 			pMat.identity();
-			
+
 			pRenderable.getTechnique(".skybox-render").render.connect(
 				(pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => {
-					pMat.set(pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), 1.);
+					pMat.set(pViewport.getCamera().getFarPlane() * 2, pViewport.getCamera().getFarPlane() * 2, pViewport.getCamera().getFarPlane() * 2, 1.);
 
 					pTech.getPass(iPass).setTexture("SKYBOX_TEXTURE", (<IViewportSkybox>pViewport).getSkybox());
 					pTech.getPass(iPass).setUniform("MODEL_MATRIX", pMat);
@@ -323,6 +323,8 @@ module akra.render {
 			pPass.setForeign("NUM_SUN", pLightUniforms.sun.length);
 			pPass.setForeign("NUM_SUN_SHADOWS", pLightUniforms.sunShadows.length);
 
+			pPass.setForeign("NUM_OMNI_RESTRICTED", pLightUniforms.omniRestricted.length);
+
 			pPass.setStruct("points_omni", pLightUniforms.omni);
 			pPass.setStruct("points_project", pLightUniforms.project);
 			pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
@@ -330,9 +332,11 @@ module akra.render {
 			pPass.setStruct("points_sun", pLightUniforms.sun);
 			pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
 
-			for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
-				pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
-			}
+			pPass.setStruct("points_omni_restricted", pLightUniforms.omniRestricted);
+
+			//for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
+			//	pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
+			//}
 
 			pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
 			pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
@@ -381,6 +385,7 @@ module akra.render {
 
 						pTechnique.addComponent("akra.system.applyForwardShading");
 						pTechnique.addComponent("akra.system.omniLighting");
+						pTechnique.addComponent("akra.system.omniLightingRestricted");
 						pTechnique.addComponent("akra.system.projectLighting");
 						pTechnique.addComponent("akra.system.omniShadowsLighting");
 						pTechnique.addComponent("akra.system.projectShadowsLighting");

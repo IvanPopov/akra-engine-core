@@ -98,9 +98,10 @@ float4x4 proj_mat:PROJ_MATRIX;
 VS_OUT_2 vs_skybox_model(float3 pos: POSITION){
 	VS_OUT_2 Out;
 	
-	Out.position = proj_mat * view_mat * (model_mat * float4(pos, 1.0) + float4(cameraPos, 0.));
+	Out.position = proj_mat * view_mat * (model_mat * float4(pos, 1.0)/* + float4(cameraPos, 0.)*/);
 	Out.texCoordsSkybox = float3(model_mat * float4(pos, 1.0) - float4(cameraPos, 1.0));
 
+	Out.position.z = Out.position.w - 0.0001;
 	return Out;
 }
 

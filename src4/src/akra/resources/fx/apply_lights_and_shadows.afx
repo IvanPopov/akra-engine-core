@@ -9,6 +9,8 @@ foreign int NUM_PROJECT_SHADOWS;
 foreign int NUM_SUN;
 foreign int NUM_SUN_SHADOWS;
 
+foreign int NUM_OMNI_RESTRICTED;
+
 texture envTex0 : ENVMAP;
 
 sampler2D envSampler0 : ENV_SAMPLER_0 = sampler_state
@@ -32,6 +34,8 @@ LightProjectShadows points_project_shadows[NUM_PROJECT_SHADOWS];
 LightSun points_sun[NUM_SUN];
 LightSunShadows points_sun_shadows[NUM_SUN_SHADOWS];
 
+LightOmniRestricted points_omni_restricted[NUM_OMNI_RESTRICTED];
+
 shared float4 result_color = float4(0.);
 shared PixelData pixelData;
 
@@ -45,6 +49,17 @@ float4 applyMaterialAlpha() : COLOR {
 float4 applyLightOmni() : COLOR {
     for(int i = 0; i < NUM_OMNI; i++){
         result_color += applyBaseLightParams(pixelData, points_omni[i].lightData);
+    }
+    
+    //result_color = float4(pixelData.normal, 1.);
+    return returnColor(result_color);
+}
+
+float4 applyLightOmniRestricted() : COLOR {
+    for(int i = 0; i < NUM_OMNI_RESTRICTED; i++){
+    	if(isPointInBox((points_omni_restricted[i].toLightSpace * float4(pixelData.position, 1.)).xyz,  points_omni_restricted[i].point0, points_omni_restricted[i].point1)){
+        	result_color += applyBaseLightParams(pixelData, points_omni_restricted[i].lightData);
+    	}
     }
     
     //result_color = float4(pixelData.normal, 1.);
@@ -186,6 +201,7 @@ float4 applySunLightShadows() : COLOR {
     return returnColor(result_color);
 };
 
+
 float4 applyPBSReflection(): COLOR {
     float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
             pixelData.material.specular.xyz, pixelData.material.shininess, envSampler0);
@@ -254,6 +270,14 @@ technique omniLighting{
     };
 };
 
+technique omniLightingRestricted{
+    pass {
+        if(NUM_OMNI_RESTRICTED > 0){
+            PixelShader = compile applyLightOmniRestricted();
+        }
+    };
+};
+
 technique projectLighting{
     pass applyProjectLighting{
         if(NUM_PROJECT > 0){
@@ -293,6 +317,7 @@ technique sunShadowsLighting{
         }
     }
 };
+
 
 technique pbsReflection{
     pass applyPbsReflection{

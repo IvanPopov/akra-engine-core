@@ -21,7 +21,9 @@ module akra.render {
 			textures: [],
 			samplersOmni: [],
 			samplersProject: [],
-			samplersSun: []
+			samplersSun: [],
+
+			omniRestricted: []
 		};
 
 		protected _pLightPoints: IObjectArray<ILightPoint> = null;
@@ -98,7 +100,9 @@ module akra.render {
 					textures: [],
 					samplersOmni: [],
 					samplersProject: [],
-					samplersSun: []
+					samplersSun: [],
+
+					omniRestricted: []
 				};
 			}
 		}
@@ -128,7 +132,7 @@ module akra.render {
 			var m4fShadow: IMat4, m4fToLightSpace: IMat4;
 
 			var iLastTextureIndex: int = 0;
-			var sTexture: string = "TEXTURE";
+			//var sTexture: string = "TEXTURE";
 			var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
 
 			this.resetUniforms();
@@ -160,9 +164,9 @@ module akra.render {
 							pShadowCaster = pShadowCasterCube[j];
 							m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
 							pUniforms.textures.push(pDepthCube[j]);
-							sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
+							//sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 
-							(<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
+							(<UniformOmniShadow>pUniformData).setSampler(pDepthCube[j], j);
 							pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
 							(<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.getOptimizedProjection(), j);
 						}
@@ -170,9 +174,19 @@ module akra.render {
 						pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);
 					}
 					else {
-						pUniformData = UniformOmni.temp();
-						(<UniformOmni>pUniformData).setLightData(<IOmniParameters>pLight.getParams(), v3fLightTransformPosition);
-						pUniforms.omni.push(<UniformOmni>pUniformData);
+						if (pLight.isRestricted()) {
+							pUniformData = UniformOmniRestricted.temp();
+							(<UniformOmniRestricted>pUniformData).setLightData(<IOmniParameters>pLight.getParams(), v3fLightTransformPosition);
+
+							m4fToLightSpace = pLight.getInverseWorldMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
+							(<UniformOmniRestricted>pUniformData).setRestrictedData(pLight.getRestrictedLocalBounds(), m4fToLightSpace);
+							pUniforms.omniRestricted.push(<UniformOmniRestricted>pUniformData);
+						}
+						else {
+							pUniformData = UniformOmni.temp();
+							(<UniformOmni>pUniformData).setLightData(<IOmniParameters>pLight.getParams(), v3fLightTransformPosition);
+							pUniforms.omni.push(<UniformOmni>pUniformData);
+						}
 					}
 				}
 				else if (pLight.getLightType() === ELightTypes.PROJECT) {
@@ -185,9 +199,9 @@ module akra.render {
 
 						m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
 						pUniforms.textures.push(pProjectLight.getDepthTexture());
-						sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
+						//sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 
-						(<UniformProjectShadow>pUniformData).setSampler(sTexture);
+						(<UniformProjectShadow>pUniformData).setSampler(pProjectLight.getDepthTexture());
 						pUniforms.samplersProject.push((<UniformProjectShadow>pUniformData).SHADOW_SAMPLER);
 						(<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.getProjectionMatrix(), pShadowCaster.getOptimizedProjection());
 						pUniforms.projectShadows.push(<UniformProjectShadow>pUniformData);
@@ -213,9 +227,9 @@ module akra.render {
 						pUniforms.sunShadows.push(<UniformSunShadow>pUniformData);
 
 						pUniforms.textures.push(pSunLight.getDepthTexture());
-						sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
+						//sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 
-						(<UniformSunShadow>pUniformData).setSampler(sTexture);
+						(<UniformSunShadow>pUniformData).setSampler(pSunLight.getDepthTexture());
 						pUniforms.samplersSun.push((<UniformSunShadow>pUniformData).SHADOW_SAMPLER);
 
 						m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
@@ -248,6 +262,8 @@ module akra.render {
 			pUniforms.samplersProject.clear();
 			pUniforms.samplersOmni.clear();
 			pUniforms.samplersSun.clear();
+
+			pUniforms.omniRestricted.clear();
 		}
 
 		protected initTextureForTransparentObjects(): void {
