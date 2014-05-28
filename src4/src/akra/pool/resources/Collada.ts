@@ -115,7 +115,7 @@ module akra.pool.resources {
 		private _pLinks: IColladaLinkMap = {};
 		private _pLib: IColladaLibraryMap = {};
 		private _pMeshCache: IMap<IMesh> = {};
-		private _pMaterialCache: IMap<IMaterial> = {};
+		private _pMaterialCache: IMap<IColladaPhong> = {};
 
 		private _pAsset: IColladaAsset = null;
 		private _pVisualScene: IColladaVisualScene = null;
@@ -1483,7 +1483,11 @@ module akra.pool.resources {
 					emissive: null,
 					normal: null,
 					shininess: null
-				}
+				},
+
+				material: null,
+
+				xml: pXML
 			};
 
 			var pXMLData: Element;
@@ -1643,7 +1647,9 @@ module akra.pool.resources {
 			var pMaterial: IColladaMaterial = {
 				id: attr(pXML, "id"),
 				name: attr(pXML, "name"),
-				instanceEffect: this.COLLADAInstanceEffect(firstChild(pXML, "instance_effect"))
+				instanceEffect: this.COLLADAInstanceEffect(firstChild(pXML, "instance_effect")),
+
+				xml: pXML
 			};
 
 			this.link(pMaterial);
@@ -2363,12 +2369,13 @@ module akra.pool.resources {
 				var sEffectId: string = pMaterialInst.material.instanceEffect.effect.id;
 				var pEffect: IColladaEffect = pEffects.effect[sEffectId];
 				var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
-				var pMaterial: IMaterial = this.findMaterial(sEffectId);
+				var pMaterial: IMaterial = pPhongMaterial.material;
 
 				if (isNull(pMaterial)) {
 					pMaterial = material.create(sEffectId);
-					this.addMaterial(pMaterial);
 					pMaterial.set(<IMaterialBase>pPhongMaterial);
+					pPhongMaterial.material = pMaterial;
+					this.addMaterial(sEffectId, pPhongMaterial);
 				}
 
 				for (var j: int = 0; j < pMesh.getLength(); ++j) {
@@ -3052,12 +3059,12 @@ module akra.pool.resources {
 			this._pMeshCache[pMesh.getName()] = pMesh;
 		}
 
-		private findMaterial(sName: string): IMaterial {
+		private findMaterial(sName: string): IColladaPhong {
 			return this._pMaterialCache[sName] || null;
 		}
 
-		private addMaterial(pMaterial: IMaterial): void {
-			this._pMaterialCache[pMaterial.name] = pMaterial;
+		private addMaterial(sName: string, pMaterial: IColladaPhong): void {
+			this._pMaterialCache[sName] = pMaterial;
 		}
 
 		private prepareInput(pInput: IColladaInput): IColladaInput {
@@ -3249,7 +3256,69 @@ module akra.pool.resources {
 			return true;
 		}
 
+		//upload material into collada
+		private uploadMaterial(sMaterial: string): boolean {
+			var pPhongMaterial = this.findMaterial(sMaterial);
+
+			if (isNull(pPhongMaterial)) {
+				return false;
+			}
+
+			var pMaterial: IMaterial = pPhongMaterial.material;
+			var pXML: Element = pPhongMaterial.xml;
+
+			function replaceColor(pXML: Element, pColor: IColor): void {
+				var pXMLColor: Element = firstChild(pXML, "color");
+
+				if (!isDefAndNotNull(pXMLColor)) {
+					pXMLColor = <Element>conv.parseHTML("<color />")[0];
+					pXML.appendChild(pXMLColor);
+				}
+
+				pXMLColor.textContent = pColor.r + " " + pColor.g + " " + pColor.b + " " + pColor.a;
+			}
+
+			function replaceValue(pXML: Element, pValue: float): void {
+				var pXMLColor: Element = firstChild(pXML, "float");
+
+				if (!isDefAndNotNull(pXMLColor)) {
+					pXMLColor = <Element>conv.parseHTML("<float />")[0];
+					pXML.appendChild(pXMLColor);
+				}
+
+				pXMLColor.textContent = String(pValue);
+			}
+
+			replaceColor(firstChild(pXML, "specular"), pMaterial.specular);
+			replaceColor(firstChild(pXML, "diffuse"), pMaterial.diffuse);
+			replaceColor(firstChild(pXML, "ambient"), pMaterial.ambient);
+			replaceColor(firstChild(pXML, "emission"), pMaterial.emissive);
+			replaceValue(firstChild(pXML, "transparency"), pMaterial.transparency);
+			replaceValue(firstChild(pXML, "shininess"), pXML.tagName === "phong"? pMaterial.shininess * 128.: pMaterial.shininess);
+
+			
+		}
+
+		private syncMaterials(): void {
+			Object.keys(this._pMaterialCache).forEach((sMaterial: string) => {
+				this.uploadMaterial(sMaterial);
+			});
+		}
+
+		extractUsedMaterials(): IMaterial[] {
+			var pList: IMaterial[] = [];
+
+			Object.keys(this._pMaterialCache).forEach((sName: string) => {
+				pList.push(this._pMaterialCache[sName].material);
+			});
+
+			return pList;
+		}
+
 		toBlob(): Blob {
+
+			this.syncMaterials();
+
 			return new Blob([
 				'<?xml version="1.0" encoding="utf-8"?>',
 				'<COLLADA xmlns="http://www.collada.org/2008/03/COLLADASchema" version="' + (this.getVersion() || "1.5.0") + '">',
@@ -3257,7 +3326,6 @@ module akra.pool.resources {
 				'</COLLADA>'
 			], { mime: "text/xml" });
 		}
-
 
 		extractMesh(sMeshName: string = null): IMesh {
 			return this.buildMeshByName(sMeshName);

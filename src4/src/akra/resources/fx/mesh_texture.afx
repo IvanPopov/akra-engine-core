@@ -198,7 +198,7 @@ sampler mirrorSampler = sampler_state{
 };
 
 void applyMirrorReflection(){
-    pixelData.material.emissive += 1.5 * tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
+    pixelData.material.emissive += .3 * tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
 }
 
 technique mesh_texture {

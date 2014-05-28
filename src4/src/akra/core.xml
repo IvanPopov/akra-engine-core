@@ -99,6 +99,7 @@
           <ResourceFile Path="resources/fx/Plane.afx"/>
           <ResourceFile Path="resources/fx/fxaa.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/blur.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx">

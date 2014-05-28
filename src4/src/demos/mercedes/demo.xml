@@ -28,7 +28,8 @@
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="data" />
-        <ResourceFile Path="mercedes.map"/>
+        <Folder Path="models/images" />
+        <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE"/>
         <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
         <ResourceFile Path="data/textures/skyboxes/colosseum.dds" Name="SKYBOX_COLOSSEUM"/>

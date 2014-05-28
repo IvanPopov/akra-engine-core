@@ -64,6 +64,7 @@
     <Content Include="akra\resources\fx\apply_transparency.afx" />
     <Content Include="akra\resources\fx\brdf.afx" />
     <Content Include="akra\resources\fx\render_plane_culling.afx" />
+    <Content Include="akra\resources\fx\blur.afx" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -539,9 +540,11 @@
     <TypeScriptCompile Include="akra\render\LightingUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
     <TypeScriptCompile Include="akra\render\LPPViewport.ts" />
+    <TypeScriptCompile Include="akra\render\MirrorViewport.ts" />
     <TypeScriptCompile Include="akra\render\Renderer.ts" />
     <TypeScriptCompile Include="akra\render\RenderTexture.ts" />
     <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\render\ShadedViewport.ts" />
     <TypeScriptCompile Include="akra\render\ShadowViewport.ts" />
     <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
     <TypeScriptCompile Include="akra\render\ViewportWithTransparencyMode.ts" />
@@ -611,7 +614,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:5311/</IISUrl>
+          <IISUrl>http://localhost:19603/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

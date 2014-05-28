@@ -402,14 +402,14 @@ module akra {
 		ambient: IColorValue;
 		emissive: IColorValue;
 		shininess: float;
-		
+
 		reflective: IColorValue;
 		reflectivity: float;
 		transparent: IColorValue;
 		transparency: float;
-	
+
 		indexOfRefraction: float;
-	
+
 		//------------------
 		textures?: {
 			diffuse: IColladaTexture;
@@ -419,6 +419,9 @@ module akra {
 			//additional, from oppen collada export
 			normal: IColladaTexture;
 		};
+
+		//akra material created from this
+		material: IMaterial;
 	}
 	
 	export interface IColladaEffectTechnique extends IColladaEntry {

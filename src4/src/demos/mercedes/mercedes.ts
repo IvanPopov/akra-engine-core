@@ -151,20 +151,48 @@ module akra {
 
 
 
-	function setupMaterialPicking(pViewport: ILPPViewport): void {
+	function setupMaterialPicking(pViewport: ILPPViewport, pList?: IMaterial[]): void {
 		var pControls: dat.GUI = pGUI.addFolder("material");
 		(<any>pControls).open();
 
+		var pNames: string[] = [];
+
+		if (pList) {
+			pList.forEach((pMat) => { pNames.push(pMat.name); });
+		}
+
 		var pMat = {
+			list: null,
 			origin: null,
-			name: "unknown", glossiness: 1e-2,
+			name: "unknown", glossiness: 1e-2, transparency: 1e-2,
 			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000"
 		};
+
+		function chose(pOrigin: IMaterial): void {
+			pMat.origin = pOrigin;
+			pMat.name = pOrigin.name;
+			pMat.glossiness = pOrigin.shininess;
+			pMat.transparency = pOrigin.transparency;
+			pMat.diffuse = pOrigin.diffuse.getHtml();
+			pMat.emissive = pOrigin.emissive.getHtml();
+			pMat.specular = pOrigin.specular.getHtml();
+		}
+
+
+		pControls.add(pMat, "list", pNames).name("material").onChange((sName: string) => {
+			chose(pList[pNames.indexOf(sName)]);
+		});
 
 		pControls.add(pMat, "name").listen();
 		pControls.add(pMat, "glossiness", 0., 1.).listen().onChange(() => {
 			if (pMat.origin) {
 				pMat.origin.shininess = pMat.glossiness;
+			}
+		});
+
+		pControls.add(pMat, "transparency", 0., 1.).listen().onChange(() => {
+			if (pMat.origin) {
+				pMat.origin.transparency = pMat.transparency;
 			}
 		});
 
@@ -194,12 +222,7 @@ module akra {
 			if (pResult.renderable) {
 				var pOrigin: IMaterial = pResult.renderable.getMaterial();
 
-				pMat.origin = pOrigin;
-				pMat.name = pOrigin.name;
-				pMat.glossiness = pOrigin.shininess;
-				pMat.diffuse = pOrigin.diffuse.getHtml();
-				pMat.emissive = pOrigin.emissive.getHtml();
-				pMat.specular = pOrigin.specular.getHtml();
+				chose(pOrigin);
 			}
 		});
 	}
@@ -218,7 +241,6 @@ module akra {
 
 
 		pGUI = new dat.GUI();
-		setupMaterialPicking(<ILPPViewport>pViewport);
 		
 		pViewport.getEffect().addComponent("akra.system.linearFog");
 		pViewport.getEffect().addComponent("akra.system.exponentialFog");
@@ -292,9 +314,10 @@ module akra {
 		var pPBSFolder = pGUI.addFolder("pbs");
 
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "nightsky" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-				//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-			}
+			
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+			
+			
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
@@ -327,7 +350,7 @@ module akra {
 	function createMirrorViewport(pReflNode: INode): IViewport {
 
 		pReflectionTexture = pRmgr.createTexture(".reflection_texture");
-		pReflectionTexture.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+		pReflectionTexture.create(1024, 1024, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
@@ -336,12 +359,12 @@ module akra {
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 
-		pEffect.addComponent("akra.system.blur");
+		
 
 		(<render.LPPViewport>pTexViewport.getInternalViewport()).render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
-			pPass.setUniform("BLUR_RADIUS", 5.0);
+			pPass.setUniform("BLUR_RADIUS", 2.0);
 		});
 
 		return pTexViewport;
@@ -352,46 +375,46 @@ module akra {
 
 	export var pOmniLights: INode = null;
 	function createLighting(): void {
-		pOmniLights = pScene.createNode('lights-root');
-		pOmniLights.attachToParent(pCamera);
-		pOmniLights.setInheritance(ENodeInheritance.ALL);
+		//pOmniLights = pScene.createNode('lights-root');
+		//pOmniLights.attachToParent(pCamera);
+		//pOmniLights.setInheritance(ENodeInheritance.ALL);
 
-		var pOmniLight: IOmniLight;
-		var pOmniLightSphere;
+		//var pOmniLight: IOmniLight;
+		//var pOmniLightSphere;
 
-		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
+		//pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
 
-		pOmniLight.attachToParent(pOmniLights);
-		pOmniLight.setEnabled(true);
-		pOmniLight.getParams().ambient.set(0.1);
-		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		pOmniLight.setShadowCaster(true);
-		pOmniLight.setInheritance(ENodeInheritance.ALL);
+		//pOmniLight.attachToParent(pOmniLights);
+		//pOmniLight.setEnabled(true);
+		//pOmniLight.getParams().ambient.set(0.1);
+		//pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
+		//pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		//pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		//pOmniLight.setShadowCaster(true);
+		//pOmniLight.setInheritance(ENodeInheritance.ALL);
 
-		pOmniLight.setPosition(lightPos1);
+		//pOmniLight.setPosition(lightPos1);
 
-		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
+		//pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-		pOmniLight.attachToParent(pOmniLights);
-		pOmniLight.setEnabled(true);
-		pOmniLight.getParams().ambient.set(0.1);
-		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		pOmniLight.setShadowCaster(false);
-		pOmniLight.setInheritance(ENodeInheritance.ALL);
+		//pOmniLight.attachToParent(pOmniLights);
+		//pOmniLight.setEnabled(true);
+		//pOmniLight.getParams().ambient.set(0.1);
+		//pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
+		//pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		//pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		//pOmniLight.setShadowCaster(false);
+		//pOmniLight.setInheritance(ENodeInheritance.ALL);
 
-		pOmniLight.setPosition(lightPos2);
+		//pOmniLight.setPosition(lightPos2);
 	}
 
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['nightsky'];
 
-		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			//(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
-		}
+		
+		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+	
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
 		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
@@ -399,52 +422,10 @@ module akra {
 		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
 
 		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<ILPPViewport>((<render.MirrorViewport>pReflectionViewport).getInternalViewport())).setDefaultEnvironmentMap(pEnvTexture);
+		(<ILPPViewport>((<render.MirrorViewport>pReflectionViewport).getInternalViewport())).setShadingModel(EShadingModel.PBS_SIMPLE);
 	}
 
-	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
-		var pModelRoot: ISceneNode = pScene.createNode();
-		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
-
-		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
-		if (pRoot != null) {
-			pModelRoot.attachToParent(pRoot);
-		}
-		pModelRoot.setInheritance(ENodeInheritance.ROTPOSITION);
-
-		function fnLoadModel(pModel: ICollada): void {
-			pModel.attachToScene(pModelRoot);
-
-			if (pModel.isAnimationLoaded()) {
-				var pController: IAnimationController = pEngine.createAnimationController();
-				var pContainer: IAnimationContainer = animation.createContainer();
-				var pAnimation: IAnimation = pModel.extractAnimation(0);
-
-				pController.attach(pModelRoot);
-
-				pContainer.setAnimation(pAnimation);
-				pContainer.useLoop(true);
-				pController.addAnimation(pContainer);
-			}
-
-			pScene.beforeUpdate.connect(() => {
-				pModelRoot.addRelRotationByXYZAxis(0, 0, 0);
-				// pController.update();
-			});
-
-			if (isFunction(fnCallback)) {
-				fnCallback(pModelRoot);
-			}
-		}
-
-		if (pModel.isResourceLoaded()) {
-			fnLoadModel(pModel);
-		}
-		else {
-			pModel.loaded.connect(fnLoadModel);
-		}
-
-		return pModelRoot;
-	}
 
 	function createStatsDIV() {
 		var pStatsDiv = document.createElement("div");
@@ -488,37 +469,170 @@ module akra {
 		createSkyBox();
 
 		var pPlasticMaterial: IMaterial = new material.Material();
-		pPlasticMaterial.shininess = 0.7;
-		pPlasticMaterial.set("plastic")
+		pPlasticMaterial.shininess = 0.176;
+		//pPlasticMaterial.set("plastic");
+		pPlasticMaterial.diffuse.set("#bbbbbb");
+		pPlasticMaterial.specular.set("#4a4a4a");
 
-		pModelTable = addons.trifan(pScene, 2.5, 96);
+		var iTableRadius: float = 3.15;
+
+		pModelTable = addons.trifan(pScene, iTableRadius, 96);
 		pModelTable.attachToParent(pScene.getRootNode());
 		pModelTable.setPosition(0., -1.25, 0.);
 
+		//var pBottomLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
+		//pBottomLight.attachToParent(pModelTable);
+		//pBottomLight.getParams().diffuse.set(color.GREEN);
+		//pBottomLight.getParams().attenuation.set(1., 0., 0.);
+
+		function createSceneLights() {
+			var h = 1.;
+			var d = 200;
+			var iPower = 1.;
+
+			function fuzzyLight(pLight: ILightPoint, iDelay, bFirst = true): void {
+				//pLight.setEnabled(false);
+				
+				//setTimeout(() => {
+				//	pLight.setEnabled(true);
+				//	setTimeout(() => {
+				//		pLight.setEnabled(false);
+				//		setTimeout(() => {
+				//			pLight.setEnabled(true);
+				//			setTimeout(() => {
+				//				pLight.setEnabled(false);
+				//				setTimeout(() => {
+				//					pLight.setEnabled(true);
+				//					setTimeout(() => {
+				//						pLight.setEnabled(false);
+				//						setTimeout(() => {
+				//							pLight.setEnabled(true);
+
+				//							setTimeout(() => {
+				//								fuzzyLight(pLight, iDelay, false);
+				//							}, 15000);
+											
+				//						}, 300 + Math.random() * 200);
+				//					}, 100 + Math.random() * 100);
+				//				}, 100 + Math.random() * 100);
+				//			}, 100 + Math.random() * 100);
+				//		}, 100 + Math.random() * 100);
+				//	}, 100 + Math.random() * 100);
+				//}, iDelay + 2000);
+			}
+
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			pLight.attachToParent(pModelTable);
+			pLight.setPosition(d, h, 1.4);
+			pLight.getParams().attenuation.set(iPower, 0., 0.);
+			pLight.getParams().diffuse.set(1.);
+			pLight.lookAt(Vec3.temp(0., h, 1.4));
+			fuzzyLight(pLight, 1000);
+			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			pLight.attachToParent(pModelTable);
+			pLight.setPosition(-d, h, 1.4);
+			pLight.getParams().attenuation.set(iPower, 0., 0.);
+			pLight.getParams().diffuse.set(1.);
+			pLight.lookAt(Vec3.temp(0., h, 1.4));
+			fuzzyLight(pLight, 2000);
+			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+
+
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			pLight.attachToParent(pModelTable);
+			pLight.setPosition(d, h, -1.5);
+			pLight.getParams().attenuation.set(iPower, 0., 0.);
+			pLight.getParams().diffuse.set(1.);
+			pLight.lookAt(Vec3.temp(0., h, -1.5));
+			fuzzyLight(pLight, 3000);
+			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			pLight.attachToParent(pModelTable);
+			pLight.setPosition(-d, h, -1.5);
+			pLight.getParams().attenuation.set(iPower, 0., 0.);
+			pLight.getParams().diffuse.set(1.);
+			pLight.lookAt(Vec3.temp(0., h, -1.5));
+			fuzzyLight(pLight, 4000);
+			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			pLight.attachToParent(pModelTable);
+			pLight.setPosition(0, h, d);
+			pLight.getParams().attenuation.set(iPower, 0., 0.);
+			pLight.getParams().diffuse.set(1.);
+			pLight.lookAt(Vec3.temp(0., h, 0));
+			fuzzyLight(pLight, 5000);
+
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			pLight.attachToParent(pModelTable);
+			pLight.setPosition(0, 10, 0.);
+			pLight.update();
+			pLight.getParams().attenuation.set(iPower, 0., 0.);
+			pLight.getParams().diffuse.set(1.);
+			pLight.lookAt(Vec3.temp(0., 0., 0), Vec3.temp(0., 0., 1.));
+			addons.basis(pScene, 0, .1).attachToParent(pLight);
+			fuzzyLight(pLight, 6000);
+		}
+
+		createSceneLights();
+
 		var pModelTableSubset = pModelTable.getMesh().getSubset(0);
 
-		pModelTableSubset.getSurfaceMaterial().setMaterial(pPlasticMaterial);
+		var pMat: IMaterial = pModelTableSubset.getMaterial();
+		pMat.diffuse.set("#525252");
+		pMat.specular.set("#878787");
+		pMat.shininess = 0.871;
 
 		pModelTableSubset.getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
 			pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
 			pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
 		});
 
-		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, .35, 96, 1.);
+		var iCylinderHeight = .025;
+		var pCylinder = addons.cylinder(pScene, iTableRadius, iTableRadius, iCylinderHeight, 96, 1.);
 		pCylinder.attachToParent(pScene.getRootNode());
-		pCylinder.setPosition(0., -1.25 - 0.35 / 2, 0.);
+		pCylinder.setPosition(0., -1.25 - iCylinderHeight / 2, 0.);
 		var pCylinderSubset = pCylinder.getMesh().getSubset(0);
 		pCylinderSubset.getMaterial().shininess = 0.7;
-		pCylinderSubset.getSurfaceMaterial().setMaterial(pPlasticMaterial);
+		//pCylinderSubset.getSurfaceMaterial().setMaterial(pPlasticMaterial);
+		var pMat: IMaterial = pCylinderSubset.getMaterial();
+		pMat.emissive.set("#00ff00");
+		pMat.diffuse.set("#000000");
+		pMat.specular.set("#6e6e6e");
+		pMat.shininess = 0.;
 
+		var pSurface = addons.createQuad(pScene, 100);
+		pSurface.attachToParent(pScene.getRootNode());
+		pSurface.setPosition(0., -1.25 - iCylinderHeight, 0.);
+		
+		//var pSurfMat = pSurface.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pPlasticMaterial);
+		var pMat: IMaterial = pSurface.getMesh().getSubset(0).getMaterial();
+		pMat.emissive.set("#000000");
+		pMat.diffuse.set("#464646");
+		pMat.specular.set("#0f0f0f");
+		pMat.shininess = 0.386;
 
-		var pMercedes = null;
+		var pMercedes: ISceneNode = pScene.createNode("mercedes");
+		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel("MERCEDES.DAE");
 
-		pMercedes = loadModel("MERCEDES.DAE", null, "mercedes", pModelTable).setPosition(0., 0., 0.);
+		pMercedes.setInheritance(ENodeInheritance.ROTPOSITION);
+		pModel.attachToScene(pMercedes);
+
 		pMercedes.attachToParent(pModelTable);
 
 		pMirror.attachToParent(pModelTable);
 		pMirror.setPosition(0., 0., 0.);
+
+		setupMaterialPicking(<ILPPViewport>pViewport, (<pool.resources.Collada>pModel).extractUsedMaterials());
+
+		pGUI.add({
+			"save": () => {
+				saveAs((<pool.resources.Collada>pModel).toBlob(), "mercedes.DAE");
+			}
+		}, "save");
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pInputViewport: IViewport) => {
 			if (pInputViewport === pViewport) {

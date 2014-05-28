@@ -103,5 +103,15 @@ module akra {
 		getLightSources(): IObjectArray<ILightPoint>;
 		setDefaultEnvironmentMap(pTexture: ITexture): void;
 		getDefaultEnvironmentMap(): ITexture;
+
+		getDepthTexture(): ITexture;
+
+		setShadowEnabled(bValue: boolean): void;
+		isShadowEnabled(): boolean;
+
+		setTransparencySupported(bEnable: boolean): void;
+		isTransparencySupported(): boolean;
+
+		_setLightUniformsManual(bValue: boolean, pUniformsMap?: any): void;
 	}
 }

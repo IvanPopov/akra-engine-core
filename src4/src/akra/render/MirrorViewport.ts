@@ -39,6 +39,8 @@ module akra.render {
 			(<any>this._pInternal3dViewport)._csDefaultRenderMethod = this._csDefaultRenderMethod + "render_plane_culling";
 			pTarget.addViewport(this._pInternal3dViewport);
 			this._pInternal3dViewport.setAutoUpdated(false);
+			(<IShadedViewport>this._pInternal3dViewport).setShadowEnabled(false);
+			(<IShadedViewport>this._pInternal3dViewport).setTransparencySupported(false);
 			
 		}
 
@@ -72,7 +74,7 @@ module akra.render {
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 						pTechnique.addComponent("akra.system.render_plane_culling");
-                        pTechnique.render.connect( this, this._onRenderReflection );
+						pTechnique.render.connect( this, this._onRenderReflection );
 					}
 				}
 			}

@@ -5461,6 +5461,7 @@ declare module akra {
             emissive: IColladaTexture;
             normal: IColladaTexture;
         };
+        material: IMaterial;
     }
     interface IColladaEffectTechnique extends IColladaEntry {
         sid: string;
@@ -12784,7 +12785,7 @@ declare module akra.render {
 declare module akra.render {
     class RenderTechnique implements IRenderTechnique {
         public guid: number;
-        public render: ISignal<(pTech: IRenderTechnique, iPass: any, pRenderable: any, pSceneObject: any, pViewport: any) => void>;
+        public render: ISignal<(pTech: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => void>;
         private _pMethod;
         private _isFreeze;
         private _pComposer;
@@ -13582,6 +13583,12 @@ declare module akra {
         getLightSources(): IObjectArray<ILightPoint>;
         setDefaultEnvironmentMap(pTexture: ITexture): void;
         getDefaultEnvironmentMap(): ITexture;
+        getDepthTexture(): ITexture;
+        setShadowEnabled(bValue: boolean): void;
+        isShadowEnabled(): boolean;
+        setTransparencySupported(bEnable: boolean): void;
+        isTransparencySupported(): boolean;
+        _setLightUniformsManual(bValue: boolean, pUniformsMap?: any): void;
     }
 }
 declare module akra {
@@ -13798,6 +13805,35 @@ declare module akra.render {
         samplersOmni: IAFXSamplerState[];
         samplersProject: IAFXSamplerState[];
         samplersSun: IAFXSamplerState[];
+    }
+}
+declare module akra.render {
+    class ShadedViewport extends Viewport3D implements IShadedViewport {
+        public _pLightingUnifoms: UniformMap;
+        public _pLightPoints: IObjectArray<ILightPoint>;
+        public _pTextureForTransparentObjects: ITexture;
+        private _eShadingModel;
+        private _pDefaultEnvMap;
+        private _isTransparencySupported;
+        private _isShadowEnabled;
+        private _bManualUpdateForLightUniforms;
+        private _pDepthBufferTexture;
+        public getDepthTexture(): ITexture;
+        public setDepthTexture(pTexture: ITexture): void;
+        public getLightSources(): IObjectArray<ILightPoint>;
+        public setShadingModel(eModel: EShadingModel): void;
+        public getShadingModel(): EShadingModel;
+        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
+        public getDefaultEnvironmentMap(): ITexture;
+        public setTransparencySupported(bEnable: boolean): void;
+        public isTransparencySupported(): boolean;
+        public setShadowEnabled(bValue: boolean): void;
+        public isShadowEnabled(): boolean;
+        public _setLightUniformsManual(bValue: boolean, pUniformsMap?: any): void;
+        public _isManualUpdateForLightUniforms(): boolean;
+        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
+        public resetUniforms(): void;
+        public initTextureForTransparentObjects(): void;
     }
 }
 declare module akra.data {
@@ -15489,37 +15525,25 @@ declare module akra.scene {
     }
 }
 declare module akra.render {
-    class DSViewport extends Viewport3D implements IDSViewport {
+    class DSViewport extends ShadedViewport implements IDSViewport {
         public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
         public addedBackground: ISignal<(pViewport: IViewport, pTexture: ITexture) => void>;
         private _pDeferredEffect;
         private _pDeferredColorTextures;
-        private _pDeferredDepthTexture;
         private _pDeferredView;
         private _pDeferredSkyTexture;
         private _pLightDL;
-        private _pLightPoints;
-        private _pLightingUnifoms;
         private _pHighlightedObject;
-        private _eShadingModel;
-        private _pDefaultEnvMap;
-        private _isTransparencySupported;
-        private _pTextureForTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
         public getEffect(): IEffect;
-        public getLightSources(): IObjectArray<ILightPoint>;
         public getColorTextures(): ITexture[];
-        public getDepthTexture(): ITexture;
         public getView(): IRenderableObject;
         public getTextureWithObjectID(): ITexture;
         public setShadingModel(eModel: EShadingModel): void;
-        public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
-        public getDefaultEnvironmentMap(): ITexture;
         public setTransparencySupported(bEnable: boolean): void;
-        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15540,9 +15564,6 @@ declare module akra.render {
         public setAntialiasing(bEnabled?: boolean): void;
         public destroy(): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
-        private resetUniforms();
-        private initTextureForTransparentObjects();
     }
 }
 declare module akra {
@@ -15553,12 +15574,10 @@ declare module akra {
     }
 }
 declare module akra.render {
-    class LPPViewport extends Viewport3D implements ILPPViewport {
+    class LPPViewport extends ShadedViewport implements ILPPViewport {
         public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
         /** Buffer with normal, shininess and objectID */
         private _pNormalBufferTexture;
-        /** Depth buffer of scene */
-        private _pDepthBufferTexture;
         /**
         * 0 - Diffuse and specular
         * 1 - Ambient and shadow
@@ -15567,31 +15586,20 @@ declare module akra.render {
         /** Resyult of LPP with out posteffects */
         private _pResultLPPTexture;
         private _pViewScreen;
-        private _pLightPoints;
         private _v2fTextureRatio;
         private _v2fScreenSize;
-        private _pLightingUnifoms;
         private _pHighlightedObject;
         private _pSkyboxTexture;
-        private _eShadingModel;
-        private _pDefaultEnvMap;
-        private _isTransparencySupported;
-        private _pTextureForTransparentObjects;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
         public getView(): IRenderableObject;
-        public getDepthTexture(): ITexture;
         public getEffect(): IEffect;
         public getSkybox(): ITexture;
         public getTextureWithObjectID(): ITexture;
-        public getLightSources(): IObjectArray<ILightPoint>;
         public setShadingModel(eModel: EShadingModel): void;
-        public getShadingModel(): EShadingModel;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
-        public getDefaultEnvironmentMap(): ITexture;
         public setTransparencySupported(bEnable: boolean): void;
-        public isTransparencySupported(): boolean;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _getRenderId(x: number, y: number): number;
@@ -15617,51 +15625,35 @@ declare module akra.render {
         private prepareRenderMethods();
         private updateRenderTextureDimensions(pTexture);
         private prepareForLPPShading();
-        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
-        private resetUniforms();
-        private initTextureForTransparentObjects();
     }
 }
 declare module akra {
     interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
         _renderOnlyTransparentObjects(bValue: boolean): void;
+        _setSkyboxModel(pRenderable: IRenderableObject): void;
     }
 }
 declare module akra.render {
-    class ForwardViewport extends Viewport3D implements IForwardViewport {
+    class ForwardViewport extends ShadedViewport implements IForwardViewport {
         public addedSkybox: ISignal<(pViewport: IViewport, pSkyTexture: ITexture) => void>;
         /** Buffer with objectID */
         private _pTextureWithObjectID;
-        /** Depth buffer of scene */
-        private _pDepthBufferTexture;
         /** Texture with result of rendereingd(for global posteffects) */
         private _pResultTexture;
         private _pViewScreen;
-        private _pLightPoints;
         private _v2fTextureRatio;
         private _v2fScreenSize;
-        private _pLightingUnifoms;
         private _pSkyboxTexture;
-        private _eShadingModel;
-        private _pDefaultEnvMap;
         private _pTextureToScreenViewport;
-        private _isTransparencySupported;
         private _bRenderOnlyTransparentObjects;
+        private _pSkybox;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
         public getView(): IRenderableObject;
-        public getDepthTexture(): ITexture;
         public getEffect(): IEffect;
         public getSkybox(): ITexture;
         public getTextureWithObjectID(): ITexture;
-        public getLightSources(): IObjectArray<ILightPoint>;
-        public setShadingModel(eModel: EShadingModel): void;
-        public getShadingModel(): EShadingModel;
-        public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
-        public getDefaultEnvironmentMap(): ITexture;
-        public setTransparencySupported(bEnable: boolean): void;
-        public isTransparencySupported(): boolean;
         public _renderOnlyTransparentObjects(bValue: boolean): void;
         public _setTarget(pTarget: IRenderTarget): void;
         public _getRenderId(x: number, y: number): number;
@@ -15671,6 +15663,7 @@ declare module akra.render {
         public renderTransparentObjects(csMethod: string, pCamera: ICamera): void;
         public endFrame(): void;
         public setSkybox(pSkyTexture: ITexture): boolean;
+        public _setSkyboxModel(pRenderable: IRenderableObject): void;
         public setFXAA(bValue?: boolean): void;
         public isFXAA(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;
@@ -15682,8 +15675,7 @@ declare module akra.render {
         private updateRenderTextureDimensions(pTexture);
         private prepareRenderMethods();
         private createResultRenderTarget(iWidth, iHeight);
-        public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
-        private resetUniforms();
+        public initTextureForTransparentObjects(): void;
     }
 }
 declare module akra {
@@ -16891,7 +16883,7 @@ declare module akra.pool.resources {
         private findMesh(sName);
         private addMesh(pMesh);
         private findMaterial(sName);
-        private addMaterial(pMaterial);
+        private addMaterial(sName, pMaterial);
         private prepareInput(pInput);
         public isVisualSceneLoaded(): boolean;
         public isAnimationLoaded(): boolean;
@@ -16917,7 +16909,10 @@ declare module akra.pool.resources {
         private checkLibraries(pXML, pTemplates);
         public parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         public loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
-        public toBlob(sFilename?: string): Blob;
+        private uploadMaterial(sMaterial);
+        private syncMaterials();
+        public extractUsedMaterials(): IMaterial[];
+        public toBlob(): Blob;
         public extractMesh(sMeshName?: string): IMesh;
         public extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
         public extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;

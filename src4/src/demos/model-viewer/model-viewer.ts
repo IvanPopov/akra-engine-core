@@ -225,7 +225,7 @@ module akra {
 	}
 
 	function createViewport(): IViewport3D {
-		var pViewport: IViewport3D = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -383,9 +383,10 @@ module akra {
 		var pPBSFolder = pGUI.addFolder("pbs");
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-			}
+
+			//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+			//}
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
@@ -460,8 +461,17 @@ module akra {
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
 		pRenderTarget.setAutoUpdated(false);
 
+		//var pDepthRenderBuffer = <webgl.WebGLInternalRenderBuffer> pRmgr.getRenderBufferPool().createResource(".mirror-depth");
+		//(<webgl.WebGLInternalRenderBuffer>pDepthRenderBuffer).create(gl.DEPTH_COMPONENT, 512, 512, false);
+		//pRenderTarget.attachDepthPixelBuffer(pDepthRenderBuffer);
+
+		var pDepthTexture = pRmgr.createTexture(".mirror - depth");
+		pDepthTexture.create(512, 512, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+		pRenderTarget.attachDepthTexture(pDepthTexture);
+
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
+
 
 		pEffect.addComponent("akra.system.blur");
 
@@ -494,7 +504,7 @@ module akra {
 		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
 		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		pOmniLight.setShadowCaster(true);
+		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 		//pOmniLightSphere = loadModel("data/models/Sphere.dae", 
 		//	(model) => {
@@ -542,9 +552,21 @@ module akra {
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
+<<<<<<< HEAD
 		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
 			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+=======
+		var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+		var pModel = pCube.extractModel("box");
+		//pModel.attachToParent(pScene.getRootNode());
+
+		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
+>>>>>>> forward-viewport
 		}
+		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+		//}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
 		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
