@@ -426,7 +426,7 @@ module akra {
         pOmniLight.getParams().attenuation.set(1, 0, 0.3);
         pOmniLight.setShadowCaster(true);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel("data/models/Sphere.dae", 
+		pOmniLightSphere = loadModel( modelsPath + "/Sphere.dae", 
 			(model) => {
 				model.explore( function(node) {
 					if(scene.SceneModel.isModel(node)) {
@@ -447,7 +447,7 @@ module akra {
         pOmniLight.getParams().attenuation.set(1, 0, 0.3);
         pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel("data/models/Sphere.dae", 
+		pOmniLightSphere = loadModel( modelsPath + "/Sphere.dae", 
 			(model) => {
 				model.explore( function(node) {
 					if(scene.SceneModel.isModel(node)) {
@@ -604,6 +604,8 @@ module akra {
         	'mercedes',
         	'miner',
         	'character',
+        	'head',
+        	'sponza',
         	'teapot',
         	'donut',
         	'sphere',
@@ -624,6 +626,14 @@ module akra {
         	},
         	character: {
         		path: modelsPath+"/character/character.DAE",
+        		init: function(model) { model.scale(1.5); },
+        	},
+        	head: {
+        		path: modelsPath+"/head/head.DAE",
+        		init: function(model) { model.scale(0.7); },
+        	},
+        	sponza: {
+        		path: modelsPath+"/sponza/sponza.DAE",
         		init: function(model) { model.scale(1.5); },
         	},
         	teapot: {
