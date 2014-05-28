@@ -509,9 +509,9 @@ module akra.render {
 					pPass.setStruct("points_sun", pLightUniforms.sun);
 					pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
 
-					for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
-						pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
-					}
+					//for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
+					//	pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
+					//}
 
 					pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
 					pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);

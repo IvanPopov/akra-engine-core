@@ -50,12 +50,13 @@ struct LightSunShadows{
 	float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
-// struct LightOmniRestricted {
-// 	LightOmni light: LIGHT;
-// 	float3 point0: POINT0;
-// 	float3 point1: POINT1;
-// 	float4x4 toLightSpace : TO_LIGHT_SPACE;
-// };
+struct LightOmniRestricted {
+	LightData lightData : LIGHT_DATA;
+
+	float3 point0: POINT0;
+	float3 point1: POINT1;
+	float4x4 toLightSpace : TO_LIGHT_SPACE;
+};
 
 // struct LightProjectRestricted {
 // 	LightProject light: LIGHT;
@@ -77,6 +78,12 @@ struct CalculatedLightParamsPBS {
 	float k2;
 };
 
+
+bool isPointInBox(float3 point, float3 pointBox0, float3 pointBox1){
+	return pointBox0.x <= point.x && pointBox1.x >= point.x &&
+		   pointBox0.y <= point.y && pointBox1.y >= point.y &&
+		   pointBox0.z <= point.z && pointBox1.z >= point.z;
+}
 
 float calcAttenuation(float light_dir_length, float3 attenuation) {
     return  1.0 / (attenuation.x + attenuation.y * light_dir_length + attenuation.z * light_dir_length * light_dir_length);

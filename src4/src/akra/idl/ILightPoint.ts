@@ -38,7 +38,7 @@ module akra {
 	
 		isRestricted(): boolean;
 		setRestrictedLocalBounds(pBox: IRect3d): void;
-		getRestrictedWorldBounds(): IRect3d;
+		getRestrictedLocalBounds(): IRect3d;
 
 		restrictLight(bEnable: boolean, pBox?: IRect3d): void;
 

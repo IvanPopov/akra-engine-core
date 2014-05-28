@@ -4892,7 +4892,7 @@ declare module akra {
         setLightingDistance(fValue: number): void;
         isRestricted(): boolean;
         setRestrictedLocalBounds(pBox: IRect3d): void;
-        getRestrictedWorldBounds(): IRect3d;
+        getRestrictedLocalBounds(): IRect3d;
         restrictLight(bEnable: boolean, pBox?: IRect3d): void;
         create(isShadowCaster?: boolean, iMaxShadowResolution?: number): boolean;
         /** false if lighting not active or it's effect don't seen */
@@ -13184,6 +13184,8 @@ declare module akra.geometry {
         public createBoundingSphere(pSphere?: ISphere): ISphere;
         public distanceToPoint(v3fPoint: IVec3): number;
         public toString(): string;
+        private static _pBuffer;
+        private static _iElement;
         static temp(): IRect3d;
         static temp(pRect: IRect3d): IRect3d;
         static temp(v3fSize: IVec3): IRect3d;
@@ -13749,7 +13751,7 @@ declare module akra.render {
         public SHADOW_SAMPLER: IAFXSamplerState;
         public setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformProjectShadow;
         public setMatrix(m4fToLightSpace: IMat4, m4fRealProj: IMat4, m4fOptimizedProj: IMat4): UniformProjectShadow;
-        public setSampler(sTexture: string): UniformProjectShadow;
+        public setSampler(pTexture: ITexture): UniformProjectShadow;
         private static _pBuffer;
         private static _iElement;
         static temp(): IUniform;
@@ -13761,7 +13763,7 @@ declare module akra.render {
         public SHADOW_SAMPLER: IAFXSamplerState[];
         public setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmniShadow;
         public setMatrix(m4fToLightSpace: IMat4, m4fOptimizedProj: IMat4, index: number): UniformOmniShadow;
-        public setSampler(sTexture: string, index: number): UniformOmniShadow;
+        public setSampler(pTexture: ITexture, index: number): UniformOmniShadow;
         private static _pBuffer;
         private static _iElement;
         static temp(): IUniform;
@@ -13779,10 +13781,19 @@ declare module akra.render {
         public TO_LIGHT_SPACE: IMat4;
         public OPTIMIZED_PROJECTION_MATRIX: IMat4;
         public setLightData(pSunParam: ISunParameters, iSunDomeId: number): UniformSunShadow;
-        public setSampler(sTexture: string): UniformSunShadow;
+        public setSampler(pTexture: ITexture): UniformSunShadow;
         public setMatrix(m4fToLightSpace: IMat4, m4fOptimizedProj: IMat4): UniformSunShadow;
         private static _pBuffer;
         private static _iElement;
+        static temp(): IUniform;
+    }
+    class UniformOmniRestricted extends UniformOmni {
+        public POINT0: math.Vec3;
+        public POINT1: math.Vec3;
+        public TO_LIGHT_SPACE: math.Mat4;
+        public setRestrictedData(pBound: IRect3d, m4fToLightSpace: IMat4): void;
+        private static _pBufferR;
+        private static _iElementR;
         static temp(): IUniform;
     }
     interface UniformMap {
@@ -13796,6 +13807,7 @@ declare module akra.render {
         samplersOmni: IAFXSamplerState[];
         samplersProject: IAFXSamplerState[];
         samplersSun: IAFXSamplerState[];
+        omniRestricted: UniformOmniRestricted[];
     }
 }
 declare module akra.render {
@@ -14471,8 +14483,7 @@ declare module akra.scene.light {
         public _iMaxShadowResolution: number;
         public _eLightType: ELightTypes;
         public _pOptimizedCameraFrustum: IFrustum;
-        public _pLocalBounds: IRect3d;
-        public _pWorldBounds: IRect3d;
+        public _pRestrictedLocalBounds: IRect3d;
         public _isRestricted: boolean;
         public _iLightPointFlags: number;
         public getParams(): ILightParameters;
@@ -14486,13 +14497,11 @@ declare module akra.scene.light {
         public setLightingDistance(fDistance: number): void;
         public isRestricted(): boolean;
         public setRestrictedLocalBounds(pBox: IRect3d): void;
-        public getRestrictedWorldBounds(): IRect3d;
+        public getRestrictedLocalBounds(): IRect3d;
         constructor(pScene: IScene3d, eType?: ELightTypes);
         public create(isShadowCaster?: boolean, iMaxShadowResolution?: number): boolean;
         public restrictLight(bEnable: boolean, pBox?: IRect3d): void;
         public prepareForUpdate(): void;
-        public update(): boolean;
-        public recalcRestrictBounds(): boolean;
         public _prepareForLighting(pCamera: ICamera): boolean;
         public _calculateShadows(): void;
         static isLightPoint(pNode: IEntity): boolean;

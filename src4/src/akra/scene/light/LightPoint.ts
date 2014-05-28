@@ -4,7 +4,7 @@
 
 module akra.scene.light {
 	enum ELightPointFlags {
-		k_NewLocalBounds = 0,
+		k_NewRestrictedLocalBounds = 0,
 		k_NewWorldBounds
 	};
 
@@ -18,8 +18,7 @@ module akra.scene.light {
 		//optimized camera frustum for better shadow casting
 		protected _pOptimizedCameraFrustum: IFrustum = new geometry.Frustum();
 
-		protected _pLocalBounds: IRect3d = null;
-		protected _pWorldBounds: IRect3d = null;
+		protected _pRestrictedLocalBounds: IRect3d = null;
 		protected _isRestricted: boolean = false;
 
 		protected _iLightPointFlags: uint = 0;
@@ -65,12 +64,11 @@ module akra.scene.light {
 		}
 
 		setRestrictedLocalBounds(pBox: IRect3d): void {
-			this._pLocalBounds.set(pBox);
-			this._iLightPointFlags = bf.setBit(this._iLightPointFlags, ELightPointFlags.k_NewLocalBounds);
+			this.restrictLight(true, pBox);
 		}
 
-		getRestrictedWorldBounds(): IRect3d {
-			return this._pWorldBounds;
+		getRestrictedLocalBounds(): IRect3d {
+			return this._pRestrictedLocalBounds;
 		}
 
 		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN) {
@@ -94,18 +92,15 @@ module akra.scene.light {
 			this._isRestricted = bEnable;
 
 			if (bEnable) {
-				if (isNull(this._pLocalBounds)) {
-					this._pLocalBounds = new geometry.Rect3d(-1, 1, -1, 1, -1, 1);
-					this._pWorldBounds = new geometry.Rect3d();
+				if (isNull(this._pRestrictedLocalBounds)) {
+					this._pRestrictedLocalBounds = new geometry.Rect3d(-1, 1, -1, 1, -1, 1);
 				}
 
 				if (isDef(pBox)) {
-					this._pLocalBounds.set(pBox);
+					this._pRestrictedLocalBounds.set(pBox);
 				}
 
-				this._iLightPointFlags = bf.setBit(this._iLightPointFlags, ELightPointFlags.k_NewLocalBounds);
-
-				this.recalcRestrictBounds();
+				this._iLightPointFlags = bf.setBit(this._iLightPointFlags, ELightPointFlags.k_NewRestrictedLocalBounds);
 			}
 		}
 
@@ -113,40 +108,7 @@ module akra.scene.light {
 			super.prepareForUpdate();
 
 			this._iLightPointFlags = bf.clearAll(this._iLightPointFlags,
-				bf.flag(ELightPointFlags.k_NewLocalBounds) | bf.flag(ELightPointFlags.k_NewWorldBounds));
-		}
-
-		update(): boolean {
-			//если, обновится мировая матрица узла, то и AABB обновится 
-			super.update();
-			// do we need to update our local matrix?
-			// derived classes update the local matrix
-			// then call this base function to complete
-			// the update
-			return this.recalcRestrictBounds();
-		}
-
-		protected recalcRestrictBounds(): boolean {
-			// nodes only get their bounds updated
-			// as nessesary
-			if (this.isRestricted() &&
-				(bf.testBit(this._iLightPointFlags, ELightPointFlags.k_NewLocalBounds) || this.isWorldMatrixNew())) {
-				// transform our local rectangle 
-				// by the current world matrix
-				this._pWorldBounds.set(this._pLocalBounds);
-				// make sure we have some degree of thickness
-				if (true) {
-					this._pWorldBounds.x1 = math.max(this._pWorldBounds.x1, this._pWorldBounds.x0 + 0.01);
-					this._pWorldBounds.y1 = math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
-					this._pWorldBounds.z1 = math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
-				}
-
-				this._pWorldBounds.transform(this.getWorldMatrix());
-
-				return true;
-			}
-
-			return false;
+				bf.flag(ELightPointFlags.k_NewRestrictedLocalBounds));
 		}
 
 		_prepareForLighting(pCamera: ICamera): boolean {
