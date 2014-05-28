@@ -82,6 +82,14 @@ module akra {
 		
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
+		pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+
+		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+			var pSkyboxModel = pCube.extractModel("box");
+			(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
+		}
 		
 		pViewport.enableSupportForUserEvent(EUserEvents.CLICK/* | E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT*/);
 		pViewport.setClearEveryFrame(true);

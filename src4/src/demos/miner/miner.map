@@ -12,6 +12,7 @@
 		{"path": "models/miner/work_hammer.DAE", "name": "ANIM_MINER_WORK_HAMMER"},
 
 		{"path": "textures/light_icon.png", "name": "LIGHT_ICON"},
+        {"path": "textures/desert-3.dds", "name": "SKYBOX"},
 
 		{"path": "models/cube.DAE", "name": "CUBE"}
 	]

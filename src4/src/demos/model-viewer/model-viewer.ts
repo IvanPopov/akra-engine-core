@@ -166,6 +166,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+	
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -482,11 +483,12 @@ module akra {
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
-		var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
-		var pModel = pCube.extractModel("box");
+		
 		//pModel.attachToParent(pScene.getRootNode());
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+			var pModel = pCube.extractModel("box");
 			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
 		}
 		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {

@@ -334,7 +334,7 @@ module akra.render {
 			pPass.setStruct("points_omni_restricted", pLightUniforms.omniRestricted);
 
 			//for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
-			//	pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
+			//	pPass.setTexture("SHADOW_TEXTURE" + i, pLightUniforms.textures[i]);
 			//}
 
 			pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);

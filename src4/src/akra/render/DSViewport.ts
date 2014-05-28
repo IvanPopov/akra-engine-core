@@ -544,7 +544,7 @@ module akra.render {
 				case 1:
 				case 2:
 					//transparency
-					pPass.setTexture("TRANSPARENT_TEXTURE", this._pTextureForTransparentObjects);
+					pPass.setTexture("TRANSPARENT_TEXTURE", this.isTransparencySupported() ? this._pTextureForTransparentObjects : null);
 					//skybox
 					pPass.setTexture("OBJECT_ID_TEXTURE", pDeferredTextures[0]);
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);

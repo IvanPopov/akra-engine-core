@@ -33,7 +33,7 @@ module akra {
 		deps: { files: [AE_RESOURCES], root: "./", deps: addons.getNavigationDependences() }
 	};
 
-	var pEngine: IEngine = createEngine(pOptions);
+	export var pEngine: IEngine = createEngine(pOptions);
 
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera = null;
@@ -79,7 +79,14 @@ module akra {
 		pCanvas.addViewport(pDSViewport);
 
 		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		
+		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+		pDSViewport.setTransparencySupported(false);
+		//if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+		//	var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+		//	var pSkyboxModel = pCube.extractModel("box");
+		//	(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
+		//}
+
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
 		
@@ -90,7 +97,7 @@ module akra {
 
 		pDSViewport.setClearEveryFrame(true);
 		pDSViewport.setBackgroundColor(color.GRAY);
-		pDSViewport.setAntialiasing(false);
+		pDSViewport.setAntialiasing(true);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
