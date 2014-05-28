@@ -13,7 +13,7 @@ module akra {
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {
-		premultipliedAlpha: false,
+		premultipliedAlpha: true,
 		preserveDrawingBuffer: true,
 		antialias: true,
 		depth: true
@@ -213,18 +213,20 @@ module akra {
 			}
 		});
 
-		pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
-		pViewport.enable3DEvents(false);
-		pViewport.click.connect((pViewport: ILPPViewport, x, y) => {
-			var pResult = pViewport.pick(x, y);
-			pViewport.highlight(pResult);
+		if (pViewport.getType() !== EViewportTypes.FORWARDVIEWPORT) {
+			pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
+			pViewport.enable3DEvents(false);
+			pViewport.click.connect((pViewport: ILPPViewport, x, y) => {
+				var pResult = pViewport.pick(x, y);
+				pViewport.highlight(pResult);
 
-			if (pResult.renderable) {
-				var pOrigin: IMaterial = pResult.renderable.getMaterial();
+				if (pResult.renderable) {
+					var pOrigin: IMaterial = pResult.renderable.getMaterial();
 
-				chose(pOrigin);
-			}
-		});
+					chose(pOrigin);
+				}
+			});
+		}
 	}
 
 	function createViewport(): IViewport3D {
@@ -359,7 +361,7 @@ module akra {
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 
-		
+		//pEffect.addComponent("akra.system.blur");
 
 		(<render.LPPViewport>pTexViewport.getInternalViewport()).render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -375,44 +377,51 @@ module akra {
 
 	export var pOmniLights: INode = null;
 	function createLighting(): void {
-		//pOmniLights = pScene.createNode('lights-root');
-		//pOmniLights.attachToParent(pCamera);
-		//pOmniLights.setInheritance(ENodeInheritance.ALL);
+		pOmniLights = pScene.createNode('lights-root');
+		pOmniLights.attachToParent(pCamera);
+		pOmniLights.setInheritance(ENodeInheritance.ALL);
 
-		//var pOmniLight: IOmniLight;
-		//var pOmniLightSphere;
+		var pOmniLight: IOmniLight;
+		var pOmniLightSphere;
 
-		//pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
+		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
 
-		//pOmniLight.attachToParent(pOmniLights);
-		//pOmniLight.setEnabled(true);
-		//pOmniLight.getParams().ambient.set(0.1);
-		//pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-		//pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-		//pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		//pOmniLight.setShadowCaster(true);
-		//pOmniLight.setInheritance(ENodeInheritance.ALL);
+		pOmniLight.attachToParent(pOmniLights);
+		pOmniLight.setEnabled(true);
+		pOmniLight.getParams().ambient.set(0.1);
+		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
+		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		pOmniLight.setShadowCaster(true);
+		pOmniLight.setInheritance(ENodeInheritance.ALL);
 
-		//pOmniLight.setPosition(lightPos1);
+		pOmniLight.setPosition(lightPos1);
 
-		//pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
+		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
 
-		//pOmniLight.attachToParent(pOmniLights);
-		//pOmniLight.setEnabled(true);
-		//pOmniLight.getParams().ambient.set(0.1);
-		//pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-		//pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-		//pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		//pOmniLight.setShadowCaster(false);
-		//pOmniLight.setInheritance(ENodeInheritance.ALL);
+		pOmniLight.attachToParent(pOmniLights);
+		pOmniLight.setEnabled(true);
+		pOmniLight.getParams().ambient.set(0.1);
+		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
+		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		pOmniLight.setShadowCaster(false);
+		pOmniLight.setInheritance(ENodeInheritance.ALL);
 
-		//pOmniLight.setPosition(lightPos2);
+		pOmniLight.setPosition(lightPos2);
 	}
 
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['nightsky'];
 
 		
+		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			var pCube: ICollada = <ICollada>pRmgr.loadModel("CUBE.DAE");
+			var pModel = pCube.extractModel("box");
+			
+			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
+		}
+
 		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
 	
 
@@ -475,10 +484,15 @@ module akra {
 		pPlasticMaterial.specular.set("#4a4a4a");
 
 		var iTableRadius: float = 3.15;
+		var iTableHeight: float = 0;
 
 		pModelTable = addons.trifan(pScene, iTableRadius, 96);
 		pModelTable.attachToParent(pScene.getRootNode());
-		pModelTable.setPosition(0., -1.25, 0.);
+		pModelTable.setPosition(0., iTableHeight, 0.);
+
+		pScene.beforeUpdate.connect(() => {
+			pModelTable.addRelRotationByXYZAxis(0., 0.001, 0.);
+		});
 
 		//var pBottomLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
 		//pBottomLight.attachToParent(pModelTable);
@@ -490,91 +504,65 @@ module akra {
 			var d = 200;
 			var iPower = 1.;
 
-			function fuzzyLight(pLight: ILightPoint, iDelay, bFirst = true): void {
-				//pLight.setEnabled(false);
-				
-				//setTimeout(() => {
-				//	pLight.setEnabled(true);
-				//	setTimeout(() => {
-				//		pLight.setEnabled(false);
-				//		setTimeout(() => {
-				//			pLight.setEnabled(true);
-				//			setTimeout(() => {
-				//				pLight.setEnabled(false);
-				//				setTimeout(() => {
-				//					pLight.setEnabled(true);
-				//					setTimeout(() => {
-				//						pLight.setEnabled(false);
-				//						setTimeout(() => {
-				//							pLight.setEnabled(true);
+			//var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			//pLight.attachToParent(pModelTable);
+			//pLight.setPosition(d, h, 1.4);
+			//pLight.getParams().attenuation.set(iPower, 0., 0.);
+			//pLight.getParams().diffuse.set(1.);
+			//pLight.lookAt(Vec3.temp(0., h, 1.4));
+			////addons.basis(pScene, 0, .1).attachToParent(pLight);
 
-				//							setTimeout(() => {
-				//								fuzzyLight(pLight, iDelay, false);
-				//							}, 15000);
-											
-				//						}, 300 + Math.random() * 200);
-				//					}, 100 + Math.random() * 100);
-				//				}, 100 + Math.random() * 100);
-				//			}, 100 + Math.random() * 100);
-				//		}, 100 + Math.random() * 100);
-				//	}, 100 + Math.random() * 100);
-				//}, iDelay + 2000);
-			}
-
-			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
-			pLight.attachToParent(pModelTable);
-			pLight.setPosition(d, h, 1.4);
-			pLight.getParams().attenuation.set(iPower, 0., 0.);
-			pLight.getParams().diffuse.set(1.);
-			pLight.lookAt(Vec3.temp(0., h, 1.4));
-			fuzzyLight(pLight, 1000);
-			//addons.basis(pScene, 0, .1).attachToParent(pLight);
-
-			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
-			pLight.attachToParent(pModelTable);
-			pLight.setPosition(-d, h, 1.4);
-			pLight.getParams().attenuation.set(iPower, 0., 0.);
-			pLight.getParams().diffuse.set(1.);
-			pLight.lookAt(Vec3.temp(0., h, 1.4));
-			fuzzyLight(pLight, 2000);
-			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+			//var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			//pLight.attachToParent(pModelTable);
+			//pLight.setPosition(-d, h, 1.4);
+			//pLight.getParams().attenuation.set(iPower, 0., 0.);
+			//pLight.getParams().diffuse.set(1.);
+			//pLight.lookAt(Vec3.temp(0., h, 1.4));
+			////addons.basis(pScene, 0, .1).attachToParent(pLight);
 
 
-			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
-			pLight.attachToParent(pModelTable);
-			pLight.setPosition(d, h, -1.5);
-			pLight.getParams().attenuation.set(iPower, 0., 0.);
-			pLight.getParams().diffuse.set(1.);
-			pLight.lookAt(Vec3.temp(0., h, -1.5));
-			fuzzyLight(pLight, 3000);
-			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+			//var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			//pLight.attachToParent(pModelTable);
+			//pLight.setPosition(d, h, -1.5);
+			//pLight.getParams().attenuation.set(iPower, 0., 0.);
+			//pLight.getParams().diffuse.set(1.);
+			//pLight.lookAt(Vec3.temp(0., h, -1.5));
+			////addons.basis(pScene, 0, .1).attachToParent(pLight);
 
-			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
-			pLight.attachToParent(pModelTable);
-			pLight.setPosition(-d, h, -1.5);
-			pLight.getParams().attenuation.set(iPower, 0., 0.);
-			pLight.getParams().diffuse.set(1.);
-			pLight.lookAt(Vec3.temp(0., h, -1.5));
-			fuzzyLight(pLight, 4000);
-			//addons.basis(pScene, 0, .1).attachToParent(pLight);
+			//var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			//pLight.attachToParent(pModelTable);
+			//pLight.setPosition(-d, h, -1.5);
+			//pLight.getParams().attenuation.set(iPower, 0., 0.);
+			//pLight.getParams().diffuse.set(1.);
+			//pLight.lookAt(Vec3.temp(0., h, -1.5));
+			////addons.basis(pScene, 0, .1).attachToParent(pLight);
 
-			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
-			pLight.attachToParent(pModelTable);
-			pLight.setPosition(0, h, d);
-			pLight.getParams().attenuation.set(iPower, 0., 0.);
-			pLight.getParams().diffuse.set(1.);
-			pLight.lookAt(Vec3.temp(0., h, 0));
-			fuzzyLight(pLight, 5000);
+			//var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			//pLight.attachToParent(pModelTable);
+			//pLight.setPosition(0, h, d);
+			//pLight.getParams().attenuation.set(iPower, 0., 0.);
+			//pLight.getParams().diffuse.set(1.);
+			//pLight.lookAt(Vec3.temp(0., h, 0));
 
-			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
-			pLight.attachToParent(pModelTable);
-			pLight.setPosition(0, 10, 0.);
-			pLight.update();
-			pLight.getParams().attenuation.set(iPower, 0., 0.);
-			pLight.getParams().diffuse.set(1.);
-			pLight.lookAt(Vec3.temp(0., 0., 0), Vec3.temp(0., 0., 1.));
-			addons.basis(pScene, 0, .1).attachToParent(pLight);
-			fuzzyLight(pLight, 6000);
+			//var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, false);
+			//pLight.attachToParent(pModelTable);
+			//pLight.setPosition(0, 10, 0.);
+			//pLight.update();
+			//pLight.getParams().attenuation.set(iPower, 0., 0.);
+			//pLight.getParams().diffuse.set(1.);
+			//pLight.lookAt(Vec3.temp(0., 0., 0), Vec3.temp(0., 0., 1.));
+			////addons.basis(pScene, 0, .1).attachToParent(pLight);
+
+			//////////////////////////
+
+			var pGroundLight: IOmniLight = window["ground_light"] = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
+			pGroundLight.attachToParent(pModelTable);
+			pGroundLight.setInheritance(ENodeInheritance.POSITION);
+			pGroundLight.restrictLight(true, geometry.Rect3d.temp(Vec3.temp(-1, 0, -1), Vec3.temp(1, .25, 1)));
+			pGroundLight.setPosition(0., 0., 0.);
+			pGroundLight.getParams().attenuation.set(.7, .2, 0.);
+			pGroundLight.getParams().diffuse.set(color.LIGHT_BLUE);
+			pGroundLight.getParams().specular.set(color.LIGHT_BLUE);
 		}
 
 		createSceneLights();
@@ -594,7 +582,7 @@ module akra {
 		var iCylinderHeight = .025;
 		var pCylinder = addons.cylinder(pScene, iTableRadius, iTableRadius, iCylinderHeight, 96, 1.);
 		pCylinder.attachToParent(pScene.getRootNode());
-		pCylinder.setPosition(0., -1.25 - iCylinderHeight / 2, 0.);
+		pCylinder.setPosition(0., iTableHeight - iCylinderHeight / 2, 0.);
 		var pCylinderSubset = pCylinder.getMesh().getSubset(0);
 		pCylinderSubset.getMaterial().shininess = 0.7;
 		//pCylinderSubset.getSurfaceMaterial().setMaterial(pPlasticMaterial);
@@ -606,7 +594,30 @@ module akra {
 
 		var pSurface = addons.createQuad(pScene, 100);
 		pSurface.attachToParent(pScene.getRootNode());
-		pSurface.setPosition(0., -1.25 - iCylinderHeight, 0.);
+		pSurface.setPosition(0., iTableHeight - iCylinderHeight, 0.);
+
+		//var pPodiumLight: IOmniLight = window["podium_light"] = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
+		//pPodiumLight.attachToParent(pSurface);
+		//pPodiumLight.setPosition(0., 0.025 / 2, .0);
+		//var fGroundLightRadius: float = iTableRadius + 1.
+		//pPodiumLight.restrictLight(true, geometry.Rect3d.temp(-fGroundLightRadius, fGroundLightRadius, -1, 0.025 / 2, -fGroundLightRadius, fGroundLightRadius));
+		//pPodiumLight.getParams().attenuation.x = .001;
+		//pPodiumLight.getParams().diffuse.set(color.LIGHT_GREEN);
+
+		var pLightMap = window["light_map"] = addons.createQuad(pScene);
+		pLightMap.attachToParent(pSurface);
+		pLightMap.setPosition(0., 1e-4, 0);
+		pLightMap.getMesh().setShadow(false);
+		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().setTexture(0, "LIGHTMAP.PNG", ESurfaceMaterialTextures.EMISSIVE);
+		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+		pLightMap.setLocalScale(Vec3.temp(pViewport.getType() === EViewportTypes.FORWARDVIEWPORT? 0.175: 0.1865));
+		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 1.);
+		pLightMap.getMesh().getSubset(0).getMaterial().diffuse.set(0., 0., 0., 0.);
+		pLightMap.getMesh().getSubset(0).getMaterial().specular.set(0., 0., 0., 0.);
+		pLightMap.getMesh().getSubset(0).getMaterial().ambient.set(0., 0., 0., 0.);
+		pLightMap.getMesh().getSubset(0).getMaterial().transparency = 0.99;
+
 		
 		//var pSurfMat = pSurface.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pPlasticMaterial);
 		var pMat: IMaterial = pSurface.getMesh().getSubset(0).getMaterial();

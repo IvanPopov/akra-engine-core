@@ -351,12 +351,16 @@ module akra.render {
 			pPass.setForeign("NUM_SUN", pLightUniforms.sun.length);
 			pPass.setForeign("NUM_SUN_SHADOWS", pLightUniforms.sunShadows.length);
 
+			pPass.setForeign("NUM_OMNI_RESTRICTED", pLightUniforms.omniRestricted.length);
+
 			pPass.setStruct("points_omni", pLightUniforms.omni);
 			pPass.setStruct("points_project", pLightUniforms.project);
 			pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
 			pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
 			pPass.setStruct("points_sun", pLightUniforms.sun);
 			pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
+
+			pPass.setStruct("points_omni_restricted", pLightUniforms.omniRestricted);
 
 			//for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
 			//	pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
@@ -551,6 +555,7 @@ module akra.render {
 
 					pLPPEffect.addComponent("akra.system.prepare_lpp_lights_base");
 					pLPPEffect.addComponent("akra.system.omniLighting");
+					pLPPEffect.addComponent("akra.system.omniLightingRestricted");
 					pLPPEffect.addComponent("akra.system.projectLighting");
 					pLPPEffect.addComponent("akra.system.omniShadowsLighting");
 					pLPPEffect.addComponent("akra.system.projectShadowsLighting");
