@@ -49,12 +49,12 @@ module akra {
 
 	export var pCameraParams = {
 		current: {
-			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.)
+			orbitRadius: 20.,
+			rotation: new math.Vec2(0., 0.5)
 		},
 		target: {
 			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.)
+			rotation: new math.Vec2(0., 0.02)
 		}
 	}
 
@@ -115,7 +115,7 @@ module akra {
 				if (pKeymap.isMouseMoved()) {
 					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
+					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., 0.02, 1.2);
 					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
 
 					pKeymap.update();
@@ -233,7 +233,7 @@ module akra {
 	}
 
 	function createViewport(): IViewport3D {
-		var pViewport: IViewport3D = new render.DSViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IViewport3D = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -251,7 +251,7 @@ module akra {
 		pViewport.getEffect().addComponent("akra.system.linearFog");
 		pViewport.getEffect().addComponent("akra.system.exponentialFog");
 
-		//pViewport.getEffect().addComponent("akra.system.skybox_advanced", 1, 0);
+		// pViewport.getEffect().addComponent("akra.system.skybox_advanced", 1, 0);
 
 	
 
@@ -598,7 +598,7 @@ module akra {
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		pLightMap.setLocalScale(Vec3.temp(pViewport.getType() === EViewportTypes.FORWARDVIEWPORT? 0.1795: 0.1865));
-		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 1.);
+		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().diffuse.set(0., 0., 0., 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().specular.set(0., 0., 0., 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().ambient.set(0., 0., 0., 0.);
