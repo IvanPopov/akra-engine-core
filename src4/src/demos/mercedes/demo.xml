@@ -6,6 +6,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="mercedes.ts"/>
   </ItemGroup>
+
   <PropertyGroup>
     <TypeScriptOutFile>../../../$(BuiltDir)/demos/mercedes/mercedes.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
@@ -55,5 +56,10 @@
         <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>
       </Data>
     </Resource>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Dependencies>
+      <Module Name="addon-filedrop" />
+    </Dependencies>
   </PropertyGroup>
 </Demo>

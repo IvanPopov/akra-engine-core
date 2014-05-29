@@ -1,6 +1,7 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 /// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
+/// <reference path="../../../built/Lib/filedrop.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
@@ -49,11 +50,11 @@ module akra {
 
 	export var pCameraParams = {
 		current: {
-			orbitRadius: 4.2,
+			orbitRadius: 6,
 			rotation: new math.Vec2(0., 0.)
 		},
 		target: {
-			orbitRadius: 4.2,
+			orbitRadius: 6,
 			rotation: new math.Vec2(0., 0.)
 		}
 	}
@@ -105,44 +106,31 @@ module akra {
 		});
 	}
 
+	var iXPrev: uint = 0, iYPrev: uint = 0;
+	function cameraRotationCallback(pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint, dx: uint, dy: uint) {
+		if (eBtn !== EMouseButton.LEFT) return;
+
+		dx = x - iXPrev;
+		dy = y - iYPrev;
+
+		pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y - dy / pViewport.getActualHeight() * 2., 0.1, 1.2);
+		pCameraParams.target.rotation.x += dx / pViewport.getActualHeight() * 2.;
+
+		iXPrev = x;
+		iYPrev = y;
+	}
+
 	function createKeymap(pCamera: ICamera): void {
-		var pKeymap: IKeyMap = control.createKeymap();
-		pKeymap.captureMouse((<any>pCanvas).getElement());
-		pKeymap.captureKeyboard(document);
 
-		pScene.beforeUpdate.connect(() => {
-			if (pKeymap.isMousePress()) {
-				if (pKeymap.isMouseMoved()) {
-					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
-
-					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
-					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
-
-					pKeymap.update();
-				}
-
-			}
-			var fSpeed: float = 0.1 * 10;
-			if (pKeymap.isKeyPress(EKeyCodes.W)) {
-				pCamera.addRelPosition(0, 0, -fSpeed);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.S)) {
-				pCamera.addRelPosition(0, 0, fSpeed);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.A) || pKeymap.isKeyPress(EKeyCodes.LEFT)) {
-				pCamera.addRelPosition(-fSpeed, 0, 0);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
-				pCamera.addRelPosition(fSpeed, 0, 0);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.UP)) {
-				pCamera.addRelPosition(0, fSpeed, 0);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
-				pCamera.addRelPosition(0, -fSpeed, 0);
-			}
+		
+		pViewport.dragstart.connect((pViewport, eBtn, x, y) => {
+			iXPrev = x; iYPrev = y;
 		});
-		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+
+		pViewport.dragging.connect(cameraRotationCallback);
+
+		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL | EUserEvents.DRAGGING | EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP);
+
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
 			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
@@ -165,11 +153,14 @@ module akra {
 		var pMat = {
 			list: null,
 			origin: null,
+			surface: null,
 			name: "unknown", glossiness: 1e-2, transparency: 1e-2,
-			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000"
+			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000",
+			texture: false
 		};
 
-		function chose(pOrigin: IMaterial): void {
+		function chose(pOrigin: IMaterial, pSurfaceMaterial: ISurfaceMaterial = null): void {
+			pMat.surface = pSurfaceMaterial;
 			pMat.origin = pOrigin;
 			pMat.name = pOrigin.name;
 			pMat.glossiness = pOrigin.shininess;
@@ -177,11 +168,15 @@ module akra {
 			pMat.diffuse = pOrigin.diffuse.getHtml();
 			pMat.emissive = pOrigin.emissive.getHtml();
 			pMat.specular = pOrigin.specular.getHtml();
+
+			if (pSurfaceMaterial) {
+				pMat.texture = pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) !== null && !pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE).isResourceDisabled();
+			}
 		}
 
 
 		pControls.add(pMat, "list", pNames).name("material").onChange((sName: string) => {
-			chose(pList[pNames.indexOf(sName)]);
+			chose(pList[pNames.indexOf(sName)], null);
 		});
 
 		pControls.add(pMat, "name").listen();
@@ -214,6 +209,21 @@ module akra {
 			}
 		});
 
+		pControls.add(pMat, "texture").listen().name("diffuse texture").onChange((bValue) => {
+			if (pMat.surface) {
+				if ((<ISurfaceMaterial>pMat.surface).texture(ESurfaceMaterialTextures.DIFFUSE)) {
+					if (bValue) {
+						(<ISurfaceMaterial>pMat.surface).texture(ESurfaceMaterialTextures.DIFFUSE).notifyRestored();
+					}
+					else {
+						(<ISurfaceMaterial>pMat.surface).texture(ESurfaceMaterialTextures.DIFFUSE).notifyDisabled();
+					}
+
+					(<ISurfaceMaterial>pMat.surface).notifyAltered();
+				}
+			}
+		});
+
 		if (pViewport.getType() !== EViewportTypes.FORWARDVIEWPORT) {
 			pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
 			pViewport.enable3DEvents(false);
@@ -222,11 +232,12 @@ module akra {
 				pViewport.highlight(pResult);
 
 				if (pResult.renderable) {
+					pResult.renderable.switchRenderMethod(null);
 					if (pResult.renderable.getSurfaceMaterial()) {
-					var pOrigin: IMaterial = pResult.renderable.getMaterial();
+						var pOrigin: IMaterial = pResult.renderable.getMaterial();
 
-						chose(pOrigin);
-						}
+						chose(pOrigin, pResult.renderable.getSurfaceMaterial());
+					}
 				}
 			});
 		}
@@ -252,8 +263,6 @@ module akra {
 		pViewport.getEffect().addComponent("akra.system.exponentialFog");
 
 		//pViewport.getEffect().addComponent("akra.system.skybox_advanced", 1, 0);
-
-	
 
 		var fogType = {
 			None: 0,
@@ -636,6 +645,21 @@ module akra {
 			}
 		}, "save");
 
+		pGUI.add({
+			"save materials": () => {
+				var pMaterials: IMaterial[] = (<pool.resources.Collada>pModel).extractUsedMaterials();
+				var pExporter: exchange.Exporter = new exchange.Exporter();
+
+				pMaterials.forEach((pMat) => {
+					pExporter.writeMaterial(pMat);
+				});
+
+				pExporter.saveAs(prompt("enter skin name", "unknown") + ".skin", EDocumentFormat.JSON);
+			}
+		}, "save materials");
+
+		
+
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pInputViewport: IViewport) => {
 			if (pInputViewport === pViewport) {
 				var normal = pMirror.getTempVectorUp();
@@ -647,10 +671,39 @@ module akra {
 			}
 		});
 
+		if (config.DEBUG) {
+			addons.filedrop.addHandler(document.body, {
+				drop: <any>((pFile: File, sContent: string, eFormat: EFileDataTypes, e: DragEvent): void => {
+					var pImporter: exchange.Importer = new exchange.Importer(pEngine);
+					pImporter.import(sContent, EDocumentFormat.JSON);
+
+					var pMaterials = pImporter.getMaterials();
+					var pUsedMaterials = (<pool.resources.Collada>pModel).extractUsedMaterials();
+
+					var pMaterialsMap: IMap<IMaterial> = {};
+
+					pMaterials.forEach((pMat) => {
+						pMaterialsMap[pMat.name] = pMat;
+					});
+
+					pUsedMaterials.forEach((pMat, i) => {
+						if (pMaterialsMap[pMat.name]) {
+							pMat.set(pMaterialsMap[pMat.name]);
+						}
+					});
+				}),
+				verify: (pFile: File, e: DragEvent): boolean => {
+					return path.parse(pFile.name).getExt() === "skin";
+				}
+			});
+		}
+
 		//wheels();
 
 		pProgress.destroy();
 		pEngine.exec();
+
+		cameraRotationCallback(pViewport, EMouseButton.LEFT, 0, 0, 0, 0);
 	}
 
 	pEngine.depsLoaded.connect(main);

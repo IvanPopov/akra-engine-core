@@ -3634,7 +3634,8 @@ declare module akra {
         */
         transparency: number;
     }
-    interface IMaterial extends IMaterialBase {
+    interface IMaterial extends IMaterialBase, IUnique {
+        guid: number;
         /** Name of material */
         name: string;
         diffuse: IColor;
@@ -6889,6 +6890,7 @@ declare module akra {
         k_AnimationBlend = 4,
         k_AnimationContainer = 5,
         k_SceneNode = 6,
+        k_Material = 7,
     }
     enum EDocumentFormat {
         JSON = 0,
@@ -6976,6 +6978,17 @@ declare module akra {
         pause: boolean;
         leftInfinity: boolean;
         rightInfinity: boolean;
+    }
+    interface IColorEntry {
+        [i: number]: number;
+    }
+    interface IMaterialEntry extends IDataEntry {
+        name: string;
+        diffuse: IColorEntry;
+        specular: IColorEntry;
+        emissive: IColorEntry;
+        shininess: number;
+        transparency: number;
     }
     interface IControllerEntry extends IDataEntry {
         animations: number[];
@@ -9091,16 +9104,12 @@ declare module akra.exchange {
         public _sComments: string;
         public _sCopyright: string;
         public _sSourceData: string;
-        /**  */ 
         public writeAnimation(pAnimation: IAnimationBase): void;
-        /**  */ 
         public writeController(pController: IAnimationController): void;
+        public writeMaterial(pMaterial: IMaterial): void;
         public clear(): void;
-        /**  */ 
         public findLibraryEntry(iGuid: number): ILibraryEntry;
-        /**  */ 
         public findEntry(iGuid: number): IDataEntry;
-        /**  */ 
         public findEntryData(iGuid: number): any;
         public isSceneWrited(): boolean;
         public isEntryExists(iGuid: number): boolean;
@@ -9114,6 +9123,8 @@ declare module akra.exchange {
         public encodeAnimationContainerEntry(pContainer: IAnimationContainer): IDataEntry;
         public encodeAnimationBlendEntry(pBlend: IAnimationBlend): IDataEntry;
         public encodeControllerEntry(pController: IAnimationController): IDataEntry;
+        public encodeMaterialEntry(pMaterial: IMaterial): IMaterialEntry;
+        public encodeColorEntry(pColor: IColor): IColorEntry;
         public toolInfo(): string;
         public createUnit(): IUnit;
         public createContributor(): IContributor;
@@ -9592,6 +9603,27 @@ declare module akra.animation {
     }
     function createContainer(pAnimation?: IAnimationBase, sName?: string): IAnimationContainer;
 }
+declare module akra.material {
+    class Material implements IMaterial {
+        public guid: number;
+        public name: string;
+        public diffuse: IColor;
+        public ambient: IColor;
+        public specular: IColor;
+        public emissive: IColor;
+        public transparency: number;
+        public shininess: number;
+        constructor(sName?: string, pMat?: IMaterialBase);
+        public set(pMat: IMaterialBase): IMaterial;
+        public set(sMat: string): IMaterial;
+        public isEqual(pMat: IMaterialBase): boolean;
+        public isTransparent(): boolean;
+        public toString(): string;
+    }
+}
+declare module akra.material {
+    function create(sName?: string, pMat?: IMaterialBase): IMaterial;
+}
 declare module akra.exchange {
     class Importer {
         private _pEngine;
@@ -9617,11 +9649,14 @@ declare module akra.exchange {
         public findByIndex(eType: EDocumentEntry, i?: number): any;
         public findFirst(eType: EDocumentEntry): any;
         public getController(iContrller?: number): IAnimationController;
+        public getMaterials(): IMaterial[];
         public decodeEntry(pEntry: IDataEntry): any;
         public registerData(iGuid: number, pData: any): void;
         public decodeInstance(iGuid: number): any;
         public decodeEntryList(pEntryList: IDataEntry[], fnCallback: (pData: any) => void): void;
         public decodeInstanceList(pInstances: number[], fnCallback: (pData: any, n?: number) => void): void;
+        public decodeMaterialEntry(pEntry: IMaterialEntry): IMaterial;
+        public decodeColorEntry(pEntry: IColorEntry, pDest?: IColor): IColor;
         public decodeAnimationFrame(pEntry: IAnimationFrameEntry): IPositionFrame;
         public decodeAnimationTrack(pEntry: IAnimationTrackEntry): IAnimationTrack;
         public decodeAnimationEntry(pEntry: IAnimationEntry): IAnimation;
@@ -12128,23 +12163,6 @@ declare module akra.fx {
         private static binarySearchInSortArray<T>(pArray, iValue);
     }
 }
-declare module akra.material {
-    class Material implements IMaterial {
-        public name: string;
-        public diffuse: IColor;
-        public ambient: IColor;
-        public specular: IColor;
-        public emissive: IColor;
-        public transparency: number;
-        public shininess: number;
-        constructor(sName?: string, pMat?: IMaterialBase);
-        public set(pMat: IMaterialBase): IMaterial;
-        public set(sMat: string): IMaterial;
-        public isEqual(pMat: IMaterialBase): boolean;
-        public isTransparent(): boolean;
-        public toString(): string;
-    }
-}
 declare module akra {
     interface ICodec {
         getType(): string;
@@ -12370,6 +12388,7 @@ declare module akra.pool.resources {
         public _pTextureMatrices: IMat4[];
         public _nTextureUpdates: number;
         public _nTexcoordUpdates: number;
+        public notifyAltered(): void;
         public getTotalUpdatesOfTextures(): number;
         public getTotalUpdatesOfTexcoords(): number;
         public getTotalTextures(): number;
@@ -13393,9 +13412,6 @@ declare module akra.geometry {
     * Computes a bounding sphere - minimal.
     */
     function computeBoundingSphereMinimal(pVertexData: IVertexData, pSphere: ISphere): boolean;
-}
-declare module akra.material {
-    function create(sName?: string, pMat?: IMaterialBase): IMaterial;
 }
 declare module akra {
     interface IAFXPreRenderState {
@@ -15988,7 +16004,7 @@ declare module akra.webgl {
         public mousewheel: ISignal<(pCanvas: ICanvas3d, x: number, y: number, fDelta: number) => void>;
         public dragstart: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number) => void>;
         public dragstop: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number) => void>;
-        public dragging: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number) => void>;
+        public dragging: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number, dx: number, dy: number) => void>;
         public _pCanvas: HTMLCanvasElement;
         public _pCanvasCreationInfo: ICanvasInfo;
         public _iRealWidth: number;
