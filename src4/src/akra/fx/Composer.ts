@@ -921,7 +921,7 @@ module akra.fx {
 					this._pComposerState.mesh.isOptimizedSkinned = false;
 				}
 
-				if (this._pCurrentSurfaceMaterial && material.isTransparent(this._pCurrentSurfaceMaterial.getMaterial())) {
+				if (this._pCurrentSurfaceMaterial && this._pCurrentSurfaceMaterial.getMaterial().isTransparent()) {
 					this._pComposerState.mesh.transparent = true;
 				}
 				else {

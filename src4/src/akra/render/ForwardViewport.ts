@@ -202,7 +202,8 @@ module akra.render {
 
 					if (!isNull(pRenderable) &&
 						pRenderable.getRenderMethodByName(csMethod) &&
-						!(this.isTransparencySupported() && material.isTransparent(pRenderable.getRenderMethodByName(csMethod).getMaterial()))) {
+						!(this.isTransparencySupported() &&
+						pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent())) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}
@@ -225,7 +226,7 @@ module akra.render {
 
 					if (!isNull(pRenderable) &&
 						pRenderable.getRenderMethodByName(csMethod) &&
-						material.isTransparent(pRenderable.getRenderMethodByName(csMethod).getMaterial())) {
+						pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent()) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}

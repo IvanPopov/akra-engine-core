@@ -28,9 +28,19 @@
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="data" />
-        <ResourceFile Path="mercedes.map"/>
-        <ResourceFile Path="grid.jpg" Name="GRID_JPG"/>
-        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
+        <Folder Path="models/images" />
+        <ResourceFile Path="../cube.dae" Name="CUBE.DAE"/>
+        <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE"/>
+        <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
+        <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
+        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
+        <ResourceFile Path="data/textures/skyboxes/colosseum.dds" Name="SKYBOX_COLOSSEUM"/>
+        <ResourceFile Path="data/textures/skyboxes/rome-church.dds" Name="SKYBOX_CHURCH"/>
+        <ResourceFile Path="data/textures/skyboxes/saint-peters-basilica.dds" Name="SKYBOX_BASILICA"/>
+        <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
+        <ResourceFile Path="data/textures/skyboxes/perea-beach1.dds" Name="SKYBOX_BEACH"/>
+        <ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY"/>
+        <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>
       </Data>
     </Resource>
   </PropertyGroup>

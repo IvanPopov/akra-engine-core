@@ -82,8 +82,9 @@ module akra {
 		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
-			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
-			var pSkyboxModel = pCube.extractModel("box");
+			//var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+			var pSkyboxModel = addons.cube(pScene);//pCube.extractModel("box");
+			//pSkyboxModel.attachToParent(pScene.getRootNode());
 			(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
 		}
 
@@ -299,7 +300,7 @@ module akra {
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
 
-		pLibeCube.setVisible(false);
+		pLibeCube.setVisible(true);
 
 		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);

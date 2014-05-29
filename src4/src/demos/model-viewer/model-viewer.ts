@@ -49,11 +49,12 @@ module akra {
 	export var pEnvTexture = null;
 	export var pDepthViewport = null;
 
-	var pState = {
-		animate: true,
-		lightShafts: true,
-		lensFlare: true
-	};
+	var pGUI = null;
+	//var pState = {
+	//	animate: true,
+	//	lightShafts: true,
+	//	lensFlare: true
+	//};
 
 	export var animateTimeOfDay = () => {
 		pSky.setTime(new Date().getTime() % 24000 / 500 - 24);
@@ -122,7 +123,7 @@ module akra {
 		var pKeymap: IKeyMap = control.createKeymap();
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
-
+		
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress()) {
 				if (pKeymap.isMouseMoved()) {
@@ -162,7 +163,66 @@ module akra {
 		});
 	}
 
-	var pGUI;
+	
+	
+
+	function setupMaterialPicking(pViewport: ILPPViewport): void {
+		var pControls: dat.GUI = pGUI.addFolder("material");
+		(<any>pControls).open();
+
+		var pMat = {
+			origin: null,
+			name: "unknown", glossiness: 1e-2,
+			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000"
+		};
+
+		pControls.add(pMat, "name").listen();
+		pControls.add(pMat, "glossiness", 0., 1.).listen().onChange(() => {
+			if (pMat.origin) {
+				pMat.origin.shininess = pMat.glossiness;
+			}
+		});
+
+		pControls.addColor(pMat, "diffuse").listen().onChange(() => {
+			if (pMat.origin) {
+				(<IColor>pMat.origin.diffuse).set(pMat.diffuse);
+			}
+		});
+		//pControls.addColor(pMat, "ambient").listen().onChange(() => {
+		//	if (pMat.origin) {
+		//		(<IColor>pMat.origin.ambient).set(pMat.ambient);
+		//	}
+		//});
+		pControls.addColor(pMat, "emissive").listen().onChange(() => {
+			if (pMat.origin) {
+				(<IColor>pMat.origin.emissive).set(pMat.emissive);
+			}
+		});
+		pControls.addColor(pMat, "specular").listen().onChange(() => {
+			if (pMat.origin) {
+				(<IColor>pMat.origin.specular).set(pMat.specular);
+			}
+		});
+
+		pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
+		pViewport.enable3DEvents(false);
+		pViewport.click.connect((pViewport: ILPPViewport, x, y) => {
+			var pResult = pViewport.pick(x, y);
+			pViewport.highlight(pResult);
+
+			if (pResult.renderable) {
+				var pOrigin: IMaterial = pResult.renderable.getMaterial();
+
+				pMat.origin = pOrigin;
+				pMat.name = pOrigin.name;
+				pMat.glossiness = pOrigin.shininess;
+				pMat.diffuse = pOrigin.diffuse.getHtml();
+				//pMat.ambient = pOrigin.ambient.getHtml();
+				pMat.emissive = pOrigin.emissive.getHtml();
+				pMat.specular = pOrigin.specular.getHtml();
+			}
+		});
+	}
 
 	function createViewport(): IViewport3D {
 		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
@@ -181,9 +241,12 @@ module akra {
 		//pEffect.addComponent("akra.system.blur");
 		// pEffect.addComponent("akra.system.lensflare");
 
-		pGUI = new dat.GUI();
+		
 
-		pGUI.add(pState, 'animate');
+		pGUI = new dat.GUI();
+		setupMaterialPicking(<ILPPViewport>pViewport);
+
+		//pGUI.add(pState, 'animate');
 
 		var pSkyboxTexturesKeys = [
 			'desert',
@@ -194,7 +257,9 @@ module akra {
 			'church',
 			'basilica',
 		];
+
 		pSkyboxTextures = {};
+
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			// console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
 			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
@@ -319,6 +384,7 @@ module akra {
 		var pPBSFolder = pGUI.addFolder("pbs");
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+
 			//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
 			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			//}
@@ -366,6 +432,9 @@ module akra {
 		return pViewport;
 	}
 
+	
+
+
 	function createMirror(): INode {
 		var pNode: INode = pScene.createNode().setPosition(0., -1.5, 0.);
 		pNode.setInheritance(ENodeInheritance.ROTPOSITION);
@@ -403,6 +472,7 @@ module akra {
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
+
 
 		pEffect.addComponent("akra.system.blur");
 
@@ -483,9 +553,6 @@ module akra {
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
-		
-		//pModel.attachToParent(pScene.getRootNode());
-
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
 			var pModel = pCube.extractModel("box");
@@ -506,6 +573,13 @@ module akra {
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
+		//var pGUIData = {};
+		//var key = "save [" + pModel.getBasename() + "]";
+		//pGUIData[key] = () => {
+		//	pModel.saveResource();
+		//};
+
+		//pGUI.add(pGUIData, key);
 
 		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
 		if (pRoot != null) {

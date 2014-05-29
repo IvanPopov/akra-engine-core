@@ -17,6 +17,21 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="demos\anti-aliasing\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\anti-aliasing\data\effects\Measured BaseColor values Unreal.txt" />
+    <Content Include="demos\anti-aliasing\data\effects\physically_based_cheatsheet1.png" />
+    <Content Include="demos\anti-aliasing\data\effects\physically_based_cheatsheet2.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\oil_specular_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\_oil_specular_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\WoodSoldier\WoodSoldier.png" />
+    <Content Include="demos\anti-aliasing\data\textures\lensflare_cookies.png" />
+    <Content Include="demos\anti-aliasing\data\textures\lensflare_cookies_new.png" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\desert-2a.png" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\desert-2c.png" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\park-01-cube.png" />
+    <Content Include="demos\anti-aliasing\demo.xml" />
     <Content Include="demos\atmospheric_scattering\demo.xml" />
     <Content Include="demos\css\metro-bootstrap.css" />
     <Content Include="demos\distance-fog\dat.gui\dat.gui.min.js" />
@@ -76,6 +91,7 @@
     <Content Include="demos\game\demo.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="demos\glass.png" />
     <Content Include="demos\light-shafts\dat.gui\dat.gui.min.js" />
     <Content Include="demos\light-shafts\data\models\rock\images\diffuse.dds" />
     <Content Include="demos\light-shafts\data\models\rock\images\normal.dds" />
@@ -96,7 +112,6 @@
     <Content Include="demos\mercedes\models\images\6_engine.png" />
     <Content Include="demos\mercedes\models\images\7_lights_lod0.png" />
     <Content Include="demos\mercedes\models\images\8_tire%283%29.png" />
-    <Content Include="demos\mercedes\textures\desert-3.dds" />
     <Content Include="demos\mercedes\textures\light_icon.png" />
     <Content Include="demos\mercedes\textures\light_icon1.png" />
     <Content Include="demos\miner\dat.gui\dat.gui.js" />
@@ -114,6 +129,7 @@
     <Content Include="demos\miner\textures\desert-3.dds" />
     <Content Include="demos\miner\textures\light_icon.png" />
     <Content Include="demos\miner\textures\light_icon1.png" />
+    <Content Include="demos\model-viewer\dat.gui\dat.gui.min.js" />
     <Content Include="demos\model-viewer\data\effects\Measured BaseColor values Unreal.txt" />
     <Content Include="demos\model-viewer\data\effects\physically_based_cheatsheet1.png" />
     <Content Include="demos\model-viewer\data\effects\physically_based_cheatsheet2.png" />
@@ -171,6 +187,7 @@
     <Content Include="demos\model-viewer\data\textures\skyboxes\rome-church.dds" />
     <Content Include="demos\model-viewer\data\textures\skyboxes\saint-peters-basilica.dds" />
     <Content Include="demos\model-viewer\demo.xml" />
+    <Content Include="demos\model-viewer\miner\dat.gui\dat.gui.js" />
     <Content Include="demos\model-viewer\miner\demo.xml" />
     <Content Include="demos\model-viewer\miner\grid.jpg" />
     <Content Include="demos\model-viewer\miner\textures\light_icon.png" />
@@ -643,9 +660,34 @@
     <Content Include="demos\distance-fog\data\models\teapot.dae" />
     <Content Include="demos\distance-fog\data\models\torusknot.DAE" />
     <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.DAE" />
-    <Content Include="demos\mercedes\mercedes.map" />
     <Content Include="demos\mercedes\models\mercedes.DAE" />
     <Content Include="demos\mercedes\textures\desert-3.dds" />
+    <Content Include="demos\anti-aliasing\data\effects\blur.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\common.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\dirtylens.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\dof.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\fresnel_texture.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\lensflare.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\sunshaft.afx" />
+    <Content Include="demos\anti-aliasing\data\models\Donut.dae" />
+    <Content Include="demos\anti-aliasing\data\models\oil\oil.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\anti-aliasing\data\models\rock\images\normal.dds" />
+    <Content Include="demos\anti-aliasing\data\models\rock\images\specular.dds" />
+    <Content Include="demos\anti-aliasing\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\room-with-room.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\Sphere.dae" />
+    <Content Include="demos\anti-aliasing\data\models\teapot.dae" />
+    <Content Include="demos\anti-aliasing\data\models\torusknot.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\colosseum.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\perea-beach1.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\rome-church.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\saint-peters-basilica.dds" />
+    <Content Include="demos\cubeWithTexture.dae" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -688,6 +730,7 @@
     <Content Include="demos\game\lib\virtualGamepad.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="demos\anti-aliasing\anti-aliasing.ts" />
     <TypeScriptCompile Include="demos\distance-fog\distance-fog.ts" />
     <TypeScriptCompile Include="demos\mercedes\mercedes.ts" />
     <TypeScriptCompile Include="demos\miner\miner.ts" />

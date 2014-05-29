@@ -3646,8 +3646,18 @@ declare module akra {
         ambient: IColor;
         specular: IColor;
         emissive: IColor;
+        set(sMat: "gold"): IMaterial;
+        set(sMat: "cooper"): IMaterial;
+        set(sMat: "plastic"): IMaterial;
+        set(sMat: "iron"): IMaterial;
+        set(sMat: "aluminium"): IMaterial;
+        set(sMat: "silver"): IMaterial;
+        set(sMat: "water"): IMaterial;
+        set(sMat: "glass"): IMaterial;
+        set(sMat: string): IMaterial;
         set(pMat: IMaterialBase): IMaterial;
         isEqual(pMat: IMaterialBase): boolean;
+        isTransparent(): boolean;
     }
 }
 declare module akra {
@@ -4220,6 +4230,7 @@ declare module akra {
         setAbgr(iValue: number): void;
         getHtml(): string;
         getHtmlRgba(): string;
+        set(rgba: string): IColor;
         set(cColor: IColorValue): IColor;
         set(cColor: IColor): IColor;
         set(r?: number, g?: number, b?: number, a?: number): IColor;
@@ -5237,6 +5248,7 @@ declare module akra {
         id?: string;
         sid?: string;
         name?: string;
+        xml?: Element;
     }
     interface IColladaEntryMap {
         [id: string]: IColladaEntry;
@@ -5459,6 +5471,7 @@ declare module akra {
             emissive: IColladaTexture;
             normal: IColladaTexture;
         };
+        material: IMaterial;
     }
     interface IColladaEffectTechnique extends IColladaEntry {
         sid: string;
@@ -12133,6 +12146,7 @@ declare module akra.material {
         public shininess: number;
         constructor(sName?: string, pMat?: IMaterialBase);
         public set(pMat: IMaterialBase): IMaterial;
+        public set(sMat: string): IMaterial;
         public isEqual(pMat: IMaterialBase): boolean;
         public isTransparent(): boolean;
         public toString(): string;
@@ -13396,7 +13410,6 @@ declare module akra.geometry {
 }
 declare module akra.material {
     function create(sName?: string, pMat?: IMaterialBase): IMaterial;
-    function isTransparent(pMat: IMaterial): boolean;
 }
 declare module akra {
     interface IAFXPreRenderState {
@@ -16800,11 +16813,13 @@ declare module akra.pool.resources {
         private _pOptions;
         private _pLinks;
         private _pLib;
-        private _pCache;
+        private _pMeshCache;
+        private _pMaterialCache;
         private _pAsset;
         private _pVisualScene;
         private _pAnimations;
         private _sFilename;
+        private _pXMLDocument;
         private _pXMLRoot;
         private _iByteLength;
         public getModelFormat(): EModelFormats;
@@ -16841,7 +16856,9 @@ declare module akra.pool.resources {
         private COLLADAVertexWeights(pXML);
         private COLLADAMesh(pXML);
         private static isCOLLADAMeshOptimized(pMesh);
-        private static optimizeCOLLADAMesh(pMesh);
+        private optimizeCOLLADAMesh(pMesh);
+        private COLLADANodeChanged(pBefore, pAfter);
+        private isCOLLADAChangesTracingEnabled();
         private COLLADAGeometrie(pXML);
         private COLLADASkin(pXML);
         private COLLADAController(pXML);
@@ -16897,10 +16914,14 @@ declare module akra.pool.resources {
         private buildInitialPoses(pPoseSkeletons?);
         private buildComplete();
         public setOptions(pOptions: IColladaLoadOptions): void;
+        private setXMLDocument(pDocument);
+        private getXMLDocument();
         private setXMLRoot(pXML);
         private getXMLRoot();
         private findMesh(sName);
         private addMesh(pMesh);
+        private findMaterial(sName);
+        private addMaterial(sName, pMaterial);
         private prepareInput(pInput);
         public isVisualSceneLoaded(): boolean;
         public isAnimationLoaded(): boolean;
@@ -16919,12 +16940,17 @@ declare module akra.pool.resources {
         private isLibraryExists(sLib);
         private getLibrary(sLib);
         public getBasename(): string;
+        public getVersion(): string;
         public getFilename(): string;
         private setFilename(sName);
         private readLibraries(pXML, pTemplates);
         private checkLibraries(pXML, pTemplates);
         public parse(sXMLData: string, pOptions?: IColladaLoadOptions): boolean;
         public loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
+        private uploadMaterial(sMaterial);
+        private syncMaterials();
+        public extractUsedMaterials(): IMaterial[];
+        public toBlob(): Blob;
         public extractMesh(sMeshName?: string): IMesh;
         public extractModel(pScene: IScene3d, sMeshName?: string): ISceneModel;
         public extractModel(pNode: ISceneNode, sMeshName?: string): ISceneModel;
