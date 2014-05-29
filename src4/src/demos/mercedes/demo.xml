@@ -2,6 +2,7 @@
 <Demo Name="Mercedes" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
   <Description>Miner animation demo</Description>
+  <Template>index.jade</Template>
   <ItemGroup>
     <TypeScriptCompile Include="mercedes.ts"/>
   </ItemGroup>
@@ -15,12 +16,24 @@
         <OutDir>js</OutDir>
         <Type>javascript</Type>
       </Attachment>
+      <Attachment>
+        <Folder Path="css" />
+        <Format>Enclosure</Format>
+      </Attachment>
 
       <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-navigation" />
       <Module Name="addon-base3dObjects" />
     </Dependencies>
+    <Resource Name="AE_RESOURCES_2">
+      <Filename>data2</Filename>
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <ResourceFile Path="../cube.dae" Name="CUBE.DAE"/>
+      </Data>
+    </Resource>
     <Resource Name="AE_RESOURCES">
       <Filename>data</Filename>
       <Archive>True</Archive>
@@ -29,7 +42,6 @@
       <Data>
         <Folder Path="data" />
         <Folder Path="models/images" />
-        <ResourceFile Path="../cube.dae" Name="CUBE.DAE"/>
         <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE"/>
         <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
         <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>

@@ -2494,7 +2494,7 @@ module akra.pool.resources {
 
 			//creating subsets
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
-				pMesh.createSubset("submesh-" + i, pPolyGroup[i].type,
+				pMesh.createSubset(pGeometry.id + "-submesh-" + i, pPolyGroup[i].type,
 					Collada.isSingleIndexedPolygons(pPolyGroup[i]) ? ERenderDataBufferOptions.RD_SINGLE_INDEX : 0);
 			}
 
