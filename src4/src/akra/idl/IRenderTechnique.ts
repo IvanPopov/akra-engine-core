@@ -48,6 +48,7 @@ module akra {
 		isPostEffectPass(iPass: uint): boolean;
 		isLastPass(iPass: uint): boolean;
 		isFirstPass(iPass: uint): boolean;
+		isLastPostEffectPass(iPass: uint): boolean;
 
 		isFreeze(): boolean;
 
@@ -55,7 +56,8 @@ module akra {
 
 		_blockPass(iPass: uint): void;
 
-		_setPostEffectsFrom(iPass: uint): void;
+		//_setPostEffectsFrom(iPass: uint): void;
+		_setBlendPassTypes(pTypes: EPassTypes[]): void;
 
 		_setComposer(pComposer: IAFXComposer): void;
 		_getComposer(): IAFXComposer;

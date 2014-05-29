@@ -29,7 +29,10 @@ module akra.fx {
 		private _iShiftMin: int = 0;
 		private _iShiftMax: int = 0;
 		private _nTotalPasses: uint = 0;
-		private _iPostEffectsStart: uint = 0;
+		//private _iPostEffectsStart: uint = 0;
+
+		private _pPassTypesList: EPassTypes[] = null;
+		private _bHasPostEffectPass: boolean = false;
 
 		private _pPassesDList: IAFXPassInstruction[][] = null;
 		private _pComponentInputVarBlend: ComponentPassInputBlend[] = null;
@@ -67,11 +70,15 @@ module akra.fx {
 		}
 
 		hasPostEffect(): boolean {
-			return this._iPostEffectsStart > 0;
+			return this._bHasPostEffectPass;
 		}
 
-		getPostEffectStartPass(): uint {
-			return this._iPostEffectsStart;
+		//getPostEffectStartPass(): uint {
+		//	return this._iPostEffectsStart;
+		//}
+
+		getPassTypes(): EPassTypes[] {
+			return this._pPassTypesList;
 		}
 
 		getHash(): string {
@@ -221,7 +228,8 @@ module akra.fx {
 			this._pAddedComponentInfoList.push(pInfo);
 
 			this._isReady = false;
-			this._iPostEffectsStart = 0;
+			//this._iPostEffectsStart = 0;
+			this._bHasPostEffectPass = false;
 			this._bNeedToUpdateHash = true;
 		}
 
@@ -277,7 +285,8 @@ module akra.fx {
 			}
 
 			this._isReady = false;
-			this._iPostEffectsStart = 0;
+			//this._iPostEffectsStart = 0;
+			this._bHasPostEffectPass = false;
 			this._bNeedToUpdateHash = true;
 		}
 
@@ -288,6 +297,7 @@ module akra.fx {
 
 			this._pPassesDList = [];
 			this._pComponentInputVarBlend = [];
+			this._pPassTypesList = new Array(this._iShiftMax - this._iShiftMin + 1);
 
 			for (var i: uint = 0; i < this._pAddedComponentInfoList.length; i++) {
 				var pInfo: IAFXComponentInfo = this._pAddedComponentInfoList[i];
@@ -305,12 +315,16 @@ module akra.fx {
 
 				this._pPassesDList[iShift].push(pPass);
 				this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
+				this._pPassTypesList[iShift] = pInfo.component.isPostEffect() ? EPassTypes.POSTEFFECT : EPassTypes.DEFAULT;
 
 				if (pInfo.component.isPostEffect()) {
-					if (this._iPostEffectsStart === 0 || iShift < this._iPostEffectsStart) {
-						this._iPostEffectsStart = iShift;
-					}
+					this._bHasPostEffectPass = true;
 				}
+				//if (pInfo.component.isPostEffect()) {
+				//	if (this._iPostEffectsStart === 0 || iShift < this._iPostEffectsStart) {
+				//		this._iPostEffectsStart = iShift;
+				//	}
+				//}
 			}
 
 			for (var i: uint = 0; i < this._pComponentInputVarBlend.length; i++) {
@@ -320,6 +334,7 @@ module akra.fx {
 				else {
 					this._pComponentInputVarBlend[i] = null;
 					this._pPassesDList[i] = null;
+					this._pPassTypesList[i] = EPassTypes.UNDEF;
 				}
 			}
 

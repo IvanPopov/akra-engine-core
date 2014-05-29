@@ -3406,6 +3406,11 @@ declare module akra {
     }
 }
 declare module akra {
+    enum EPassTypes {
+        UNDEF = 0,
+        DEFAULT = 1,
+        POSTEFFECT = 2,
+    }
     interface IAFXComponent extends IResourcePoolItem {
         getTechnique(): IAFXTechniqueInstruction;
         setTechnique(pTechnique: IAFXTechniqueInstruction): void;
@@ -3853,7 +3858,7 @@ declare module akra {
         _getMinShift(): number;
         _getMaxShift(): number;
         hasPostEffect(): boolean;
-        getPostEffectStartPass(): number;
+        getPassTypes(): EPassTypes[];
         containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): any;
         containComponentHash(sComponentHash: string): boolean;
         findAnyAddedComponentInfo(pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentInfo;
@@ -4402,10 +4407,11 @@ declare module akra {
         isPostEffectPass(iPass: number): boolean;
         isLastPass(iPass: number): boolean;
         isFirstPass(iPass: number): boolean;
+        isLastPostEffectPass(iPass: number): boolean;
         isFreeze(): boolean;
         updatePasses(bSaveOldUniformValue: boolean): void;
         _blockPass(iPass: number): void;
-        _setPostEffectsFrom(iPass: number): void;
+        _setBlendPassTypes(pTypes: EPassTypes[]): void;
         _setComposer(pComposer: IAFXComposer): void;
         _getComposer(): IAFXComposer;
         _renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
@@ -12049,7 +12055,8 @@ declare module akra.fx {
         private _iShiftMin;
         private _iShiftMax;
         private _nTotalPasses;
-        private _iPostEffectsStart;
+        private _pPassTypesList;
+        private _bHasPostEffectPass;
         private _pPassesDList;
         private _pComponentInputVarBlend;
         constructor(pComposer: IAFXComposer);
@@ -12060,7 +12067,7 @@ declare module akra.fx {
         public getComponentCount(): number;
         public getTotalPasses(): number;
         public hasPostEffect(): boolean;
-        public getPostEffectStartPass(): number;
+        public getPassTypes(): EPassTypes[];
         public getHash(): string;
         public containComponent(pComponent: IAFXComponent, iShift: number, iPass: number): boolean;
         public containComponentHash(sComponentHash: string): boolean;
@@ -12783,7 +12790,12 @@ declare module akra.render {
         private _pPassBlackList;
         private _iCurrentPass;
         private _pCurrentPass;
-        private _iGlobalPostEffectsStart;
+        /**
+        * Only for read, because it`s pointer to ComponentBlend._pPassTypesList
+        */
+        private _pBlendPassTypesList;
+        private _bHasPostEffectPass;
+        private _iLastPostEffectPass;
         private _iMinShiftOfOwnBlend;
         private _pRenderMethodPassStateList;
         static pRenderMethodPassStatesPool: IObjectArray<IAFXPassInputStateInfo>;
@@ -12814,6 +12826,7 @@ declare module akra.render {
         public hasPostEffect(): boolean;
         public isPostEffectPass(iPass: number): boolean;
         public isLastPass(iPass: number): boolean;
+        public isLastPostEffectPass(iPass: number): boolean;
         public isFirstPass(iPass: number): boolean;
         public isFreeze(): boolean;
         public updatePasses(bSaveOldUniformValue: boolean): void;
@@ -12822,7 +12835,8 @@ declare module akra.render {
         public _renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _updateMethod(pMethod: IRenderMethod): void;
         public _blockPass(iPass: number): void;
-        public _setPostEffectsFrom(iPass: number): void;
+        public _setBlendPassTypes(pTypes: EPassTypes[]): void;
+        private updatePassTypesInfo();
         private informComposer();
         private prepareRenderMethodPassStateInfo(pMethod);
         /**

@@ -78,14 +78,14 @@ module akra {
 		pCanvas.addViewport(pViewport);
 		pCanvas.addViewport(pDSViewport);
 
-		//pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+		pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
 		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		pDSViewport.setTransparencySupported(false);
-		//if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
-		//	var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
-		//	var pSkyboxModel = pCube.extractModel("box");
-		//	(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
-		//}
+
+		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
+			var pSkyboxModel = pCube.extractModel("box");
+			(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
+		}
 
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -131,7 +131,7 @@ module akra {
 			pSprite.attachToParent(pLightOmni);
 
 			var pMaterial: IMaterial = pSprite.getRenderable().getMaterial();
-			pMaterial.transparency = 0.;
+			pMaterial.transparency = 0.99;
 			pMaterial.diffuse.a = 0.;
 			pMaterial.specular.a = 0.;
 			pMaterial.ambient.a = 0.;
@@ -140,8 +140,8 @@ module akra {
 			pLightOmni.lookAt(Vec3.temp(0., 0., 0.));
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			//pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
-			pLightOmni.getParams().diffuse.set(math.random() / 10, math.random() / 10, math.random() / 10);
-			pLightOmni.getParams().specular.set(math.random() / 10);
+			pLightOmni.getParams().diffuse.set(math.random(), math.random(), math.random());
+			pLightOmni.getParams().specular.set(math.random());
 			pLightOmni.getParams().attenuation.set(math.random(), math.random(), math.random());
 
 			((pSprite: ISprite, pLightOmni: IOmniLight) => {
@@ -328,25 +328,25 @@ module akra {
 			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
 		});
 
-		var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");
-		var pCubeModel = pCubeCollada.extractModel();
+		//var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");
+		//var pCubeModel = pCubeCollada.extractModel();
 
-		pCubeModel.attachToParent(pScene.getRootNode());
-		pCubeModel.setPosition(0., 2., -2.).scale(50.);
-		pCubeModel.addRotationByXYZAxis(0., Math.PI, 0.);
-		pCubeModel.getRenderable().getMaterial().diffuse.a = 0.0;
-		pCubeModel.getRenderable().getMaterial().diffuse.r = 0.0;
-		pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
-		pCubeModel.getRenderable().getMaterial().specular.a = 0.0;
-		pCubeModel.getRenderable().getMaterial().ambient.a = 0.;
-		pCubeModel.getRenderable().getMaterial().transparency = 0;
+		//pCubeModel.attachToParent(pScene.getRootNode());
+		//pCubeModel.setPosition(0., 2., -2.).scale(50.);
+		//pCubeModel.addRotationByXYZAxis(0., Math.PI, 0.);
+		//pCubeModel.getRenderable().getMaterial().diffuse.a = 0.0;
+		//pCubeModel.getRenderable().getMaterial().diffuse.r = 0.0;
+		//pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
+		//pCubeModel.getRenderable().getMaterial().specular.a = 0.0;
+		//pCubeModel.getRenderable().getMaterial().ambient.a = 0.;
+		//pCubeModel.getRenderable().getMaterial().transparency = 0;
 
-		window["cubeMaterial"] = pCubeModel.getRenderable().getMaterial();
-		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
-			if (pRenderable === pCubeModel.getRenderable()) {
-				pTechnique.getPass(iPass).setUniform("bSetAlpha", true);
-			}
-		});
+		//window["cubeMaterial"] = pCubeModel.getRenderable().getMaterial();
+		//pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+		//	if (pRenderable === pCubeModel.getRenderable()) {
+		//		pTechnique.getPass(iPass).setUniform("bSetAlpha", true);
+		//	}
+		//});
 
 
 		//var pCarCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CAR");
