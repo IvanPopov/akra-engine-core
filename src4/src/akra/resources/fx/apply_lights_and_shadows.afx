@@ -42,7 +42,7 @@ shared PixelData pixelData;
 float4 applyMaterialAlpha() : COLOR {
     float4 color = resultAFXColor;
     //color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
-    color.a = (pixelData.material.diffuse.a + pixelData.material.emissive.a) * pixelData.material.transparency;
+    color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
     return color;
 }
 

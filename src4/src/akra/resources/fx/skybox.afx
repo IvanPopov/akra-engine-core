@@ -1,10 +1,12 @@
 provide akra.system;
 
-include "common.afx";
+//include "common.afx";
+include "lightingFunctions.afx";
 
 texture tex0 : INPUT_TEXTURE;
 texture tex1 : OBJECT_ID_TEXTURE;
 texture skyBox : SKYBOX_TEXTURE;
+texture skyBoxUnwraped : SKYBOX_UNWRAPED_TEXTURE;
 
 sampler sceneTexture : INPUT_SAMPLER = sampler_state
 {
@@ -36,10 +38,18 @@ samplerCUBE skyboxSampler : SAMPLER_SKYBOX = sampler_state
 	MagFilter = LINEAR;
 };
 
+sampler skyboxUnwrapedSampler : SAMPLER_UNWRAPED_SKYBOX = sampler_state
+{
+	Texture = <skyBoxUnwraped>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
+
 
 //sky_fix sky_container : SKY_FIX;
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 float2 inputTextureRatio : INPUT_TEXTURE_RATIO;
+float sharpness : SKYBOX_ADVANCED_SHARPNESS;
 
 struct VS_IN{
 	float2 position : POSITION;
@@ -53,7 +63,7 @@ struct VS_OUT{
 };
 
 float4x4 projMat : PROJ_MATRIX;
-float4x4 invView : INV_VIEW_CAMERA_MAT;
+//float4x4 invView : INV_VIEW_CAMERA_MAT;
 float3 cameraPos : CAMERA_POSITION;
 
 VS_OUT vs_skybox(VS_IN IN){
@@ -85,6 +95,19 @@ float4 fs_skybox(VS_OUT IN) : COLOR{
 	}
 };
 
+float4 fs_skybox_advanced(VS_OUT IN) : COLOR{
+	float2 textureCoords = IN.texCoords;
+
+	float4 objectIdData = tex2D(objectIDSampler,IN.texCoordsDeferred);
+
+	if(objectIdData.w != 0.){
+		return tex2D(sceneTexture, textureCoords);
+	}
+	else {
+		return float4(getEnvMapColor(IN.texCoordsSkybox, sharpness, skyboxUnwrapedSampler), 1.);
+	}
+};
+
 
 struct VS_OUT_2 {
 	float4 position: POSITION;
@@ -107,6 +130,10 @@ VS_OUT_2 vs_skybox_model(float3 pos: POSITION){
 
 float4 fs_skybox_model(float3 texCoordsSkybox: TEXCOORD0): COLOR {
 	return texCUBE(skyboxSampler, texCoordsSkybox);
+}
+
+float4 fs_skybox_model_advanced(float3 texCoordsSkybox: TEXCOORD0): COLOR {
+	return float4(getEnvMapColor(texCoordsSkybox, sharpness, skyboxUnwrapedSampler), 1.);
 }
 
 texture bgTexure: TEXTURE0;
@@ -204,10 +231,17 @@ float4 fs_outline(VS_OUT IN) : COLOR
 	
 };	
 
+foreign bool IS_USED_ADVANCED_SKYBOX = false;
 technique skybox : POST_EFFECT {
 	pass skybox{
 		VertexShader = compile vs_skybox();
-		PixelShader = compile fs_skybox();
+
+		if(IS_USED_ADVANCED_SKYBOX){
+			PixelShader = compile fs_skybox_advanced();
+		}
+		else {
+			PixelShader = compile fs_skybox();
+		}
 	};
 };
 
@@ -215,9 +249,15 @@ technique skybox_model {
 	pass skybox{
 		ZWRITEENABLE = false;
 		VertexShader = compile vs_skybox_model();
-		PixelShader = compile fs_skybox_model();
+		if(IS_USED_ADVANCED_SKYBOX){
+			PixelShader = compile fs_skybox_model_advanced();
+		}
+		else {
+			PixelShader = compile fs_skybox_model();			
+		}
 	};
 };
+
 
 technique outline : POST_EFFECT {
 	import skybox;

@@ -164,12 +164,12 @@ module akra.render {
 			this._pCamera._keepLastViewport(this);
 
 			if (!this._bRenderOnlyTransparentObjects) {
-				this.renderAsNormal("forwardShading", this.getCamera());
+				this.renderAsNormal(this._csDefaultRenderMethod + "forwardShading", this.getCamera());
 				this.getTarget().getRenderer().executeQueue(true);
 			}
 
 			if (this.isTransparencySupported()) {
-				this.renderTransparentObjects("forwardShading", this.getCamera());
+				this.renderTransparentObjects(this._csDefaultRenderMethod + "forwardShading", this.getCamera());
 				this.getTarget().getRenderer().executeQueue(true);
 			}
 
@@ -260,7 +260,7 @@ module akra.render {
 
 			pRenderable.getTechnique(".skybox-render").render.connect(
 				(pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => {
-					pMat.set(pViewport.getCamera().getFarPlane() * 2, pViewport.getCamera().getFarPlane() * 2, pViewport.getCamera().getFarPlane() * 2, 1.);
+					pMat.set(pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), pViewport.getCamera().getFarPlane(), 1.);
 
 					pTech.getPass(iPass).setTexture("SKYBOX_TEXTURE", (<IViewportSkybox>pViewport).getSkybox());
 					pTech.getPass(iPass).setUniform("MODEL_MATRIX", pMat);
@@ -371,7 +371,7 @@ module akra.render {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
 					var pTechCurr: IRenderTechnique = pRenderable.getTechnique(this._csDefaultRenderMethod);
 
-					var sMethod: string = "forwardShading";
+					var sMethod: string = this._csDefaultRenderMethod + "forwardShading";
 					var pTechnique: IRenderTechnique = null;
 
 					if (isNull(pRenderable.getTechnique(sMethod))) {
