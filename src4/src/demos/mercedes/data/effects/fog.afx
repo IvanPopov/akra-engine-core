@@ -1,0 +1,100 @@
+provide akra.system;
+
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 screenTextureSize : INPUT_TEXTURE_SIZE;
+float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
+float4x4 invViewMat : INV_VIEW_CAMERA_MAT;
+float4x4 viewMat : VIEW_MATRIX;
+float4x4 projMat : PROJ_MATRIX;
+texture tex0 : INPUT_TEXTURE;
+texture tex1 : DEPTH_TEXTURE;
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+sampler depthSampler : DEPTH_SAMPLER = sampler_state
+{
+	Texture = <tex1>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};
+
+float unprojZ(float4x4 projMat, float screenZ){
+    return -projMat[3][2]/(projMat[2][2] + screenZ);
+};
+
+float3 unproj(float4x4 projMat,float3 screenCoords){
+	float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
+	float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
+	float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
+
+	return float3(x,y,z);
+};
+
+VS_OUT vs_fog_shading(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float4 fogColor: FOG_EFFECT_COLOR;
+float fogStart: FOG_EFFECT_START = 5.;
+float fogIndex: FOG_EFFECT_INDEX = 20.;
+float fogHeight: FOG_EFFECT_HEIGHT = 0.7;
+
+float4 fs_fog_shading(VS_OUT IN) : COLOR {
+	float4 baseColor = tex2D(screenSampler, IN.textureCoords);
+	
+	float sceneDepth = tex2D(depthSampler, IN.textureCoords).x;
+	float3 realPos = unproj(projMat, float3(IN.screenPosition, sceneDepth*2.-1.));
+	float sceneDepthReal = length(realPos);
+	float4 worldPos = invViewMat * float4(realPos, 1.);
+	worldPos /= worldPos.w;
+
+	//float fogFactor = clamp( (sceneDepthReal-fogStart)/(fogIndex-fogStart), 0., 1. );
+	float fogFactor = clamp( 1. - exp(- (sceneDepthReal-fogStart) / fogIndex), 0., 1. );
+	fogFactor *= fogColor.a;
+
+	/*float4 end_pos = invViewMat * float4(realPos*float3(fogIndex/sceneDepthReal), 1.);
+	end_pos /= end_pos.w;
+	float end_y = end_pos.y;
+
+	float4 start_pos = invViewMat * float4(realPos*float3(fogStart/sceneDepthReal), 1.);
+	start_pos /= start_pos.w;
+	float start_y = start_pos.y;
+
+	if(end_y > start_y && realPos.y > fogHeight && end_y > fogHeight) {
+		if(start_y > fogHeight) {
+			fogFactor = 0.;
+		}
+		else {
+			fogFactor *= 1. - (end_y-fogHeight)/(end_y-start_y);
+		}
+	}*/
+
+	fogFactor *= clamp(1. - worldPos.y/sceneDepthReal * fogHeight, 0., 1.);
+
+	//return float4(fogFactor);
+
+	return baseColor * (1.-fogFactor) + float4(fogColor.rgb, 1.) * fogFactor;// / sumWeight;// + baseImage;
+};
+
+technique fog : POST_EFFECT {
+	pass pass1{
+		VertexShader = compile vs_fog_shading();
+		PixelShader = compile fs_fog_shading();
+	};
+};
+
+

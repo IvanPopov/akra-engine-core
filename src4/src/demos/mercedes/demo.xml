@@ -42,6 +42,7 @@
       <Data>
         <Folder Path="data" />
         <Folder Path="models/images" />
+        <ResourceFile Path="data/effects/fog.afx"/>
         <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE"/>
         <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
         <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
