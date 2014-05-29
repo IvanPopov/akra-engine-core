@@ -41,7 +41,7 @@ sampler skyboxSampler : SAMPLER_SKYBOX = sampler_state
 //sky_fix sky_container : SKY_FIX;
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
 float2 inputTextureRatio : INPUT_TEXTURE_RATIO;
-float2 sharpness : SKYBOX_ADVANCED_SHARPNESS;
+float sharpness : SKYBOX_ADVANCED_SHARPNESS;
 
 struct VS_IN{
 	float2 position : POSITION;
