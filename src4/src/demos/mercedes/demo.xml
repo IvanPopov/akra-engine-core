@@ -53,6 +53,7 @@
 
         <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE"/>
         <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
+        <ResourceFile Path="textures/grid.png" Name="GRID.PNG"/>
         <ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY"/>
 
         <!--<ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>

@@ -482,7 +482,7 @@ module akra.fx {
 					pRenderTechnique.updatePasses(isTechniqueUpdate);
 				}
 
-				pRenderTechnique._setPostEffectsFrom(pBlend.getPostEffectStartPass());
+				pRenderTechnique._setBlendPassTypes(pBlend.getPassTypes());
 				return true;
 			}
 			else {
@@ -1007,39 +1007,33 @@ module akra.fx {
 							1., 0);
 					}
 
+					this._pLastRenderTarget = null;
 					// pRenderer._unlockRenderTarget();					
 				}
 
 
-				if (!pRenderTechnique.isPostEffectPass(iPass)) {
-					this._pLastRenderTarget = this._pRenderTargetA;
-					pEntry.renderTarget = this._pRenderTargetA;
+				if (pRenderTechnique.isLastPostEffectPass(iPass) || pRenderTechnique.isLastPass(iPass)) {
+					this._pLastRenderTarget = null;
+				}
+				else if (!pRenderTechnique.isPostEffectPass(iPass)) {
+					if (isNull(this._pLastRenderTarget)) {
+						this._pLastRenderTarget = this._pRenderTargetA;
+					}
 
+					pEntry.renderTarget = this._pLastRenderTarget;
 					pEntry.viewport = this._pPostEffectViewport;
 				}
 				else {
-					if (pRenderTechnique.isLastPass(iPass)) {
-						this._pLastRenderTarget = null;
-						// pEntry.renderTarget = null;
+					if (this._pLastRenderTarget === this._pRenderTargetA) {
+						pEntry.renderTarget = this._pRenderTargetB;
+						this._pLastRenderTarget = this._pRenderTargetB;
 					}
 					else {
-						if (pEntry.input.renderStates[ERenderStates.BLENDENABLE] === ERenderStateValues.TRUE) {
-							//FIXME: Fix for render apply texture with trasparent objects
-							pEntry.renderTarget = this._pLastRenderTarget;
-						}
-						else {
-							if (this._pLastRenderTarget === this._pRenderTargetA) {
-								pEntry.renderTarget = this._pRenderTargetB;
-								this._pLastRenderTarget = this._pRenderTargetB;
-							}
-							else {
-								pEntry.renderTarget = this._pRenderTargetA;
-								this._pLastRenderTarget = this._pRenderTargetA;
-							}
-						}
-
-						pEntry.viewport = this._pPostEffectViewport;
+						pEntry.renderTarget = this._pRenderTargetA;
+						this._pLastRenderTarget = this._pRenderTargetA;
 					}
+
+					pEntry.viewport = this._pPostEffectViewport;
 				}
 			}
 		}

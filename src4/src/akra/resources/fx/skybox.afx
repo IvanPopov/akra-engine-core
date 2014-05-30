@@ -112,6 +112,7 @@ float4 fs_skybox_advanced(VS_OUT IN) : COLOR{
 struct VS_OUT_2 {
 	float4 position: POSITION;
 	float3 texCoordsSkybox: TEXCOORD0;	
+	float3 vert: VERTEX;
 };
 
 float4x4 model_mat:MODEL_MATRIX;
@@ -121,8 +122,10 @@ float4x4 proj_mat:PROJ_MATRIX;
 VS_OUT_2 vs_skybox_model(float3 pos: POSITION){
 	VS_OUT_2 Out;
 	
-	Out.position = proj_mat * view_mat * (model_mat * float4(pos, 1.0)/* + float4(cameraPos, 0.)*/);
+	float4 vert = view_mat * (model_mat * float4(pos, 1.0)/* + float4(cameraPos, 0.)*/);
+	Out.position = proj_mat * vert;
 	Out.texCoordsSkybox = float3(model_mat * float4(pos, 1.0) - float4(cameraPos, 1.0));
+	Out.vert = vert.xyz;
 
 	Out.position.z = Out.position.w - 0.0001;
 	return Out;
@@ -231,17 +234,17 @@ float4 fs_outline(VS_OUT IN) : COLOR
 	
 };	
 
+foreign bool IS_USED_ADVANCED_SKYBOX = false;
 technique skybox : POST_EFFECT {
 	pass skybox{
 		VertexShader = compile vs_skybox();
-		PixelShader = compile fs_skybox();
-	};
-};
 
-technique skybox_advanced : POST_EFFECT {
-	pass skybox{
-		VertexShader = compile vs_skybox();
-		PixelShader = compile fs_skybox_advanced();
+		if(IS_USED_ADVANCED_SKYBOX){
+			PixelShader = compile fs_skybox_advanced();
+		}
+		else {
+			PixelShader = compile fs_skybox();
+		}
 	};
 };
 
@@ -249,17 +252,15 @@ technique skybox_model {
 	pass skybox{
 		ZWRITEENABLE = false;
 		VertexShader = compile vs_skybox_model();
-		PixelShader = compile fs_skybox_model();
+		if(IS_USED_ADVANCED_SKYBOX){
+			PixelShader = compile fs_skybox_model_advanced();
+		}
+		else {
+			PixelShader = compile fs_skybox_model();			
+		}
 	};
 };
 
-technique skybox_model_advanced {
-	pass skybox{
-		ZWRITEENABLE = false;
-		VertexShader = compile vs_skybox_model();
-		PixelShader = compile fs_skybox_model_advanced();
-	};
-};
 
 technique outline : POST_EFFECT {
 	import skybox;

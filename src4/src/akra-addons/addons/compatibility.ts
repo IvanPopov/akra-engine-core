@@ -11,6 +11,7 @@ module akra.addons.compatibility {
 
 	var pRequirements: IMap<IRequirement> = null;
 	var iTotal: int = 0;
+	var extIgnoreList: string[] = [];
 
 	function require(pReq: IRequirement) {
 		pRequirements[pReq.name.toUpperCase()] = pReq;
@@ -44,7 +45,8 @@ module akra.addons.compatibility {
 	}
 
 
-	function checkWebGLExtension(extension) {
+	function checkWebGLExtension(extension: string) {
+		if (extIgnoreList.indexOf(extension) !== -1) return;
 		require({
 			name: extension,
 			desc: extension + " WebGL extension",
@@ -87,6 +89,10 @@ module akra.addons.compatibility {
 	var ERRORS = {
 		NO_WEBGL: "WebGL not supported.",
 		NON_COMPATIBLE: "Your browser is not compatible with Akra Engine."
+	}
+
+	export function ignoreWebGLExtension(extension: string): void {
+		extIgnoreList.push(extension);
 	}
 
 	/**

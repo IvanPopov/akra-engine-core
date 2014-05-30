@@ -4,6 +4,12 @@
 
 
 module akra {
+	export enum EPassTypes {
+		UNDEF,
+		DEFAULT,
+		POSTEFFECT
+	};
+
 	export interface IAFXComponent extends IResourcePoolItem {
 		getTechnique(): IAFXTechniqueInstruction;
 		setTechnique(pTechnique: IAFXTechniqueInstruction): void;

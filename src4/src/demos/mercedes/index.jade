@@ -20,6 +20,22 @@ html(lang="en")
         overflow: hidden;
         background-color: rgba(67, 65, 66, .85);
         background-position-x: 85%;
+        border-bottom: 1px solid rgba(72, 70, 71, .9);
+      }
+
+      div.sf {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        margin: 0;
+        padding: 5px;
+        width: 100%;
+        height: 30px;
+        border-top: 1px solid rgba(72, 70, 71, .9);
+        z-index: 1;
+        overflow: hidden;
+        background-color: rgba(42, 40, 41, .9);
+        background-position-x: 85%;
       }
 
       hr.cj {
@@ -28,9 +44,18 @@ html(lang="en")
         color: rgb(67, 65, 66);
         position: absolute;
         z-index: 1;
-        top: 91px;
         border: none;
         width: 100%;
+        border-top: 1px solid rgba(27, 25, 26, .85);
+        padding: 0;
+        margin: 0;
+      }
+
+      hr.f1 {
+        bottom: 33px;
+        background-color: rgba(92, 90, 91, .9);
+        color: rgba(92, 90, 91, .9);
+        top: inherit;
       }
 
       table.skins {
@@ -41,11 +66,11 @@ html(lang="en")
         margin: 0;
         font-family: Arial;
         color: #a8a8a8;
-        font-size: 12px;
         font-size: 13px;
         line-height: 13px;
         border-spacing: 7px 3px;
         border-collapse: separate;
+        margin-top: 7px;
       }
 
       table.skins caption {
@@ -55,6 +80,7 @@ html(lang="en")
         font-family: arial;
         font-weight: lighter;
         color: #a8a8a8;
+        padding-bottom: 10px;
       }
 
       table.skins tr {
@@ -83,7 +109,11 @@ html(lang="en")
       link(href=demo.styles[i], rel='stylesheet')
   body
     h1.ci
-    hr.cj
+    hr.cj(style="top: 101px;")
+    hr.cj.f1(style="bottom: 52px; border-top: 1px solid rgba(27, 25, 26, .85); background-color: rgba(20, 20, 20, .9);")
+    div.sf(style="background-color: rgba(67, 65, 66, 0.9); bottom: 41px; height: 10px; padding: 0;")
+    div.sf
+    hr.cj.f1(style="border-top: none;")
     #progress
     include noncompatible
     script(src=demo.src)

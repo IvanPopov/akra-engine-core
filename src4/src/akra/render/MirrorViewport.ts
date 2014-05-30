@@ -35,7 +35,7 @@ module akra.render {
 		_setTarget(pTarget: IRenderTarget): void {
 			super._setTarget(pTarget);
 
-			this._pInternal3dViewport = new LPPViewport(this.getCamera(), this.getLeft(), this.getTop(), this.getWidth(), this.getHeight(), 1001);
+			this._pInternal3dViewport = new ForwardViewport(this.getCamera(), this.getLeft(), this.getTop(), this.getWidth(), this.getHeight(), 1001);
 			(<any>this._pInternal3dViewport)._csDefaultRenderMethod = this._csDefaultRenderMethod + "render_plane_culling";
 			pTarget.addViewport(this._pInternal3dViewport);
 			this._pInternal3dViewport.setAutoUpdated(false);
