@@ -1,6 +1,7 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 /// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
+/// <reference path="../../../built/Lib/filedrop.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
@@ -26,7 +27,7 @@ module akra {
 		deps: { files: [AE_RESOURCES, AE_RESOURCES_2], root: "./" },
 	};
 
-	export var pEngine = akra.createEngine(pOptions);
+	var pEngine = akra.createEngine(pOptions);
 
 	var pScene = pEngine.getScene();
 
@@ -49,12 +50,12 @@ module akra {
 
 	export var pCameraParams = {
 		current: {
-			orbitRadius: 20.,
-			rotation: new math.Vec2(0., 0.5)
+			orbitRadius: 6,
+			rotation: new math.Vec2(0., 0.)
 		},
 		target: {
-			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.02)
+			orbitRadius: 6,
+			rotation: new math.Vec2(0., 0.)
 		}
 	}
 
@@ -105,47 +106,34 @@ module akra {
 		});
 	}
 
+	var iXPrev: uint = 0, iYPrev: uint = 0;
+	function cameraRotationCallback(pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint, dx: uint, dy: uint) {
+		if (eBtn !== EMouseButton.LEFT) return;
+
+		dx = x - iXPrev;
+		dy = y - iYPrev;
+
+		pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y - dy / pViewport.getActualHeight() * 2., 0.1, 1.2);
+		pCameraParams.target.rotation.x += dx / pViewport.getActualHeight() * 2.;
+
+		iXPrev = x;
+		iYPrev = y;
+	}
+
 	function createKeymap(pCamera: ICamera): void {
-		var pKeymap: IKeyMap = control.createKeymap();
-		pKeymap.captureMouse((<any>pCanvas).getElement());
-		pKeymap.captureKeyboard(document);
 
-		pScene.beforeUpdate.connect(() => {
-			if (pKeymap.isMousePress()) {
-				if (pKeymap.isMouseMoved()) {
-					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
-
-					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., 0.04, 1.2);
-					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2. % Math.PI;
-
-					pKeymap.update();
-				}
-
-			}
-			var fSpeed: float = 0.1 * 10;
-			if (pKeymap.isKeyPress(EKeyCodes.W)) {
-				pCamera.addRelPosition(0, 0, -fSpeed);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.S)) {
-				pCamera.addRelPosition(0, 0, fSpeed);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.A) || pKeymap.isKeyPress(EKeyCodes.LEFT)) {
-				pCamera.addRelPosition(-fSpeed, 0, 0);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
-				pCamera.addRelPosition(fSpeed, 0, 0);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.UP)) {
-				pCamera.addRelPosition(0, fSpeed, 0);
-			}
-			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
-				pCamera.addRelPosition(0, -fSpeed, 0);
-			}
+		
+		pViewport.dragstart.connect((pViewport, eBtn, x, y) => {
+			iXPrev = x; iYPrev = y;
 		});
-		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+
+		pViewport.dragging.connect(cameraRotationCallback);
+
+		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL | EUserEvents.DRAGGING | EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP);
+
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
-			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 3., 6.);
+			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
 		});
 	}
 
@@ -165,11 +153,14 @@ module akra {
 		var pMat = {
 			list: null,
 			origin: null,
+			surface: null,
 			name: "unknown", glossiness: 1e-2, transparency: 1e-2,
-			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000"
+			diffuse: "#000000", ambient: "#000000", emissive: "#000000", specular: "#000000",
+			texture: false
 		};
 
-		function chose(pOrigin: IMaterial): void {
+		function chose(pOrigin: IMaterial, pSurfaceMaterial: ISurfaceMaterial = null): void {
+			pMat.surface = pSurfaceMaterial;
 			pMat.origin = pOrigin;
 			pMat.name = pOrigin.name;
 			pMat.glossiness = pOrigin.shininess;
@@ -177,11 +168,15 @@ module akra {
 			pMat.diffuse = pOrigin.diffuse.getHtml();
 			pMat.emissive = pOrigin.emissive.getHtml();
 			pMat.specular = pOrigin.specular.getHtml();
+
+			if (pSurfaceMaterial) {
+				pMat.texture = pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) !== null && !pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE).isResourceDisabled();
+			}
 		}
 
 
 		pControls.add(pMat, "list", pNames).name("material").onChange((sName: string) => {
-			chose(pList[pNames.indexOf(sName)]);
+			chose(pList[pNames.indexOf(sName)], null);
 		});
 
 		pControls.add(pMat, "name").listen();
@@ -214,6 +209,21 @@ module akra {
 			}
 		});
 
+		pControls.add(pMat, "texture").listen().name("diffuse texture").onChange((bValue) => {
+			if (pMat.surface) {
+				if ((<ISurfaceMaterial>pMat.surface).texture(ESurfaceMaterialTextures.DIFFUSE)) {
+					if (bValue) {
+						(<ISurfaceMaterial>pMat.surface).texture(ESurfaceMaterialTextures.DIFFUSE).notifyRestored();
+					}
+					else {
+						(<ISurfaceMaterial>pMat.surface).texture(ESurfaceMaterialTextures.DIFFUSE).notifyDisabled();
+					}
+
+					(<ISurfaceMaterial>pMat.surface).notifyAltered();
+				}
+			}
+		});
+
 		if (pViewport.getType() !== EViewportTypes.FORWARDVIEWPORT) {
 			pViewport.enableSupportForUserEvent(EUserEvents.CLICK);
 			pViewport.enable3DEvents(false);
@@ -222,18 +232,19 @@ module akra {
 				pViewport.highlight(pResult);
 
 				if (pResult.renderable) {
+					pResult.renderable.switchRenderMethod(null);
 					if (pResult.renderable.getSurfaceMaterial()) {
-					var pOrigin: IMaterial = pResult.renderable.getMaterial();
+						var pOrigin: IMaterial = pResult.renderable.getMaterial();
 
-						chose(pOrigin);
-						}
+						chose(pOrigin, pResult.renderable.getSurfaceMaterial());
+					}
 				}
 			});
 		}
 	}
 
 	function createViewport(): IViewport3D {
-		var pViewport: IViewport3D = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IViewport3D = new render.DSViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -248,10 +259,10 @@ module akra {
 		pGUI = new dat.GUI();
 		
 		
-		//pViewport.getEffect().addComponent("akra.system.fog");
-		// pViewport.getEffect().addComponent("akra.system.exponentialFog");
+		pViewport.getEffect().addComponent("akra.system.linearFog");
+		pViewport.getEffect().addComponent("akra.system.exponentialFog");
 
-	
+		//pViewport.getEffect().addComponent("akra.system.skybox_advanced", 1, 0);
 
 		var fogType = {
 			None: 0,
@@ -265,14 +276,6 @@ module akra {
 			fogIndex: 30
 		};
 
-		var pFogEffectData = window['fog_effect_data'] = {
-			fogColor: 0.3,
-			fogOpacity: 0.3,
-			fogStart: 10,
-			fogIndex: 30,
-			fogHeight: 0.7
-		};
-
 		var pFogFolder = pGUI.addFolder("fog");
 		var iFogType = 0;
 		(<dat.OptionController>pFogFolder.add({ FogType: "exp" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
@@ -282,33 +285,16 @@ module akra {
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogStart')).min(0.).max(200.).step(0.01).name("start");
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogIndex')).min(0.01).max(200.).step(0.01).name("index");
 
-		var fSkyboxSharpness: float = 1.;
-		var pFogEffectFolder = pGUI.addFolder("fogEffect");
 
-		(<IViewportFogged>pViewport).setFog(true);
-		pGUI.add({ fog: true }, "fog").onChange((bValue) => {
-			(<IViewportFogged>pViewport).setFog(bValue);
-		});
+		//var fSkyboxSharpness: float = 1.;
 
-		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;
-		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogOpacity')).min(0.).max(1.).step(0.01).name("opacity").__precision = 2;
-		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogStart')).min(0.).max(100.).step(0.01).name("start");
-		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogIndex')).min(0.01).max(100.).step(0.01).name("index");
-		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
-
-		pGUI.add({ skybox_sharpness: fSkyboxSharpness }, "skybox_sharpness", 0., 1., 0.01).onChange((fValue) => {
-			fSkyboxSharpness = fValue;
-		})
-
-		var bAdvancedSkybox: boolean = true;
-		pGUI.add({ skybox_blur: bAdvancedSkybox }, "skybox_blur").onChange((bValue) => {
-			bAdvancedSkybox = bValue;
-		});
+		//pGUI.add({ skybox_sharpness: fSkyboxSharpness }, "skybox_sharpness", 0., 1., 0.01).onChange((fValue) => {
+		//	fSkyboxSharpness = fValue;
+		//})
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
-			//var pDepthTexture: ITexture = (<IShadedViewport>pViewport).getDepthTexture();
 
 			if (iFogType == 0) {
 				pPass.setForeign("USE_LINEAR_FOG", false);
@@ -322,35 +308,13 @@ module akra {
 				pPass.setForeign("USE_LINEAR_FOG", false);
 				pPass.setForeign("USE_EXPONENTIAL_FOG", true);
 			}
-			//pPass.setTexture("DEPTH_TEXTURE", pDepthTexture);
 			pPass.setUniform("FOG_COLOR", new math.Vec3(pFogData.fogColor));
 			pPass.setUniform("FOG_START", pFogData.fogStart);
 			pPass.setUniform("FOG_INDEX", pFogData.fogIndex);
 
-			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
-			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
-			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
-
-			pPass.setUniform("FOG_EFFECT_COLOR", math.Vec4.temp(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity));
-			pPass.setUniform("FOG_EFFECT_START", pFogEffectData.fogStart);
-			pPass.setUniform("FOG_EFFECT_INDEX", pFogEffectData.fogIndex);
-			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogEffectData.fogHeight);
-
 			//pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
 			//pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 		});
-
-		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-			var pTransparencyViewport: IForwardViewport = <IForwardViewport>(<IShadedViewport>pViewport)._getTransparencyViewport();
-			pTransparencyViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
-				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
-				var pPass: IRenderPass = pTechnique.getPass(iPass);
-				pPass.setUniform("FOG_EFFECT_COLOR", math.Vec4.temp(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity));
-				pPass.setUniform("FOG_EFFECT_START", pFogEffectData.fogStart);
-				pPass.setUniform("FOG_EFFECT_INDEX", pFogEffectData.fogIndex);
-				pPass.setUniform("FOG_EFFECT_HEIGHT", pFogEffectData.fogHeight);
-			});
-		}
 
 		var pSkyboxTexturesKeys = [
 			'nightsky',
@@ -436,10 +400,6 @@ module akra {
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
 		pRenderTarget.setAutoUpdated(false);
 
-		var pDepthTexture = pRmgr.createTexture(".mirror - depth");
-		pDepthTexture.create(1024, 1024, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
-		pRenderTarget.attachDepthTexture(pDepthTexture);
-
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 
@@ -498,9 +458,9 @@ module akra {
 
 		
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
-			//var pCube: ICollada = <ICollada>pRmgr.loadModel("CUBE.DAE");
-			//var pModel = pCube.extractModel("box");
-			var pModel = addons.cube(pScene);
+			var pCube: ICollada = <ICollada>pRmgr.loadModel("CUBE.DAE");
+			var pModel = pCube.extractModel("box");
+			
 			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
 		}
 
@@ -647,7 +607,7 @@ module akra {
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		pLightMap.setLocalScale(Vec3.temp(pViewport.getType() === EViewportTypes.FORWARDVIEWPORT? 0.1795: 0.1865));
-		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 0.);
+		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 1.);
 		pLightMap.getMesh().getSubset(0).getMaterial().diffuse.set(0., 0., 0., 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().specular.set(0., 0., 0., 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().ambient.set(0., 0., 0., 0.);
@@ -685,6 +645,21 @@ module akra {
 			}
 		}, "save");
 
+		pGUI.add({
+			"save materials": () => {
+				var pMaterials: IMaterial[] = (<pool.resources.Collada>pModel).extractUsedMaterials();
+				var pExporter: exchange.Exporter = new exchange.Exporter();
+
+				pMaterials.forEach((pMat) => {
+					pExporter.writeMaterial(pMat);
+				});
+
+				pExporter.saveAs(prompt("enter skin name", "unknown") + ".skin", EDocumentFormat.JSON);
+			}
+		}, "save materials");
+
+		
+
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pInputViewport: IViewport) => {
 			if (pInputViewport === pViewport) {
 				var normal = pMirror.getTempVectorUp();
@@ -696,10 +671,39 @@ module akra {
 			}
 		});
 
+		if (config.DEBUG) {
+			addons.filedrop.addHandler(document.body, {
+				drop: <any>((pFile: File, sContent: string, eFormat: EFileDataTypes, e: DragEvent): void => {
+					var pImporter: exchange.Importer = new exchange.Importer(pEngine);
+					pImporter.import(sContent, EDocumentFormat.JSON);
+
+					var pMaterials = pImporter.getMaterials();
+					var pUsedMaterials = (<pool.resources.Collada>pModel).extractUsedMaterials();
+
+					var pMaterialsMap: IMap<IMaterial> = {};
+
+					pMaterials.forEach((pMat) => {
+						pMaterialsMap[pMat.name] = pMat;
+					});
+
+					pUsedMaterials.forEach((pMat, i) => {
+						if (pMaterialsMap[pMat.name]) {
+							pMat.set(pMaterialsMap[pMat.name]);
+						}
+					});
+				}),
+				verify: (pFile: File, e: DragEvent): boolean => {
+					return path.parse(pFile.name).getExt() === "skin";
+				}
+			});
+		}
+
 		//wheels();
 
 		pProgress.destroy();
 		pEngine.exec();
+
+		cameraRotationCallback(pViewport, EMouseButton.LEFT, 0, 0, 0, 0);
 	}
 
 	pEngine.depsLoaded.connect(main);

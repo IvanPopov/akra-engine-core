@@ -64,7 +64,7 @@ module akra.render {
 
 	class DraggingSignal extends Signal<Viewport3D> {
 
-		emit(eBtn: EMouseButton, x: uint, y: uint): void {
+		emit(eBtn: EMouseButton, x: uint, y: uint, dx: uint, dy: uint): void {
 			var pViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -80,7 +80,7 @@ module akra.render {
 				p.renderable && p.renderable.dragging.emit(pViewport, p.object, x, y);
 			}
 
-			super.emit(eBtn, x, y);
+			super.emit(eBtn, x, y, dx, dy);
 		}
 	}
 

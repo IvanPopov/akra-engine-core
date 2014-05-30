@@ -15,6 +15,8 @@
 /// <reference path="../animation/Blend.ts" />
 /// <reference path="../animation/Container.ts" />
 
+/// <reference path="../material/materials.ts" />
+
 module akra.exchange {
 	import Mat4 = math.Mat4;
 
@@ -102,6 +104,7 @@ module akra.exchange {
 			};
 		}
 
+
 		protected findEntries(eType: EDocumentEntry, fnCallback: (pEntry: ILibraryEntry, n?: uint) => boolean): void {
 			var pLibrary: ILibrary = this.getLibrary();
 			var i: uint = 0;
@@ -150,6 +153,17 @@ module akra.exchange {
 			return <IAnimationController>this.decodeEntry(this.findEntryByIndex(EDocumentEntry.k_Controller, iContrller).entry);
 		}
 
+		getMaterials(): IMaterial[]{
+			var pMaterials: IMaterial[] = [];
+
+			this.findEntries(EDocumentEntry.k_Material, (pEntry: ILibraryEntry): boolean => {
+				pMaterials.push(<IMaterial>this.decodeEntry(pEntry.entry));
+				return true;
+			});
+
+			return pMaterials;
+		}
+
 		protected decodeEntry(pEntry: IDataEntry): any {
 			if (isNull(pEntry)) {
 				return null;
@@ -173,6 +187,10 @@ module akra.exchange {
 					break;
 				case EDocumentEntry.k_AnimationContainer:
 					pData = this.decodeAnimationContainerEntry(<IAnimationContainerEntry>pEntry);
+					break;
+
+				case EDocumentEntry.k_Material:
+					pData = this.decodeMaterialEntry(<IMaterialEntry>pEntry);
 					break;
 			}
 
@@ -214,6 +232,24 @@ module akra.exchange {
 			for (var i: int = 0; i < pInstances.length; ++i) {
 				fnCallback.call(this, this.decodeInstance(pInstances[i]), i);
 			}
+		}
+
+		protected decodeMaterialEntry(pEntry: IMaterialEntry): IMaterial {
+			var pMaterial: IMaterial = material.create();
+
+			pMaterial.name = pEntry.name;
+			pMaterial.transparency = pEntry.transparency;
+			pMaterial.shininess = pEntry.shininess;
+
+			this.decodeColorEntry(pEntry.diffuse, pMaterial.diffuse);
+			this.decodeColorEntry(pEntry.specular, pMaterial.specular);
+			this.decodeColorEntry(pEntry.emissive, pMaterial.emissive);
+
+			return pMaterial;
+		}
+
+		protected decodeColorEntry(pEntry: IColorEntry, pDest: IColor = new color.Color): IColor {
+			return pDest.set(pEntry[0], pEntry[1], pEntry[2], pEntry[3]);
 		}
 
 		protected decodeAnimationFrame(pEntry: IAnimationFrameEntry): IPositionFrame {

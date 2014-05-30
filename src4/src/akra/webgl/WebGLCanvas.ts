@@ -28,7 +28,7 @@ module akra.webgl {
 
 		dragstart: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
 		dragstop: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
-		dragging: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragging: ISignal<{ (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint, dx: uint, dy: uint): void; }>;
 
 		protected _pCanvas: HTMLCanvasElement;
 		protected _pCanvasCreationInfo: ICanvasInfo;
@@ -449,7 +449,9 @@ module akra.webgl {
 			if (!isNull(this._pUserEventDragTarget)) {
 				if (this._bUserEventDragging) {
 					if (this.isUserEventSupported(EUserEvents.DRAGGING)) {
-						this.dragging.emit(this._eUserEventDragBtn, x, y);
+						this.dragging.emit(this._eUserEventDragBtn, x, y,
+							x - this._pUserEventMouseDownPos.x,
+							y - this._pUserEventMouseDownPos.y);
 					}
 				}
 				else 
@@ -569,7 +571,9 @@ module akra.webgl {
 				this._pUserEventDragTarget.dragging.emit(
 					eBtn,
 					x - this._pUserEventDragTarget.getActualLeft(),
-					y - this._pUserEventDragTarget.getActualTop());
+					y - this._pUserEventDragTarget.getActualTop(),
+					x - this._pUserEventDragTarget.getActualLeft() - this._pUserEventMouseDownPos.x,
+					y - this._pUserEventDragTarget.getActualTop() - this._pUserEventMouseDownPos.y);
 			}
 		}
 

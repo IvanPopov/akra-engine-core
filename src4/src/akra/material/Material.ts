@@ -1,12 +1,13 @@
 /// <reference path="../idl/IMaterial.ts" />
 /// <reference path="../color/Color.ts" />
 /// <reference path="../config/config.ts" />
+/// <reference path="../guid.ts" />
 
 module akra.material {
 	import Color = color.Color;
 
 	export class Material implements IMaterial {
-		
+		guid: uint = guid();
 		name: string = null;
 
 		diffuse: IColor = new Color;

@@ -37,7 +37,7 @@ module akra.exchange {
 		protected _sCopyright: string = null;
 		protected _sSourceData: string = null;
 
-		/**  */ writeAnimation(pAnimation: IAnimationBase): void {
+		writeAnimation(pAnimation: IAnimationBase): void {
 			switch (pAnimation.getType()) {
 				case EAnimationTypes.ANIMATION:
 					this.makeEntry(EDocumentEntry.k_Animation, pAnimation);
@@ -53,8 +53,12 @@ module akra.exchange {
 			}
 		}
 
-		/**  */ writeController(pController: IAnimationController): void {
+		writeController(pController: IAnimationController): void {
 			this.makeEntry(EDocumentEntry.k_Controller, pController);
+		}
+
+		writeMaterial(pMaterial: IMaterial): void {
+			this.makeEntry(EDocumentEntry.k_Material, pMaterial);
 		}
 
 		clear(): void {
@@ -62,23 +66,23 @@ module akra.exchange {
 			this._pLibrary = <ILibrary><any>{};
 		}
 
-		/**  */ findLibraryEntry(iGuid: int): ILibraryEntry {
+		findLibraryEntry(iGuid: int): ILibraryEntry {
 			return this._pLibrary[iGuid];
 		}
 
-		/**  */ findEntry(iGuid: int): IDataEntry {
+		findEntry(iGuid: int): IDataEntry {
 			return this.findLibraryEntry(iGuid).entry;
 		}
 
-		/**  */ findEntryData(iGuid: int): any {
+		findEntryData(iGuid: int): any {
 			return this.findLibraryEntry(iGuid).data;
 		}
 
-		protected /**  */ isSceneWrited(): boolean {
+		protected isSceneWrited(): boolean {
 			return this._bScenesWrited;
 		}
 
-		protected /**  */ isEntryExists(iGuid: int): boolean {
+		protected isEntryExists(iGuid: int): boolean {
 			return isDefAndNotNull(this._pLibrary[iGuid]);
 		}
 
@@ -111,6 +115,9 @@ module akra.exchange {
 					break;
 				case EDocumentEntry.k_AnimationContainer:
 					pEntry.entry = this.encodeAnimationContainerEntry(<IAnimationContainer>pEntry.data);
+					break;
+				case EDocumentEntry.k_Material:
+					pEntry.entry = this.encodeMaterialEntry(<IMaterial>pEntry.data);
 					break;
 				default:
 					logger.warn("unknown entry type detected: " + eType);
@@ -257,6 +264,29 @@ module akra.exchange {
 			return pEntry;
 		}
 
+		protected encodeMaterialEntry(pMaterial: IMaterial): IMaterialEntry {
+			var pEntry: IMaterialEntry = {
+				type: EDocumentEntry.k_Material,
+
+				name: pMaterial.name,
+				diffuse: this.encodeColorEntry(pMaterial.diffuse),
+				specular: this.encodeColorEntry(pMaterial.specular),
+				emissive: this.encodeColorEntry(pMaterial.emissive),
+				transparency: pMaterial.transparency,
+				shininess: pMaterial.shininess
+			};
+
+			return pEntry;
+		}
+
+		protected encodeColorEntry(pColor: IColor): IColorEntry {
+			var pEntry: IColorEntry = <any>[];
+			pEntry[0] = pColor.r;
+			pEntry[1] = pColor.g;
+			pEntry[2] = pColor.b;
+			pEntry[3] = pColor.a;
+			return pEntry;
+		}
 
 		protected toolInfo(): string {
 			return [
@@ -331,14 +361,14 @@ module akra.exchange {
 		}
 
 		static exportAsJSON(pDocument: IDocument): Blob {
-			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], { type: "application/json;charset=utf-8" });
+			return new Blob([JSON.stringify(pDocument, null, "\t")], { type: "application/json;charset=utf-8" });
 		}
 
 		static exportAsJSONBinary(pDocument: IDocument): Blob {
 			return new Blob([io.dump(pDocument)], { type: "application/octet-stream" });
 		}
 
-		protected static /**  */ getDate(): string {
+		protected static getDate(): string {
 			return (new Date()).toString();
 		}
 	}

@@ -1,5 +1,6 @@
 /// <reference path="IVertexData.ts" />
 /// <reference path="IColorValue.ts" />
+/// <reference path="IUnique.ts" />
 
 module akra {
 	export interface IMaterialBase {
@@ -16,7 +17,8 @@ module akra {
 		transparency: float;
 	}
 	
-	export interface IMaterial extends IMaterialBase {
+	export interface IMaterial extends IMaterialBase, IUnique {
+		guid: uint;
 		/** Name of material */
 		name: string;
 

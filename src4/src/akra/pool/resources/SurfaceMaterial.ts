@@ -22,6 +22,13 @@ module akra.pool.resources {
 		protected _nTextureUpdates: uint = 0;
 		protected _nTexcoordUpdates: uint = 0;
 
+		
+		notifyAltered(): void {
+			super.notifyAltered();
+			this._nTextureUpdates++;
+			this._nTexcoordUpdates++;
+		}
+
 		getTotalUpdatesOfTextures(): uint {
 			return this._nTextureUpdates;
 		}
@@ -225,7 +232,7 @@ module akra.pool.resources {
 		texture(iSlot: int): ITexture {
 			 debug.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
 			            "invalid texture slot");
-			return this._pTextures[iSlot];
+			return this._pTextures[iSlot] || null;
 		}
 
 		texcoord(iSlot: int): uint {
