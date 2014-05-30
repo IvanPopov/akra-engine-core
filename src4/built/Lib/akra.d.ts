@@ -9631,10 +9631,9 @@ declare module akra.exchange {
         private _pLibrary;
         constructor(_pEngine: IEngine);
         public getEngine(): IEngine;
-        /**  */ 
         public getDocument(): IDocument;
-        /**  */ 
         public getLibrary(): ILibrary;
+        public clear(): void;
         public import(pData: string, eFormat?: EDocumentFormat): Importer;
         public import(pData: Object, eFormat?: EDocumentFormat): Importer;
         public import(pData: ArrayBuffer, eFormat?: EDocumentFormat): Importer;

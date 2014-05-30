@@ -18,7 +18,7 @@ html(lang="en")
         text-indent: -9999px;
         z-index: 1;
         overflow: hidden;
-        background-color: rgb(67, 65, 66);
+        background-color: rgba(67, 65, 66, .85);
         background-position-x: 85%;
       }
 
@@ -31,6 +31,50 @@ html(lang="en")
         top: 91px;
         border: none;
         width: 100%;
+      }
+
+      table.skins {
+        position: absolute;
+        right: 2px;
+        top: 100px;
+        padding: 0;
+        margin: 0;
+        font-family: Arial;
+        color: #a8a8a8;
+        font-size: 12px;
+        font-size: 13px;
+        line-height: 13px;
+        border-spacing: 7px 3px;
+        border-collapse: separate;
+      }
+
+      table.skins caption {
+        text-align: left;
+        font-size: 18px;
+        padding: 7px;
+        font-family: arial;
+        font-weight: lighter;
+        color: #a8a8a8;
+      }
+
+      table.skins tr {
+        cursor: pointer;
+      }
+
+      table.skins td:first-child {
+        width: 40px;
+      }
+
+      table.skins td:last-child {
+        width: 150px;
+        background-color: rgba(67, 65, 66, .9);
+        padding-left: 20px;
+        padding-top: 1px;
+        padding-bottom: 1px;
+      }
+
+      table.skins td:last-child:hover {
+        background-color: rgba(0,0,0, .9);
       }
 
     - for (var i in demo.scripts)

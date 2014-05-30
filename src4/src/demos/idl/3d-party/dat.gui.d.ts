@@ -19,8 +19,11 @@ declare module dat {
 	}
 
 	export class GUI {
+
 		__controllers: any;
 		autoListen: boolean;
+
+		domElement: HTMLElement;
 
 		listen();
 

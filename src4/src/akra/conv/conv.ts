@@ -23,7 +23,6 @@ module akra.conv {
 	 */
 	export function parseHTML(sHTML: string): NodeList {
 		var pDivEl: HTMLDivElement = <HTMLDivElement>document.createElement('div');
-		var pDocFrag: DocumentFragment;
 
 		pDivEl.innerHTML = sHTML;
 

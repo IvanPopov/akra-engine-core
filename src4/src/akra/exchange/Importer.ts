@@ -33,15 +33,20 @@ module akra.exchange {
 			return this._pEngine;
 		}
 
-		/**  */ getDocument(): IDocument {
+		getDocument(): IDocument {
 			return this._pDocument;
 		}
 
-		/**  */ getLibrary(): ILibrary {
+		getLibrary(): ILibrary {
 			return this._pLibrary;
 		}
 
-		///**  */ getLibrary(): I
+		clear(): void {
+			this._pDocument = null;
+			this._pLibrary = <ILibrary>{};
+		}
+
+		//getLibrary(): I
 
 		import(pData: string, eFormat?: EDocumentFormat): Importer;
 		import(pData: Object, eFormat?: EDocumentFormat): Importer;
@@ -141,11 +146,11 @@ module akra.exchange {
 			});
 		}
 
-		protected /**  */ findByIndex(eType: EDocumentEntry, i: uint = 0): any {
+		protected findByIndex(eType: EDocumentEntry, i: uint = 0): any {
 			return this.findEntryByIndex(eType, i).data;
 		}
 
-		protected /**  */ findFirst(eType: EDocumentEntry): any {
+		protected findFirst(eType: EDocumentEntry): any {
 			return this.findByIndex(eType, 0);
 		}
 
