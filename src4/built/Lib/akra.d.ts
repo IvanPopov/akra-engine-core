@@ -4633,6 +4633,7 @@ declare module akra {
         setAutoUpdated(bValue?: boolean): void;
         isAutoUpdated(): boolean;
         isUpdated(): boolean;
+        _setDefaultRenderMethod(sMethod: string): void;
         _clearUpdatedFlag(): void;
         _updateImpl(): void;
         _getNumRenderedPolygons(): number;
@@ -13487,6 +13488,7 @@ declare module akra.render {
         public setBackgroundColor(cColor: IColor): void;
         public getDepthClear(): number;
         public setDepthClear(fDepthClearValue: number): void;
+        public _setDefaultRenderMethod(sMethod: string): void;
         public destroy(): void;
         public clear(iBuffers?: number, cColor?: IColor, fDepth?: number, iStencil?: number): void;
         public getTarget(): IRenderTarget;
@@ -15700,7 +15702,7 @@ declare module akra.render {
 declare module akra {
     interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting, IViewportFogged {
         _renderOnlyTransparentObjects(bValue: boolean): void;
-        _setSkyboxModel(pRenderable: IRenderableObject): void;
+        setSkyboxModel(pRenderable: IRenderableObject): void;
     }
 }
 declare module akra.render {
@@ -15735,7 +15737,7 @@ declare module akra.render {
         public renderTransparentObjects(csMethod: string, pCamera: ICamera): void;
         public endFrame(): void;
         public setSkybox(pSkyTexture: ITexture): boolean;
-        public _setSkyboxModel(pRenderable: IRenderableObject): void;
+        public setSkyboxModel(pRenderable: IRenderableObject): void;
         public setFXAA(bValue?: boolean): void;
         public isFXAA(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;

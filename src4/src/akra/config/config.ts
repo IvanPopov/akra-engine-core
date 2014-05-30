@@ -20,46 +20,46 @@ module akra.config {
 	/**
 	 * Will be TRUE if ui extension presented.
 	 */
-	export var UI: boolean = false;
+	export const UI: boolean = false;
 
 	/** 
 	 * Display debugging information while parsing effects. 
 	 */
-	export var AFX_DEBUG_PARSER: boolean = false;
+	export const AFX_DEBUG_PARSER: boolean = false;
 
 	/**
 	 * If there is support for loading effects in text form, is TRUE.
 	 */
-	export var AFX_ENABLE_TEXT_EFFECTS: boolean = true;
+	export const AFX_ENABLE_TEXT_EFFECTS: boolean = true;
 
 	/**
 	 * Use GPU for pre-calculation of atmospheric scattering.
 	 */  
-	export var USE_ATMOSPHERIC_SCATTERING_GPU_MODE: boolean = false;
+	export const USE_ATMOSPHERIC_SCATTERING_GPU_MODE: boolean = false;
 
 	/**
 	 * Do not use this, if you dont know what it.
 	 * @debug
 	 */
-	export var __VIEW_INTERNALS__: boolean = false;
+	export const __VIEW_INTERNALS__: boolean = false;
 
 	/**
 	 * If [WebGLDebugUtils](https://www.khronos.org/registry/webgl/sdk/debug/webgl-debug.js) presented,
 	 * they will use to create a context.
 	 */
-	export var WEBGL_DEBUG: boolean = AE_WEBGL_DEBUG;
+	export const WEBGL_DEBUG: boolean = AE_WEBGL_DEBUG;
 
 	/**
 	 * Calculate profile information for terrain tesselation
 	 * @debug
 	 */
-	export var PROFILE_TESSEALLATION: boolean = false;
+	export const PROFILE_TESSEALLATION: boolean = false;
 
 
 	/**
 	 * Distance in meters, after which the shadow of the object will not be rendered.
 	 */
-	export var SHADOW_DISCARD_DISTANCE: float = 70.;
+	export const SHADOW_DISCARD_DISTANCE: float = 70.;
 
 	//path to data folder
 	export var data = config['data'] || uri.currentPath();

@@ -215,6 +215,9 @@ module akra.render {
 			}
 		}
 
+		//private _pTransparencyObjectListByRange = [];
+		//private _fnSort = function (a, b) { return b.dist - a.dist; };
+
 		protected renderTransparentObjects(csMethod: string, pCamera: ICamera): void {
 			if (!this.isTransparencySupported()) {
 				return;
@@ -222,6 +225,10 @@ module akra.render {
 
 			var pVisibleObjects: IObjectArray<ISceneObject> = pCamera.display();
 			var pRenderable: IRenderableObject;
+
+			var v3fCameraPos: IVec3 = this.getCamera().getWorldPosition();
+
+			//this._pTransparencyObjectListByRange.length = 0;
 
 			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
@@ -232,10 +239,32 @@ module akra.render {
 					if (!isNull(pRenderable) &&
 						pRenderable.getRenderMethodByName(csMethod) &&
 						pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent()) {
+
 						pRenderable.render(this, csMethod, pSceneObject);
+
+						//var v3fMidPoint: IVec3 = Vec3.temp();
+						//var pSubMesh: IMeshSubset = <IMeshSubset>pRenderable;
+						//pSubMesh.getBoundingBox().midPoint(v3fMidPoint);
+
+						//v3fMidPoint.vec3TransformCoord(pSceneObject.getWorldMatrix());
+						//var fRange = v3fCameraPos.subtract(v3fMidPoint, v3fMidPoint).lengthSquare();
+
+						//pRenderable["dist"] = fRange;
+						//pRenderable["sceneObj"] = pSceneObject;
+						//this._pTransparencyObjectListByRange.push(pRenderable);
+
+						
+						
 					}
 				}
 			}
+
+			//this._pTransparencyObjectListByRange.sort(this._fnSort);
+
+			//for (var i: uint = 0; i < this._pTransparencyObjectListByRange.length; i++) {
+			//	this._pTransparencyObjectListByRange[i].render(this, csMethod, this._pTransparencyObjectListByRange[i]["sceneObj"]);
+			//}
+
 		}
 
 
@@ -255,7 +284,7 @@ module akra.render {
 			return true;
 		}
 
-		_setSkyboxModel(pRenderable: IRenderableObject): void {
+		setSkyboxModel(pRenderable: IRenderableObject): void {
 			this._pSkybox = pRenderable;
 			pRenderable.addRenderMethod(".skybox-render", ".skybox-render");
 			pRenderable.getRenderMethodByName(".skybox-render").getEffect().addComponent("akra.system.skybox_model");
