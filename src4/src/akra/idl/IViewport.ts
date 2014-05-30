@@ -87,6 +87,8 @@ module akra {
 
 		isUpdated(): boolean;
 
+		_setDefaultRenderMethod(sMethod: string): void;
+
 		_clearUpdatedFlag(): void;
 		_updateImpl(): void;
 

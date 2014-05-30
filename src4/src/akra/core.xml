@@ -149,6 +149,7 @@
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx"/>
             <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+              <ResourceFile Path="resources/fx/render_plane_culling.afx"/>
               <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
             </ResourceFile>
           </ResourceFile>

@@ -199,6 +199,9 @@ module akra.render {
 			this._pViewportState.clearDepth = fDepthClearValue;
 		}
 
+		_setDefaultRenderMethod(sMethod: string): void {
+			this._csDefaultRenderMethod = sMethod;
+		}
 
 		destroy(): void {
 			var pRenderer: IRenderer = this._pTarget.getRenderer();

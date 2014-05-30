@@ -501,7 +501,7 @@ module akra {
 			//var pCube: ICollada = <ICollada>pRmgr.loadModel("CUBE.DAE");
 			//var pModel = pCube.extractModel("box");
 			var pModel = addons.cube(pScene);
-			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
+			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}
 
 		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);

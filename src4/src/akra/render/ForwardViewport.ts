@@ -255,7 +255,7 @@ module akra.render {
 			return true;
 		}
 
-		_setSkyboxModel(pRenderable: IRenderableObject): void {
+		setSkyboxModel(pRenderable: IRenderableObject): void {
 			this._pSkybox = pRenderable;
 			pRenderable.addRenderMethod(".skybox-render", ".skybox-render");
 			pRenderable.getRenderMethodByName(".skybox-render").getEffect().addComponent("akra.system.skybox_model");
