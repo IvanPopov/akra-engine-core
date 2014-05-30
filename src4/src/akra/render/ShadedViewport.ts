@@ -107,6 +107,10 @@ module akra.render {
 			}
 		}
 
+		_getTransparencyViewport(): IShadedViewport {
+			return null;
+		}
+
 		protected _isManualUpdateForLightUniforms(): boolean {
 			return this._bManualUpdateForLightUniforms;
 		}

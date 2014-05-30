@@ -300,7 +300,7 @@ module akra {
 			pLibeCube.setPosition(pBB.midPoint(Vec3.temp()));
 		});
 
-		pLibeCube.setVisible(true);
+		pLibeCube.setVisible(false);
 
 		pGUI.add({ "world bounds": true }, "world bounds").onChange((bValue: boolean) => {
 			pLibeCube.setVisible(bValue);

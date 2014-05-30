@@ -80,6 +80,17 @@ module akra {
 		isAntialiased(): boolean;
 	}
 
+	/** Viewport that can support fog. */
+	export interface IViewportFogged extends IViewport3D {
+		/** Enable fog. */
+		setFog(bEnabled?: boolean): void;
+
+		/** Is fog enabled? 
+		 * @return TRUE if fog enabled.
+		 */
+		isFogged(): boolean;
+	}
+
 	/** Viewport that can highligh objects. */
 	export interface IViewportHighlighting extends IViewport3D {
 		/** Highlight object by render id. */
@@ -111,6 +122,7 @@ module akra {
 
 		setTransparencySupported(bEnable: boolean): void;
 		isTransparencySupported(): boolean;
+		_getTransparencyViewport(): IShadedViewport;
 
 		_setLightUniformsManual(bValue: boolean, pUniformsMap?: any): void;
 	}

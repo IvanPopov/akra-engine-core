@@ -101,6 +101,19 @@ module akra.render {
 				this.initTextureForTransparentObjects();
 			}
 
+			(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(this.isFogged());
+
+			if (bEnable) {
+				this.getEffect().addComponent("akra.system.applyTransparency", 3, 0);
+			}
+			else {
+				this.getEffect().addComponent("akra.system.applyTransparency", 3, 0);
+			}
+
+		}
+
+		_getTransparencyViewport(): IShadedViewport {
+			return this.isTransparencySupported() ? <IShadedViewport>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0) : null;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -271,10 +284,10 @@ module akra.render {
 			var pEffect: IEffect = this.getEffect();
 
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 3, 0);
+				pEffect.addComponent("akra.system.fxaa", 4, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 3, 0);
+				pEffect.delComponent("akra.system.fxaa", 4, 0);
 			}
 		}
 
@@ -288,6 +301,23 @@ module akra.render {
 
 		isAntialiased(): boolean {
 			return this.isFXAA();
+		}
+
+		setFog(bEnabled: boolean = true): void {
+			if (bEnabled) {
+				this.getEffect().addComponent("akra.system.fog", 2, 0);
+			}
+			else {
+				this.getEffect().delComponent("akra.system.fog", 2, 0);
+			}
+
+			if (this.isTransparencySupported()) {
+				(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(bEnabled);
+			}
+		}
+
+		isFogged(): boolean {
+			return this.getEffect().hasComponent("akra.system.fog");
 		}
 
 		highlight(iRid: int): void;
@@ -424,6 +454,9 @@ module akra.render {
 					break;
 				case 1:
 				case 2:
+				case 3:
+					//fog
+					pPass.setTexture("DEPTH_TEXTURE", this.getDepthTexture());
 					//transparency
 					pPass.setTexture("TRANSPARENT_TEXTURE", this._pTextureForTransparentObjects);
 					//skybox
@@ -543,7 +576,7 @@ module akra.render {
 		private prepareRenderMethods(): void {
 			this._pViewScreen.switchRenderMethod(null);
 			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
-			this._pViewScreen.getEffect().addComponent("akra.system.applyTransparency", 2, 0);
+			//this._pViewScreen.getEffect().addComponent("akra.system.applyTransparency", 2, 0);
 
 			for (var i: uint = 0; i < 2; i++) {
 				var sRenderMethod: string = i === 0 ? ".prepare_diffuse_specular" : ".prepare_ambient";

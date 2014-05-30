@@ -13583,6 +13583,15 @@ declare module akra {
         */
         isAntialiased(): boolean;
     }
+    /** Viewport that can support fog. */
+    interface IViewportFogged extends IViewport3D {
+        /** Enable fog. */
+        setFog(bEnabled?: boolean): void;
+        /** Is fog enabled?
+        * @return TRUE if fog enabled.
+        */
+        isFogged(): boolean;
+    }
     /** Viewport that can highligh objects. */
     interface IViewportHighlighting extends IViewport3D {
         /** Highlight object by render id. */
@@ -13608,11 +13617,12 @@ declare module akra {
         isShadowEnabled(): boolean;
         setTransparencySupported(bEnable: boolean): void;
         isTransparencySupported(): boolean;
+        _getTransparencyViewport(): IShadedViewport;
         _setLightUniformsManual(bValue: boolean, pUniformsMap?: any): void;
     }
 }
 declare module akra {
-    interface IDSViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
+    interface IDSViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting, IViewportFogged {
         getColorTextures(): ITexture[];
         _getDeferredTexValue(iTex: number, x: number, y: number): IColor;
         getDepthTexture(): ITexture;
@@ -13860,6 +13870,7 @@ declare module akra.render {
         public setShadowEnabled(bValue: boolean): void;
         public isShadowEnabled(): boolean;
         public _setLightUniformsManual(bValue: boolean, pUniformsMap?: any): void;
+        public _getTransparencyViewport(): IShadedViewport;
         public _isManualUpdateForLightUniforms(): boolean;
         public createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void;
         public resetUniforms(): void;
@@ -15582,6 +15593,7 @@ declare module akra.render {
         public setShadingModel(eModel: EShadingModel): void;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public setTransparencySupported(bEnable: boolean): void;
+        public _getTransparencyViewport(): IShadedViewport;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15600,12 +15612,14 @@ declare module akra.render {
         public isFXAA(): boolean;
         public isAntialiased(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;
+        public setFog(bEnabled?: boolean): void;
+        public isFogged(): boolean;
         public destroy(): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
     }
 }
 declare module akra {
-    interface ILPPViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
+    interface ILPPViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting, IViewportFogged {
         getDepthTexture(): ITexture;
         getTextureWithObjectID(): ITexture;
         getView(): IRenderableObject;
@@ -15638,6 +15652,7 @@ declare module akra.render {
         public setShadingModel(eModel: EShadingModel): void;
         public setDefaultEnvironmentMap(pEnvMap: ITexture): void;
         public setTransparencySupported(bEnable: boolean): void;
+        public _getTransparencyViewport(): IShadedViewport;
         public _setTarget(pTarget: IRenderTarget): void;
         public setCamera(pCamera: ICamera): boolean;
         public _getRenderId(x: number, y: number): number;
@@ -15648,6 +15663,8 @@ declare module akra.render {
         public isFXAA(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;
         public isAntialiased(): boolean;
+        public setFog(bEnabled?: boolean): void;
+        public isFogged(): boolean;
         public highlight(iRid: number): void;
         public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
         public highlight(pPair: IRIDPair): void;
@@ -15666,7 +15683,7 @@ declare module akra.render {
     }
 }
 declare module akra {
-    interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting {
+    interface IForwardViewport extends IShadedViewport, IViewportSkybox, IViewportAntialising, IViewportHighlighting, IViewportFogged {
         _renderOnlyTransparentObjects(bValue: boolean): void;
         _setSkyboxModel(pRenderable: IRenderableObject): void;
     }
@@ -15685,6 +15702,7 @@ declare module akra.render {
         private _pTextureToScreenViewport;
         private _bRenderOnlyTransparentObjects;
         private _pSkybox;
+        private _isFogEnabled;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15693,6 +15711,7 @@ declare module akra.render {
         public getSkybox(): ITexture;
         public getTextureWithObjectID(): ITexture;
         public _renderOnlyTransparentObjects(bValue: boolean): void;
+        public _getTransparencyViewport(): IShadedViewport;
         public _setTarget(pTarget: IRenderTarget): void;
         public _getRenderId(x: number, y: number): number;
         public _updateDimensions(bEmitEvent?: boolean): void;
@@ -15707,6 +15726,8 @@ declare module akra.render {
         public setAntialiasing(bEnabled?: boolean): void;
         public isAntialiased(): boolean;
         public highlight(a: any): void;
+        public setFog(bEnabled?: boolean): void;
+        public isFogged(): boolean;
         public _onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         private prepareForForwardShading();

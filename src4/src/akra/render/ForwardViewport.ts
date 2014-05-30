@@ -36,6 +36,7 @@ module akra.render {
 		private _bRenderOnlyTransparentObjects: boolean = false;
 
 		private _pSkybox: IRenderableObject = null;
+		private _isFogEnabled: boolean = false;
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -73,6 +74,10 @@ module akra.render {
 			if (bValue && !this.isTransparencySupported()) {
 				this.setTransparencySupported(true);
 			}
+		}
+
+		_getTransparencyViewport(): IShadedViewport {
+			return this.isTransparencySupported() ? this : null;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -254,7 +259,7 @@ module akra.render {
 			this._pSkybox = pRenderable;
 			pRenderable.addRenderMethod(".skybox-render", ".skybox-render");
 			pRenderable.getRenderMethodByName(".skybox-render").getEffect().addComponent("akra.system.skybox_model");
-
+			pRenderable.getRenderMethodByName(".skybox-render").getEffect().addComponent("akra.system.fogForForward");
 			var pMat: IMat4 = new Mat4();
 			pMat.identity();
 
@@ -291,6 +296,14 @@ module akra.render {
 		}
 
 		highlight(a): void {
+		}
+
+		setFog(bEnabled: boolean = true): void {
+			this._isFogEnabled = bEnabled;
+		}
+
+		isFogged(): boolean {
+			return this._isFogEnabled;
 		}
 
 		_onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -359,6 +372,8 @@ module akra.render {
 			else {
 				pPass.setForeign("IS_USED_PBS_REFLECTIONS", false);
 			}
+
+			pPass.setForeign("IS_FOG_ENABLED", this._isFogEnabled)
 		}
 
 		private prepareForForwardShading(): void {
@@ -394,6 +409,7 @@ module akra.render {
 						pTechnique.addComponent("akra.system.pbsReflection");
 						//pTechnique.addComponent("akra.system.forceSetAlpha");
 						pTechnique.addComponent("akra.system.applyAlpha");
+						pTechnique.addComponent("akra.system.fogForForward");
 					}
 				}
 			}

@@ -110,6 +110,19 @@ module akra.render {
 				this.initTextureForTransparentObjects();
 			}
 
+			(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(this.isFogged());
+
+			if (bEnable) {
+				this.getEffect().addComponent("akra.system.applyTransparency", 3, 0);
+			}
+			else {
+				this.getEffect().addComponent("akra.system.applyTransparency", 3, 0);
+			}
+
+		}
+
+		_getTransparencyViewport(): IShadedViewport {
+			return this.isTransparencySupported() ? <IShadedViewport>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0) : null;
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -186,8 +199,6 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 			pDSEffect.addComponent("akra.system.pbsReflection");
-
-			pDSEffect.addComponent("akra.system.applyTransparency", 2, 0);
 
 			pDSMethod.setEffect(pDSEffect);
 
@@ -407,10 +418,10 @@ module akra.render {
 			var pEffect: IEffect = this._pDeferredEffect;
 
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 3, 0);
+				pEffect.addComponent("akra.system.fxaa", 4, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 3, 0);
+				pEffect.delComponent("akra.system.fxaa", 4, 0);
 			}
 		}
 
@@ -468,6 +479,22 @@ module akra.render {
 			this.setFXAA(bEnabled);
 		}
 
+		setFog(bEnabled: boolean = true): void {
+			if (bEnabled) {
+				this.getEffect().addComponent("akra.system.fog", 2, 0);
+			}
+			else {
+				this.getEffect().delComponent("akra.system.fog", 2, 0);
+			}
+
+			if (this.isTransparencySupported()) {
+				(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(bEnabled);
+			}
+		}
+
+		isFogged(): boolean {
+			return this.getEffect().hasComponent("akra.system.fog");
+		}
 
 		destroy(): void {
 			super.destroy();
@@ -549,6 +576,9 @@ module akra.render {
 
 				case 1:
 				case 2:
+				case 3:
+					//fog
+					pPass.setTexture("DEPTH_TEXTURE", this.getDepthTexture());
 					//transparency
 					pPass.setTexture("TRANSPARENT_TEXTURE", this.isTransparencySupported() ? this._pTextureForTransparentObjects : null);
 					//skybox

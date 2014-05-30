@@ -26,7 +26,7 @@ module akra {
 		deps: { files: [AE_RESOURCES, AE_RESOURCES_2], root: "./" },
 	};
 
-	var pEngine = akra.createEngine(pOptions);
+	export var pEngine = akra.createEngine(pOptions);
 
 	var pScene = pEngine.getScene();
 
@@ -49,12 +49,12 @@ module akra {
 
 	export var pCameraParams = {
 		current: {
-			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.)
+			orbitRadius: 20.,
+			rotation: new math.Vec2(0., 0.5)
 		},
 		target: {
 			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.)
+			rotation: new math.Vec2(0., 0.02)
 		}
 	}
 
@@ -115,8 +115,8 @@ module akra {
 				if (pKeymap.isMouseMoved()) {
 					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
-					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
+					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., 0.04, 1.2);
+					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2. % Math.PI;
 
 					pKeymap.update();
 				}
@@ -145,7 +145,7 @@ module akra {
 		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
-			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
+			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 3., 6.);
 		});
 	}
 
@@ -248,10 +248,8 @@ module akra {
 		pGUI = new dat.GUI();
 		
 		
-		pViewport.getEffect().addComponent("akra.system.linearFog");
-		pViewport.getEffect().addComponent("akra.system.exponentialFog");
-
-		//pViewport.getEffect().addComponent("akra.system.skybox", 1, 0);
+		//pViewport.getEffect().addComponent("akra.system.fog");
+		// pViewport.getEffect().addComponent("akra.system.exponentialFog");
 
 	
 
@@ -267,6 +265,14 @@ module akra {
 			fogIndex: 30
 		};
 
+		var pFogEffectData = window['fog_effect_data'] = {
+			fogColor: 0.3,
+			fogOpacity: 0.3,
+			fogStart: 10,
+			fogIndex: 30,
+			fogHeight: 0.7
+		};
+
 		var pFogFolder = pGUI.addFolder("fog");
 		var iFogType = 0;
 		(<dat.OptionController>pFogFolder.add({ FogType: "exp" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
@@ -277,6 +283,18 @@ module akra {
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogIndex')).min(0.01).max(200.).step(0.01).name("index");
 
 		var fSkyboxSharpness: float = 1.;
+		var pFogEffectFolder = pGUI.addFolder("fogEffect");
+
+		(<IViewportFogged>pViewport).setFog(true);
+		pGUI.add({ fog: true }, "fog").onChange((bValue) => {
+			(<IViewportFogged>pViewport).setFog(bValue);
+		});
+
+		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;
+		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogOpacity')).min(0.).max(1.).step(0.01).name("opacity").__precision = 2;
+		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogStart')).min(0.).max(100.).step(0.01).name("start");
+		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogIndex')).min(0.01).max(100.).step(0.01).name("index");
+		(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
 
 		pGUI.add({ skybox_sharpness: fSkyboxSharpness }, "skybox_sharpness", 0., 1., 0.01).onChange((fValue) => {
 			fSkyboxSharpness = fValue;
@@ -290,6 +308,7 @@ module akra {
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			//var pDepthTexture: ITexture = (<IShadedViewport>pViewport).getDepthTexture();
 
 			if (iFogType == 0) {
 				pPass.setForeign("USE_LINEAR_FOG", false);
@@ -303,6 +322,7 @@ module akra {
 				pPass.setForeign("USE_LINEAR_FOG", false);
 				pPass.setForeign("USE_EXPONENTIAL_FOG", true);
 			}
+			//pPass.setTexture("DEPTH_TEXTURE", pDepthTexture);
 			pPass.setUniform("FOG_COLOR", new math.Vec3(pFogData.fogColor));
 			pPass.setUniform("FOG_START", pFogData.fogStart);
 			pPass.setUniform("FOG_INDEX", pFogData.fogIndex);
@@ -310,7 +330,27 @@ module akra {
 			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
 			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
+
+			pPass.setUniform("FOG_EFFECT_COLOR", math.Vec4.temp(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity));
+			pPass.setUniform("FOG_EFFECT_START", pFogEffectData.fogStart);
+			pPass.setUniform("FOG_EFFECT_INDEX", pFogEffectData.fogIndex);
+			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogEffectData.fogHeight);
+
+			//pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
+			//pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 		});
+
+		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
+			var pTransparencyViewport: IForwardViewport = <IForwardViewport>(<IShadedViewport>pViewport)._getTransparencyViewport();
+			pTransparencyViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
+				var pPass: IRenderPass = pTechnique.getPass(iPass);
+				pPass.setUniform("FOG_EFFECT_COLOR", math.Vec4.temp(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity));
+				pPass.setUniform("FOG_EFFECT_START", pFogEffectData.fogStart);
+				pPass.setUniform("FOG_EFFECT_INDEX", pFogEffectData.fogIndex);
+				pPass.setUniform("FOG_EFFECT_HEIGHT", pFogEffectData.fogHeight);
+			});
+		}
 
 		var pSkyboxTexturesKeys = [
 			'nightsky',
@@ -607,7 +647,7 @@ module akra {
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		pLightMap.setLocalScale(Vec3.temp(pViewport.getType() === EViewportTypes.FORWARDVIEWPORT? 0.1795: 0.1865));
-		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 1.);
+		pLightMap.getMesh().getSubset(0).getMaterial().emissive.set(.3, 1., .3, 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().diffuse.set(0., 0., 0., 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().specular.set(0., 0., 0., 0.);
 		pLightMap.getMesh().getSubset(0).getMaterial().ambient.set(0., 0., 0., 0.);
