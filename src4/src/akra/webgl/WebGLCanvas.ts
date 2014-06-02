@@ -404,7 +404,6 @@ module akra.webgl {
 						}
 
 						pViewport = pVp;
-						console.log(pViewport, pVp);
 					}
 				}
 			}

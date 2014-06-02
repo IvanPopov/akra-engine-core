@@ -15,22 +15,24 @@
 
 module akra.io {
 
-	var memoryStorage: IMap<any> = {};
+	export var memoryStorage: IMap<any> = {};
 
 	export class StorageFile extends TFile implements IFile {
 
-		constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
-		constructor(sFilename?: string, iMode?: int, cb?: (e: Error, pMeta: IFileMeta) => void);
-		constructor(sFilename?: string, sMode?: any, cb?: (e: Error, pMeta: IFileMeta) => void) {
-			super(sFilename, sMode, cb);
-		}
+		//constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
+		//constructor(sFilename?: string, iMode?: int, cb?: (e: Error, pMeta: IFileMeta) => void);
+		//constructor(sFilename?: string, sMode?: any, cb?: (e: Error, pMeta: IFileMeta) => void) {
+		//	super(sFilename, sMode, cb);
+		//}
 
 		clear(cb: Function = TFile.defaultCallback): void {
 			if (this.checkIfNotOpen(this.clear, cb)) {
 				return;
 			}
 
-			localStorage.setItem(this.getPath(), "");
+			//localStorage.setItem(this.getPath(), "");
+			memoryStorage[this.getPath()] = null;
+
 			this._pFileMeta.size = 0;
 
 			cb(null, this);
@@ -44,21 +46,27 @@ module akra.io {
 			//logger.assert(io.canCreate(this._iMode), "The file is not readable.");
 
 			var pData: any = this.readData();
-			var nPos: uint = this._nCursorPosition;
+			//var nPos: uint = this._nCursorPosition;
 
-			if (nPos > 0) {
-				if (io.isBinary(this._iMode)) {
-					pData = (new Uint8Array((new Uint8Array(pData)).subarray(nPos))).buffer;
-				}
-				else {
-					pData = pData.substr(nPos);
-				}
+			//if (nPos > 0) {
+			//	if (io.isBinary(this._iMode)) {
+			//		pData = (new Uint8Array((new Uint8Array(pData)).subarray(nPos))).buffer;
+			//	}
+			//	else {
+			//		pData = pData.substr(nPos);
+			//	}
+			//}
+
+			//this.atEnd();
+
+			if (!io.isBinary(this._iMode) && !isString(pData)) {
+				pData = conv.abtos(pData);
 			}
 
-			this.atEnd();
-
 			if (cb) {
-				cb.call(this, null, pData);
+				setTimeout(() => {
+					cb.call(this, null, pData);
+				}, 1);
 			}
 		}
 
@@ -69,83 +77,97 @@ module akra.io {
 				return;
 			}
 
-			var iMode: int = this._iMode;
-			var nSeek: uint;
+			//var iMode: int = this._iMode;
+			//var nSeek: uint;
 			var pCurrentData: any;
 
-			logger.assert(io.canWrite(iMode), "The file is not writable.");
+			//logger.assert(io.canWrite(iMode), "The file is not writable.");
 
-			sContentType = sContentType || (io.isBinary(iMode) ? "application/octet-stream" : "text/plain");
+			//sContentType = sContentType || (io.isBinary(iMode) ? "application/octet-stream" : "text/plain");
 
-			pCurrentData = this.readData();
+			//pCurrentData = this.readData();
 
-			if (!isString(pCurrentData)) {
-				pCurrentData = conv.abtos(pCurrentData);
-			}
+			//if (!isString(pCurrentData)) {
+			//	pCurrentData = conv.abtos(pCurrentData);
+			//}
 
-			nSeek = (isString(pData) ? pData.length : pData.byteLength);
 
-			if (!isString(pData)) {
-				pData = conv.abtos(pData);
-			}
+			//function size(pData): uint {
+			//	return (isString(pData) ? pData.length : pData.byteLength) || 0;
+			//}
 
-			pData = (<string>pCurrentData).substr(0, this._nCursorPosition) + (<string>pData) +
-			(<string>pCurrentData).substr(this._nCursorPosition + (<string>pData).length);
+			//nSeek = size(pData);
 
-			try {
-				localStorage.setItem(this.getPath(), pData);
-			}
-			catch (e) {
-				localStorage.removeItem(this.getPath());
+			//if (!isString(pData)) {
+			//	pData = conv.abtos(pData);
+			//}
+
+			//pData = (<string>pCurrentData).substr(0, this._nCursorPosition) + (<string>pData) +
+			//(<string>pCurrentData).substr(this._nCursorPosition + (<string>pData).length);
+
+			//try {
+			//	localStorage.setItem(this.getPath(), pData);
+			//}
+			//catch (e) {
+			//	localStorage.removeItem(this.getPath());
 				memoryStorage[this.getPath()] = pData;
 				//cb(e);
-			}
+			//}
 
-			this._pFileMeta.size = pData.length;
-			this._nCursorPosition += nSeek;
+			//this._pFileMeta.size = size(pData);
+			//this._nCursorPosition += nSeek;
 
-			cb(null);
+
+			setTimeout(cb, 1, null);
 		}
 
 		isExists(cb: Function = TFile.defaultCallback): void {
-			cb.call(this, null, localStorage.getItem(this.getPath()) != null);
+			setTimeout(() => {
+				cb.call(this, null, /*localStorage.getItem(this.getPath()) != null ||*/ memoryStorage[this.getPath()] != null);
+			}, 1);
 		}
 
-		remove(cb: Function = TFile.defaultCallback): void {
-			localStorage.removeItem(this.getPath());
+		remove(cb: Function = TFile.defaultCallback): void {			
+			//localStorage.removeItem(this.getPath());
+			delete memoryStorage[this.getPath()];
 			cb.call(this, null);
 		}
 
 		private readData(): any {
-			var pFileMeta: IFileMeta = this._pFileMeta;
-			var pData: string = localStorage[this.getPath()] || memoryStorage[this.getPath()];
-			var pDataBin: ArrayBuffer;
+			//var pFileMeta: IFileMeta = this._pFileMeta;
+			var pData: any = /*localStorage[this.getPath()] || */memoryStorage[this.getPath()];
+			//var pDataBin: ArrayBuffer;
 
-			if (pData == null) {
-				pData = "";
-				if (io.canCreate(this._iMode)) {
-					localStorage.setItem(this.getPath(), pData);
-				}
-			}
+			//if (pData == null) {
+			//	//pData = null;
+			//	if (io.canCreate(this._iMode)) {
+			//		//localStorage.setItem(this.getPath(), pData);
+			//		memoryStorage[this.getPath()] = pData;
+			//	}
+			//}
 
+			//if (!pData) {
+			//	pFileMeta.size = 0;
+			//	return pData;
+			//}
 
-			if (io.isBinary(this._iMode)) {
-				pDataBin = conv.stoab(pData);
-				pFileMeta.size = pDataBin.byteLength;
-				return pDataBin;
-			}
-			else {
-				pFileMeta.size = pData.length;
-				return pData;
-			}
+			//if (io.isBinary(this._iMode)) {
+			//	//pDataBin = conv.stoab(pData);
+			//	pFileMeta.size = pData.byteLength || 0;
+			//	return pData;
+			//}
+			//else {
+			//	pFileMeta.size = pData.length || 0;
+			//	return pData;
+			//}
 
-			//return null;
+			return pData || null;
 		}
 
 		protected update(cb?: Function): void {
 			this._pFileMeta = {size: 0, lastModifiedDate: null};
-			this.readData();
-			cb.call(this, null);
+			
+			setTimeout(() => { this.readData(); cb.call(this, null, this); }, 1);
 		}
 	}
 }

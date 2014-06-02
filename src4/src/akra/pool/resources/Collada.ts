@@ -1435,7 +1435,9 @@ module akra.pool.resources {
 
 				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
 
-				this.sync(pTex, EResourceItemEvents.LOADED);
+				if (this.findRelatedResources(EResourceItemEvents.LOADED).indexOf(pTex) === -1) {
+					this.sync(pTex, EResourceItemEvents.LOADED);
+				}
 
 				//FIX THIS
 				pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);

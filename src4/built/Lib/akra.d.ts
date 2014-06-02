@@ -8454,9 +8454,8 @@ declare module akra.io {
 * ONLY FOR LOCAL FILES!!
 */
 declare module akra.io {
+  var memoryStorage: IMap<any>;
   class StorageFile extends TFile implements IFile {
-    constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
-    constructor(sFilename?: string, iMode?: number, cb?: (e: Error, pMeta: IFileMeta) => void);
     public clear(cb?: Function): void;
     public read(cb?: Function): void;
     public write(sData: string, cb?: Function, sContentType?: string): void;

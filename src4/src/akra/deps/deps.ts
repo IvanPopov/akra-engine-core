@@ -434,13 +434,18 @@ module akra.deps {
 
 				debug.log("Unpacked to local filesystem " + pEntry.filename + ".");
 
-				var pCrc32: IFile = io.fopen(sPath + ".crc32", EIO.IN | EIO.OUT | EIO.TRUNC);
-				pCrc32.write(String(pEntry.crc32), (e: Error) => {
-					cb(e, sPath);
-					pCrc32.close();
-				});
-
 				pCopy.close();
+
+				if (info.api.getFileSystem()) {
+					var pCrc32: IFile = io.fopen(sPath + ".crc32", EIO.IN | EIO.OUT | EIO.TRUNC);
+					pCrc32.write(String(pEntry.crc32), (e: Error) => {
+						cb(e, sPath);
+						pCrc32.close();
+					});
+				}
+				else {
+					cb(null, sPath);
+				}
 			});
 		});
 	}
@@ -451,6 +456,11 @@ module akra.deps {
 
 	function extractARADependence(pEntry: ZipEntry, sHash: string, cb: (e: Error, sPath: string) => void): void {
 		var sPath: string = createARADLocalName(pEntry.filename, sHash);
+
+		if (!info.api.getFileSystem()) {
+			forceExtractARADependence(pEntry, sPath, cb);
+		}
+
 		var pCRC32File: IFile = io.fopen(sPath + ".crc32");
 
 		pCRC32File.isExists((e: Error, bExists: boolean) => {

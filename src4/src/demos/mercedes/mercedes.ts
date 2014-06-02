@@ -360,7 +360,7 @@ module akra {
 		}
 
 		var pSkyboxTexturesKeys = [
-			'nightsky',
+			'nightsky.dds',
 			//'desert',
 			//'nature',
 			//'colosseum',
@@ -381,7 +381,7 @@ module akra {
 		if (config.DEBUG) {
 			var pPBSFolder = pGUI.addFolder("pbs");
 
-			(<dat.OptionController>pPBSFolder.add({ Skybox: "nightsky" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+			(<dat.OptionController>pPBSFolder.add({ Skybox: "nightsky.dds" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 
 				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 
@@ -481,7 +481,7 @@ module akra {
 	}
 
 	function createSkyBox(): void {
-		pSkyboxTexture = pSkyboxTextures['nightsky'];
+		pSkyboxTexture = pSkyboxTextures['nightsky.dds'];
 
 		
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
