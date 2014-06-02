@@ -17,6 +17,10 @@ module akra.io {
 
 	export var memoryStorage: IMap<any> = {};
 
+	function size(pData): uint {
+		return pData? (isString(pData) ? pData.length : pData.byteLength): 0;
+	}
+
 	export class StorageFile extends TFile implements IFile {
 
 		//constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
@@ -61,12 +65,11 @@ module akra.io {
 
 			if (!io.isBinary(this._iMode) && !isString(pData)) {
 				pData = conv.abtos(pData);
+				this._pFileMeta.size = pData.length;
 			}
 
 			if (cb) {
-				setTimeout(() => {
-					cb.call(this, null, pData);
-				}, 1);
+				setTimeout(cb, 1, null, pData);
 			}
 		}
 
@@ -81,6 +84,12 @@ module akra.io {
 			//var nSeek: uint;
 			var pCurrentData: any;
 
+			if (!io.isBinary(this._iMode) && !isString(pData)) {
+				pData = conv.abtos(pData);
+			}
+
+			this._pFileMeta.size = size(pData);
+
 			//logger.assert(io.canWrite(iMode), "The file is not writable.");
 
 			//sContentType = sContentType || (io.isBinary(iMode) ? "application/octet-stream" : "text/plain");
@@ -92,9 +101,7 @@ module akra.io {
 			//}
 
 
-			//function size(pData): uint {
-			//	return (isString(pData) ? pData.length : pData.byteLength) || 0;
-			//}
+			
 
 			//nSeek = size(pData);
 
@@ -123,7 +130,7 @@ module akra.io {
 
 		isExists(cb: Function = TFile.defaultCallback): void {
 			setTimeout(() => {
-				cb.call(this, null, /*localStorage.getItem(this.getPath()) != null ||*/ memoryStorage[this.getPath()] != null);
+				cb.call(this, null, /*localStorage.getItem(this.getPath()) != null ||*/ isDef(memoryStorage[this.getPath()]));
 			}, 1);
 		}
 
@@ -135,7 +142,7 @@ module akra.io {
 
 		private readData(): any {
 			//var pFileMeta: IFileMeta = this._pFileMeta;
-			var pData: any = /*localStorage[this.getPath()] || */memoryStorage[this.getPath()];
+			var pData: any = /*localStorage[this.getPath()] || */memoryStorage[this.getPath()] || null;
 			//var pDataBin: ArrayBuffer;
 
 			//if (pData == null) {
@@ -161,7 +168,7 @@ module akra.io {
 			//	return pData;
 			//}
 
-			return pData || null;
+			return pData;
 		}
 
 		protected update(cb?: Function): void {

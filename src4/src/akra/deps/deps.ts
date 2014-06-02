@@ -459,6 +459,7 @@ module akra.deps {
 
 		if (!info.api.getFileSystem()) {
 			forceExtractARADependence(pEntry, sPath, cb);
+			return;
 		}
 
 		var pCRC32File: IFile = io.fopen(sPath + ".crc32");
@@ -850,6 +851,7 @@ module akra.deps {
 						return;
 
 					case EDependenceStatuses.LOADED:
+						
 						pDep.stats.bytesLoaded = pDep.stats.byteLength;
 						pDep.stats.unpacked = 1.;
 						pDep.content = arguments[2] || null;
