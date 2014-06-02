@@ -376,7 +376,7 @@ module akra.math {
 			x = pData[__11] * x + pData[__12] * y + pData[__13] * z + pData[__14];
 			y = pData[__21] * x + pData[__22] * y + pData[__23] * z + pData[__24];
 			z = pData[__31] * x + pData[__32] * y + pData[__33] * z + pData[__34];
-			w = pData[__31] * x + pData[__42] * y + pData[__43] * z + pData[__44];
+			w = pData[__41] * x + pData[__42] * y + pData[__43] * z + pData[__44];
 
 			var fInvW: float = 1. / w;
 
