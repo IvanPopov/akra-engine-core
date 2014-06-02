@@ -7,7 +7,7 @@ html(lang="en")
     link(href='../css/demo.css', rel='stylesheet')
     style.
       body {
-        background: black !important;
+        background: #222222 !important;
       }
 
       h1.ci {
@@ -18,15 +18,24 @@ html(lang="en")
         padding: 5px;
         width: 100%;
         height: 51px;
-        background: url(css/mercedes-benz-logo.png) 5px 5px no-repeat;
         text-indent: -9999px;
         z-index: 1;
         overflow: hidden;
         background-color: rgba(67, 65, 66, .85);
-        background-position-x: 85%;
         border-bottom: 1px solid rgba(72, 70, 71, .9);
         padding-left: 0;
         padding-right: 0;
+        /*background: url(css/mercedes-benz-logo.png) 5px 5px no-repeat;
+        background-position-x: 94.5%;
+        background-size: 151px 40px;*/
+      }
+
+      h1.ci img:first-child {
+        position: absolute;
+        right: 96px;
+        height: 40px;
+        width: 151px;
+        margin-top: 7px;
       }
 
       div.sf {
@@ -130,6 +139,7 @@ html(lang="en")
       link(href=demo.styles[i], rel='stylesheet')
   body
     h1.ci
+      img(src="css/mercedes-benz-logo.png")
     hr.cj(style="top: 101px;")
     hr.cj.f1(style="bottom: 52px; border-top: 1px solid rgba(27, 25, 26, .85); background-color: rgba(20, 20, 20, .9);")
     div.sf(style="background-color: rgba(67, 65, 66, 0.9); bottom: 41px; height: 10px; padding: 0;")

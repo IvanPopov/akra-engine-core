@@ -208,11 +208,13 @@ module akra.deps {
 						return fnReject(e);
 					}
 
-					if (!pMeta.size) {
-						return fnReject(new Error("could not determ byte length of " + pDep.path));
-					}
+					//if (config.DEBUG) {
+						if (!isNumber(pMeta.size)) {
+							return fnReject(new Error("could not determ byte length of " + pDep.path));
+						}
+					//}
 
-					fnSuccess(pMeta.size);
+					fnSuccess(pMeta.size || 0);
 				});
 			}));
 		});

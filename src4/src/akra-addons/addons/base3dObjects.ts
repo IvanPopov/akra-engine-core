@@ -564,11 +564,11 @@ module akra.addons {
 			createSimpleMeshFromSimpleGeometry(
 				pScene3d.getManager().getEngine(),
 				{
-					type: EPrimitiveTypes.TRIANGLELIST,
-					vertices: vertices,
-					normals: normals,
-					texcoords: uvs,
-					indices: indices
+					"type": EPrimitiveTypes.TRIANGLELIST,
+					"vertices": vertices,
+					"normals": normals,
+					"texcoords": uvs,
+					"indices": indices
 				},
 				pMat,
 				"cylinder"));
@@ -612,11 +612,11 @@ module akra.addons {
 			createSimpleMeshFromSimpleGeometry(
 				pScene3d.getManager().getEngine(),
 				{
-					type: EPrimitiveTypes.TRIANGLELIST,
-					vertices: vertices,
-					normals: normals,
-					texcoords: uvs,
-					indices: indices
+					"type": EPrimitiveTypes.TRIANGLELIST,
+					"vertices": vertices,
+					"normals": normals,
+					"texcoords": uvs,
+					"indices": indices
 				},
 				pMat,
 				"trifan"));
