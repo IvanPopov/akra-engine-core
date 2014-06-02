@@ -1547,7 +1547,7 @@ module akra.pool.resources {
 				//FIXME: at now, all materials draws similar..
 				case "blinn":
 				case "lambert":
-					debug.warn("<blinn /> or <lambert /> material interprated as phong");
+					//debug.warn("<blinn /> or <lambert /> material interprated as phong");
 				case "phong":
 					pMat = this.COLLADAPhong(pValue);
 					break;
@@ -1593,7 +1593,6 @@ module akra.pool.resources {
 					var pXMLBump: Element = firstChild(pXMLTech, "bump");
 					if (isDefAndNotNull(pXMLBump) && attr(pXMLBump, "bumptype") === "HEIGHTFIELD") {
 						(<IColladaPhong>pTech.value).textures.normal = this.COLLADATexture(firstChild(pXMLBump, "texture"));
-						// logger.log(pTech.value);
 					}
 				}
 			}

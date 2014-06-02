@@ -158,11 +158,13 @@ module akra.exchange {
 			return <IAnimationController>this.decodeEntry(this.findEntryByIndex(EDocumentEntry.k_Controller, iContrller).entry);
 		}
 
-		getMaterials(): IMaterial[]{
-			var pMaterials: IMaterial[] = [];
+		getMaterials(): IMap<IMaterial> {
+			var pMaterials: IMap<IMaterial> = {};
 
 			this.findEntries(EDocumentEntry.k_Material, (pEntry: ILibraryEntry): boolean => {
-				pMaterials.push(<IMaterial>this.decodeEntry(pEntry.entry));
+				var pMat = <IMaterial>this.decodeEntry(pEntry.entry);
+				debug.assert(!isDefAndNotNull(pMaterials[pMat.name]), "material already exists");
+				pMaterials[pMat.name] = pMat;
 				return true;
 			});
 

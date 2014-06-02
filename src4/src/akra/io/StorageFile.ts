@@ -15,6 +15,8 @@
 
 module akra.io {
 
+	var memoryStorage: IMap<any> = {};
+
 	export class StorageFile extends TFile implements IFile {
 
 		constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
@@ -94,7 +96,9 @@ module akra.io {
 				localStorage.setItem(this.getPath(), pData);
 			}
 			catch (e) {
-				cb(e);
+				localStorage.removeItem(this.getPath());
+				memoryStorage[this.getPath()] = pData;
+				//cb(e);
 			}
 
 			this._pFileMeta.size = pData.length;
@@ -114,7 +118,7 @@ module akra.io {
 
 		private readData(): any {
 			var pFileMeta: IFileMeta = this._pFileMeta;
-			var pData: string = localStorage.getItem(this.getPath());
+			var pData: string = localStorage[this.getPath()] || memoryStorage[this.getPath()];
 			var pDataBin: ArrayBuffer;
 
 			if (pData == null) {

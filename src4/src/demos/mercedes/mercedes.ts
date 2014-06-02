@@ -9,10 +9,7 @@
 
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
 
-declare var AE_RESOURCES: akra.IDep;
-declare var AE_RESOURCES_2: akra.IDep;
-
-
+declare var AE_MERCEDES_DATA: akra.IDep;
 
 module akra {
 
@@ -20,6 +17,8 @@ module akra {
 
 	if (!config.DEBUG) {
 		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
 	}
 
 
@@ -49,7 +48,7 @@ module akra {
 
 			fnProgress(e);
 		},
-		deps: { files: [AE_RESOURCES, AE_RESOURCES_2], root: "./" },
+		deps: { files: [AE_MERCEDES_DATA], root: "./" },
 	};
 
 	var pEngine = akra.createEngine(pOptions);
@@ -146,7 +145,7 @@ module akra {
 		iYPrev = y;
 	}
 
-	function createKeymap(pCamera: ICamera): void {
+	function createKeymap(pCamera: ICamera, pViewport: IViewport3D): void {
 
 		
 		pViewport.dragstart.connect((pViewport, eBtn, x, y) => {
@@ -521,7 +520,14 @@ module akra {
 		return pStatsDiv;
 	}
 
+	interface IMercedesSkin {
+		data: IMap<IMaterial>;
+		name: string;
+		intensity: float;
+	}
+
 	function main(pEngine: IEngine) {
+		//console.profile("main");
 		std.setup(pCanvas);
 
 		pCamera = createCamera();
@@ -538,7 +544,7 @@ module akra {
 			});
 		}
 
-		createKeymap(pCamera);
+		createKeymap(pCamera, <IViewport3D>pViewport);
 
 		animateCameras();
 
@@ -579,7 +585,7 @@ module akra {
 
 			var pGroundLight: IOmniLight = window["ground_light"] = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false);
 			pGroundLight.attachToParent(pModelTable);
-			//pGroundLight.setInheritance(ENodeInheritance.POSITION);
+			pGroundLight.setInheritance(ENodeInheritance.ALL);
 			pGroundLight.restrictLight(true, geometry.Rect3d.temp(Vec3.temp(-1, 0, -1), Vec3.temp(1, .25, 1)));
 			pGroundLight.setPosition(0., 0., 0.);
 			pGroundLight.getParams().attenuation.set(.7, .2, 0.);
@@ -721,18 +727,12 @@ module akra {
 			}
 		});
 
-		function applySkin(pSkin: IMaterial[]): void {
+		function applySkin(pSkin: IMercedesSkin): void {
 			var pUsedMaterials = (<pool.resources.Collada>pModel).extractUsedMaterials();
 
-			var pMaterialsMap: IMap<IMaterial> = {};
-
-			pSkin.forEach((pMat) => {
-				pMaterialsMap[pMat.name] = pMat;
-			});
-
 			pUsedMaterials.forEach((pMat, i) => {
-				if (pMaterialsMap[pMat.name]) {
-					pMat.set(pMaterialsMap[pMat.name]);
+				if (pSkin.data[pMat.name]) {
+					pMat.set(pSkin.data[pMat.name]);
 				}
 			});
 		}
@@ -742,24 +742,40 @@ module akra {
 				drop: <any>((pFile: File, sContent: string, eFormat: EFileDataTypes, e: DragEvent): void => {
 					var pImporter: exchange.Importer = new exchange.Importer(pEngine);
 					pImporter.import(sContent, EDocumentFormat.JSON);
-					applySkin(pImporter.getMaterials())
+					
+					applySkin({ name: "unknown", data: pImporter.getMaterials(), intensity: 0 });
 				}),
 				verify: (pFile: File, e: DragEvent): boolean => {
 					return path.parse(pFile.name).getExt() === "skin";
 				}
 			});
-		}
+		};
 
-		var pSkins: IMap<IMaterial[]> = {};
+		
+
+		var pSkins: IMercedesSkin[] = [];
 
 		var pImporter: exchange.Importer = new exchange.Importer(pEngine);
 		Object.keys(pSkinData).forEach((sSkinName: string) => {
 			pImporter.import(pSkinData[sSkinName], EDocumentFormat.JSON);
-			
-			pSkins[sSkinName] = pImporter.getMaterials();
-			
+
+			var pSkin: IMercedesSkin = { data: pImporter.getMaterials(), name: sSkinName, intensity: 0 };
+
+			pSkin.intensity = pSkin.data["body_paint"].diffuse.getHSB()[1];
+
+			pSkins.push(pSkin);
+
 			pImporter.clear();
+
+			if (sSkinName === "default") {
+				applySkin(pSkin);
+			}
 		});
+
+		pSkins.sort((a: IMercedesSkin, b: IMercedesSkin): int => {
+			return a.intensity > b.intensity ? 1 : -1;
+		});
+
 
 		if (config.DEBUG) {
 			pGUI.add({ skin: null }, "skin", Object.keys(pSkins)).onChange((sName: string) => { applySkin(pSkins[sName]); });
@@ -772,22 +788,17 @@ module akra {
 			var pCaption = document.createElement("caption");
 			pCaption.textContent = "COLOR";
 			pTable.appendChild(pCaption);
+			
 
-			Object.keys(pSkins).forEach((sName) => {
-				var pSkin: IMaterial[] = pSkins[sName];
-				var sColor = "";
-				for (var i = 0; i < pSkin.length; ++i) {
-					if (pSkin[i].name === "body_paint") {
-						sColor = pSkin[i].diffuse.getHtml();
-						break;
-					}
-				}
+			pSkins.forEach((pSkin) => {
+				var sColor = pSkin.data["body_paint"].diffuse.getHtml();;
+				
 				var pTr = document.createElement("tr");
 				var pTdColor = document.createElement("td");
 				pTdColor.style.backgroundColor = sColor;
 				pTdColor.style.boxShadow = "0 0 2px " + sColor;
 				var pTdName = document.createElement("td");
-				pTdName.textContent = sName;
+				pTdName.textContent = pSkin.name;
 				pTr.appendChild(pTdColor);
 				pTr.appendChild(pTdName);
 				
@@ -800,12 +811,16 @@ module akra {
 
 			document.body.appendChild(pTable);
 		};
+
+
 		createSkinTable();
 
 		pProgress.destroy();
 		pEngine.exec();
 
 		cameraRotationCallback(pViewport, EMouseButton.LEFT, 0, 0, 0, 0);
+
+		//console.profileEnd();
 	}
 
 	pEngine.depsLoaded.connect(main);

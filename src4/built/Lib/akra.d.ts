@@ -9655,7 +9655,7 @@ declare module akra.exchange {
         public findByIndex(eType: EDocumentEntry, i?: number): any;
         public findFirst(eType: EDocumentEntry): any;
         public getController(iContrller?: number): IAnimationController;
-        public getMaterials(): IMaterial[];
+        public getMaterials(): IMap<IMaterial>;
         public decodeEntry(pEntry: IDataEntry): any;
         public registerData(iGuid: number, pData: any): void;
         public decodeInstance(iGuid: number): any;
@@ -16169,6 +16169,7 @@ declare module akra.webgl {
         public getTranslatedShaderCode(eWebGLType: number): string;
         public printTranslatedShaderCode(eWebGLType?: number): void;
         public createWebGLShader(eType: number, csCode: string): WebGLShader;
+        public saveResource(sName?: string): boolean;
         public obtainWebGLUniforms(): void;
         public obtainWebGLAttributes(): void;
     }
