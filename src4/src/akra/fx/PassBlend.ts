@@ -215,6 +215,11 @@ module akra.fx {
 				.getContent();
 
 			if (isNull(pMaker)) {
+				if (config.DEBUG) {
+					var fTime = akra.time();
+					PassBlend._pStats.totalMakers++;
+				}
+
 				if (!this._isBufferMapPrepared) {
 					this.prepareBufferMap(pBuffer, true);
 				}
@@ -228,8 +233,18 @@ module akra.fx {
 				this.generateShaderCode();
 				this.resetForeigns();
 
+				if (config.DEBUG) {
+					PassBlend._pStats.shaderCodeGenerationTime += akra.time() - fTime;
+					fTime = akra.time();
+				}
+
 				pMaker = new Maker(this._pComposer, this);
 				var isCreate: boolean = pMaker._create(this._sVertexCode, this._sPixelCode);
+
+				if (config.DEBUG) {
+					PassBlend._pStats.makerGenerationTime += akra.time() - fTime;
+					fTime = akra.time();
+				}
 
 				if (!isCreate) {
 					logger.critical("Can not create Maker");
@@ -237,6 +252,10 @@ module akra.fx {
 				}
 
 				pMaker._initInput(pPassInput, this._pDefaultSamplerBlender, this._pAttributeContainerV);
+
+				if (config.DEBUG) {
+					PassBlend._pStats.makerInitTime += akra.time() - fTime;
+				}
 
 				this._pFXMakerHashTree.addContent(pMaker);
 				this._pDefaultSamplerBlender.clear();
@@ -1688,7 +1707,13 @@ module akra.fx {
 					}
 				}
 			}
-
 		}
+
+		private static _pStats = {
+			shaderCodeGenerationTime: 0.0,
+			makerGenerationTime: 0.0,
+			makerInitTime: 0.0,
+			totalMakers: 0
+		};
 	}
 }

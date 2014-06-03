@@ -12717,6 +12717,7 @@ declare module akra.fx {
         private generateVertexOutToVaryings();
         private prepareFastObjects();
         private prepareFastSamplers(eType);
+        private static _pStats;
     }
 }
 declare module akra.fx {
@@ -12728,11 +12729,12 @@ declare module akra.fx {
         private _pPassBlendByHashMap;
         private _pPassBlendByIdMap;
         private _pPassBlendHashTree;
+        private _pTmpRenderStateMap;
         constructor(pComposer: IAFXComposer);
         public addComponentToBlend(pComponentBlend: IAFXComponentBlend, pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentBlend;
         public removeComponentFromBlend(pComponentBlend: IAFXComponentBlend, pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentBlend;
         public addBlendToBlend(pComponentBlend: IAFXComponentBlend, pAddBlend: IAFXComponentBlend, iShift: number): IAFXComponentBlend;
-        public generatePassBlend(pPassList: IAFXPassInstruction[], pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend;
+        public generatePassBlend(pPassList: IAFXPassInstruction[], pComposerStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend;
         public getPassBlendById(id: number): IAFXPassBlend;
     }
 }

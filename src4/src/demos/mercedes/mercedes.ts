@@ -643,7 +643,7 @@ module akra {
 		pLightMap.attachToParent(pSurface);
 		pLightMap.setPosition(0., 1e-3, 0);
 		pLightMap.getMesh().setShadow(false);
-		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().setTexture(0, "LIGHTMAP.PNG", ESurfaceMaterialTextures.EMISSIVE);
+		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().setTexture(0, "LIGHTMAP.PNG", ESurfaceMaterialTextures.DIFFUSE);
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 		pLightMap.getMesh().getSubset(0).getSurfaceMaterial().texture(0).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		pLightMap.setLocalScale(Vec3.temp(pViewport.getType() === EViewportTypes.FORWARDVIEWPORT? 0.1795: 0.1865));
