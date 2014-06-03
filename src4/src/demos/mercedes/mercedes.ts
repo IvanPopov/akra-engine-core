@@ -42,7 +42,7 @@ module akra {
 	var pOptions: IEngineOptions = {
 		renderer: pRenderOpts,
 		progress: (e: IDepEvent) => {
-			if (path.parse(e.source.path).getExt() === "skin" && e.source.stats.status === EDependenceStatuses.LOADED) {
+			if ((e.source.type === "skin" || path.parse(e.source.path).getExt() === "skin") && e.source.stats.status === EDependenceStatuses.LOADED) {
 				pSkinData[e.source.name || path.parse(e.source.path).getBaseName()] = e.source.content;
 			}
 

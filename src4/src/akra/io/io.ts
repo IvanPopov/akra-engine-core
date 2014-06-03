@@ -2,7 +2,6 @@
 /// <reference path="../idl/IFile.ts" />
 
 /// <reference path="TFile.ts" />
-/// <reference path="StorageFile.ts" />
 
 /// <reference path="Packer.ts" />
 /// <reference path="UnPacker.ts" />
@@ -122,10 +121,11 @@ module akra.io {
 		sUri = uri.resolve(sUri);
 
 		logger.assert(info.api.getWebWorker(), "WebWorker API must have. :(");
-		
-		if (!info.api.getFileSystem() && uri.parse(sUri).getScheme() === "filesystem:") {
-			return new StorageFile(<string>sUri, pMode);
-		}
+
+		var sScheme: string = uri.parse(sUri).getScheme();
+
+		logger.assert(!(!info.api.getFileSystem() && sScheme === "filesystem:"),
+			"File system not suppoted.");
 
 		return new TFile(<string>sUri, pMode);
 	}

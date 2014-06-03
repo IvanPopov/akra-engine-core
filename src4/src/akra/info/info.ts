@@ -7,6 +7,7 @@
 /// <reference path="ApiInfo.ts" />
 /// <reference path="ScreenInfo.ts" />
 /// <reference path="VisibilityInfo.ts" />
+/// <reference path="ImageInfo.ts" />
 
 module akra.info {
 

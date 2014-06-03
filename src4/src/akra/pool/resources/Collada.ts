@@ -10,6 +10,7 @@
 /// <reference path="../../animation/Blend.ts" />
 
 /// <reference path="../../scene/Node.ts" />
+/// <reference path="../../deps/deps.ts" />
 
 /// <reference path="../ResourcePoolItem.ts" />
 
@@ -1377,16 +1378,21 @@ module akra.pool.resources {
 			if (isDefAndNotNull(pXMLInitData)) {
 				sPath = stringData(pXMLInitData);
 
-				//modify path to the textures relative to a given file
-				// if (!isNull(sFilename)) {
-				//     if (!path.info(sPath).isAbsolute()) {
-				//         sPath = path.info(sFilename).dirname + "/" + sPath;
-				//     }
-				// }
-				// console.log("collada deps image: ", path.normalize(sPath));
-				// pImage.path = path.normalize(sPath);
-				pImage.path = uri.resolve(sPath, sFilename);
-				// console.log("collada deps image >>> ", pImage.path);
+				if (akra.uri.parse(sFilename).getScheme() === "blob:") {
+					pImage.path = deps.resolve(sPath, sFilename);
+				}
+				else {
+					//modify path to the textures relative to a given file
+					// if (!isNull(sFilename)) {
+					//     if (!path.info(sPath).isAbsolute()) {
+					//         sPath = path.info(sFilename).dirname + "/" + sPath;
+					//     }
+					// }
+					// console.log("collada deps image: ", path.normalize(sPath));
+					// pImage.path = path.normalize(sPath);
+					pImage.path = uri.resolve(sPath, sFilename);
+					// console.log("collada deps image >>> ", pImage.path);
+				}
 			}
 			else if (isDefAndNotNull(pXMLData = firstChild(pXML, "data"))) {
 				logger.error("image loading from <data /> tag unsupported yet.");
