@@ -12720,6 +12720,7 @@ declare module akra.fx {
     private generateVertexOutToVaryings();
     private prepareFastObjects();
     private prepareFastSamplers(eType);
+    private static _pStats;
   }
 }
 declare module akra.fx {
@@ -12731,11 +12732,12 @@ declare module akra.fx {
     private _pPassBlendByHashMap;
     private _pPassBlendByIdMap;
     private _pPassBlendHashTree;
+    private _pTmpRenderStateMap;
     constructor(pComposer: IAFXComposer);
     public addComponentToBlend(pComponentBlend: IAFXComponentBlend, pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentBlend;
     public removeComponentFromBlend(pComponentBlend: IAFXComponentBlend, pComponent: IAFXComponent, iShift: number, iPass: number): IAFXComponentBlend;
     public addBlendToBlend(pComponentBlend: IAFXComponentBlend, pAddBlend: IAFXComponentBlend, iShift: number): IAFXComponentBlend;
-    public generatePassBlend(pPassList: IAFXPassInstruction[], pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend;
+    public generatePassBlend(pPassList: IAFXPassInstruction[], pComposerStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend;
     public getPassBlendById(id: number): IAFXPassBlend;
   }
 }
@@ -15719,6 +15721,7 @@ declare module akra.render {
     public _updateDimensions(bEmitEvent?: boolean): void;
     public _updateImpl(): void;
     public renderAsNormal(csMethod: string, pCamera: ICamera): void;
+    private _fnSort;
     public renderTransparentObjects(csMethod: string, pCamera: ICamera): void;
     public endFrame(): void;
     public setSkybox(pSkyTexture: ITexture): boolean;
@@ -15737,6 +15740,12 @@ declare module akra.render {
     private prepareRenderMethods();
     private createResultRenderTarget(iWidth, iHeight);
     public initTextureForTransparentObjects(): void;
+    private _pTransparencyObjectList;
+    private _iNumOfTransparencyObjects;
+    private resetTransparencyObjectsQueue();
+    private pushTransparencyObjectInQueue(fDistance, pRenderable, pSceneObject);
+    private sortTransparencyObjectsQueue(iStart?, iEnd?);
+    private renderTransparencyObjectsQueue(csMethod, pCamera);
   }
 }
 declare module akra {

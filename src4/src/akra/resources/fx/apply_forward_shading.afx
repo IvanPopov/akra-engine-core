@@ -47,7 +47,7 @@ technique applyForwardShading {
 			PixelShader = compile fsForwardShading0();
 		}
 		else {
-			PixelShader = compile fsForwardShading1();
+			PixelShader = compile fsForwardShading0();
 		}
 	}
 }

@@ -1054,7 +1054,7 @@ module akra.fx.instructions {
 
 			if (this._isComplex() !== pType._isComplex() ||
 				(this._isNotBaseArray() !== pType._isNotBaseArray()) ||
-				(this._isPointer() !== pType._isPointer())) {
+				(this._isStrictPointer() !== pType._isStrictPointer())) {
 				return null;
 			}
 
