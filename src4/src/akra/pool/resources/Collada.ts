@@ -10,6 +10,7 @@
 /// <reference path="../../animation/Blend.ts" />
 
 /// <reference path="../../scene/Node.ts" />
+/// <reference path="../../deps/deps.ts" />
 
 /// <reference path="../ResourcePoolItem.ts" />
 
@@ -1377,16 +1378,21 @@ module akra.pool.resources {
 			if (isDefAndNotNull(pXMLInitData)) {
 				sPath = stringData(pXMLInitData);
 
-				//modify path to the textures relative to a given file
-				// if (!isNull(sFilename)) {
-				//     if (!path.info(sPath).isAbsolute()) {
-				//         sPath = path.info(sFilename).dirname + "/" + sPath;
-				//     }
-				// }
-				// console.log("collada deps image: ", path.normalize(sPath));
-				// pImage.path = path.normalize(sPath);
-				pImage.path = uri.resolve(sPath, sFilename);
-				// console.log("collada deps image >>> ", pImage.path);
+				if (akra.uri.parse(sFilename).getScheme() === "blob:") {
+					pImage.path = deps.resolve(sPath, sFilename);
+				}
+				else {
+					//modify path to the textures relative to a given file
+					// if (!isNull(sFilename)) {
+					//     if (!path.info(sPath).isAbsolute()) {
+					//         sPath = path.info(sFilename).dirname + "/" + sPath;
+					//     }
+					// }
+					// console.log("collada deps image: ", path.normalize(sPath));
+					// pImage.path = path.normalize(sPath);
+					pImage.path = uri.resolve(sPath, sFilename);
+					// console.log("collada deps image >>> ", pImage.path);
+				}
 			}
 			else if (isDefAndNotNull(pXMLData = firstChild(pXML, "data"))) {
 				logger.error("image loading from <data /> tag unsupported yet.");
@@ -1435,7 +1441,9 @@ module akra.pool.resources {
 
 				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
 
-				this.sync(pTex, EResourceItemEvents.LOADED);
+				if (this.findRelatedResources(EResourceItemEvents.LOADED).indexOf(pTex) === -1) {
+					this.sync(pTex, EResourceItemEvents.LOADED);
+				}
 
 				//FIX THIS
 				pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
@@ -1547,7 +1555,7 @@ module akra.pool.resources {
 				//FIXME: at now, all materials draws similar..
 				case "blinn":
 				case "lambert":
-					debug.warn("<blinn /> or <lambert /> material interprated as phong");
+					//debug.warn("<blinn /> or <lambert /> material interprated as phong");
 				case "phong":
 					pMat = this.COLLADAPhong(pValue);
 					break;
@@ -1593,7 +1601,6 @@ module akra.pool.resources {
 					var pXMLBump: Element = firstChild(pXMLTech, "bump");
 					if (isDefAndNotNull(pXMLBump) && attr(pXMLBump, "bumptype") === "HEIGHTFIELD") {
 						(<IColladaPhong>pTech.value).textures.normal = this.COLLADATexture(firstChild(pXMLBump, "texture"));
-						// logger.log(pTech.value);
 					}
 				}
 			}

@@ -57,6 +57,7 @@ module akra.fx {
 		applyFunction: Function;
 		//applyFunctionName: string;
 		defaultValue: any;
+		lastValue: any;
 	}
 
 	interface IShaderAttrOffsetInfo {
@@ -108,7 +109,8 @@ module akra.fx {
 
 			applyFunction: null,
 			//applyFunctionName: "",
-			defaultValue: null
+			defaultValue: null,
+			lastValue: null
 		};
 	}
 
@@ -352,9 +354,15 @@ module akra.fx {
 		setUniform(iLocation: uint, pValue: any): void {
 			if (this._pShaderUniformInfoList[iLocation].type !== EAFXShaderVariableType.k_NotVar) {
 				if (config.WEBGL) {
-					this._pShaderUniformInfoList[iLocation].applyFunction.call(this._pShaderProgram,
-						this._pShaderUniformInfoList[iLocation].webGLLocation,
-						pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
+					var pApplyValue: any = pValue || this._pShaderUniformInfoList[iLocation].defaultValue;
+
+					if (this._pShaderUniformInfoList[iLocation].lastValue !== pApplyValue) {
+						this._pShaderUniformInfoList[iLocation].applyFunction.call(this._pShaderProgram,
+							this._pShaderUniformInfoList[iLocation].webGLLocation,
+							pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
+
+						this._pShaderUniformInfoList[iLocation].lastValue = pApplyValue;
+					}
 
 					//this._pShaderProgram[this._pShaderUniformInfoList[iLocation].applyFunctionName](this._pShaderUniformInfoList[iLocation].webGLLocation,
 					//	pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
@@ -367,6 +375,12 @@ module akra.fx {
 					//this._pShaderProgram[this._pShaderUniformInfoList[iLocation].applyFunctionName](this._pShaderUniformInfoList[iLocation].name,
 					//	pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
 				}
+			}
+		}
+
+		_freeUniformCache(): void {
+			for (var i: uint = 0; i < this._pShaderUniformInfoList.length; i++) {
+				this._pShaderUniformInfoList[i].lastValue = null;
 			}
 		}
 

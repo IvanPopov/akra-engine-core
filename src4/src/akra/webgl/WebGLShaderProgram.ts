@@ -42,6 +42,8 @@ module akra.webgl {
 		}
 
 		compile(csVertex: string = GLSL_VS_SHADER_MIN, csPixel: string = GLSL_FS_SHADER_MIN): boolean {
+			debug.time("create shader program: " + this.findResourceName());
+
 			var pWebGLRenderer: WebGLRenderer = this._pWebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLContext = pWebGLRenderer.getWebGLContext();
 			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLRenderer.createWebGLProgram();
@@ -89,6 +91,7 @@ module akra.webgl {
 
 			pWebGLContext.validateProgram(pWebGLProgram);
 
+
 			if (!this.isValid()) {
 				logger.warn("GLSL program not valid(guid: %d)", this.guid);
 
@@ -100,6 +103,11 @@ module akra.webgl {
 
 			this.notifyCreated();
 			this.notifyRestored();
+
+			debug.timeEnd("create shader program: " + this.findResourceName());
+
+			//saveAs(new Blob([csVertex], { type: "text" }), this.findResourceName() + ".vert");
+			//saveAs(new Blob([csPixel], { type: "text" }), this.findResourceName() + ".frag");
 
 			return true;
 		}
@@ -651,6 +659,7 @@ module akra.webgl {
 
 			if (!pWebGLContext.getShaderParameter(pWebGLShader, gl.COMPILE_STATUS)) {
 				logger.error("cannot compile GLSL shader(guid: %d)", this.guid);
+
 				if (config.DEBUG) {
 					var sInfo: string = pWebGLContext.getShaderInfoLog(pWebGLShader);
 					var sCode: string = pWebGLContext.getShaderSource(pWebGLShader) || csCode;
@@ -667,6 +676,13 @@ module akra.webgl {
 			}
 
 			return pWebGLShader;
+		}
+
+		saveResource(sName?: string): boolean {
+
+			//var pBlob = new Blob([this.])
+
+			return true;
 		}
 
 		protected obtainWebGLUniforms(): void {

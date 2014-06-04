@@ -188,7 +188,7 @@ function meta(pFile) {
     var pXhr = new XMLHttpRequest();
 
     if (isBlobURL(pFile.name)) {
-        return {};
+    	return { size: 0, lastModifiedDate: (new Date()).toGMTString(), eTag: null };
     }
 
     pXhr.open('HEAD', pFile.name, false);

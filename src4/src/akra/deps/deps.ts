@@ -44,6 +44,52 @@ module akra.deps {
 	var pRegistredDeps: { [type: string]: IDepEngine; } = <any>{};
 
 
+	//blob url ==> archive id
+	var pBlobArchiveMap: IMap<string> = {};
+	//@archive_id ==> map(@local ==> @blob_url)
+	var pArchiveBlobMap: IMap<IMap<string>> = {};
+
+	//function _resolve(sBlobPath: string): string;
+	//function _resolve(sLocalPath: string, sBlobPath: string): string;
+	export function resolve(a, b?): string {
+		var sBlobPath: string, sLocalPath: string;
+		if (arguments.length == 1) {
+			sBlobPath = arguments[0];
+			sLocalPath = null;
+		}
+		else {
+			sLocalPath = arguments[0];
+			sBlobPath = arguments[1];
+		}
+
+		var sArchive = pBlobArchiveMap[sBlobPath] || null;
+
+		if (isNull(sArchive)) {
+			debug.error("could not determ archive of this blob");
+			return null;
+		}
+
+		//@local_url ==> @blob_url
+		var pArchiveMap: IMap<string> = pArchiveBlobMap[sArchive];
+
+
+		//local path for @sBlobPath in archive
+		var sOriginalLocal: string = Object.keys(pArchiveMap).filter((key) => {return pArchiveMap[key] === sBlobPath })[0];
+
+		if (isNull(sLocalPath)) {
+			return sOriginalLocal;
+		}
+
+		sLocalPath = akra.path.normalize(sLocalPath);
+
+		//blob url for @sLocalPath in archive
+		var sBlobURL: string = pArchiveBlobMap[sArchive][uri.resolve(sLocalPath, sOriginalLocal)] || null;
+
+		debug.assert(!isNull(sBlobURL), "could not resolve blob url");
+
+		return sBlobURL;
+	}
+
 	/**
 	 * @param sType Resource string type.
 	 * @param isResource Is the resource dependence?
@@ -208,11 +254,13 @@ module akra.deps {
 						return fnReject(e);
 					}
 
-					if (!pMeta.size) {
+					//if (config.DEBUG) {
+					if (!isNumber(pMeta.size)) {
 						return fnReject(new Error("could not determ byte length of " + pDep.path));
 					}
+					//}
 
-					fnSuccess(pMeta.size);
+					fnSuccess(pMeta.size || 0);
 				});
 			}));
 		});
@@ -279,7 +327,7 @@ module akra.deps {
 		pEngine: IEngine,
 		pDep: IDep,
 		cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void {
-			loadFromPool(findDepHandler(pDep).poolSelector(pEngine.getResourceManager()), pDep, cb);
+		loadFromPool(findDepHandler(pDep).poolSelector(pEngine.getResourceManager()), pDep, cb);
 	}
 
 	//redirect events from load() function to cb() of custom dep. 
@@ -420,6 +468,7 @@ module akra.deps {
 	var ETAG_FILE = config.deps.etag.file || ".etag";
 	/** @const */
 	var FORCE_ETAG_CHECKING: boolean = config.deps.etag.forceCheck || false;
+	var CACHE_SUPPORTED: boolean = info.api.getFileSystem();
 
 	function forceExtractARADependence(pEntry: ZipEntry, sPath: string, cb: (e: Error, sPath: string) => void): void {
 		pEntry.getData(new zip.ArrayBufferWriter(), (pData: ArrayBuffer): void => {
@@ -432,14 +481,33 @@ module akra.deps {
 
 				debug.log("Unpacked to local filesystem " + pEntry.filename + ".");
 
+				pCopy.close();
+
 				var pCrc32: IFile = io.fopen(sPath + ".crc32", EIO.IN | EIO.OUT | EIO.TRUNC);
 				pCrc32.write(String(pEntry.crc32), (e: Error) => {
 					cb(e, sPath);
 					pCrc32.close();
 				});
 
-				pCopy.close();
 			});
+		});
+	}
+
+	/**
+	 * @param sHash Unique identifier of archive.
+	 *
+	 */
+	function fastExtractARADependence(pEntry: ZipEntry, sHash: string, cb: (e: Error, sPath: string) => void): void {
+		pEntry.getData(new zip.ArrayBufferWriter(), (pData: ArrayBuffer): void => {
+			var sBlobURL: string = conv.toURL(pData, "application/octet-stream");
+			
+			//@blob_url ===> archive_id
+			pBlobArchiveMap[sBlobURL] = sHash;
+			//@archive_id ==> map(@local_url ==> @blob_url)
+			pArchiveBlobMap[sHash] = pArchiveBlobMap[sHash] || {};
+			pArchiveBlobMap[sHash][pEntry.filename] = sBlobURL;
+
+			cb(null, sBlobURL);
 		});
 	}
 
@@ -449,6 +517,12 @@ module akra.deps {
 
 	function extractARADependence(pEntry: ZipEntry, sHash: string, cb: (e: Error, sPath: string) => void): void {
 		var sPath: string = createARADLocalName(pEntry.filename, sHash);
+
+		if (!CACHE_SUPPORTED) {
+			fastExtractARADependence(pEntry, sHash, cb);
+			return;
+		}
+
 		var pCRC32File: IFile = io.fopen(sPath + ".crc32");
 
 		pCRC32File.isExists((e: Error, bExists: boolean) => {
@@ -459,7 +533,7 @@ module akra.deps {
 			if (bExists) {
 				pCRC32File.read((e: Error, data: string) => {
 					if (parseInt(data) === pEntry.crc32) {
-						debug.log("Skip unpacking for " + sPath + ".");
+						logger.log("Skip unpacking for " + sPath + ".");
 						cb(null, sPath);
 					}
 					else {
@@ -573,6 +647,10 @@ module akra.deps {
 
 							extractARADependence(pEntry, sArchiveHash,
 								(e: Error, sLocalPath: string): void => {
+									if (!isDef(pDep.type)) {
+										pDep.type = path.parse(pDep.path).getExt();
+									}
+
 									pDep.path = sLocalPath;
 									fnSuccesss(e, sLocalPath);
 								});
@@ -622,24 +700,28 @@ module akra.deps {
 	if (!isNull(pArchive)) {
 			//non data-uri cases
 			pArchive.open((err: Error, pMeta: IFileMeta): void => {
-				if (FORCE_ETAG_CHECKING) {
+				if (FORCE_ETAG_CHECKING && CACHE_SUPPORTED) {
 					var pETag: IFile = io.fopen(createARADLocalName(ETAG_FILE, sArchiveHash), EIO.IN | EIO.OUT);
 
 					pETag.read((e: Error, sETag: string) => {
 						if (!isNull(e) || !isString(pMeta.eTag) || sETag !== pMeta.eTag) {
-							if (config.DEBUG) {
-								logger.log(sArchivePath, "ETAG not verified.", pMeta.eTag);
-							}
+							
+							logger.log(sArchivePath, "ETAG not verified. (given: " + pMeta.eTag + ") (expected: " + sETag + ")");
+							
 
 							if (isDefAndNotNull(pMeta.eTag)) {
-								pETag.write(pMeta.eTag);
+								pETag.clear((e: Error) => {
+									if (isNull(e)) {
+										pETag.write(pMeta.eTag);
+									}
+								});
 							}
 
 							fnLoadArchive();
 							return;
 						}
 
-						debug.log(sArchivePath, "ETAG verified successfully!", sETag);
+						logger.log(sArchivePath, "ETAG verified successfully!", sETag);
 
 						io.fopen(createARADLocalName(ARA_INDEX, sArchiveHash), EIO.IN | EIO.JSON).read((e: Error, pMap: IDependens): void => {
 							normalize(pMap, "");
@@ -838,6 +920,7 @@ module akra.deps {
 						return;
 
 					case EDependenceStatuses.LOADED:
+
 						pDep.stats.bytesLoaded = pDep.stats.byteLength;
 						pDep.stats.unpacked = 1.;
 						pDep.content = arguments[2] || null;

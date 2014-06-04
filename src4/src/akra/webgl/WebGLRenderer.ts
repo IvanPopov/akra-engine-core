@@ -616,6 +616,7 @@ module akra.webgl {
 			logger.log(this._time.join("ms "));
 		}
 
+		private _pLastMaker: IAFXMaker = null;
 		_renderEntry(pEntry: IRenderEntry): void {
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
 			if (isNull(pViewport)) {
@@ -689,6 +690,11 @@ module akra.webgl {
 
 			var pUniformNames: string[] = pMaker.getUniformNames();
 
+			if (this._pLastMaker !== pMaker) {
+				pMaker._freeUniformCache();
+				this._pLastMaker = pMaker;
+			}
+
 			for (var i: uint = 0; i < pUniformNames.length; i++) {
 				pMaker.setUniform(i, pInput.uniforms[i]);
 			}
@@ -703,6 +709,7 @@ module akra.webgl {
 		_endRender(): void {
 			this.disable(gl.SCISSOR_TEST);
 			this._pTextureStateManager.reset();
+			this._pLastMaker = null;
 		}
 
 		_setViewport(pViewport: IViewport): void {

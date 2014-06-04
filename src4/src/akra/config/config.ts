@@ -132,7 +132,7 @@ module akra.config {
 		"archiveIndex": ".map",
 		"etag": {
 			"file": ".etag",
-			"forceCheck": false
+			"forceCheck": true
 		}
 	}
 

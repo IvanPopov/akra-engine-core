@@ -17,6 +17,14 @@ module akra.webgl {
 		e.preventDefault ? e.preventDefault() : e.returnValue = false;
 	}
 
+	function offsetX(e: MouseEvent): int {
+		return e.offsetX == undefined ? e.layerX : e.offsetX;
+	}
+
+	function offsetY(e: MouseEvent): int {
+		return e.offsetY == undefined ? e.layerY : e.offsetY;
+	}
+
 	export class WebGLCanvas extends render.Canvas3d implements IClickable {
 		click: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }>;
 		mousemove: ISignal<{ (pCanvas: ICanvas3d, x: uint, y: uint): void; }>;
@@ -151,8 +159,7 @@ module akra.webgl {
 				pEl.addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					//0 --> 149, 149/150 --> 0
-					//debug.log(e.offsetX, e.offsetY);
-					this.click.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
+					this.click.emit(offsetX(e), this.getHeight() - offsetY(e) - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -161,7 +168,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing.");
 				pEl.addEventListener("mousemove", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mousemove.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
+					this.mousemove.emit(offsetX(e), this.getHeight() - offsetY(e) - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -170,7 +177,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing.");
 				pEl.addEventListener("mousedown", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mousedown.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
+					this.mousedown.emit(e.which, offsetX(e), this.getHeight() - offsetY(e) - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -180,7 +187,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEUP> event handing.");
 				pEl.addEventListener("mouseup", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mouseup.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
+					this.mouseup.emit(e.which, offsetX(e), this.getHeight() - offsetY(e) - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -189,7 +196,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEOVER> event handing.");
 				pEl.addEventListener("mouseover", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mouseover.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
+					this.mouseover.emit(offsetX(e), this.getHeight() - offsetY(e) - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -198,7 +205,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEOUT> event handing.");
 				pEl.addEventListener("mouseout", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mouseout.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
+					this.mouseout.emit(offsetX(e), this.getHeight() - offsetY(e) - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -214,7 +221,7 @@ module akra.webgl {
 						return;
 					}
 
-					this.mousewheel.emit(e.offsetX, this.getHeight() - e.offsetY - 1, e.wheelDelta/*, e*/);
+					this.mousewheel.emit(offsetX(e), this.getHeight() - offsetY(e) - 1, e.wheelDelta/*, e*/);
 					return false;
 				}, true);
 			}

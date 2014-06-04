@@ -11,7 +11,7 @@
     <TypeScriptOutFile>../../../$(BuiltDir)/demos/mercedes/mercedes.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
     <Dependencies>
-      
+
       <Attachment>
         <Folder Path="css" />
         <Format>Enclosure</Format>
@@ -22,53 +22,38 @@
       <Module Name="addon-navigation" />
       <Module Name="addon-base3dObjects" />
     </Dependencies>
-    <Resource Name="AE_RESOURCES_2">
-      <Filename>data2</Filename>
-      <Archive>False</Archive>
-      <UseInlining>False</UseInlining>
-      <Data>
-        <ResourceFile Path="../cube.dae" Name="CUBE.DAE"/>
-      </Data>
-    </Resource>
-    <Resource Name="AE_RESOURCES">
+    <Resource Name="AE_MERCEDES_DATA">
       <Filename>data</Filename>
       <Archive>True</Archive>
       <CompressionLevel>Ultra</CompressionLevel>
       <UseInlining>False</UseInlining>
       <Data>
-        <Folder Path="data" />
-        <Folder Path="models/images" />
+        <Folder Path="models/images" >
+          <Exclude Path="carbon.jpg"/>
+        </Folder>
+
+        <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE" Type="DAE" />
 
         <ResourceFile Path="skins/default.skin" Name="default"/>
         <ResourceFile Path="skins/black_moon.skin" Name="black moon"/>
         <ResourceFile Path="skins/dark-blue.skin" Name="dark blue"/>
         <ResourceFile Path="skins/hot_lemon.skin" Name="hot lemon"/>
         <ResourceFile Path="skins/hot_red_pepper.skin" Name="red hot pepper"/>
-        <ResourceFile Path="skins/null.skin" Name="null"/>
         <ResourceFile Path="skins/red.skin" Name="red"/>
         <ResourceFile Path="skins/red-origin.skin" Name="red origin"/>
         <ResourceFile Path="skins/silver-bezh.skin" Name="silver beige"/>
         <ResourceFile Path="skins/unknown.skin" Name="unknown"/>
-  
 
-        <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE"/>
+
         <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
         <ResourceFile Path="textures/grid.png" Name="GRID.PNG"/>
-        <ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY"/>
+        <ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY.DDS"/>
 
-        <!--<ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
-        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
-        <ResourceFile Path="data/textures/skyboxes/colosseum.dds" Name="SKYBOX_COLOSSEUM"/>
-        <ResourceFile Path="data/textures/skyboxes/rome-church.dds" Name="SKYBOX_CHURCH"/>
-        <ResourceFile Path="data/textures/skyboxes/saint-peters-basilica.dds" Name="SKYBOX_BASILICA"/>
-        <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
-        <ResourceFile Path="data/textures/skyboxes/perea-beach1.dds" Name="SKYBOX_BEACH"/>
-        <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>-->
       </Data>
     </Resource>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    
+
     <Dependencies>
       <Attachment>
         <File Path="dat.gui/dat.gui.js"/>

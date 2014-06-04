@@ -24,6 +24,8 @@ module akra.fx {
 
 		private _pPassBlendHashTree: HashTree<IAFXPassBlend> = null;
 
+		private _pTmpRenderStateMap: IMap<ERenderStateValues> = render.createRenderStateMap();
+
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
 
@@ -222,14 +224,18 @@ module akra.fx {
 		}
 
 		generatePassBlend(pPassList: IAFXPassInstruction[],
-			pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend {
+			pComposerStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend {
 
 			this._pPassBlendHashTree.release();
+
+			render.clearRenderStateMap(this._pTmpRenderStateMap);
 
 			for (var i: uint = 0; i < pPassList.length; i++) {
 				var pPass: IAFXPassInstruction = pPassList[i];
 
-				pPass._evaluate(pStates, pForeigns, pUniforms);
+				pPass._evaluate(pComposerStates, pForeigns, pUniforms);
+
+				render.copyRenderStateMap(pPass._getRenderStates(), this._pTmpRenderStateMap);
 
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass._getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass._getPixelShader();
@@ -250,9 +256,12 @@ module akra.fx {
 
 				this._pPassBlendHashTree.addContent(pNewPassBlend);
 				this._pPassBlendByIdMap[pNewPassBlend.guid] = pNewPassBlend;
+
 				return pNewPassBlend;
 			}
 			else {
+				render.clearRenderStateMap(pBlend._getRenderStates());
+				render.copyRenderStateMap(this._pTmpRenderStateMap, pBlend._getRenderStates());
 				return pBlend;
 			}
 		}

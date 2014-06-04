@@ -17,6 +17,12 @@ module akra.render {
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
+	interface ITransparencyObjectInfo {
+		distance: float;
+		renderable: IRenderableObject;
+		sceneObject: ISceneObject;
+	};
+
 	export class ForwardViewport extends ShadedViewport implements IForwardViewport {
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
 
@@ -153,6 +159,7 @@ module akra.render {
 
 			if (this._pSkybox) {
 				this._pSkybox.render(this, ".skybox-render", null);
+				this.getTarget().getRenderer().executeQueue(true);
 			}
 
 			//render light map
@@ -175,7 +182,7 @@ module akra.render {
 
 			if (this.isTransparencySupported()) {
 				this.renderTransparentObjects(this._csDefaultRenderMethod + "forwardShading", this.getCamera());
-				this.getTarget().getRenderer().executeQueue(true);
+				this.getTarget().getRenderer().executeQueue(false);
 			}
 
 			//var pRenderer: IRenderer = this._pTarget.getRenderer();
@@ -215,8 +222,8 @@ module akra.render {
 			}
 		}
 
-		//private _pTransparencyObjectListByRange = [];
-		//private _fnSort = function (a, b) { return b.dist - a.dist; };
+		
+		private _fnSort = function (a, b) { return b.dist - a.dist; };
 
 		protected renderTransparentObjects(csMethod: string, pCamera: ICamera): void {
 			if (!this.isTransparencySupported()) {
@@ -226,9 +233,10 @@ module akra.render {
 			var pVisibleObjects: IObjectArray<ISceneObject> = pCamera.display();
 			var pRenderable: IRenderableObject;
 
-			var v3fCameraPos: IVec3 = this.getCamera().getWorldPosition();
+			this.resetTransparencyObjectsQueue();
 
-			//this._pTransparencyObjectListByRange.length = 0;
+			var v3fMidPoint: IVec3 = Vec3.temp();
+			var v4fMidPoint: IVec4 = math.Vec4.temp(v3fMidPoint, 1.);
 
 			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
@@ -240,31 +248,22 @@ module akra.render {
 						pRenderable.getRenderMethodByName(csMethod) &&
 						pRenderable.getRenderMethodByName(csMethod).getMaterial().isTransparent()) {
 
-						pRenderable.render(this, csMethod, pSceneObject);
+						//pRenderable.render(this, csMethod, pSceneObject);
 
-						//var v3fMidPoint: IVec3 = Vec3.temp();
-						//var pSubMesh: IMeshSubset = <IMeshSubset>pRenderable;
-						//pSubMesh.getBoundingBox().midPoint(v3fMidPoint);
+						var pSubMesh: IMeshSubset = <IMeshSubset>pRenderable;
+						pSubMesh.getBoundingBox().midPoint(v3fMidPoint);
+						v4fMidPoint.set(v3fMidPoint, 1.);
 
-						//v3fMidPoint.vec3TransformCoord(pSceneObject.getWorldMatrix());
-						//var fRange = v3fCameraPos.subtract(v3fMidPoint, v3fMidPoint).lengthSquare();
+						pSceneObject.getWorldMatrix().multiplyVec4(v4fMidPoint);
+						pCamera.getProjViewMatrix().multiplyVec4(v4fMidPoint);
 
-						//pRenderable["dist"] = fRange;
-						//pRenderable["sceneObj"] = pSceneObject;
-						//this._pTransparencyObjectListByRange.push(pRenderable);
-
-						
-						
+						this.pushTransparencyObjectInQueue(v4fMidPoint.z / v4fMidPoint.w, pRenderable, pSceneObject);
 					}
 				}
 			}
 
-			//this._pTransparencyObjectListByRange.sort(this._fnSort);
-
-			//for (var i: uint = 0; i < this._pTransparencyObjectListByRange.length; i++) {
-			//	this._pTransparencyObjectListByRange[i].render(this, csMethod, this._pTransparencyObjectListByRange[i]["sceneObj"]);
-			//}
-
+			this.sortTransparencyObjectsQueue();
+			this.renderTransparencyObjectsQueue(csMethod, pCamera);
 		}
 
 
@@ -474,6 +473,61 @@ module akra.render {
 		}
 
 		protected initTextureForTransparentObjects(): void {
+		}
+
+		private _pTransparencyObjectList: ITransparencyObjectInfo[] = [];
+		private _iNumOfTransparencyObjects: uint = 0;
+
+		private resetTransparencyObjectsQueue(): void {
+			this._iNumOfTransparencyObjects = 0;
+		}
+
+		private pushTransparencyObjectInQueue(fDistance: float, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pInfo: ITransparencyObjectInfo = null;
+
+			if (this._iNumOfTransparencyObjects === this._pTransparencyObjectList.length) {
+				pInfo = this._pTransparencyObjectList[this._iNumOfTransparencyObjects] = {
+					distance: fDistance,
+					renderable: pRenderable,
+					sceneObject: pSceneObject
+				};
+			}
+			else {
+				pInfo = this._pTransparencyObjectList[this._iNumOfTransparencyObjects];
+				pInfo.distance = fDistance;
+				pInfo.renderable = pRenderable;
+				pInfo.sceneObject = pSceneObject;
+			}
+
+			this._iNumOfTransparencyObjects++;
+		}
+
+		private sortTransparencyObjectsQueue(iStart: uint = 0, iEnd: uint = (this._iNumOfTransparencyObjects - 1)): void {
+			var i: uint = iStart;
+			var j: uint = iEnd;
+			var fMiddle: float = this._pTransparencyObjectList[(iStart + iEnd) >> 1].distance;
+
+			do {
+				while (this._pTransparencyObjectList[i].distance > fMiddle)++i;
+				while (this._pTransparencyObjectList[j].distance < fMiddle)--j;
+
+				if (i <= j) {
+					var pTemp: any = this._pTransparencyObjectList[i];
+					this._pTransparencyObjectList[i] = this._pTransparencyObjectList[j];
+					this._pTransparencyObjectList[j] = pTemp;
+					i++; j--;
+				}
+			}
+			while (i < j);
+
+			if (iStart < j) this.sortTransparencyObjectsQueue(iStart, j);
+			if (i < iEnd) this.sortTransparencyObjectsQueue(i, iEnd);
+		}
+
+		private renderTransparencyObjectsQueue(csMethod: string, pCamera: ICamera): void {
+			for (var i: uint = 0; i < this._iNumOfTransparencyObjects; i++) {
+				this._pTransparencyObjectList[i].renderable.render(this, csMethod, this._pTransparencyObjectList[i].sceneObject);
+			}
 		}
 	}
 }

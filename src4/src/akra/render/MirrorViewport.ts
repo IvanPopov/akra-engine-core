@@ -50,7 +50,10 @@ module akra.render {
 			this._pInternal3dViewport.update();
 		}
 		_onRenderReflection(pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void {
-			pTech.getPass(iPass).setUniform("MESH_CULLING_PLANE", this._v4fReflPlaneStruct);
+			if (pViewport === this._pInternal3dViewport) {
+				pTech.getPass(iPass).setUniform("MESH_IS_CULLED_BY_PLANE", true);
+				pTech.getPass(iPass).setUniform("MESH_CULLING_PLANE", this._v4fReflPlaneStruct);
+			}
 		}
 		private prepareForMirrorRender(): void {
 			var pNodeList: IObjectArray<ISceneObject> = this.getCamera().display();

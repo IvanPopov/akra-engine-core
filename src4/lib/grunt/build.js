@@ -532,6 +532,10 @@ module.exports = function (grunt) {
 			"--externs", "lib/grunt/zip.js.externs"
 		];
 
+		if (grunt.option("pretty_print")) {
+			argv.push("--formatting", "PRETTY_PRINT");
+		}
+
 		for (var moduleName in modulesInfo) {
 			var module = modulesInfo[moduleName];
 

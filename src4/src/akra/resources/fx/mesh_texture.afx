@@ -129,7 +129,7 @@ void fs_mesh_texture_material(VS_OUT_2 IN){
 
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     pixelData.material.transparency = defaultMaterial.transparency;
-	
+    
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
     }
@@ -147,7 +147,7 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
 
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     pixelData.material.transparency = defaultMaterial.transparency;
-	
+    
     //pixelData.material.emissive = float4(pixelData.normal, 1.);;
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
