@@ -599,7 +599,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		//createLighting();
+		createLighting();
 		createSkyBox();
 
 		var pPlasticMaterial: IMaterial = new material.Material();
@@ -640,7 +640,7 @@ module akra {
 			pGroundLight.getParams().specular.set(color.BLACK);
 		}
 
-		createSceneLights();
+		//createSceneLights();
 
 		var pModelTableSubset = pModelTable.getMesh().getSubset(0);
 
