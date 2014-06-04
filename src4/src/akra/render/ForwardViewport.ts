@@ -255,8 +255,7 @@ module akra.render {
 						v4fMidPoint.set(v3fMidPoint, 1.);
 
 						pSceneObject.getWorldMatrix().multiplyVec4(v4fMidPoint);
-						pCamera.getViewMatrix().multiplyVec4(v4fMidPoint);
-						pCamera.getProjectionMatrix().multiplyVec4(v4fMidPoint);
+						pCamera.getProjViewMatrix().multiplyVec4(v4fMidPoint);
 
 						this.pushTransparencyObjectInQueue(v4fMidPoint.z / v4fMidPoint.w, pRenderable, pSceneObject);
 					}

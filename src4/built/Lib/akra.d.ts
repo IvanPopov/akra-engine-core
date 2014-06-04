@@ -6455,6 +6455,7 @@ declare module akra {
     getType(sName: string): EAFXShaderVariableType;
     getLength(sName: string): number;
     setUniform(iLocation: number, pValue: any): void;
+    _freeUniformCache(): void;
     _make(pPassInput: IAFXPassInputBlend, pBufferMap: IBufferMap): IShaderInput;
     _initInput(pPassInput: IAFXPassInputBlend, pBlend: IAFXSamplerBlender, pAttrs: IAFXAttributeBlendContainer): boolean;
     _createDataPool(): IShaderInput;
@@ -12588,6 +12589,7 @@ declare module akra.fx {
     public isAttrExists(sName: string): boolean;
     public _createDataPool(): IShaderInput;
     public setUniform(iLocation: number, pValue: any): void;
+    public _freeUniformCache(): void;
     public _initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: IAFXAttributeBlendContainer): boolean;
     private _pMakeTime;
     private _iCount;
@@ -16247,6 +16249,7 @@ declare module akra.webgl {
     public _beginRender(): void;
     private _time;
     public _printTime(): void;
+    private _pLastMaker;
     public _renderEntry(pEntry: IRenderEntry): void;
     public _endRender(): void;
     public _setViewport(pViewport: IViewport): void;
