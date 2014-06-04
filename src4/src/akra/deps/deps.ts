@@ -533,7 +533,7 @@ module akra.deps {
 			if (bExists) {
 				pCRC32File.read((e: Error, data: string) => {
 					if (parseInt(data) === pEntry.crc32) {
-						debug.log("Skip unpacking for " + sPath + ".");
+						logger.log("Skip unpacking for " + sPath + ".");
 						cb(null, sPath);
 					}
 					else {
@@ -705,19 +705,23 @@ module akra.deps {
 
 					pETag.read((e: Error, sETag: string) => {
 						if (!isNull(e) || !isString(pMeta.eTag) || sETag !== pMeta.eTag) {
-							if (config.DEBUG) {
-								logger.log(sArchivePath, "ETAG not verified.", pMeta.eTag);
-							}
+							
+							logger.log(sArchivePath, "ETAG not verified. (given: " + pMeta.eTag + ") (expected: " + sETag + ")");
+							
 
 							if (isDefAndNotNull(pMeta.eTag)) {
-								pETag.write(pMeta.eTag);
+								pETag.clear((e: Error) => {
+									if (isNull(e)) {
+										pETag.write(pMeta.eTag);
+									}
+								});
 							}
 
 							fnLoadArchive();
 							return;
 						}
 
-						debug.log(sArchivePath, "ETAG verified successfully!", sETag);
+						logger.log(sArchivePath, "ETAG verified successfully!", sETag);
 
 						io.fopen(createARADLocalName(ARA_INDEX, sArchiveHash), EIO.IN | EIO.JSON).read((e: Error, pMap: IDependens): void => {
 							normalize(pMap, "");

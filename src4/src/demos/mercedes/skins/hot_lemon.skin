@@ -640,7 +640,7 @@
 				0.3137255012989044,
 				1
 			],
-			"transparency": 0.8381871581077576,
+			"transparency": 1,
 			"shininess": 1,
 			"guid": 1907
 		},
@@ -665,7 +665,7 @@
 				0.3137255012989044,
 				1
 			],
-			"transparency": 0.4300000071525574,
+			"transparency": 1,
 			"shininess": 1,
 			"guid": 1913
 		},
