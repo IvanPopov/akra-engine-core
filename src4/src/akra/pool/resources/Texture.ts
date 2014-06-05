@@ -115,12 +115,12 @@ module akra.pool.resources {
 			return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
 		}
 
-        unwrapCubeTexture(pCubeTex: ITexture): boolean {
-            if (this.getTextureType() != ETextureTypes.TEXTURE_2D) {
-                return false;
-            }
-            return this.getBuffer().unwrapFromCubeTexture(pCubeTex);
-        }
+		unwrapCubeTexture(pCubeTex: ITexture): boolean {
+			if (this.getTextureType() != ETextureTypes.TEXTURE_2D) {
+				return false;
+			}
+			return this.getBuffer().unwrapFromCubeTexture(pCubeTex);
+		}
 
 		reset(): void;
 		reset(iSize: uint): void;

@@ -215,22 +215,22 @@ float3 calulateEnvMapColor(float3 position, float3 normal, sampler2D envSampler)
 };
 
 float4 applyPBSReflection(): COLOR {
-    float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
-   // float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
+    // float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
+    // //float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
 
-    LightData envLight;
-    envLight.diffuse = float4(colorFromCubemap, 1.);
-    envLight.specular = float4(float3(0.), 1.);
-    //envLight.ambient = float4(intensity);
-    envLight.attenuation = float3(1., 0., 0.);
-    envLight.position = pixelData.normal * 1.;
+    // LightData envLight;
+    // envLight.diffuse = float4(colorFromCubemap, 1.);
+    // envLight.specular = float4(colorFromCubemap, 1.);
+    // //envLight.ambient = float4(intensity);
+    // envLight.attenuation = float3(1., 0., 0.);
+    // envLight.position = pixelData.normal * 1.;
 
     float4 color = resultAFXColor;
-
-float4 s = pixelData.material.specular;
-pixelData.material.specular = float4(0.);
-    color += applyBaseLightParams(pixelData, envLight);
-    pixelData.material.specular = s;
+    // float4 s = pixelData.material.specular;
+// 
+    // pixelData.material.specular = float4(0.);
+    // color += applyBaseLightParams(pixelData, envLight);
+    // pixelData.material.specular = s;
 
     float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
             pixelData.material.specular.xyz, pixelData.material.shininess, envSampler0);

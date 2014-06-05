@@ -599,7 +599,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		//createLighting();
+		createLighting();
 		createSkyBox();
 
 		var pPlasticMaterial: IMaterial = new material.Material();
@@ -635,9 +635,9 @@ module akra {
 			pGroundLight.setInheritance(ENodeInheritance.ALL);
 			pGroundLight.restrictLight(true, geometry.Rect3d.temp(Vec3.temp(-1, 0, -1), Vec3.temp(1, .25, 1)));
 			pGroundLight.setPosition(0., 0., 0.);
-			pGroundLight.getParams().attenuation.set(100, 100, 0.);
-			pGroundLight.getParams().diffuse.set(color.BLACK);
-			pGroundLight.getParams().specular.set(color.BLACK);
+			pGroundLight.getParams().attenuation.set(.7, .2, 0.);
+			pGroundLight.getParams().diffuse.set(color.LIGHT_BLUE);
+			pGroundLight.getParams().specular.set(color.LIGHT_BLUE);
 		}
 
 		createSceneLights();
