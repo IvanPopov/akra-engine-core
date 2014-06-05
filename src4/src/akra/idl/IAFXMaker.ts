@@ -29,6 +29,8 @@ module akra {
 		getType(sName: string): EAFXShaderVariableType;
 		getLength(sName: string): uint;
 		setUniform(iLocation: uint, pValue: any): void;
+
+		_freeUniformCache(): void;
 	
 		_make(pPassInput: IAFXPassInputBlend, pBufferMap: IBufferMap): IShaderInput;
 	    _initInput(pPassInput: IAFXPassInputBlend, pBlend: IAFXSamplerBlender, 

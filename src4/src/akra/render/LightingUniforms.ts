@@ -137,8 +137,8 @@ module akra.render {
 			return this;
 		}
 
-		setSampler(sTexture: string): UniformProjectShadow {
-			this.SHADOW_SAMPLER.textureName = sTexture;
+		setSampler(pTexture: ITexture): UniformProjectShadow {
+			this.SHADOW_SAMPLER.texture = pTexture;
 			return this;
 		}
 
@@ -185,8 +185,8 @@ module akra.render {
 			return this;
 		}
 
-		setSampler(sTexture: string, index: int): UniformOmniShadow {
-			this.SHADOW_SAMPLER[index].textureName = sTexture;
+		setSampler(pTexture: ITexture, index: int): UniformOmniShadow {
+			this.SHADOW_SAMPLER[index].texture = pTexture;
 			return this;
 		}
 
@@ -236,8 +236,8 @@ module akra.render {
 			return this;
 		}
 
-		setSampler(sTexture: string): UniformSunShadow {
-			this.SHADOW_SAMPLER.textureName = sTexture;
+		setSampler(pTexture: ITexture): UniformSunShadow {
+			this.SHADOW_SAMPLER.texture = pTexture;
 			return this;
 		}
 
@@ -257,6 +257,28 @@ module akra.render {
 			return p;
 		}
 	}
+	
+	export class UniformOmniRestricted extends UniformOmni {
+		POINT0: Vec3 = new Vec3();
+		POINT1: Vec3 = new Vec3();
+		TO_LIGHT_SPACE: Mat4 = new Mat4();
+
+		setRestrictedData(pBound: IRect3d, m4fToLightSpace: IMat4): void {
+			this.POINT0.set(pBound.x0, pBound.y0, pBound.z0);
+			this.POINT1.set(pBound.x1, pBound.y1, pBound.z1);
+			this.TO_LIGHT_SPACE.set(m4fToLightSpace);
+		}
+
+		private static _pBufferR: IUniform[] = gen.array<IUniform>(200, UniformOmniRestricted);
+		private static _iElementR: uint = 0;
+
+		static temp(): IUniform {
+			UniformOmniRestricted._iElementR = (UniformOmniRestricted._iElementR === UniformOmniRestricted._pBufferR.length - 1 ? 0 : UniformOmniRestricted._iElementR);
+			var p = UniformOmniRestricted._pBufferR[UniformOmniRestricted._iElementR++];
+			return p;
+		}
+
+	}
 
 	//////////////////////////////////////
 
@@ -272,6 +294,8 @@ module akra.render {
 		samplersOmni: IAFXSamplerState[];
 		samplersProject: IAFXSamplerState[];
 		samplersSun: IAFXSamplerState[];
+
+		omniRestricted: UniformOmniRestricted[];
 	}
 }
 

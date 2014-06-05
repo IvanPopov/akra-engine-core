@@ -1,24 +1,16 @@
 doctype html
 html(lang="en")
   head
+    meta(charset='UTF-8')
     title= demo.name
     meta(name='description', content=demo.description)
-    style.
-      body {
-        padding: 0; 
-        margin: 0;
-        background: gray;
-      }
-      #progress {
-        position: absolute; 
-        left: 50%; 
-        top: 50%; 
-        z-index: 9999;
-      }
+    link(href='../css/demo.css', rel='stylesheet')
+
     - for (var i in demo.scripts)
       script(src=demo.scripts[i])
     - for (var i in demo.styles)
       link(href=demo.styles[i], rel='stylesheet')
   body
     #progress
+    include noncompatible
     script(src=demo.src)

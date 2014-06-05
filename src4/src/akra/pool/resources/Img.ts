@@ -215,46 +215,62 @@ module akra.pool.resources {
 			else if (isString(arguments[0])) {
 				var sFilename: string = arguments[0];
 				var fnCallBack: Function = arguments[1];
-				var sExt: string = path.parse(sFilename).getExt().toLowerCase();
+				var sExt: string = path.parse(sFilename).getExt();
 
-				if (sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
-					var pImg: HTMLImageElement = new Image();
+				var open = (sExt: string) => {
+					if (sExt) sExt = sExt.toLowerCase();
 
-					pImg.onload = function () {
-						var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
-						pTempCanvas.width = pImg.width;
-						pTempCanvas.height = pImg.height;
+					if (sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
+						var pImg: HTMLImageElement = new Image();
 
-						var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
-						pTempContext.drawImage(pImg, 0, 0);
+						pImg.onload = function () {
+							var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
+							pTempCanvas.width = pImg.width;
+							pTempCanvas.height = pImg.height;
 
-						var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
+							var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
+							pTempContext.drawImage(pImg, 0, 0);
 
-						pMe.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+							var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
 
-						if (isDefAndNotNull(fnCallBack)) {
-							fnCallBack(true);
+							pMe.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+
+							if (isDefAndNotNull(fnCallBack)) {
+								fnCallBack(true);
+							}
+
 						}
-
-					}
 					pImg.onerror = function () {
-						if (isDefAndNotNull(fnCallBack)) {
-							fnCallBack(false);
+							if (isDefAndNotNull(fnCallBack)) {
+								fnCallBack(false);
+							}
 						}
-					}
 					pImg.onabort = function () {
-						if (isDefAndNotNull(fnCallBack)) {
-							fnCallBack(false);
+							if (isDefAndNotNull(fnCallBack)) {
+								fnCallBack(false);
+							}
 						}
-					}
 
 					pImg.src = sFilename;
+					}
+					else {
+						io.fopen(sFilename, "rb").read((pError: Error, pDataInFile: ArrayBuffer): void => {
+							pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
+						});
+					}
 				}
-				else {
-					io.fopen(sFilename, "rb").read((pError: Error, pDataInFile: ArrayBuffer): void => {
-						pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
+
+				if (!sExt) {
+					info.determImageExtension(sFilename, (e: Error, sExt: string) => {
+						//TODO: fix this error handling
+						if (e) throw e;
+						open(sExt);
 					});
 				}
+				else {
+					open(sExt);
+				}
+
 
 				return this;
 			}

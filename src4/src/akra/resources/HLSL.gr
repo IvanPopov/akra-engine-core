@@ -283,7 +283,7 @@ ForStep : Expr
 DwordExpr : Dword
 DwordExpr : Dword '|' DwordExpr
 
-DwordExprSeq : DwordExpr
+DwordExprSeq : DwordExpr --NN
 DwordExprSeq : DwordExpr ',' DwordExprSeq
 
 PassStateExpr : DwordExpr --AN

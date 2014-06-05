@@ -3,6 +3,7 @@
 /// <reference path="../../../built/Lib/navigation.addon.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
 /// <reference path="../../../built/Lib/filedrop.addon.d.ts" />
+/// <reference path="../../../built/Lib/compatibility.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
@@ -11,6 +12,7 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
+	addons.compatibility.verify("non-compatible");
 
 	var pProgress = new addons.Progress(document.getElementById("progress"))
 
@@ -33,7 +35,7 @@ module akra {
 
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera = null;
-	var pViewport: IViewport = null;
+	var pViewport: IViewport3D = null;
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	var pScene: IScene3d = pEngine.getScene();
 
@@ -51,7 +53,7 @@ module akra {
 
 		window["camera"] = pCamera;
 
-		pViewport = new render.DSViewport(pCamera);
+		pViewport = new render.LPPViewport(pCamera);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -390,7 +392,7 @@ module akra {
 			var pModel: IObj = <IObj>pRmgr.getObjPool().createResource("modified_artery");
 			(<any>pModel).setOptions({ shadows: false });
 			(<any>pModel).uploadVertexes(pPositions, pIndexes);
-			var pNode: ISceneNode = pModel.attachToScene(pScene);
+			var pNode: ISceneNode = (<any>pModel).attachToScene(pScene);
 		}
 
 		io.fopen("data/coords/coord_real_ag.txt", "r").read((err, data) => {
@@ -404,8 +406,9 @@ module akra {
 		//DATA + "models/tof_multislab_tra_2.obj"
 		function loadObjFromMATLAB(sPath: string, fnCallback?: Function): void {
 			var sName: string = path.parse(sPath).getFileName();
-			var pRealArtery: IModel = pRmgr.loadModel(sPath);
+			var pRealArtery: IObj = <IObj>pRmgr.loadModel(sPath);
 			var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
+
 			pRealArteryObj.setLocalMatrix(Mat4.temp(
 					[1, 0, 0, 0],
 					[0, 0, 1, 0],
@@ -454,7 +457,7 @@ module akra {
 			var pParent: ISceneNode = pScene.createNode();
 			pParent.attachToParent(pScene.getRootNode());
 
-			pArteriesObj = pArteriesModelObj.attachToScene(pParent);
+			pArteriesObj = (<IObj>pArteriesModelObj).attachToScene(pParent);
 			pArteriesObj.setInheritance(ENodeInheritance.ALL);
 
 			pParent.scale(0.0525);
@@ -577,7 +580,7 @@ module akra {
 		var iRes: int = 2048;
 		pTexTarget.create(iRes, iRes, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 		pTexTarget.getBuffer().getRenderTarget()
-			.addViewport(new render.DSViewport(pProjCam));
+			.addViewport(new render.LPPViewport(pProjCam));
 
 		pCanvas.addViewport(new render.TextureViewport(pTexTarget, 0.05, 0.05, .5 * 512 / pViewport.getActualWidth(), .5 * 512 / pViewport.getActualHeight(), 5.));
 

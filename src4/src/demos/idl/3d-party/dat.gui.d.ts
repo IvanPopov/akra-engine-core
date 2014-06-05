@@ -19,15 +19,18 @@ declare module dat {
 	}
 
 	export class GUI {
+
 		__controllers: any;
 		autoListen: boolean;
+
+		domElement: HTMLElement;
 
 		listen();
 
 		//button
 		add(object: any, property: string): Controller;
 		//power bar
-		add(object: any, property: string, min: number, max: number): NumberControllerSlider;
+		add(object: any, property: string, min: number, max: number, step?: number): NumberControllerSlider;
 		//list
 		add(object: any, property: string, values: string[]): OptionController;
 		//list

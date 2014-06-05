@@ -132,3 +132,4 @@ technique deferredShading{
 		PixelShader = compile fs_deferred_shading();
 	};
 };
+

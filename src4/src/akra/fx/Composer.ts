@@ -335,6 +335,27 @@ module akra.fx {
 		//----------------------------API for RenderTechnique--------------------------//
 		//-----------------------------------------------------------------------------//
 
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique) : void {
+			var iFromId: uint = pFrom.guid;
+			var iToId: uint = pTo.guid;
+
+			var pCurrentBlendTo: IAFXComponentBlend = null;
+			var pCurrentBlendFrom: IAFXComponentBlend = null;
+			
+			if (isDef(this._pTechniqueToOwnBlendMap[iFromId])) {
+				pCurrentBlendFrom = this._pTechniqueToOwnBlendMap[iFromId];
+			}
+			
+			if (isDef(this._pTechniqueToOwnBlendMap[iToId])) {
+				pCurrentBlendTo = this._pTechniqueToOwnBlendMap[iToId];
+			}
+
+			var pNewBlend: IAFXComponentBlend = this._pBlender.addBlendToBlend(pCurrentBlendTo, pCurrentBlendFrom, 0);
+
+			this._pTechniqueToOwnBlendMap[iToId] = pNewBlend;
+			this._pTechniqueNeedUpdateMap[iToId] = true;
+		}
+
 		getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): int {
 			var id: uint = pRenderTechnique.guid;
 			var pBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id];
@@ -461,7 +482,7 @@ module akra.fx {
 					pRenderTechnique.updatePasses(isTechniqueUpdate);
 				}
 
-				pRenderTechnique._setPostEffectsFrom(pBlend.getPostEffectStartPass());
+				pRenderTechnique._setBlendPassTypes(pBlend.getPassTypes());
 				return true;
 			}
 			else {
@@ -900,7 +921,7 @@ module akra.fx {
 					this._pComposerState.mesh.isOptimizedSkinned = false;
 				}
 
-				if (this._pCurrentSurfaceMaterial && this._pCurrentSurfaceMaterial.getMaterial().isTransparent) {
+				if (this._pCurrentSurfaceMaterial && this._pCurrentSurfaceMaterial.getMaterial().isTransparent()) {
 					this._pComposerState.mesh.transparent = true;
 				}
 				else {
@@ -986,33 +1007,33 @@ module akra.fx {
 							1., 0);
 					}
 
+					this._pLastRenderTarget = null;
 					// pRenderer._unlockRenderTarget();					
 				}
 
 
-				if (!pRenderTechnique.isPostEffectPass(iPass)) {
-					this._pLastRenderTarget = this._pRenderTargetA;
-					pEntry.renderTarget = this._pRenderTargetA;
+				if (pRenderTechnique.isLastPostEffectPass(iPass) || pRenderTechnique.isLastPass(iPass)) {
+					this._pLastRenderTarget = null;
+				}
+				else if (!pRenderTechnique.isPostEffectPass(iPass)) {
+					if (isNull(this._pLastRenderTarget)) {
+						this._pLastRenderTarget = this._pRenderTargetA;
+					}
 
+					pEntry.renderTarget = this._pLastRenderTarget;
 					pEntry.viewport = this._pPostEffectViewport;
 				}
 				else {
-					if (pRenderTechnique.isLastPass(iPass)) {
-						this._pLastRenderTarget = null;
-						// pEntry.renderTarget = null;
+					if (this._pLastRenderTarget === this._pRenderTargetA) {
+						pEntry.renderTarget = this._pRenderTargetB;
+						this._pLastRenderTarget = this._pRenderTargetB;
 					}
 					else {
-						if (this._pLastRenderTarget === this._pRenderTargetA) {
-							pEntry.renderTarget = this._pRenderTargetB;
-							this._pLastRenderTarget = this._pRenderTargetB;
-						}
-						else {
-							pEntry.renderTarget = this._pRenderTargetA;
-							this._pLastRenderTarget = this._pRenderTargetA;
-						}
-
-						pEntry.viewport = this._pPostEffectViewport;
+						pEntry.renderTarget = this._pRenderTargetA;
+						this._pLastRenderTarget = this._pRenderTargetA;
 					}
+
+					pEntry.viewport = this._pPostEffectViewport;
 				}
 			}
 		}

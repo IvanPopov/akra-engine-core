@@ -17,4 +17,9 @@ module akra {
 	export interface IRIDMap {
 		[rid: int]: IRIDPair;
 	}
+
+	export interface IPickedObject extends IRIDPair {
+		x: int;
+		y: int;
+	}
 }

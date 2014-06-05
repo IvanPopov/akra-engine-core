@@ -35,6 +35,10 @@ module akra.util {
 			return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
 		}
 
+		isStopped(): boolean {
+			return this._isTimerStopped;
+		}
+
 		execCommand(eCommand: EUtilTimerCommands): float {
 			var fTime: float = 0.;
 			var fElapsedTime: float = 0.;

@@ -62,9 +62,16 @@ module akra.fx {
 			var pTree: parser.IParseTree = this.getSyntaxTree();
 			var pNode: parser.IParseNode = pTree.getLastNode();
 		    var sFile: string = pNode.value;
-		    
-		    //cuttin qoutes
-			sFile = uri.resolve(sFile.substr(1, sFile.length - 2), this.getParseFileName());
+
+			//cuttin qoutes
+			var sIncludeURL: string = sFile.substr(1, sFile.length - 2);
+
+			if (uri.parse(this.getParseFileName()).getScheme() === "blob:") {
+
+				sIncludeURL = deps.resolve(sIncludeURL, this.getParseFileName());
+			}
+
+			sFile = akra.uri.resolve(sIncludeURL, this.getParseFileName());
 
 		    if (this._pIncludedFilesMap[sFile]) {
 		    	return parser.EOperationType.k_Ok;

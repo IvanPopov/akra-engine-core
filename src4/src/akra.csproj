@@ -21,6 +21,7 @@
     <Content Include="akra\io\LocalFile.t.js" />
     <Content Include="akra\io\RemoteFile.t.js" />
     <Content Include="akra\parser.xml" />
+    <Content Include="akra\resources\fx\apply_forward_shading.afx" />
     <None Include="akra\resources\fx\apply_lights_and_shadows.afx" />
     <Content Include="akra\resources\fx\color_maps.afx" />
     <Content Include="akra\resources\fx\deferredShading.afx" />
@@ -60,6 +61,11 @@
     <Content Include="akra\resources\fx\common.afx" />
     <Content Include="akra\resources\fx\lightingFunctions.afx" />
     <Content Include="akra\resources\fx\prepare_lpp_shading.afx" />
+    <Content Include="akra\resources\fx\apply_transparency.afx" />
+    <Content Include="akra\resources\fx\brdf.afx" />
+    <Content Include="akra\resources\fx\render_plane_culling.afx" />
+    <Content Include="akra\resources\fx\blur.afx" />
+    <Content Include="akra\resources\fx\fog.afx" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -524,7 +530,10 @@
     <TypeScriptCompile Include="akra\idl\3d-party\es6-promises.d.ts" />
     <TypeScriptCompile Include="akra\idl\I3DViewport.ts" />
     <TypeScriptCompile Include="akra\idl\IForwardViewport.ts" />
+    <TypeScriptCompile Include="akra\idl\IControllable.ts" />
+    <TypeScriptCompile Include="akra\idl\IViewport3D.ts" />
     <TypeScriptCompile Include="akra\idl\ILPPViewport.ts" />
+    <Content Include="akra\info\VisibilityInfo.ts" />
     <TypeScriptCompile Include="akra\math\matrixIndecies.ts" />
     <TypeScriptCompile Include="akra\io\save.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
@@ -532,11 +541,15 @@
     <TypeScriptCompile Include="akra\render\LightingUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
     <TypeScriptCompile Include="akra\render\LPPViewport.ts" />
+    <TypeScriptCompile Include="akra\render\MirrorViewport.ts" />
     <TypeScriptCompile Include="akra\render\Renderer.ts" />
     <TypeScriptCompile Include="akra\render\RenderTexture.ts" />
     <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\render\ShadedViewport.ts" />
     <TypeScriptCompile Include="akra\render\ShadowViewport.ts" />
     <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
+    <TypeScriptCompile Include="akra\render\ViewportWithTransparencyMode.ts" />
+    <TypeScriptCompile Include="akra\render\Viewport3D.ts" />
     <TypeScriptCompile Include="akra\scene\light\CalculatePlanesForLighting.ts" />
     <TypeScriptCompile Include="akra\scene\light\OmniLight.ts" />
     <TypeScriptCompile Include="akra\scene\light\ProjectLight.ts" />
@@ -602,7 +615,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:36221/</IISUrl>
+          <IISUrl>http://localhost:19603/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

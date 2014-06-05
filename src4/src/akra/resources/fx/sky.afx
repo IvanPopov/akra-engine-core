@@ -25,6 +25,7 @@ float fKrESun;
 float fKmESun;
 
 float4x4 worldViewProj : WorldViewProjection;
+float4x4 worldView: WorldView;
 
 float Exposure = -2.0;
 float c = 0.002f; // height falloff
@@ -52,9 +53,10 @@ struct vertexInput {
 };
 
 struct vertexOutput {
-	float4 pos : POSITION;
-	float2 t0 : TEXCOORD0;
-    float3 t1 : TEXCOORD1;
+	float4 pos  : POSITION;
+	float3 vert : VERTEX;
+	float2 t0   : TEXCOORD0;
+    float3 t1   : TEXCOORD1;
 };
 
 vertexOutput SkyFromGround_VS(vertexInput In ) 
@@ -64,6 +66,7 @@ vertexOutput SkyFromGround_VS(vertexInput In )
 	Out.t1 = vEye - In.pos * fOuterRadius; // vEye - In.pos
 	//Out.t1 = - ( In.pos.xyz ); // vEye - In.pos
 	Out.pos = worldViewProj * float4(In.pos.xyz, 1.0);
+	Out.vert = (worldView * float4(In.pos.xyz, 1.0)).xyz;
 	return Out;
 } 
 

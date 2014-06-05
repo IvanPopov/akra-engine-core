@@ -23,7 +23,7 @@
         <File Path="resources/js/FileSaver/FileSaver.min.js"/>
         <CollapsePath>True</CollapsePath>
         <Format>Enclosure</Format>
-        <OutDir>zip.js</OutDir>
+        <OutDir>js</OutDir>
         <Type>javascript</Type>
       </Attachment>
     </Dependencies>
@@ -94,14 +94,18 @@
         <File Path="resources/fx/brdf.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
+          <ResourceFile Path="resources/fx/apply_transparency.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>
           <ResourceFile Path="resources/fx/fxaa.afx"/>
+          <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/blur.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx">
               <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+                <ResourceFile Path="resources/fx/render_plane_culling.afx"/>
                 <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
               </ResourceFile>
             </ResourceFile>
@@ -135,14 +139,17 @@
         <File Path="resources/fx/brdf.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
+          <ResourceFile Path="resources/fx/apply_transparency.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
           <ResourceFile Path="resources/fx/Plane.afx"/>
           <ResourceFile Path="resources/fx/fxaa.afx"/>
+          <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx"/>
             <ResourceFile Path="resources/fx/prepare_lpp_shading.afx">
+              <ResourceFile Path="resources/fx/render_plane_culling.afx"/>
               <ResourceFile Path="resources/fx/apply_lpp_shading.afx"/>
             </ResourceFile>
           </ResourceFile>

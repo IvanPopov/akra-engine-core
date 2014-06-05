@@ -21,12 +21,14 @@ module akra {
 		getAbsoluteTime(): float;
 		getAppTime(): float;
 		getElapsedTime(): float;
-	
+
 		start(): boolean;
 		stop(): boolean;
 		reset(): boolean;
 		execCommand(e: EUtilTimerCommands): float;
-		
+
+		isStopped(): boolean;
+
 		//static start(): IUtilTimer;
 	}
 	

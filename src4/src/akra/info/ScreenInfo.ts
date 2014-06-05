@@ -2,27 +2,37 @@
 
 
 module akra.info {
+	
+	export class ScreenInfo implements IScreenInfo {
+		private _pScreen: Screen = window["screen"];
 
-    export class ScreenInfo implements IScreenInfo {
-        getWidth(): int {
-            return screen.getWidth();
-        }
+		getWidth(): int {
+			return this._pScreen.width;
+		}
 
-        getHeight(): int {
-            return screen.getHeight();
-        }
+		getHeight(): int {
+			return this._pScreen.height;
+		}
 
-        getAspect(): float {
-            return screen.getWidth() / screen.getHeight();
-        }
+		getAspect(): float {
+			return this._pScreen.width / this._pScreen.height;
+		}
 
-        getPixelDepth(): int {
-            return screen.getPixelDepth();
-        }
+		getPixelDepth(): int {
+			return this._pScreen.pixelDepth;
+		}
 
-        getColorDepth(): int {
-            return screen.getColorDepth();
-        }
-    }
+		getColorDepth(): int {
+			return this._pScreen.colorDepth;
+		}
+
+		getAvailHeight(): int {
+			return this._pScreen.availHeight;
+		}
+
+		getAvailWidth(): int {
+			return this._pScreen.availWidth;
+		}
+	}
 
 }

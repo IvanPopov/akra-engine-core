@@ -30,6 +30,8 @@ module akra {
 		setShadowSamplerArray(sName: string, pValue: any): void;
 		setVec2BySemantic(sName: string, pValue: any): void;
 
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique) : void;
+
 		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
 		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
 		addComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
@@ -46,6 +48,7 @@ module akra {
 		isPostEffectPass(iPass: uint): boolean;
 		isLastPass(iPass: uint): boolean;
 		isFirstPass(iPass: uint): boolean;
+		isLastPostEffectPass(iPass: uint): boolean;
 
 		isFreeze(): boolean;
 
@@ -53,7 +56,8 @@ module akra {
 
 		_blockPass(iPass: uint): void;
 
-		_setPostEffectsFrom(iPass: uint): void;
+		//_setPostEffectsFrom(iPass: uint): void;
+		_setBlendPassTypes(pTypes: EPassTypes[]): void;
 
 		_setComposer(pComposer: IAFXComposer): void;
 		_getComposer(): IAFXComposer;

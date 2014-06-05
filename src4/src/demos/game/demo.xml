@@ -35,9 +35,9 @@
         <Format>Enclosure</Format>
       </Attachment>
       
+      <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-base3dObjects" />
-      
     </Dependencies>
     <Resource Name="AE_GAME_RESOURCES">
       <Filename>game</Filename>

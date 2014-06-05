@@ -16,7 +16,8 @@
         <Type>javascript</Type>
         <CollapsePath>True</CollapsePath>
       </Attachment>
-      
+
+      <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-base3dObjects" />
       

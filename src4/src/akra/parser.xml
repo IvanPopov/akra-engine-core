@@ -11,6 +11,8 @@
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
     <TypeScriptDeclarationDir>../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
+
+    <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <ClosureCompiler>

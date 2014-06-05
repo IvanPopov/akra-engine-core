@@ -12,7 +12,7 @@ module akra.render {
 	final export class RenderTechnique implements IRenderTechnique {
 		guid: uint = guid();
 
-		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>;
+		render: ISignal<{ (pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport): void }>;
 
 		private _pMethod: IRenderMethod = null;
 
@@ -25,7 +25,14 @@ module akra.render {
 		private _iCurrentPass: uint = 0;
 		private _pCurrentPass: IRenderPass = null;
 
-		private _iGlobalPostEffectsStart: uint = 0;
+		//private _iGlobalPostEffectsStart: uint = 0;
+		/**
+		* Only for read, because it`s pointer to ComponentBlend._pPassTypesList
+		*/
+		private _pBlendPassTypesList: EPassTypes[] = null;
+		private _bHasPostEffectPass: boolean = false;
+		private _iLastPostEffectPass: uint = 0;
+
 		private _iMinShiftOfOwnBlend: int = 0;
 
 		private _pRenderMethodPassStateList: IObjectArray<IAFXPassInputStateInfo> = null;
@@ -47,6 +54,10 @@ module akra.render {
 
 		protected setupSignals(): void {
 			this.render = this.render || new Signal(this);
+		}
+
+		copyTechniqueOwnComponentBlend(pFrom: IRenderTechnique): void {
+			this._pComposer.copyTechniqueOwnComponentBlend(pFrom, this);
 		}
 
 		getModified(): uint {
@@ -202,11 +213,11 @@ module akra.render {
 		}
 
 		hasPostEffect(): boolean {
-			return this._iGlobalPostEffectsStart > 0;
+			return this._bHasPostEffectPass;
 		}
 
 		isPostEffectPass(iPass: uint): boolean {
-			return this._iGlobalPostEffectsStart <= iPass;
+			return this._pBlendPassTypesList[iPass] === EPassTypes.POSTEFFECT;
 		}
 
 		isLastPass(iPass: uint): boolean {
@@ -232,6 +243,10 @@ module akra.render {
 			}
 
 			return false;
+		}
+
+		isLastPostEffectPass(iPass: uint): boolean {
+			return this._iLastPostEffectPass === iPass;
 		}
 
 		isFirstPass(iPass: uint): boolean {
@@ -338,12 +353,32 @@ module akra.render {
 			this._pPassBlackList[iPass] = true;
 			this._pComposer.prepareTechniqueBlend(this);
 			// this._pPassList[iPass] = null; 
-
+			this.updatePassTypesInfo();
 		}
 
 
-		_setPostEffectsFrom(iPass: uint): void {
-			this._iGlobalPostEffectsStart = iPass;
+		//_setPostEffectsFrom(iPass: uint): void {
+		//	this._iGlobalPostEffectsStart = iPass;
+		//}
+
+		_setBlendPassTypes(pTypes: EPassTypes[]): void {
+			this._pBlendPassTypesList = pTypes;
+			this.updatePassTypesInfo();
+		}
+
+		private updatePassTypesInfo(): void {
+			if (isNull(this._pBlendPassTypesList)) {
+				return;
+			}
+
+			for (var i: uint = 0; i < this._pBlendPassTypesList.length; i++) {
+				if (!this._pPassBlackList[i]) {
+					if (this._pBlendPassTypesList[i] === EPassTypes.POSTEFFECT) {
+						this._bHasPostEffectPass = true;
+						this._iLastPostEffectPass = i;
+					}
+				}
+			}
 		}
 
 		private informComposer(): void {

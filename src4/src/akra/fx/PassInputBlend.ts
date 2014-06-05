@@ -30,7 +30,8 @@ module akra.fx {
 			"AMBIENT": new Vec4(),
 			"SPECULAR": new Vec4(),
 			"EMISSIVE": new Vec4(),
-			"SHININESS": 1.
+			"SHININESS": 1.,
+			"TRANSPARENCY": 1.
 		};
 
 		//need for accelerate setSurfaceMaterial
@@ -315,11 +316,16 @@ module akra.fx {
 			if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey ||
 				this._pLastSurfaceMaterial !== pSurfaceMaterial ||
 				this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.getTotalUpdatesOfTextures()) {
-
 				var iTotalTextures: uint = pSurfaceMaterial.getTotalTextures();
 				for (var i: int = 0; i < 16; i++) {
 					if (this._pMaterialNameIndices.textures[i] > 0) {
-						this.textures[this._pMaterialNameIndices.textures[i]] = pSurfaceMaterial.texture(i) || null;
+						var pTexture = pSurfaceMaterial.texture(i);
+
+						if (pTexture && pTexture.isResourceDisabled()) {
+							pTexture = null;
+						}
+
+						this.textures[this._pMaterialNameIndices.textures[i]] = pTexture;
 					}
 				}
 			}
@@ -333,6 +339,7 @@ module akra.fx {
 				pMatContainer["SPECULAR"].set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
 				pMatContainer["EMISSIVE"].set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
 				pMatContainer["SHININESS"] = pMaterial.shininess;
+				pMatContainer["TRANSPARENCY"] = pMaterial.transparency;
 
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
@@ -726,7 +733,12 @@ module akra.fx {
 				return;
 			}
 
+			if (pTexture && pTexture.isResourceDisabled()) {
+				pTexture = null;
+			}
+
 			var pState: IAFXSamplerState = this.samplers[iNameIndex];
+
 			if (pState.texture !== pTexture) {
 				this._pStatesInfo.samplerKey++;
 			}

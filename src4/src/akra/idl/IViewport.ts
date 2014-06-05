@@ -24,10 +24,11 @@ module akra {
 		COLORVIEWPORT,
 		TEXTUREVIEWPORT,
 		LPPVIEWPORT,
-		FORWARDVIEWPORT
+		FORWARDVIEWPORT,
+		MIRRORVIEWPORT
 	}
 	
-	export interface IViewport extends IEventProvider, IClickable {
+	export interface IViewport extends IEventProvider, IClickable, IControllable {
 		getLeft(): float;
 		getTop(): float;
 		getWidth(): float;
@@ -49,7 +50,6 @@ module akra {
 		getDepthClear(): float;
 		setDepthClear(fDepth: float): void;
 
-
 		viewportDimensionsChanged: ISignal<{ (pViewport: IViewport): void; }>;
 		viewportCameraChanged: ISignal<{ (pViewport: IViewport): void; }>;
 		render: ISignal<{ (pViewport: IViewport, pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void; }>;
@@ -65,29 +65,14 @@ module akra {
 
 		clear(iBuffers?: uint, cColor?: IColor, fDepth?: float, iStencil?: uint): void;
 
-		enableSupportFor3DEvent(iType: int): int;
-		is3DEventSupported(eType: E3DEventTypes): boolean;
-		touch(): void;
-
-		pick(x: uint, y: uint): IRIDPair;
-
-		getObject(x: uint, y: uint): ISceneObject;
-		getRenderable(x: uint, y: uint): IRenderableObject;
-
 		getTarget(): IRenderTarget;
 		getCamera(): ICamera;
 		setCamera(pCamera: ICamera): boolean;
-		getDepth(x: uint, y: uint): float;
-		getDepthRange(): IDepthRange;
 
 		setDimensions(fLeft: float, fTop: float, fWidth: float, fHeight: float): boolean;
 		setDimensions(pRect: IRect2d): boolean;
 
 		getActualDimensions(): IRect2d;
-
-		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
-		unprojectPoint(x: uint, y: uint, v3fDestination?: IVec3): IVec3;
-		unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
 
 		//iBuffers=FBT_COLOUR|FBT_DEPTH
 		setClearEveryFrame(isClear: boolean, iBuffers?: uint): void;
@@ -101,10 +86,8 @@ module akra {
 		isAutoUpdated(): boolean;
 
 		isUpdated(): boolean;
-		/**
-		 * Is mouse under the viewport?
-		 */
-		isMouseCaptured(): boolean;
+
+		_setDefaultRenderMethod(sMethod: string): void;
 
 		_clearUpdatedFlag(): void;
 		_updateImpl(): void;
@@ -115,13 +98,7 @@ module akra {
 		_getViewportState(): IViewportState;
 		_setTarget(pTarget: IRenderTarget): void;
 
-		_getLastMousePosition(): IPoint;
-		_keepLastMousePosition(x: uint, y: uint): void;
-		_handleMouseInout(pCurr: IRIDPair, x: uint, y: uint): IRIDPair;
-		_set3DEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
-		_get3DEventDragTarget(): IRIDPair;
-		_setMouseCaptured(bValue: boolean): void;
-
+		_onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 	}
 	
 }

@@ -11,7 +11,9 @@ module akra {
 	    k_Animation,
 	    k_AnimationBlend,
 	    k_AnimationContainer,
-	    k_SceneNode
+		k_SceneNode,
+
+		k_Material
 	}
 	
 	export enum EDocumentFormat {
@@ -116,7 +118,20 @@ module akra {
 	    leftInfinity: boolean;
 	    rightInfinity: boolean;
 	}
-	
+
+	export interface IColorEntry {
+		[i: int]: uint;
+	}
+
+	export interface IMaterialEntry extends IDataEntry {
+		name: string;
+		diffuse: IColorEntry;
+		specular: IColorEntry;
+		emissive: IColorEntry;
+		shininess: float;
+		transparency: float;
+	}
+
 	export interface IControllerEntry extends IDataEntry {
 	    animations: int /* IAnimationBaseInstance(pointer to  IAnimationBase)*/[];
 	    options: int;
@@ -129,5 +144,7 @@ module akra {
 	    library: IDataEntry[];
 	    scenes: int /* ISceneInstance(pointer to  IScene)*/[];
 	}
-	
+
+
+		
 }

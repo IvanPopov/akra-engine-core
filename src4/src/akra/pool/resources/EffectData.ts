@@ -24,15 +24,23 @@ module akra.pool.resources {
 		}
 
 		loadResource(sFileName?: string): boolean {
-			var reExt: RegExp  = /^(.+)(\.afx|\.abf|\.fx)$/;
-			var pRes:RegExpExecArray = reExt.exec(sFileName);
+			//var reExt: RegExp  = /^(.+)(\.afx|\.abf|\.fx)$/;
+			//var pRes:RegExpExecArray = reExt.exec(sFileName);
+			var sExt: string;
 
-			if(isNull(pRes)){
+			if (uri.parse(sFileName).getScheme() === "blob:") {
+				sExt = path.parse(deps.resolve(sFileName)).getExt();
+			}
+			else {
+				sExt = path.parse(sFileName).getExt();
+			}
+
+			if(["afx", "abf", "fx"].indexOf(sExt) === -1) {
 				logger.error("Bad effect file extension. Only .afx, .fx, .abf are available");
 				return;
 			}
 
-			var isBinary: boolean = pRes[pRes.length - 1] === ".abf";
+			var isBinary: boolean = sExt === "abf";
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
 
 			if (!config.AFX_ENABLE_TEXT_EFFECTS) {
@@ -63,7 +71,7 @@ module akra.pool.resources {
 				var pFile: IFile = this._pFile = io.fopen(sFileName, "r+t");
 				var me: EffectData = this;
 
-				pFile.read(function (pErr: Error, sData: string) {
+				pFile.read((pErr: Error, sData: string) => {
 					if (!isNull(pErr)) {
 						logger.error("Can not load .afx file: '" + sFileName + "'");
 					}

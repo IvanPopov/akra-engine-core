@@ -45,7 +45,8 @@ module akra {
 		_getMaxShift(): int;
 	
 		hasPostEffect(): boolean;
-		getPostEffectStartPass(): uint;
+		getPassTypes(): EPassTypes[];
+		//getPostEffectStartPass(): uint;
 	
 		containComponent(pComponent: IAFXComponent, iShift: int, iPass: uint);
 		containComponentHash(sComponentHash: string): boolean;

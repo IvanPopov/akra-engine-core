@@ -137,8 +137,10 @@ module akra.pool {
 			var pSlots: ICallbackSlot[] = this._pCallbackSlots[eState];
 			var pRelatedResources: IResourcePoolItem[] = [];
 
-			for (var i = 0; i < pSlots.length; ++i) {
-				pRelatedResources.push(pSlots[i].resource);
+			if (pSlots) {
+				for (var i = 0; i < pSlots.length; ++i) {
+					pRelatedResources.push(pSlots[i].resource);
+				}
 			}
 
 			return pRelatedResources;

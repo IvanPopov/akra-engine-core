@@ -51,6 +51,7 @@
 							<color>0.40000 0.40000 0.40000 1</color>
 						</ambient>
 						<diffuse>
+							<!-- <color>0.90000 0.00000 0.00000 1</color> -->
 							<texture texcoord="CHANNEL1" texture="cube_gif-sampler"/>
 						</diffuse>
 						<specular>
@@ -78,7 +79,7 @@
 	</library_effects>
 	<library_images>
 		<image id="cube_gif-img" name="cube_gif-img">
-			<init_from>glass.gif</init_from>
+			<init_from>glass.png</init_from>
 		</image>
 	</library_images>
 	<library_lights>
