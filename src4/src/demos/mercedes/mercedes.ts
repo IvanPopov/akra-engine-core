@@ -13,7 +13,7 @@ declare var AE_MERCEDES_DATA: akra.IDep;
 
 module akra {
 
-	config.DEBUG = false;
+	//config.DEBUG = false;
 
 	if (!config.DEBUG) {
 		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);

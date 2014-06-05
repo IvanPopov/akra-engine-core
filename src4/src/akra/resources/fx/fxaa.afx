@@ -42,41 +42,28 @@ float2 screenSize : INPUT_TEXTURE_SIZE;
 
 ////////////////////////////////////////////////////////////////////////////////
 float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
-	if (IN.textureCoords.x < 0.498){
-		if (IN.textureCoords.y < 0.498){ //SW bottom left
-			return localMlaa(IN.textureCoords);
-		}
-		if (IN.textureCoords.y > 0.502){ //NW top left
-			return localMlaa(IN.textureCoords);
-		}
-	}
-	if (IN.textureCoords.x > 0.502){
-		if (IN.textureCoords.y < 0.498){ //SE bottom right
-			return fxaaOldTransformed2Hybrid(IN.textureCoords);
-		}
-		if (IN.textureCoords.y > 0.502){ //NE top right
-			return tex2D(screenSampler, IN.textureCoords);
-		}
-	}
-	return float4(1., 0., 0., 1.);
+	//if (IN.textureCoords.x < 0.498){
+		//if (IN.textureCoords.y < 0.498){ //SW bottom left
+			//return localMlaa(IN.textureCoords);
+		//}
+		//if (IN.textureCoords.y > 0.502){ //NW top left
+			//return localMlaa(IN.textureCoords);
+		//}
+	//}
+	//if (IN.textureCoords.x > 0.502){
+		//if (IN.textureCoords.y < 0.498){ //SE bottom right
+			//return fxaaOldTransformed2Hybrid(IN.textureCoords);
+		//}
+		//if (IN.textureCoords.y > 0.502){ //NE top right
+			//return tex2D(screenSampler, IN.textureCoords);
+		//}
+	//}
+	//return float4(1., 0., 0., 1.);
 
 
+    return tex2D(screenSampler, IN.textureCoords);
 
 
-		//return fxaaOldTransformedHybrid(IN.textureCoords);
-	//}
-	//else if ((IN.textureCoords.x <0.334)){
-		//return float4(1., 0., 0., 1.);
-	//}
-	//else if ((IN.textureCoords.x <0.665)){
-		//return transformedFxaa2(IN.textureCoords);
-	//}
-	//else if ((IN.textureCoords.x <0.667)){
-		//return float4(1., 0., 0., 1.);
-	//}
-	//else {
-		//return oldFxaa(IN.textureCoords);
-	//}
 };
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////// various functions ////////////////////////////////
@@ -271,46 +258,46 @@ float4 localMlaa(float2 pos)
 	float nbuf = 0.;
 	float wbuf = 0.;
 
-	for(int i=0; i < 8; i++){
-		// try to move N/S
-		if (abs(startDir.x) > 0.1){ //calc err
-			nbuf = startDir.x * mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(startDir.x, 0.), rcpScreenSize));
-		}
-		else {
-			nbuf = mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(1., 0.), rcpScreenSize));
-			if (nbuf < 0.1)
-				nbuf = - mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(-1., 0.), rcpScreenSize));
-			startDir.x = nbuf;
-		}
-
-		// try to move S/W
-		if (abs(startDir.y) > 0.1){ //calc err
-			wbuf = startDir.y * mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(startDir.y, 0.), rcpScreenSize));
-		}
-		else {
-			wbuf = mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(1., 0.), rcpScreenSize));
-			if (wbuf < 0.1)
-				wbuf = - mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(-1., 0.), rcpScreenSize));
-			startDir.y = wbuf;
-		}
-
-		//// if we didn't move, let's try something else
-		//if (abs(nbuf) < 0.1 && abs(wbuf) < 0.1){
-			//if (abs(startDir.x * startDir.y) < 0.1){
-				//// how the fuck did this happen?
-				//return float4(0., 1., 0., 1.); // or find any diagonal way?
-			//}
-			//else if (abs(startDir.x) > 0.1 && abs(startDir.y) > 0.1){ // let's cut the chase
-				//if (abs(mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + startDir, rcpScreenSize))) > 0.1){
-					//nbuf = startDir.x;
-					//wbuf = startDir.y;
-				//}
-				//else break;
-			//}
+	//for(int i=0; i < 8; i++){
+		//// try to move N/S
+		//if (abs(startDir.x) > 0.1){ //calc err
+			//nbuf = startDir.x * mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(startDir.x, 0.), rcpScreenSize));
 		//}
-
-		relPos += float2(nbuf, wbuf);
-	}
+		//else {
+			//nbuf = mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(1., 0.), rcpScreenSize));
+			//if (nbuf < 0.1)
+				//nbuf = - mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(-1., 0.), rcpScreenSize));
+			//startDir.x = nbuf;
+		//}
+//
+		//// try to move S/W
+		//if (abs(startDir.y) > 0.1){ //calc err
+			//wbuf = startDir.y * mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(startDir.y, 0.), rcpScreenSize));
+		//}
+		//else {
+			//wbuf = mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(1., 0.), rcpScreenSize));
+			//if (wbuf < 0.1)
+				//wbuf = - mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + float2(-1., 0.), rcpScreenSize));
+			//startDir.y = wbuf;
+		//}
+//
+		////// if we didn't move, let's try something else
+		////if (abs(nbuf) < 0.1 && abs(wbuf) < 0.1){
+			////if (abs(startDir.x * startDir.y) < 0.1){
+				////// how the fuck did this happen?
+				////return float4(0., 1., 0., 1.); // or find any diagonal way?
+			////}
+			////else if (abs(startDir.x) > 0.1 && abs(startDir.y) > 0.1){ // let's cut the chase
+				////if (abs(mlaaTest(lumaAv, fxaaLumaTexOffset(pos, relPos + startDir, rcpScreenSize))) > 0.1){
+					////nbuf = startDir.x;
+					////wbuf = startDir.y;
+				////}
+				////else break;
+			////}
+		////}
+//
+		//relPos += float2(nbuf, wbuf);
+	//}
 
 	return float4((relPos.x + relPos.y)/8., 0., 0., 1.);
 }
