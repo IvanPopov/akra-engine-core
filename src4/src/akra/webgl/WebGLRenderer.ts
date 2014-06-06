@@ -835,36 +835,36 @@ module akra.webgl {
 
 		/** Texture Objects. */
 		bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
-			//if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
-			this._pWebGLContext.bindTexture(eTarget, pTexture);
-			this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
-			//}
+			if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
+				this._pWebGLContext.bindTexture(eTarget, pTexture);
+				this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			}
 		}
 
 		activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
-			// this._iCurrentTextureSlot = iWebGLSlot - gl.TEXTURE0;
+			this._iCurrentTextureSlot = iWebGLSlot - gl.TEXTURE0;
 		}
 
 		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {
+			var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
 
-			// var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
+			if(iSlot === -1) {
+				iSlot = this._iNextTextureSlot;
 
-			// if(iSlot === -1) {
-			var iSlot = this._iNextTextureSlot;
+				this._iNextTextureSlot++;
 
-			this._iNextTextureSlot++;
+				if (this._iNextTextureSlot === maxTextureImageUnits) {
+					this._iNextTextureSlot = 0;
+				}
 
-			if (this._iNextTextureSlot === maxTextureImageUnits) {
-				this._iNextTextureSlot = 0;
-			}
-
-			this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-			this.bindWebGLTexture(eTarget, pTexture);
-			// }
-			// else {
-			// 	this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-			// }
+				this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+				this.bindWebGLTexture(eTarget, pTexture);
+			 }
+			 else {
+				 this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+				 this.bindWebGLTexture(eTarget, pTexture);
+			 }
 
 			return iSlot;
 		}

@@ -173,7 +173,10 @@ float4 applyBaseLightParams(PixelData pixelData, LightData lightData){
     CalculatedLightParams lightParams = prepareBaseLightParams(pixelData, lightData);
 
     if(IS_FOR_REAL_SHADING){
-        color = pixelData.material.ambient * float4(lightParams.ambient, 0.0) + pixelData.material.diffuse * float4(lightParams.diffuse, 0.0) + pixelData.material.specular * float4(lightParams.specular, 0.0);
+        color = pixelData.material.diffuse * float4(lightParams.diffuse, 0.0) + pixelData.material.specular * float4(lightParams.specular, 0.0);
+        if(IS_USED_PNONG){
+            color += pixelData.material.ambient * float4(lightParams.ambient, 0.0);
+        }
     }
     else if(IS_FOR_LPP_PASS0) {
         color = float4(lightParams.diffuse, lightParams.specular.x);

@@ -261,7 +261,7 @@ module akra.render {
 					}
 				}
 			}
-
+			
 			this.sortTransparencyObjectsQueue();
 			this.renderTransparencyObjectsQueue(csMethod, pCamera);
 		}
@@ -503,6 +503,9 @@ module akra.render {
 		}
 
 		private sortTransparencyObjectsQueue(iStart: uint = 0, iEnd: uint = (this._iNumOfTransparencyObjects - 1)): void {
+			if (iEnd === -1) {
+				return;
+			}
 			var i: uint = iStart;
 			var j: uint = iEnd;
 			var fMiddle: float = this._pTransparencyObjectList[(iStart + iEnd) >> 1].distance;
