@@ -137,8 +137,8 @@ module akra.conv {
 	/**
 	 * Convert ArrayBuffer to string.
 	 */
-	export function abtos(pBuf: ArrayBuffer): string {
-		var pData: Uint8Array = new Uint8Array(pBuf);
+	export function abtos(pBuf: ArrayBuffer, iByteOffset: uint = 0, iByteLength: uint = pBuf.byteLength): string {
+		var pData: Uint8Array = new Uint8Array(pBuf, iByteOffset, iByteLength);
 		var s: string = "";
 
 		for (var n: uint = 0; n < pData.length; ++n) {

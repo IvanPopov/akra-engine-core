@@ -226,7 +226,7 @@ module akra.render {
 		private _fnSort = function (a, b) { return b.dist - a.dist; };
 
 		protected renderTransparentObjects(csMethod: string, pCamera: ICamera): void {
-			if (!this.isTransparencySupported()) {
+			if (!this.isTransparencySupported() && this._iNumOfTransparencyObjects === 0) {
 				return;
 			}
 

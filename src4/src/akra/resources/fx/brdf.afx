@@ -332,3 +332,28 @@ float EnvBRDFApproxNonmetal( float Roughness, float NoV )
     float2 r = Roughness * c0 + c1;
     return min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
 }
+
+//********* for Transparency ****** */
+float TransBRDFApproxNonmetal( float Roughness, float NoV )
+{
+    // Same as EnvBRDFApprox( 0.04, Roughness, NoV )
+    const float2 c0 = { -1., -0.0275 };
+    const float2 c1 = { 1., 0.0425 };
+    float2 r = Roughness * c0 + c1;
+    return min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+}
+
+float simpleReflectance(float NoV)
+{
+    return (NoV-0.5)*2.;
+}
+
+float reflSchlick(float VoH )
+{
+    return 0.1 + 0.9 * exp2( (-5.55473 * VoH - 6.98316) * VoH );
+}
+
+float reflExp(float VoH )
+{
+    return 0.04 + 0.96 * exp2( (-5.55473 * VoH - 6.98316) * VoH );
+}

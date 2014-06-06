@@ -13,12 +13,14 @@ declare var AE_MERCEDES_DATA: akra.IDep;
 
 module akra {
 
-	config.DEBUG = false;
+	//config.DEBUG = false;
 
 	if (!config.DEBUG) {
 		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
 		addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
 		addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
+		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 	}
 
 
@@ -51,13 +53,13 @@ module akra {
 		deps: { files: [AE_MERCEDES_DATA], root: "./" },
 	};
 
-	var pEngine = akra.createEngine(pOptions);
+	export var pEngine = akra.createEngine(pOptions);
 
 	var pScene = pEngine.getScene();
 
-	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
-	var pCamera: ICamera = null;
-	var pViewport: IViewport = null;
+	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
+	export var pCamera: ICamera = null;
+	export var pViewport: IViewport = null;
 	var pReflectionCamera: ICamera = null;
 	var pReflectionViewport: IViewport = null;
 	var pReflectionTexture: ITexture = null;
@@ -65,22 +67,26 @@ module akra {
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 	var pSkyboxTexture = null;
-	var pSkyboxTextures = null;
+	var pSkyboxTextures: IMap<ITexture> = null;
 	var pEnvTexture = null;
 	var pDepthViewport = null;
 
 	var pGUI: dat.GUI = null;
+	var pAnimate = { animate: true };
 
+	export var pPilotNode: INode = null;
 
 
 	export var pCameraParams = {
 		current: {
 			orbitRadius: 6,
-			rotation: new math.Vec2(0., 0.)
+			rotation: new math.Vec2(0., 0.),
+			center: new Vec3(0),
 		},
 		target: {
 			orbitRadius: 6,
-			rotation: new math.Vec2(0., 0.)
+			rotation: new math.Vec2(0., 0.),
+			center: new Vec3(0)
 		}
 	}
 
@@ -100,21 +106,62 @@ module akra {
 		return pCamera;
 	}
 
+	function switchToCabinView() {
+		pCameraParams.target.orbitRadius = 0.;
+		pCameraParams.target.center.set(0., 1., .4);
+	}
+
+	function switchToOutdoorView() {
+		pCameraParams.target.center.set(0., 0., 0.);
+	}
+
+	function inCabinView(): boolean {
+		return pCameraParams.target.orbitRadius == 0;
+	}
+
+	var bCabinSwitchLocked: boolean = false;
+
+	function isCabinSwitchLocked() {
+		return bCabinSwitchLocked;
+	}
+
+	var iLock: int = -1;
+	function lockCabinSwitch() {
+		clearTimeout(iLock);
+		bCabinSwitchLocked = true;
+		setTimeout(() => {
+			bCabinSwitchLocked = false;
+		}, 333);
+	}
+
 	function animateCameras(): void {
 		pScene.beforeUpdate.connect(() => {
+			if (pCameraParams.target.orbitRadius < 3. && !inCabinView() && !isCabinSwitchLocked()) {
+				switchToCabinView();
+			}
+			else {
+				pCameraParams.target.center.set(0.);
+			}
+
+			if (inCabinView()) {
+				pCameraParams.target.center.set(pPilotNode.getWorldPosition());
+			}
+
 			pCamera.update();
 			pReflectionCamera.update();
 
 			var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
 			var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+			pCameraParams.current.center.add(pCameraParams.target.center.subtract(pCameraParams.current.center, Vec3.temp()).scale(0.03));
 
 			pCameraParams.current.rotation.set(newRot);
 			pCameraParams.current.orbitRadius = newRad;
-			pCamera.setPosition(
+			
+			pCamera.setPosition(Vec3.temp(
 				newRad * -math.sin(newRot.x) * math.cos(newRot.y),
 				newRad * math.sin(newRot.y),
-				newRad * math.cos(newRot.x) * math.cos(newRot.y));
-			pCamera.lookAt(math.Vec3.temp(0, 0, 0));
+				newRad * math.cos(newRot.x) * math.cos(newRot.y)).add(pCameraParams.current.center));
+			pCamera.lookAt(pCameraParams.current.center);
 
 			pCamera.update();
 
@@ -157,9 +204,12 @@ module akra {
 		pViewport.enableSupportForUserEvent(EUserEvents.MOUSEWHEEL | EUserEvents.DRAGGING | EUserEvents.DRAGSTART | EUserEvents.DRAGSTOP);
 
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
-			//console.log("mousewheel moved: ",x,y,fDelta);
 			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2.5, 10.);
+			if (fDelta < 0) {
+				lockCabinSwitch();
+			}
 		});
+
 	}
 
 
@@ -257,6 +307,7 @@ module akra {
 				pViewport.highlight(pResult);
 
 				if (pResult.renderable) {
+					console.log(pResult.renderable);
 					pResult.renderable.switchRenderMethod(null);
 					if (pResult.renderable.getSurfaceMaterial()) {
 						var pOrigin: IMaterial = pResult.renderable.getMaterial();
@@ -334,7 +385,7 @@ module akra {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			//var pDepthTexture: ITexture = (<IShadedViewport>pViewport).getDepthTexture();
 
-			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
+			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", pCameraParams.current.orbitRadius < .2 ? 1. : fSkyboxSharpness);
 			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
 
@@ -374,7 +425,18 @@ module akra {
 
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
+
+			var sPrefix: string = "SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase();
+			var pImages: string[] = [
+				sPrefix + "_POS_X",
+				sPrefix + "_NEG_X",
+				sPrefix + "_POS_Y",
+				sPrefix + "_NEG_Y",
+				sPrefix + "_POS_Z",
+				sPrefix + "_NEG_Z"
+			];
+
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
 		}
 
 
@@ -546,8 +608,6 @@ module akra {
 
 		createKeymap(pCamera, <IViewport3D>pViewport);
 
-		animateCameras();
-
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
@@ -567,7 +627,7 @@ module akra {
 		pModelTable.attachToParent(pScene.getRootNode());
 		pModelTable.setPosition(0., iTableHeight, 0.);
 
-		var pAnimate = { animate: true };
+		
 
 		if (config.DEBUG) {
 			pGUI.add(pAnimate, "animate");
@@ -811,6 +871,12 @@ module akra {
 
 			document.body.appendChild(pTable);
 		};
+
+		pPilotNode = pScene.createNode("pilot-node");
+		pPilotNode.setInheritance(ENodeInheritance.ALL);
+		pPilotNode.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("node-chassis"));
+		pPilotNode.setPosition(-.5, .5, .5);
+		animateCameras();
 
 
 		createSkinTable();

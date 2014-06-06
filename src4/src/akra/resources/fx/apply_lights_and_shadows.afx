@@ -43,6 +43,18 @@ float4 applyMaterialAlpha() : COLOR {
     float4 color = resultAFXColor;
     //color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
     color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
+    float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
+
+    // Simple model:
+    //color.a = (1. - simpleReflectance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
+    // Physically based shading:
+    color.a = 5.*reflSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
+
+    //color.g = color.a;
+    //color.a = 1.0;
+    //color.r = 0.;
+    //color.b = 0.;
+
     return color;
 }
 
@@ -202,11 +214,40 @@ float4 applySunLightShadows() : COLOR {
 };
 
 
+float3 calulateEnvMapColor(float3 position, float3 normal, sampler2D envSampler) 
+{
+    // calculating reflection separately
+    float3 view_dir = normalize(-position);
+    float3 normal_dir = normal;
+    float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
+    // float3 reflect_dir = reflect(view_dir, normal_dir);
+    float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
+
+    return getEnvMapColor(directionInsideCube, .5, envSampler);
+};
+
 float4 applyPBSReflection(): COLOR {
+    // float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
+    // //float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
+
+    // LightData envLight;
+    // envLight.diffuse = float4(colorFromCubemap, 1.);
+    // envLight.specular = float4(colorFromCubemap, 1.);
+    // //envLight.ambient = float4(intensity);
+    // envLight.attenuation = float3(1., 0., 0.);
+    // envLight.position = pixelData.normal * 1.;
+
+    float4 color = resultAFXColor;
+    // float4 s = pixelData.material.specular;
+// 
+    // pixelData.material.specular = float4(0.);
+    // color += applyBaseLightParams(pixelData, envLight);
+    // pixelData.material.specular = s;
+
     float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
             pixelData.material.specular.xyz, pixelData.material.shininess, envSampler0);
     // lowering reflection brightness if we have a strong lighting already
-    float4 color = resultAFXColor;
+    
     //reflection *= float4(1.) - color;
     color += reflection;
 

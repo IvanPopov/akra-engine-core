@@ -187,9 +187,9 @@ module akra.webgl {
 			}
 		}
 
-        unwrapFromCubeTexture(pCubeTex: ITexture): boolean {
-            return false;
-        }
+		unwrapFromCubeTexture(pCubeTex: ITexture): boolean {
+			return false;
+		}
 
 		blitFromMemory(pSource: IPixelBox): boolean;
 		blitFromMemory(pSource: IPixelBox, pDestBox: IBox): boolean;
@@ -231,7 +231,7 @@ module akra.webgl {
 				this.allocateBuffer();
 				pScaledBox = this._pBuffer.getSubBox(pDestBox);
 				pScaledBox.setConsecutive();
-
+				debugger;
 				pixelUtil.bulkPixelConversion(pSource, pScaledBox);
 				
 				// if(this._eFormat === EPixelFormats.A4R4G4B4)

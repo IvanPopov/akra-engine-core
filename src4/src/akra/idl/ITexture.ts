@@ -101,7 +101,7 @@ module akra {
 		isCompressed(): boolean;
 		isValid(): boolean;
 
-        unwrapCubeTexture(pCubeTex: ITexture): boolean;
+		unwrapCubeTexture(pCubeTex: ITexture): boolean;
 	
 		create(iWidth: uint, iHeight: uint, iDepth: uint, cFillColor?: IColor, 
 			   eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
@@ -120,8 +120,11 @@ module akra {
 		getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
 		
 		loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, iDepth?: uint, eFormat?: EPixelFormats, nFaces?: uint, nMipMaps?: uint): boolean;
+
 		loadImage(pImage: IImg): boolean;
+
 		loadImages(pImages: IImg[]): boolean;
+		loadImages(pImages: string[]): boolean;
 	
 		convertToImage(pDestImage: IImg, bIncludeMipMaps: boolean): void;
 	

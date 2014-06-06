@@ -212,7 +212,10 @@ module akra.webgl {
 
 			if ((iActivated & EUserEvents.MOUSEWHEEL) && !this.checkOrSaveEventHandler(EUserEvents.MOUSEWHEEL)) {
 				debug.log("WebGLCanvas activate <MOUSEWHEEL> event handing.");
-				pEl.addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
+
+				var me = this;
+
+				function scroll(e: MouseWheelEvent): boolean {
 					absorbEvent(e);
 
 					//FIXME: skipping middle button click
@@ -221,9 +224,21 @@ module akra.webgl {
 						return;
 					}
 
-					this.mousewheel.emit(offsetX(e), this.getHeight() - offsetY(e) - 1, e.wheelDelta/*, e*/);
+					var fDelta: float = 0.;
+					if ('wheelDelta' in e) {
+						fDelta = e.wheelDelta;
+					}
+					else {  // Firefox
+						// The measurement units of the detail and wheelDelta properties are different.
+						fDelta = -40 * e.detail;
+					}
+
+					me.mousewheel.emit(offsetX(e), me.getHeight() - offsetY(e) - 1, fDelta/*, e*/);
 					return false;
-				}, true);
+				}
+
+				pEl.addEventListener("DOMMouseScroll", scroll, false);
+				pEl.addEventListener("mousewheel", scroll, false);
 			}
 
 			return iActivated;

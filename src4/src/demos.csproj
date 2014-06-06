@@ -100,6 +100,7 @@
     <Content Include="demos\light-shafts\data\textures\lensflare_cookies.png" />
     <Content Include="demos\light-shafts\data\textures\lensflare_cookies_new.png" />
     <Content Include="demos\light-shafts\demo.xml" />
+    <Content Include="demos\mercedes\css\mercedes-benz-logo.png" />
     <Content Include="demos\mercedes\dat.gui\dat.gui.js" />
     <Content Include="demos\mercedes\demo.xml" />
     <Content Include="demos\mercedes\grid.jpg" />
@@ -112,8 +113,8 @@
     <Content Include="demos\mercedes\models\images\6_engine.png" />
     <Content Include="demos\mercedes\models\images\7_lights_lod0.png" />
     <Content Include="demos\mercedes\models\images\8_tire%283%29.png" />
-    <Content Include="demos\mercedes\textures\light_icon.png" />
-    <Content Include="demos\mercedes\textures\light_icon1.png" />
+    <Content Include="demos\mercedes\textures\grid.png" />
+    <Content Include="demos\mercedes\textures\lightmap.png" />
     <Content Include="demos\miner\dat.gui\dat.gui.js" />
     <Content Include="demos\miner\demo.xml" />
     <Content Include="demos\miner\grid.jpg" />
@@ -661,7 +662,6 @@
     <Content Include="demos\distance-fog\data\models\torusknot.DAE" />
     <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.DAE" />
     <Content Include="demos\mercedes\models\mercedes.DAE" />
-    <Content Include="demos\mercedes\textures\desert-3.dds" />
     <Content Include="demos\anti-aliasing\data\effects\blur.afx" />
     <Content Include="demos\anti-aliasing\data\effects\common.afx" />
     <Content Include="demos\anti-aliasing\data\effects\dirtylens.afx" />
@@ -688,6 +688,18 @@
     <Content Include="demos\anti-aliasing\data\textures\skyboxes\rome-church.dds" />
     <Content Include="demos\anti-aliasing\data\textures\skyboxes\saint-peters-basilica.dds" />
     <Content Include="demos\cubeWithTexture.dae" />
+    <Content Include="demos\mercedes\data\textures\skyboxes\nightsky.dds" />
+    <Content Include="demos\mercedes\data\textures\skyboxes\nightsky.dds~" />
+    <Content Include="demos\mercedes\skins\black_moon.skin" />
+    <Content Include="demos\mercedes\skins\dark-blue.skin" />
+    <Content Include="demos\mercedes\skins\default.skin" />
+    <Content Include="demos\mercedes\skins\hot_lemon.skin" />
+    <Content Include="demos\mercedes\skins\hot_red_pepper.skin" />
+    <Content Include="demos\mercedes\skins\red-origin.skin" />
+    <Content Include="demos\mercedes\skins\red.skin" />
+    <Content Include="demos\mercedes\skins\silver-bezh.skin" />
+    <Content Include="demos\mercedes\skins\unknown.skin" />
+    <Content Include="demos\mercedes\index.jade" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

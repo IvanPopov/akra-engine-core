@@ -16,7 +16,7 @@ module akra.webgl {
 	export var maxTextureSize: uint = 0;
 	export var maxCubeMapTextureSize: uint = 0;
 	export var maxViewPortSize: uint = 0;
-	
+
 	export var maxTextureImageUnits: uint = 0;
 	export var maxVertexAttributes: uint = 0;
 	export var maxVertexTextureImageUnits: uint = 0;
@@ -31,8 +31,6 @@ module akra.webgl {
 
 	export var shaderVersion: float = 0;
 	export var hasNonPowerOf2Textures: boolean = false;
-
-	export var ANGLE: boolean = false;
 
 	var isSupported: boolean = false;
 	var pSupportedExtensionList: string[] = null;
@@ -91,6 +89,10 @@ module akra.webgl {
 		var pWebGLExtentionList: Object = (<any>pWebGLContext).extentionList = (<any>pWebGLContext).extentionList || {};
 		var pWebGLExtension: Object;
 
+		if (isExtensionInBlackList(sExtName)) {
+			return false;
+		}
+
 		if (!hasExtension(sExtName)) {
 			logger.warn("Extension " + sExtName + " unsupported for this platform.");
 			return false;
@@ -101,17 +103,13 @@ module akra.webgl {
 		if (pWebGLExtension) {
 
 			if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
-				// debug.log("Extension " + sExtName + " already loaded for this context.");
 				return true;
 			}
 
 			pWebGLExtentionList[sExtName] = pWebGLExtension;
 
-			//debug.log("loaded WebGL extension: ", sExtName);
-
 			for (var j in pWebGLExtension) {
 				if (isFunction(pWebGLExtension[j])) {
-					//debug.log("created func WebGLRenderingContext::" + j + "(...)");
 					pWebGLContext[j] = function () {
 						pWebGLContext[j] = new Function(
 							"var t = this.extentionList[" + sExtName + "];" +
@@ -120,7 +118,6 @@ module akra.webgl {
 
 				}
 				else {
-					//debug.log("created const WebGLRenderingContext::" + j + " = " + pWebGLExtension[j]);
 					pWebGLContext[j] = pWebGLExtension[j];
 				}
 			}
@@ -133,51 +130,16 @@ module akra.webgl {
 	}
 
 
-	function checkIsAngle(pWebGLContext: WebGLRenderingContext): boolean {
-		var pProgram: WebGLProgram = pWebGLContext.createProgram();
+	function isExtensionInBlackList(sExtName: string): boolean {
+		var pBlackList: string[] = config.webgl.extensionsBlackList;
 
-		var sVertex: string = "\
-			attribute vec3 pos;\
-			struct S {\
-			  vec3 b[1];\
-			};\
-			uniform S s[1];\
-			void main(void) {\
-			  float t = s[0].b[0].x;\
-			  gl_Position = vec4(pos, 1. + t);\
-			}";
-
-		var sFragment: string = "void main(void){}";
-
-		var pVertexShader: WebGLShader = pWebGLContext.createShader(gl.VERTEX_SHADER);
-		var pFragmentShader: WebGLShader = pWebGLContext.createShader(gl.FRAGMENT_SHADER);
-
-		pWebGLContext.shaderSource(pVertexShader, sVertex);
-		pWebGLContext.compileShader(pVertexShader);
-		pWebGLContext.shaderSource(pFragmentShader, sFragment);
-		pWebGLContext.compileShader(pFragmentShader);
-
-		pWebGLContext.attachShader(pProgram, pVertexShader);
-		pWebGLContext.attachShader(pProgram, pFragmentShader);
-
-		pWebGLContext.linkProgram(pProgram);
-
-		if (!pWebGLContext.getProgramParameter(pProgram, gl.LINK_STATUS)) {
-			//debug.error("cannot compile GLSL shader for ANGLE renderer");
-
-			//debug.log(pWebGLContext.getShaderInfoLog(pVertexShader));
-			//debug.log(pWebGLContext.getShaderSource(pVertexShader) || sVertex);
-
-			//debug.log(pWebGLContext.getShaderInfoLog(pFragmentShader));
-			//debug.log(pWebGLContext.getShaderSource(pFragmentShader) || sFragment);
-
-			return false;
+		for (var j = 0; j < pBlackList.length; ++j) {
+			if (sExtName.toLowerCase().indexOf(pBlackList[j].toLowerCase()) !== -1) {
+				return true;
+			}
 		}
 
-		//debug.assert(pWebGLContext.getProgramParameter(pProgram, gl.ACTIVE_UNIFORMS) > 0,
-		//    "no uniforms founded in angle test shader!");
-
-		return pWebGLContext.getActiveUniform(pProgram, 0).name != "s[0].b[0]";
+		return false;
 	}
 
 	function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
@@ -187,7 +149,9 @@ module akra.webgl {
 		}
 
 		for (var i: int = 0; i < pSupportedExtensionList.length; ++i) {
-			if (!loadExtension(pWebGLContext, pSupportedExtensionList[i])) {
+			var sExtName: string = pSupportedExtensionList[i];
+
+			if (!loadExtension(pWebGLContext, sExtName)) {
 				pSupportedExtensionList.splice(i, 1);
 			}
 		}
@@ -255,16 +219,22 @@ module akra.webgl {
 
 		pSupportedExtensionList = pWebGLContext.getSupportedExtensions();
 
+
+
+		for (var i: int = 0; i < pSupportedExtensionList.length; ++i) {
+			var sExtName: string = pSupportedExtensionList[i];
+
+			if (isExtensionInBlackList(sExtName)) {
+				logger.info(sExtName + " extension ignored because it is in the black list.");
+				pSupportedExtensionList.splice(i, 1);
+			}
+		}
+
 		if (config.DEBUG) {
 			//pSupportedExtensionList.push(WEBGL.DEBUG_SHADERS, WEBGL.DEBUG_RENDERER_INFO);
 		}
 
 		isSupported = true;
-
-		ANGLE = checkIsAngle(pWebGLContext);
-
-		
-		debug.log("WebGL running under " + (ANGLE ? "ANGLE/DirectX" : "Native GL"));
 	})(createContext());
 
 	export function hasExtension(sExtName: string): boolean {

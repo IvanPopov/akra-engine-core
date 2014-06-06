@@ -63,6 +63,46 @@ module akra {
 		}, math.random() * 20);
 	}
 
+	function createKeymap(pCamera: ICamera): void {
+		var pKeymap: IKeyMap = control.createKeymap();
+		pKeymap.captureMouse((<any>pCanvas).getElement());
+		pKeymap.captureKeyboard(document);
+
+		pScene.beforeUpdate.connect(() => {
+			if (pKeymap.isMousePress()) {
+				if (pKeymap.isMouseMoved()) {
+					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+
+
+					pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
+					pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
+
+					pKeymap.update();
+				}
+
+			}
+			var fSpeed: float = 0.1 * 5;
+			if (pKeymap.isKeyPress(EKeyCodes.W)) {
+				pCamera.addRelPosition(0, 0, -fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.S)) {
+				pCamera.addRelPosition(0, 0, fSpeed);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.A) || pKeymap.isKeyPress(EKeyCodes.LEFT)) {
+				pCamera.addRelPosition(-fSpeed, 0, 0);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
+				pCamera.addRelPosition(fSpeed, 0, 0);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.UP) || pKeymap.isKeyPress(EKeyCodes.Q)) {
+				pCamera.addRelPosition(0, fSpeed, 0);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.DOWN) || pKeymap.isKeyPress(EKeyCodes.E)) {
+				pCamera.addRelPosition(0, -fSpeed, 0);
+			}
+		});
+	}
+
 	function main(pEngine: IEngine): void {
 		std.setup(pCanvas);
 
@@ -70,6 +110,7 @@ module akra {
 		pCamera.attachToParent(pScene.getRootNode());
 		pCamera.setPosition(4., 4., 3.5);
 		pCamera.lookAt(Vec3.temp(0., 1., 0.));
+		createKeymap(pCamera);
 
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
 		var pDSViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 1);
@@ -157,7 +198,7 @@ module akra {
 				});
 			})(pSprite, pLightOmni);
 
-			animateLight(pLightOmni, pSprite);
+			//animateLight(pLightOmni, pSprite);
 			//animateLight(pLightOmni, null);
 		}
 
@@ -235,7 +276,7 @@ module akra {
 			'ANIM_MINER_WORK_GUN',
 			'ANIM_MINER_WORK_HAMMER'
 		]).onChange((sName: string) => {
-			pController.play.emit(sName);
+			//pController.play.emit(sName);
 		});
 
 
@@ -245,7 +286,8 @@ module akra {
 		pModel.addController(pController);
 		pModel.scale(.5);
 
-		pController.play.emit(0);
+		//pController.play.emit(0);
+		pController.stop();
 
 		var pBB: IRect3d;
 		var pLibeCube = addons.lineCube(pScene);
