@@ -9,7 +9,7 @@
 /// <reference path="../ResourcePoolItem.ts" />
 
 module akra.pool.resources {
-	
+
 	import Codec = pixelUtil.Codec;
 	import ImgCodec = pixelUtil.ImgCodec;
 	import ImgData = pixelUtil.ImgData;
@@ -28,8 +28,6 @@ module akra.pool.resources {
 		protected _pBuffer: Uint8Array = null;
 
 		getByteLength(): uint {
-			// console.log(__CALLSTACK__);
-			// console.log(this, this._pBuffer, this.isResourceLoaded(), "[", this.findResourceName(), "]");
 			return this._pBuffer.buffer.byteLength;
 		}
 
@@ -173,32 +171,56 @@ module akra.pool.resources {
 			return this;
 		}
 
+		private loadImageWithInternalFormatFromURL(sPath: string, cb?: (e: Error) => void): void {
+			Img.decodeImageWithInternalFormatFromURL(sPath,
+				(e, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => {
+					if (e) {
+						cb && cb(new Error("Could not decode image with internal format."));
+						return;
+					}
 
-		flipY(pDest?: IImg): IImg {
-			return this;
+					this.loadDynamicImage(pData, iWidth, iHeight, 1, eFormat);
+
+					cb && cb(null);
+			})
 		}
 
-		flipX(pDest?: IImg): IImg {
-			return this;
-		}
+		//private loadCubemap(sPath: string, cb?: (e: Error) => void): void {
+		//	io.fopen(sPath, EIO.JSON | EIO.IN).read((e: Error, pCubemap: ICubemap) => {
+		//		var pSides: Uint8Array[] = new Array<Uint8Array>(6);
 
-		load(sFileName: string, fnCallBack?: Function): IImg;
-		load(pData: Uint8Array, sType?: string, fnCallBack?: Function): IImg;
-		load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
+		//		Object.keys(pCubemap).forEach((sSidename: string) => {
+		//			var pSide: IImg = this.getManager().loadImage(uri.resolve(pCubemap[sSidename], sPath));
 
+		//			pSide.loaded.connect((pSide: IImg) => {
 
-		load(/*pData: any, sType?: any, fnCallBack?: Function*/): IImg {
-			var pMe: IImg = this;
+		//			});
+		//		});
+		//	});
+		//}
 
+		load(sFileName: string, cb?: (e: Error) => void): IImg;
+		load(pData: Uint8Array, sType?: string, cb?: (e: Error) => void): IImg;
+		load(pCanvas: HTMLCanvasElement, cb?: (e: Error) => void): IImg;
+		load(): IImg {
+			var cb: (e: Error) => void = null;
+			var sFilename: string;
+			var sExt: string;
+			var pCanvas: HTMLCanvasElement;
+			var pData: Uint8Array;
+
+			//load from HTMLCanvasElement
 			if (arguments[0] instanceof HTMLCanvasElement) {
-				var pCanvas: HTMLCanvasElement = arguments[0];
-				var fnCallBack: Function = arguments[1];
+				pCanvas = arguments[0];
+				cb = arguments[1];
 
 				var pTempContext: CanvasRenderingContext2D = pCanvas.getContext('2d');
+
 				if (!pTempContext) {
-					if (isDefAndNotNull(fnCallBack)) {
-						fnCallBack(false);
+					if (isDefAndNotNull(cb)) {
+						cb(new Error("Could not create canvas rendering context 2D."));
 					}
+
 					return this;
 				}
 
@@ -206,164 +228,99 @@ module akra.pool.resources {
 
 				this.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pCanvas.width, pCanvas.height);
 
-				if (isDefAndNotNull(fnCallBack)) {
-					fnCallBack(true);
+				if (isDefAndNotNull(cb)) {
+					cb(null);
 				}
 
 				return this;
 			}
+			//load from URL
 			else if (isString(arguments[0])) {
-				var sFilename: string = arguments[0];
-				var fnCallBack: Function = arguments[1];
-				var sExt: string = path.parse(sFilename).getExt();
+				sFilename = arguments[0];
+				cb = arguments[1];
+				sExt = path.parse(sFilename).getExt();
 
-				var open = (sExt: string) => {
-					if (sExt) sExt = sExt.toLowerCase();
+				if (!sExt) {
+					//FIXME: move determImageExtension to Image codec
 
-					if (sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
-						var pImg: HTMLImageElement = new Image();
-
-						pImg.onload = function () {
-							var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
-							pTempCanvas.width = pImg.width;
-							pTempCanvas.height = pImg.height;
-
-							var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
-							pTempContext.drawImage(pImg, 0, 0);
-
-							var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
-
-							pMe.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
-
-							if (isDefAndNotNull(fnCallBack)) {
-								fnCallBack(true);
-							}
-
-						}
-					pImg.onerror = function () {
-							if (isDefAndNotNull(fnCallBack)) {
-								fnCallBack(false);
-							}
-						}
-					pImg.onabort = function () {
-							if (isDefAndNotNull(fnCallBack)) {
-								fnCallBack(false);
-							}
-						}
-
-					pImg.src = sFilename;
+					//could not determ extension fron path
+					info.determImageExtension(sFilename, (e: Error, pData: Uint8Array, sExt: string) => {
+						if (e) return cb(e);
+						this.load(pData, sExt, cb);
+					});
+				}
+				else {
+					if (Img.isInternalImageFormat(sExt)) {
+						this.loadImageWithInternalFormatFromURL(sFilename, cb);
 					}
 					else {
-						io.fopen(sFilename, "rb").read((pError: Error, pDataInFile: ArrayBuffer): void => {
-							pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
+						io.fopen(sFilename, "rb").read((e: Error, pData: ArrayBuffer): void => {
+							if (e) return cb(e);
+							this.load(new Uint8Array(pData), sExt, cb);
 						});
 					}
 				}
 
-				if (!sExt) {
-					info.determImageExtension(sFilename, (e: Error, sExt: string) => {
-						//TODO: fix this error handling
-						if (e) throw e;
-						open(sExt);
-					});
-				}
-				else {
-					open(sExt);
-				}
-
-
 				return this;
 			}
-			else {
-				var pData: Uint8Array = arguments[0];
-				var sType: string = arguments[1];
-				var fnCallBack: Function = arguments[2];
-				var pCodec: ICodec = null;
 
-				if (sType === "png" || sType === "jpg" || sType === "jpeg" || sType === "gif" || sType === "bmp") {
+			//load from data
 
-					var pBlob = new Blob([pData], { 'type': 'image\/' + sType });
-					var pObjectURL = (<any>window).URL.createObjectURL(pBlob);
+			pData = arguments[0];
+			sExt = arguments[1];
+			cb = arguments[2];
 
-					var pImg: HTMLImageElement = new Image();
+			var pCodec: ICodec = null;
 
-					pImg.onload = function () {
-						var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
-						pTempCanvas.width = pImg.width;
-						pTempCanvas.height = pImg.height;
-						var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
-						pTempContext.drawImage(pImg, 0, 0);
-						var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
+			if (Img.isInternalImageFormat(sExt)) {
+				var sURL = conv.toURL(pData, 'image\/' + sExt);
+				this.loadImageWithInternalFormatFromURL(sURL, cb);
+				return this;
+			}
 
-						pMe.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+			//check codec, if can
+			if (sExt) {
+				pCodec = Codec.getCodec(sExt);
+			}
 
-						if (isDefAndNotNull(fnCallBack)) {
-							fnCallBack(true);
-						}
+			//determ code from data
+			if (!pCodec) {
+				var iMagicLen: uint = Math.min(32, pData./*buffer.*/byteLength);
+				pCodec = Codec.getCodec(pData.subarray(pData.byteOffset, iMagicLen));
+			}
 
-					}
-					pImg.onerror = function () {
-						if (isDefAndNotNull(fnCallBack)) {
-							fnCallBack(false);
-						}
-					}
-					pImg.onabort = function () {
-						if (isDefAndNotNull(fnCallBack)) {
-							fnCallBack(false);
-						}
-					}
+			if (!pCodec) {
+				var e: Error = new Error("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n" + "Img.load")
 
-					pImg.src = pObjectURL;
-					return this;
-				}
+					debug.critical(e);
 
-				if (sType) {
-					pCodec = Codec.getCodec(sType);
-				}
-
-
-
-				if (!pCodec) {
-					var iMagicLen: uint = Math.min(32, pData./*buffer.*/byteLength);
-					pCodec = Codec.getCodec(pData.subarray(pData.byteOffset, iMagicLen));
-				}
-
-				if (!pCodec) {
-					logger.critical("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n" + "Img.load");
-					if (fnCallBack) {
-						fnCallBack(false);
-					}
-					return this;
-				}
-
-
-
-				var pImgData: IImgData = new ImgData();
-
-				this._pBuffer = pCodec.decode(pData, pImgData);
-
-				this._iWidth = pImgData.getWidth();
-				this._iHeight = pImgData.getHeight();
-				this._iDepth = pImgData.getDepth();
-				this._nMipMaps = pImgData.getNumMipMaps();
-				this._iFlags = pImgData.getFlags();
-				this._iCubeFlags = pImgData.getCubeFlags();
-
-				//console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
-
-				this._eFormat = pImgData.getFormat();
-
-				this.notifyLoaded();
-
-
-				if (fnCallBack) {
-					fnCallBack(true);
+				if (cb) {
+					cb(e);
 				}
 
 				return this;
 			}
 
+			var pImgData: IImgData = new ImgData();
 
+			this._pBuffer = pCodec.decode(pData, pImgData);
+
+			this._iWidth = pImgData.getWidth();
+			this._iHeight = pImgData.getHeight();
+			this._iDepth = pImgData.getDepth();
+			this._nMipMaps = pImgData.getNumMipMaps();
+			this._iFlags = pImgData.getFlags();
+			this._iCubeFlags = pImgData.getCubeFlags();
+
+			this._eFormat = pImgData.getFormat();
+
+			this.notifyLoaded();
+
+			if (cb) {
+				cb(null);
+			}
+
+			return this;
 		}
 
 		loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_RGB,
@@ -413,7 +370,7 @@ module akra.pool.resources {
 		}
 
 		convert(eFormat: EPixelFormats): boolean {
-			return false;
+			return this.getFormat() == eFormat;
 		}
 
 		//Gets the physical width in bytes of each row of pixels.
@@ -517,6 +474,7 @@ module akra.pool.resources {
 					iFinalDepth = iDepth;
 					iMipSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.getFormat());
 				}
+
 				iFullFaceSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.getFormat());
 
 				/// Half size in each dimension
@@ -524,12 +482,14 @@ module akra.pool.resources {
 				if (iHeight != 1) iHeight /= 2;
 				if (iDepth != 1) iDepth /= 2;
 			}
+
 			// Advance pointer by number of full faces, plus mip offset into
 			iOffset += iFace * iFullFaceSize;
 			iOffset += iFinalFaceSize;
 
 			// Return subface as pixelbox
 			var pSrc: IPixelBox = new pixelUtil.PixelBox(iFinalWidth, iFinalHeight, iFinalDepth, this.getFormat(), pData.subarray(iOffset, iOffset + iMipSize));
+
 			return pSrc;
 		}
 
@@ -560,6 +520,44 @@ module akra.pool.resources {
 				if (iDepth != 1) iDepth = Math.floor(iDepth / 2);
 			}
 			return iSize;
+		}
+
+		static isInternalImageFormat(sExt: string): boolean {
+			if (isString(sExt)) {
+				sExt = sExt.toUpperCase();
+				return sExt === "PNG" || sExt === "JPG" || sExt === "JPEG" || sExt === "GIF" || sExt === "BMP";
+			}
+
+			return false;
+		}
+
+		static decodeImageWithInternalFormatFromURL(sPath: string, cb: (e: Error, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => void) {
+
+			var pImg: HTMLImageElement = new Image();
+
+			pImg.onload = () => {
+				var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
+				pTempCanvas.width = pImg.width;
+				pTempCanvas.height = pImg.height;
+
+				var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
+				pTempContext.drawImage(pImg, 0, 0);
+
+				var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
+				var pData: Uint8Array = new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength));
+
+				cb(null, pData, pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+			};
+
+			pImg.onerror = () => {
+				cb(new Error("HTML Image element loading error."), null, 0, 0, 0, EPixelFormats.UNKNOWN);
+			};
+
+			pImg.onabort = () => {
+				cb(new Error("HTML Image element loading aborted."), null, 0, 0, 0, EPixelFormats.UNKNOWN);
+			};
+
+			pImg.src = sPath;
 		}
 
 		static getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats): int {

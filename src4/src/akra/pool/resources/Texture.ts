@@ -102,10 +102,6 @@ module akra.pool.resources {
 			return this._isInternalResourceCreated;
 		}
 
-		//  calculateSize(): uint {
-		//     return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
-		// }
-
 		getNumFaces(): uint {
 			return this._eTextureType === ETextureTypes.TEXTURE_CUBE_MAP ? 6 : 1;
 		}
@@ -185,13 +181,10 @@ module akra.pool.resources {
 			}
 
 			var pImage: IImg = this.getManager().loadImage(sFilename);
-			// console.log("Texture::loadResource(" + sFilename + ")", pImage.isResourceLoaded());
 
 			if (pImage.isResourceLoaded()) {
 				return this.loadImage(pImage);
 			}
-			// LOG("Texture::loadResource(" + sFilename + ")", pImage);
-			//this.connect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
 
 			pImage.loaded.connect(this, this._onImageLoad);
 
@@ -200,10 +193,7 @@ module akra.pool.resources {
 
 		_onImageLoad(pImage: IImg): void {
 			pImage.loaded.disconnect(this, this._onImageLoad);
-			//this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
-			// console.log("image loaded > ", pImage.findResourceName());
 			this.loadImage(pImage);
-			// debug.log("texture/image loaded: ", pImage.findResourceName());
 		}
 
 		destroyResource(): boolean {
@@ -292,7 +282,9 @@ module akra.pool.resources {
 			}
 		}
 
-		loadImages(pImages: IImg[]): boolean {
+		loadImages(pImages: string[]): boolean;
+		loadImages(pImages: IImg[]): boolean;
+		loadImages(pImages): boolean {
 			var isLoaded: boolean = this._loadImages(pImages);
 
 			if (isLoaded) {
@@ -304,13 +296,10 @@ module akra.pool.resources {
 			}
 		}
 
-		_loadImages(pImageList: IImg[]): boolean;
-		_loadImages(pImage: IImg): boolean;
-
-		_loadImages(pImage: any): boolean {
-
-
-
+		private _loadImages(pImageList: string[]): boolean;
+		private _loadImages(pImageList: IImg[]): boolean;
+		private _loadImages(pImage: IImg): boolean;
+		private _loadImages(pImage: any): boolean {
 
 			if (this.isResourceLoaded()) {
 				logger.warn("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
@@ -326,11 +315,23 @@ module akra.pool.resources {
 				pImageList[0] = pMainImage;
 			}
 			else {
-				pImageList = arguments[0];
+				if (isString(arguments[0][0])) {
+					var pPathList: string[] = arguments[0];
+					pImageList = new Array(pPathList.length);
+
+					pPathList.forEach((sPath: string, i) => {
+						pImageList[i] = this.getManager().loadImage(sPath);
+					});
+				}
+				else {
+					pImageList = arguments[0];
+				}
+
 				if (pImageList.length === 0) {
 					logger.critical("Cannot load empty list of images");
 					return false;
 				}
+
 				pMainImage = pImageList[0];
 			}
 
@@ -346,12 +347,14 @@ module akra.pool.resources {
 				this._eFormat = pMainImage.getFormat();
 			}
 			else {
-				logger.warn("Format not support(" + pixelUtil.getFormatName(pMainImage.getFormat()) + ")");
+				logger.info("Format not support(" + pixelUtil.getFormatName(pMainImage.getFormat()) + ")");
+
+				//FIXME: skip this and go to bulk pixel conversion.
 				if (pMainImage.convert(EPixelFormats.B8G8R8A8)) {
 					this._eFormat = pMainImage.getFormat();
 				}
 				else {
-					logger.critical("Format not convert");
+					logger.critical("Could not convert from " + pMainImage.getFormat() + " to R8G8B8A8");
 				}
 			}
 
@@ -418,19 +421,14 @@ module akra.pool.resources {
 					if (isMultiImage) {
 						// Load from multiple images
 						pSrc = pImageList[i].getPixels(0, mip);
-						//console.log(mip,i);
 					}
 					else {
 						// Load from faces of images[0] or main Image
-						//console.log(mip,i);
 						pSrc = pMainImage.getPixels(i, mip);
 					}
 
 					// Destination: entire texture. blitFromMemory does the scaling to
 					// a power of two for us when needed
-					//console.log(pSrc);
-					//console.log(this.getBuffer(i, mip));
-
 					this.getBuffer(i, mip).blitFromMemory(pSrc);
 				}
 			}

@@ -13,12 +13,14 @@ declare var AE_MERCEDES_DATA: akra.IDep;
 
 module akra {
 
-	config.DEBUG = false;
+	//config.DEBUG = false;
 
 	if (!config.DEBUG) {
 		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
 		addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
 		addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
+		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 	}
 
 
@@ -51,7 +53,7 @@ module akra {
 		deps: { files: [AE_MERCEDES_DATA], root: "./" },
 	};
 
-	var pEngine = akra.createEngine(pOptions);
+	export var pEngine = akra.createEngine(pOptions);
 
 	var pScene = pEngine.getScene();
 
@@ -65,7 +67,7 @@ module akra {
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 	var pSkyboxTexture = null;
-	var pSkyboxTextures = null;
+	var pSkyboxTextures: IMap<ITexture> = null;
 	var pEnvTexture = null;
 	var pDepthViewport = null;
 
@@ -423,7 +425,18 @@ module akra {
 
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
+
+			var sPrefix: string = "SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase();
+			var pImages: string[] = [
+				sPrefix + "_POS_X",
+				sPrefix + "_NEG_X",
+				sPrefix + "_POS_Y",
+				sPrefix + "_NEG_Y",
+				sPrefix + "_POS_Z",
+				sPrefix + "_NEG_Z"
+			];
+
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
 		}
 
 

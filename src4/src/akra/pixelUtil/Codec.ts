@@ -70,26 +70,26 @@ module akra.pixelUtil {
 		}
 
 		magicNumberToFileExt(pMagicNumber: Uint8Array): string {
-			logger.critical("Codec.magicNumberToFileExt is virtual");
+			debug.critical("Codec.magicNumberToFileExt is virtual");
 			return null;
 		}
 
 		getType(): string {
-			logger.critical("Codec.getType is virtual");
+			debug.critical("Codec.getType is virtual");
 			return null;
 		}
 
 		getDataType(): string {
-			logger.critical("Codec.getDataType is virtual");
+			debug.critical("Codec.getDataType is virtual");
 			return null;
 		}
 
 		code(pInput: Uint8Array, pData: ICodecData): Uint8Array {
-			logger.critical("Codec.code is virtual");
+			debug.critical("Codec.code is virtual");
 			return null;
 		}
 		decode(pData: Uint8Array, pCodecData: ICodecData): Uint8Array {
-			logger.critical("Codec.decode is virtual");
+			debug.critical("Codec.decode is virtual");
 			return null;
 		}
 

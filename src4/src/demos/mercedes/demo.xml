@@ -47,8 +47,13 @@
 
         <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
         <ResourceFile Path="textures/grid.png" Name="GRID.PNG"/>
-        <ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY.DDS"/>
-
+        <!--<ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY.DDS"/>-->
+        <ResourceFile Path="data/textures/skyboxes/posX.jpg" Name="SKYBOX_NIGHTSKY.DDS_POS_X" />
+        <ResourceFile Path="data/textures/skyboxes/negX.jpg" Name="SKYBOX_NIGHTSKY.DDS_NEG_X" />
+        <ResourceFile Path="data/textures/skyboxes/posY.jpg" Name="SKYBOX_NIGHTSKY.DDS_POS_Y" />
+        <ResourceFile Path="data/textures/skyboxes/negY.jpg" Name="SKYBOX_NIGHTSKY.DDS_NEG_Y" />
+        <ResourceFile Path="data/textures/skyboxes/posZ.jpg" Name="SKYBOX_NIGHTSKY.DDS_POS_Z" />
+        <ResourceFile Path="data/textures/skyboxes/negZ.jpg" Name="SKYBOX_NIGHTSKY.DDS_NEG_Z" />
       </Data>
     </Resource>
   </PropertyGroup>

@@ -179,7 +179,9 @@ module akra.config {
 		"preparedFramebuffersNum": 32,
 		"indexbufferMinSize": 1024,
 		"vertexbufferMinSize": 1024,
-		"vertexTextureMinSize": 32
+		"vertexTextureMinSize": 32,
+
+		"extensionsBlackList": [/*"WEBGL_compressed_texture_s3tc"*/]
 	}
 
 	export var addons = {

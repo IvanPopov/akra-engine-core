@@ -1,13 +1,14 @@
 ﻿
 module akra.info {
-
-	export function determImageExtension(url: string, cb: (e: Error, sExt: string) => void) {
+	//FIXME: move determImageExtension to Image codec
+	export function determImageExtension(url: string, cb: (e: Error, pData: Uint8Array, sExt: string) => void) {
 		io.fopen(url, EIO.IN | EIO.BIN).read((e: Error, pData: ArrayBuffer) => {
 			if (isNull(e)) {
-				cb(null, readInfoFromData(new Uint8Array(pData)));
+				var pU8Data = new Uint8Array(pData);
+				cb(null, pU8Data, readInfoFromData(pU8Data));
 			}
 			else {
-				cb(e, null);
+				cb(e, null, null);
 			}
 		});
 	}

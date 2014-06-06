@@ -20,6 +20,17 @@ module akra {
 		POSITIVE_Z = 0x000000010,
 		NEGATIVE_Z = 0x000000020,
 	}
+
+	export interface ICubemap {
+		negX: string;
+		posX: string;
+
+		negY: string;
+		posY: string;
+
+		negZ: string;
+		posZ: string;
+	}
 	
 	export interface IImg extends IResourcePoolItem {
 		getByteLength(): uint;
@@ -36,11 +47,6 @@ module akra {
 		getCubeFlags():uint;	
 		
 		set(pSrc: IImg): IImg;
-	
-		/** @param Destination image. If destination not specified, original image will be modified.*/
-		flipY(pDest?: IImg): IImg;
-		flipX(pDest?: IImg): IImg;
-	
 	
 		load(sFileName: string,  fnCallBack?: Function): IImg;
 		load(pData: Uint8Array, sType?: string,  fnCallBack?: Function): IImg;
