@@ -43,6 +43,18 @@ float4 applyMaterialAlpha() : COLOR {
     float4 color = resultAFXColor;
     //color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
     color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
+    float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
+
+    // Simple model:
+    //color.a = (1. - simpleReflectance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
+    // Physically based shading:
+    color.a = 5.*reflSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
+
+    //color.g = color.a;
+    //color.a = 1.0;
+    //color.r = 0.;
+    //color.b = 0.;
+
     return color;
 }
 

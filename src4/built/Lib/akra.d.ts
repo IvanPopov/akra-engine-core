@@ -6882,7 +6882,7 @@ declare module akra.config {
         "indexbufferMinSize": number;
         "vertexbufferMinSize": number;
         "vertexTextureMinSize": number;
-        "extensionsBlackList": string[];
+        "extensionsBlackList": any[];
     };
     var addons: {};
 }
