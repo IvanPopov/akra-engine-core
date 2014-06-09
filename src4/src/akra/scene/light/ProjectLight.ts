@@ -69,11 +69,14 @@ module akra.scene.light {
 		}
 
 		getRenderTarget(): IRenderTarget {
-			// return this._pDepthTexture.getBuffer().getRenderTarget();
 			return this._pColorTexture.getBuffer().getRenderTarget();
 		}
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
+			if (!this.getScene().getManager().getEngine().getRenderer().hasCapability(ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER)) {
+				return super.create(false, 0);
+			}
+
 			var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
 
 			var pCaster: IShadowCaster = this._pShadowCaster;
@@ -94,10 +97,6 @@ module akra.scene.light {
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
 
-			// if (!isNull(this._pDepthTexture)){
-			// 	this._pDepthTexture.destroyResource();
-			// }
-
 			var pDepthTexture: ITexture = this._pDepthTexture =
 				pResMgr.createTexture("depth_texture_" + this.guid);
 			pDepthTexture.create(iSize, iSize, 1, null, 0,
@@ -107,10 +106,6 @@ module akra.scene.light {
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
 			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-
-			// if (this._pColorTexture) {
-			// 	this._pColorTexture.destroy();
-			// }
 
 			var pColorTexture: ITexture = pResMgr.createTexture("light_color_texture_" + this.guid);
 			pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,

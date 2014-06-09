@@ -110,6 +110,82 @@ module akra.webgl {
 			return ERenderers.WEBGL;
 		}
 
+		hasCapability(eCapability: ERenderCapabilities): boolean {
+			switch (eCapability) {
+				case ERenderCapabilities.AUTOMIPMAP: 
+				case ERenderCapabilities.BLENDING: 
+				case ERenderCapabilities.CUBEMAPPING:
+				case ERenderCapabilities.HWSTENCIL: 
+				case ERenderCapabilities.VBO: 
+				case ERenderCapabilities.VERTEX_PROGRAM: 
+				case ERenderCapabilities.FRAGMENT_PROGRAM: 
+				case ERenderCapabilities.SCISSOR_TEST: 
+				case ERenderCapabilities.HWRENDER_TO_TEXTURE:
+				case ERenderCapabilities.ALPHA_TO_COVERAGE:
+					return true;
+
+				case ERenderCapabilities.POINT_EXTENDED_PARAMETERS: 
+				case ERenderCapabilities.POINT_SPRITES: ///???
+				case ERenderCapabilities.NON_POWER_OF_2_TEXTURES: 
+				case ERenderCapabilities.GEOMETRY_PROGRAM: 
+				case ERenderCapabilities.TEXTURE_3D: 
+				case ERenderCapabilities.FBO: 
+				case ERenderCapabilities.PBUFFER: 
+				case ERenderCapabilities.HWRENDER_TO_VERTEX_BUFFER: 
+				case ERenderCapabilities.SEPARATE_SHADER_OBJECTS: 
+				case ERenderCapabilities.DOT3: 
+				case ERenderCapabilities.TWO_SIDED_STENCIL:
+				case ERenderCapabilities.USER_CLIP_PLANES: 
+				case ERenderCapabilities.HWOCCLUSION: 
+				case ERenderCapabilities.STENCIL_WRAP: 
+				case ERenderCapabilities.INFINITE_FAR_PLANE: 
+				case ERenderCapabilities.MIPMAP_LOD_BIAS: 
+				case ERenderCapabilities.FIXED_FUNCTION:
+				case ERenderCapabilities.MRT_DIFFERENT_BIT_DEPTHS: 
+				case ERenderCapabilities.ADVANCED_BLEND_OPERATIONS:
+				case ERenderCapabilities.CAN_GET_COMPILED_SHADER_BUFFER:  
+				case ERenderCapabilities.VERTEX_BUFFER_INSTANCE_DATA: //?? ANGLE_instanced_arrays 
+					return false;
+
+				case ERenderCapabilities.ANISOTROPY: 
+					return webgl.hasExtension(webgl.EXT_TEXTURE_FILTER_ANISOTROPIC);
+
+				case ERenderCapabilities.VERTEX_FORMAT_UBYTE4: 
+					return webgl.hasExtension(webgl.OES_ELEMENT_INDEX_UINT);
+
+				case ERenderCapabilities.VERTEX_TEXTURE_FETCH: 
+					return webgl.maxVertexTextureImageUnits > 0;
+
+				case ERenderCapabilities.TEXTURE_COMPRESSION_DXT: 
+					return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC);
+
+				case ERenderCapabilities.TEXTURE_COMPRESSION_PVRTC:
+					return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC);
+
+				case ERenderCapabilities.TEXTURE_COMPRESSION_ATC:
+					return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_ATC);
+
+				case ERenderCapabilities.TEXTURE_COMPRESSION:
+					return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ||
+						webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_ATC) ||
+						webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC);
+
+				case ERenderCapabilities.TEXTURE_COMPRESSION_VTC: 
+					return false;
+
+				case ERenderCapabilities.TEXTURE_FLOAT: 
+					return webgl.hasExtension(webgl.OES_TEXTURE_FLOAT) ||
+						webgl.hasExtension(webgl.OES_TEXTURE_HALF_FLOAT);
+				
+				case ERenderCapabilities.RTT_DEPTHBUFFER_RESOLUTION_LESSEQUAL: 
+				case ERenderCapabilities.RTT_MAIN_DEPTHBUFFER_ATTACHABLE: 
+				case ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER: 
+					return webgl.hasExtension(WEBGL_DEPTH_TEXTURE);
+			}
+
+			return false;
+		}
+
 		constructor(pEngine: IEngine);
 		constructor(pEngine: IEngine, sCanvas: string);
 		constructor(pEngine: IEngine, pOptions: IRendererOptions);
@@ -619,9 +695,11 @@ module akra.webgl {
 		private _pLastMaker: IAFXMaker = null;
 		_renderEntry(pEntry: IRenderEntry): void {
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
+
 			if (isNull(pViewport)) {
 				logger.log(pEntry);
 			}
+
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
@@ -656,14 +734,20 @@ module akra.webgl {
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
 			if (!isNull(pBufferMap.getIndex())) {
-				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
+				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER,
+					(<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
 			}
 
 			for (var i: uint = 0; i < pAttributeInfo.length; i++) {
+				//attribute name in WebGL shaders, like aa0, aa1 etc...
 				var sAttrName: string = pAttributeInfo[i].name;
+				//attribute semantics in AFX shader, like POSITION, NORMAL etc...
 				var sAttrSemantic: string = pAttributeInfo[i].semantic;
+
+				//location in WebGL shader
 				var iLoc: int = pAttribLocations[sAttrName];
 				var pFlow: IDataFlow = pInput.attrs[i];
+
 				var pData: data.VertexData = null;
 				var sSemantics: string = null;
 

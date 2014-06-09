@@ -81,6 +81,10 @@ module akra.scene.light {
 		}
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
+			if (!this.getScene().getManager().getEngine().getRenderer().hasCapability(ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER)) {
+				return super.create(false, 0);
+			}
+
 			var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
 
 			var pCasterCube: IShadowCaster[] = this._pShadowCasterCube;
