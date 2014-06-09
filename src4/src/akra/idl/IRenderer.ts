@@ -109,6 +109,9 @@ module akra {
 		TEXTURE_COMPRESSION_VTC = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_COMMON_2, 2),
 		/// Supports compressed textures in the PVRTC format
 		TEXTURE_COMPRESSION_PVRTC = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_COMMON_2, 3),
+
+		TEXTURE_COMPRESSION_ATC = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_COMMON_2, 13),
+
 		/// Supports fixed-function pipeline
 		FIXED_FUNCTION = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_COMMON_2, 4),
 		/// Supports MRTs with different bit depths
@@ -132,23 +135,11 @@ module akra {
 	
 	
 		// ***** GL Specific Caps *****
-		/// Supports openGL GLEW version 1.5
-		GL1_5_NOVBO	= CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 1),
 		/// Support for Frame Buffer Objects (FBOs)
 		FBO			  = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 2),
-		/// Support for Frame Buffer Objects ARB implementation (regular FBO is higher precedence)
-		FBO_ARB		  = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 3),
-		/// Support for Frame Buffer Objects ATI implementation (ARB FBO is higher precedence)
-		FBO_ATI		  = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 4),
 		/// Support for PBuffer
 		PBUFFER		  = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 5),
-		/// Support for GL 1.5 but without HW occlusion workaround
-		GL1_5_NOHWOCCLUSION = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 6),
-		/// Support for point parameters ARB implementation
-		POINT_EXTENDED_PARAMETERS_ARB = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 7),
-		/// Support for point parameters EXT implementation
-		POINT_EXTENDED_PARAMETERS_EXT = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 8),
-		/// Support for Separate Shader Objects
+
 		SEPARATE_SHADER_OBJECTS = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 9)
 	}
 	

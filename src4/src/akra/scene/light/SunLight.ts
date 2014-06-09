@@ -15,10 +15,10 @@ module akra.scene.light {
 
 	export class SunParameters implements ISunParameters {
 		eyePosition: IVec3 = new Vec3;
-	    sunDir: IVec3 = new Vec3;
-	    groundC0: IVec3 = new Vec3;
-	    groundC1: IVec3 = new Vec3;
-	    hg: IVec3 = new Vec3;
+		sunDir: IVec3 = new Vec3;
+		groundC0: IVec3 = new Vec3;
+		groundC1: IVec3 = new Vec3;
+		hg: IVec3 = new Vec3;
 	}
 
 	export class SunLight extends LightPoint implements ISunLight {
@@ -42,7 +42,7 @@ module akra.scene.light {
 			this._pSkyDome = pSkyDome;
 		}
 
-		getLightingDistance(): float{
+		getLightingDistance(): float {
 			return this._pShadowCaster.getFarPlane();
 		}
 
@@ -74,12 +74,16 @@ module akra.scene.light {
 			return this._pShadowCaster;
 		}
 
-		constructor (pScene: IScene3d) {
+		constructor(pScene: IScene3d) {
 			super(pScene, ELightTypes.SUN);
 			this._pShadowCaster = pScene._createShadowCaster(this);
 		}
 
-		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean{
+		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
+			if (!this.getScene().getManager().getEngine().getRenderer().hasCapability(ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER)) {
+				return super.create(false, 0);
+			}
+
 			var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
 
 			var pCaster: IShadowCaster = this._pShadowCaster;
@@ -108,16 +112,16 @@ module akra.scene.light {
 		// 	return super.create(false, 0);
 		// };
 
-		_prepareForLighting(pCamera: ICamera): boolean{
+		_prepareForLighting(pCamera: ICamera): boolean {
 			// if(!this.enabled){
 			// 	return false;
 			// }
 
 			// return true;
-			if(!this.isEnabled()){
+			if (!this.isEnabled()) {
 				return false;
 			}
-			else{
+			else {
 				/*************************************************************/
 				//optimize camera frustum
 				var pDepthRange: IDepthRange = pCamera.getDepthRange();
@@ -130,11 +134,11 @@ module akra.scene.light {
 				this.getOptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
 				/*************************************************************/
 
-				if(!this.isShadowCaster()){
+				if (!this.isShadowCaster()) {
 					var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera);
 					return (pResult.getLength() === 0) ? false : true;
 				}
-				else{
+				else {
 					var pResult: IObjectArray<ISceneObject> = this._defineShadowInfluence(pCamera);
 					// this._pShadowCaster.optimizedProjection.set(this._pShadowCaster.projectionMatrix);
 					return (pResult.getLength() === 0) ? false : true;
@@ -142,7 +146,7 @@ module akra.scene.light {
 			}
 		}
 
-		protected _defineLightingInfluence(pCamera: ICamera): IObjectArray<ISceneObject>{
+		protected _defineLightingInfluence(pCamera: ICamera): IObjectArray<ISceneObject> {
 			var pShadowCaster: IShadowCaster = this._pShadowCaster;
 			var pCameraFrustum: IFrustum = this.getOptimizedCameraFrustum();
 
@@ -150,17 +154,17 @@ module akra.scene.light {
 			pResult.clear();
 
 			// fast test on frustum intersection
-			if(!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())){
+			if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
 				//frustums don't intersecting
 				return pResult;
 			}
 
 			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
 
-			for (var i: int = 0; i < pRawResult.getLength(); i++){
+			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 
-				if(pCameraFrustum.testRect(pObject.getWorldBounds())){
+				if (pCameraFrustum.testRect(pObject.getWorldBounds())) {
 					pResult.push(pObject);
 				}
 			}
@@ -168,7 +172,7 @@ module akra.scene.light {
 			return pResult;
 		}
 
-		protected _defineShadowInfluence(pCamera: ICamera): IObjectArray<ISceneObject>{
+		protected _defineShadowInfluence(pCamera: ICamera): IObjectArray<ISceneObject> {
 			var pShadowCaster: IShadowCaster = this._pShadowCaster;
 			var pCameraFrustum: IFrustum = this.getOptimizedCameraFrustum();
 
@@ -176,7 +180,7 @@ module akra.scene.light {
 			pResult.clear();
 
 			// fast test on frustum intersection
-			if(!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())){
+			if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
 				//frustums don't intersecting
 				pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
 				// pShadowCaster.optimizedProjection.set(pShadowCaster.projectionMatrix);
@@ -189,29 +193,29 @@ module akra.scene.light {
 			var nAdditionalTestLength: int = 0;
 
 			nAdditionalTestLength = calculatePlanesForOrthogonalLighting(
-											pShadowCaster.getFrustum(), pShadowCaster.getWorldPosition(),
-											pCameraFrustum, pTestArray);
+				pShadowCaster.getFrustum(), pShadowCaster.getWorldPosition(),
+				pCameraFrustum, pTestArray);
 
 			var v3fMidPoint: IVec3 = Vec3.temp();
 			var v3fShadowDir: IVec3 = Vec3.temp();
 			var v3fCameraDir: IVec3 = Vec3.temp();
 
-			for (var i: int = 0; i < pRawResult.getLength(); i++){
+			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 				var pWorldBounds: IRect3d = pObject.getWorldBounds();
 
 				//have object shadows?
-				if(pObject.getShadow()){
-					var j:int = 0;
-					for(j = 0; j<nAdditionalTestLength; j++){
+				if (pObject.getShadow()) {
+					var j: int = 0;
+					for (j = 0; j < nAdditionalTestLength; j++) {
 						var pPlane: IPlane3d = pTestArray[j];
 
-						if (geometry.classify.planeRect3d(pPlane, pWorldBounds) 
-								== EPlaneClassifications.PLANE_FRONT){
+						if (geometry.classify.planeRect3d(pPlane, pWorldBounds)
+							== EPlaneClassifications.PLANE_FRONT) {
 							break;
 						}
 					}
-					if(j == nAdditionalTestLength){
+					if (j == nAdditionalTestLength) {
 
 						//discard shadow by distance?
 
@@ -220,16 +224,16 @@ module akra.scene.light {
 						v3fMidPoint.subtract(pShadowCaster.getWorldPosition(), v3fShadowDir);
 						v3fMidPoint.subtract(pCamera.getWorldPosition(), v3fCameraDir);
 
-						if(v3fCameraDir.dot(v3fShadowDir) > 0 &&
-							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE){
+						if (v3fCameraDir.dot(v3fShadowDir) > 0 &&
+							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE) {
 						}
-						else{
+						else {
 							pResult.push(pObject);
 						}
-					}	
+					}
 				}
-				else{
-					if(pCameraFrustum.testRect(pWorldBounds)){
+				else {
+					if (pCameraFrustum.testRect(pWorldBounds)) {
 						pResult.push(pObject);
 					}
 				}
@@ -246,7 +250,7 @@ module akra.scene.light {
 			// m4fMat.data[__23] = -v3fSunDir.y;
 			// m4fMat.data[__33] = -v3fSunDir.z;
 			//this.localMatrix = Mat4.fromXYZ(Vec3.temp(v3fSunDir.x, v3fSunDir.y, v3fSunDir.z).scale(-1., Vec3.temp()), Mat4.temp()).setTranslation(Vec3.temp(0., 0., 1.));
-			
+
 			// var pViewMat = Mat4.temp();
 
 			var pViewMat = Mat4.lookAt(Vec3.temp(0.), Vec3.temp(v3fSunDir).scale(-1.), Vec3.temp(0., 0., 1.), Mat4.temp());
@@ -263,37 +267,29 @@ module akra.scene.light {
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
 
-			// if (!isNull(this._pDepthTexture)){
-			// 	this._pDepthTexture.destroyResource();
-			// }
-
-			var pDepthTexture: ITexture = this._pDepthTexture = 
+			var pDepthTexture: ITexture = this._pDepthTexture =
 				pResMgr.createTexture("depth_texture_" + this.guid);
 			pDepthTexture.create(iSize, iSize, 1, null, 0,
-								 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+				0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
 			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 
-			// if (this._pColorTexture) {
-			// 	this._pColorTexture.destroy();
-			// }
 
 			var pColorTexture: ITexture = pResMgr.createTexture("light_color_texture_" + this.guid);
-			pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET, 
-						  0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+			pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
+				0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
 			this._pColorTexture = pColorTexture;
 
-			// this._pColorTexture = pColorTexture;
 			//TODO: Multiple render target
-			this.getRenderTarget().attachDepthTexture(pDepthTexture); 
+			this.getRenderTarget().attachDepthTexture(pDepthTexture);
 			this.getRenderTarget().setAutoUpdated(false);
 			this.getRenderTarget().addViewport(new render.ShadowViewport(this._pShadowCaster));
 		}
-		
+
 		//list of frustum planes with which additional testing must be done.
 		//created just for prevent reallocation
 		static _pFrustumPlanes: IPlane3d[] = new Array(6);/*new geometry.Plane3d[];*/
@@ -302,7 +298,7 @@ module akra.scene.light {
 		static _pTmpDirLengthList: float[] = [0.0, 0.0, 0.0, 0.0];
 	}
 
-	for(var i:int = 0; i<6; i++){
+	for (var i: int = 0; i < 6; i++) {
 		SunLight._pFrustumPlanes[i] = new geometry.Plane3d();
 	}
 }

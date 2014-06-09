@@ -6607,6 +6607,7 @@ declare module akra {
         TEXTURE_COMPRESSION_DXT,
         TEXTURE_COMPRESSION_VTC,
         TEXTURE_COMPRESSION_PVRTC,
+        TEXTURE_COMPRESSION_ATC,
         FIXED_FUNCTION,
         MRT_DIFFERENT_BIT_DEPTHS,
         ALPHA_TO_COVERAGE,
@@ -6616,14 +6617,8 @@ declare module akra {
         RTT_DEPTHBUFFER_RESOLUTION_LESSEQUAL,
         VERTEX_BUFFER_INSTANCE_DATA,
         CAN_GET_COMPILED_SHADER_BUFFER,
-        GL1_5_NOVBO,
         FBO,
-        FBO_ARB,
-        FBO_ATI,
         PBUFFER,
-        GL1_5_NOHWOCCLUSION,
-        POINT_EXTENDED_PARAMETERS_ARB,
-        POINT_EXTENDED_PARAMETERS_EXT,
         SEPARATE_SHADER_OBJECTS,
     }
     enum EAttachmentTypes {
@@ -12282,7 +12277,7 @@ declare module akra.pool.resources {
         public create(iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         public freeMemory(): void;
         public set(pSrc: IImg): IImg;
-        private loadImageWithInternalFormatFromURL(sPath, cb?);
+        private loadImageWithInternalFormatFromURL(sPath, sExt, cb?);
         public load(sFileName: string, cb?: (e: Error) => void): IImg;
         public load(pData: Uint8Array, sType?: string, cb?: (e: Error) => void): IImg;
         public load(pCanvas: HTMLCanvasElement, cb?: (e: Error) => void): IImg;
@@ -12306,7 +12301,7 @@ declare module akra.pool.resources {
         public randomChannelNoise(iChannel: number, iMinRange: number, iMaxRange: number): void;
         static calculateSize(nMipMaps: number, nFaces: number, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats): number;
         static isInternalImageFormat(sExt: string): boolean;
-        static decodeImageWithInternalFormatFromURL(sPath: string, cb: (e: Error, pData: Uint8Array, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats) => void): void;
+        static decodeImageWithInternalFormatFromURL(sPath: string, sExt: string, cb: (e: Error, pData: Uint8Array, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats) => void): void;
         static getMaxMipmaps(iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats): number;
     }
 }
@@ -16220,6 +16215,7 @@ declare module akra.webgl {
         private _pFreeRenderStatesPool;
         static DEFAULT_OPTIONS: IRendererOptions;
         public getType(): ERenderers;
+        public hasCapability(eCapability: ERenderCapabilities): boolean;
         constructor(pEngine: IEngine);
         constructor(pEngine: IEngine, sCanvas: string);
         constructor(pEngine: IEngine, pOptions: IRendererOptions);
