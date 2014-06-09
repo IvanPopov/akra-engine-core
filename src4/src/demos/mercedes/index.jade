@@ -20,11 +20,11 @@ html(lang="en")
         overflow: hidden;
       }
 
-    - for (var i in demo.scripts)
-      script(src=demo.scripts[i])
     - for (var i in demo.styles)
       link(href=demo.styles[i], rel='stylesheet')
   body
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
     h1.ci
     #progress
     include noncompatible

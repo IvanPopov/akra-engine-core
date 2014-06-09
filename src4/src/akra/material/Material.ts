@@ -6,7 +6,7 @@ module akra.material {
 	import Color = color.Color;
 
 	export class Material implements IMaterial {
-		
+		guid: uint = guid();
 		name: string = null;
 
 		diffuse: IColor = new Color;
@@ -15,6 +15,15 @@ module akra.material {
 		emissive: IColor = new Color;
 		transparency: float = 1.;
 		shininess: float = 1.;
+
+		private _pMatContainer: IMaterialConatiner = {
+			"DIFFUSE": new math.Vec4(),
+			"AMBIENT": new math.Vec4(),
+			"SPECULAR": new math.Vec4(),
+			"EMISSIVE": new math.Vec4(),
+			"SHININESS": 1.,
+			"TRANSPARENCY": 1.
+		};
 
 		constructor(
 			sName: string = null,
@@ -108,6 +117,10 @@ module akra.material {
 			}
 
 			return null;
+		}
+
+		_getMatContainer(): IMaterialConatiner {
+			return this._pMatContainer;
 		}
 	}
 

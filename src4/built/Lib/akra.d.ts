@@ -3639,7 +3639,15 @@ declare module akra {
         */
         transparency: number;
     }
-    interface IMaterial extends IMaterialBase {
+    interface IMaterialConatiner {
+        DIFFUSE: IVec4;
+        AMBIENT: IVec4;
+        SPECULAR: IVec4;
+        EMISSIVE: IVec4;
+        SHININESS: number;
+        TRANSPARENCY: number;
+    }
+    interface IMaterial extends IMaterialBase, IUnique {
         /** Name of material */
         name: string;
         diffuse: IColor;
@@ -3658,6 +3666,7 @@ declare module akra {
         set(pMat: IMaterialBase): IMaterial;
         isEqual(pMat: IMaterialBase): boolean;
         isTransparent(): boolean;
+        _getMatContainer(): IMaterialConatiner;
     }
 }
 declare module akra {
@@ -6473,6 +6482,7 @@ declare module akra {
         maker: IAFXMaker;
         input: IShaderInput;
         bufferMap: IBufferMap;
+        surfaceMaterial: ISurfaceMaterial;
         clear(): void;
     }
 }
@@ -11941,7 +11951,6 @@ declare module akra.fx {
         public _pCreator: IAFXComponentPassInputBlend;
         private _iLastPassBlendId;
         private _iLastShaderId;
-        private _pMaterialContainer;
         private _nLastSufraceMaterialTextureUpdates;
         private _nLastSamplerUpdates;
         private _pLastSurfaceMaterial;
@@ -12139,6 +12148,7 @@ declare module akra.fx {
 }
 declare module akra.material {
     class Material implements IMaterial {
+        public guid: number;
         public name: string;
         public diffuse: IColor;
         public ambient: IColor;
@@ -12146,12 +12156,14 @@ declare module akra.material {
         public emissive: IColor;
         public transparency: number;
         public shininess: number;
+        private _pMatContainer;
         constructor(sName?: string, pMat?: IMaterialBase);
         public set(pMat: IMaterialBase): IMaterial;
         public set(sMat: string): IMaterial;
         public isEqual(pMat: IMaterialBase): boolean;
         public isTransparent(): boolean;
         public toString(): string;
+        public _getMatContainer(): IMaterialConatiner;
     }
 }
 declare module akra {
@@ -15886,6 +15898,7 @@ declare module akra.render {
         public maker: IAFXMaker;
         public input: IShaderInput;
         public bufferMap: IBufferMap;
+        public surfaceMaterial: ISurfaceMaterial;
         public clear(): void;
     }
 }

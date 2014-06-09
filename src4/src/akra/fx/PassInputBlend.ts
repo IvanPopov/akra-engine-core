@@ -25,14 +25,15 @@ module akra.fx {
 		private _iLastPassBlendId: uint = 0;
 		private _iLastShaderId: uint = 0;
 
-		private _pMaterialContainer: any = {
-			"DIFFUSE": new Vec4(),
-			"AMBIENT": new Vec4(),
-			"SPECULAR": new Vec4(),
-			"EMISSIVE": new Vec4(),
-			"SHININESS": 1.,
-			"TRANSPARENCY": 1.
-		};
+		//private _pMaterialContainer: IMaterialConatiner = null;
+		//{
+		//	"DIFFUSE": new Vec4(),
+		//	"AMBIENT": new Vec4(),
+		//	"SPECULAR": new Vec4(),
+		//	"EMISSIVE": new Vec4(),
+		//	"SHININESS": 1.,
+		//	"TRANSPARENCY": 1.
+		//};
 
 		//need for accelerate setSurfaceMaterial
 		private _nLastSufraceMaterialTextureUpdates: uint = 0;
@@ -327,14 +328,14 @@ module akra.fx {
 
 			if (this._pMaterialNameIndices.material > 0) {
 				var pMaterial: IMaterial = pSurfaceMaterial.getMaterial();
-				var pMatContainer: any = this._pMaterialContainer;
+				var pMatContainer: IMaterialConatiner = pMaterial._getMatContainer();
 
-				pMatContainer["DIFFUSE"].set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
-				pMatContainer["AMBIENT"].set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
-				pMatContainer["SPECULAR"].set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
-				pMatContainer["EMISSIVE"].set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
-				pMatContainer["SHININESS"] = pMaterial.shininess;
-				pMatContainer["TRANSPARENCY"] = pMaterial.transparency;
+				pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
+				pMatContainer.AMBIENT.set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
+				pMatContainer.SPECULAR.set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
+				pMatContainer.EMISSIVE.set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
+				pMatContainer.SHININESS = pMaterial.shininess;
+				pMatContainer.TRANSPARENCY = pMaterial.transparency;
 
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
