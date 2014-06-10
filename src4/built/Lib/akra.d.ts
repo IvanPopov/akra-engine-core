@@ -129,7 +129,7 @@ declare module akra.conv {
     /**
     * Convert ArrayBuffer to string.
     */
-    function abtos(pBuf: ArrayBuffer, iByteOffset?: number, iByteLength?: number): string;
+    function abtos(pBuf: ArrayBuffer): string;
     /**
     * Convert ArrayBuffer to string via BlobReader.
     */
@@ -3639,8 +3639,15 @@ declare module akra {
         */
         transparency: number;
     }
+    interface IMaterialConatiner {
+        DIFFUSE: IVec4;
+        AMBIENT: IVec4;
+        SPECULAR: IVec4;
+        EMISSIVE: IVec4;
+        SHININESS: number;
+        TRANSPARENCY: number;
+    }
     interface IMaterial extends IMaterialBase, IUnique {
-        guid: number;
         /** Name of material */
         name: string;
         diffuse: IColor;
@@ -3659,6 +3666,7 @@ declare module akra {
         set(pMat: IMaterialBase): IMaterial;
         isEqual(pMat: IMaterialBase): boolean;
         isTransparent(): boolean;
+        _getMatContainer(): IMaterialConatiner;
     }
 }
 declare module akra {
@@ -5619,14 +5627,6 @@ declare module akra {
         POSITIVE_Z = 16,
         NEGATIVE_Z = 32,
     }
-    interface ICubemap {
-        negX: string;
-        posX: string;
-        negY: string;
-        posY: string;
-        negZ: string;
-        posZ: string;
-    }
     interface IImg extends IResourcePoolItem {
         getByteLength(): number;
         getWidth(): number;
@@ -5638,6 +5638,9 @@ declare module akra {
         getFlags(): number;
         getCubeFlags(): number;
         set(pSrc: IImg): IImg;
+        /** @param Destination image. If destination not specified, original image will be modified.*/
+        flipY(pDest?: IImg): IImg;
+        flipX(pDest?: IImg): IImg;
         load(sFileName: string, fnCallBack?: Function): IImg;
         load(pData: Uint8Array, sType?: string, fnCallBack?: Function): IImg;
         load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
@@ -6352,7 +6355,6 @@ declare module akra {
         loadRawData(pData: ArrayBufferView, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): boolean;
         loadImage(pImage: IImg): boolean;
         loadImages(pImages: IImg[]): boolean;
-        loadImages(pImages: string[]): boolean;
         convertToImage(pDestImage: IImg, bIncludeMipMaps: boolean): void;
         copyToTexture(pTarget: ITexture): void;
         createInternalTexture(cFillColor?: IColor): boolean;
@@ -6480,6 +6482,7 @@ declare module akra {
         maker: IAFXMaker;
         input: IShaderInput;
         bufferMap: IBufferMap;
+        surfaceMaterial: ISurfaceMaterial;
         clear(): void;
     }
 }
@@ -6882,7 +6885,6 @@ declare module akra.config {
         "indexbufferMinSize": number;
         "vertexbufferMinSize": number;
         "vertexTextureMinSize": number;
-        "extensionsBlackList": any[];
     };
     var addons: {};
 }
@@ -6905,7 +6907,6 @@ declare module akra {
         k_AnimationBlend = 4,
         k_AnimationContainer = 5,
         k_SceneNode = 6,
-        k_Material = 7,
     }
     enum EDocumentFormat {
         JSON = 0,
@@ -6993,17 +6994,6 @@ declare module akra {
         pause: boolean;
         leftInfinity: boolean;
         rightInfinity: boolean;
-    }
-    interface IColorEntry {
-        [i: number]: number;
-    }
-    interface IMaterialEntry extends IDataEntry {
-        name: string;
-        diffuse: IColorEntry;
-        specular: IColorEntry;
-        emissive: IColorEntry;
-        shininess: number;
-        transparency: number;
     }
     interface IControllerEntry extends IDataEntry {
         animations: number[];
@@ -8182,6 +8172,7 @@ declare module akra.webgl {
     var multisampleType: number;
     var shaderVersion: number;
     var hasNonPowerOf2Textures: boolean;
+    var ANGLE: boolean;
     var OES_TEXTURE_FLOAT: string;
     var OES_TEXTURE_HALF_FLOAT: string;
     var OES_STANDARD_DERIVATIVES: string;
@@ -8347,9 +8338,6 @@ declare module akra.info {
     }
 }
 declare module akra.info {
-    function determImageExtension(url: string, cb: (e: Error, pData: Uint8Array, sExt: string) => void): void;
-}
-declare module akra.info {
     function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;
     function canvas(id: string): ICanvasInfo;
     var browser: IBrowserInfo;
@@ -8457,6 +8445,24 @@ declare module akra.io {
         private execCommand(pCommand, cb, pTransferables?);
         static defaultCallback: Function;
         private static execCommand(pFile, isLocal, pCommand, cb, pTransferables?);
+    }
+}
+/**
+* FIle implementation via <Local Storage>.
+* ONLY FOR LOCAL FILES!!
+*/
+declare module akra.io {
+    class StorageFile extends TFile implements IFile {
+        constructor(sFilename?: string, sMode?: string, cb?: (e: Error, pMeta: IFileMeta) => void);
+        constructor(sFilename?: string, iMode?: number, cb?: (e: Error, pMeta: IFileMeta) => void);
+        public clear(cb?: Function): void;
+        public read(cb?: Function): void;
+        public write(sData: string, cb?: Function, sContentType?: string): void;
+        public write(pData: ArrayBuffer, cb?: Function, sContentType?: string): void;
+        public isExists(cb?: Function): void;
+        public remove(cb?: Function): void;
+        private readData();
+        public update(cb?: Function): void;
     }
 }
 declare module akra {
@@ -9103,12 +9109,16 @@ declare module akra.exchange {
         public _sComments: string;
         public _sCopyright: string;
         public _sSourceData: string;
+        /**  */ 
         public writeAnimation(pAnimation: IAnimationBase): void;
+        /**  */ 
         public writeController(pController: IAnimationController): void;
-        public writeMaterial(pMaterial: IMaterial): void;
         public clear(): void;
+        /**  */ 
         public findLibraryEntry(iGuid: number): ILibraryEntry;
+        /**  */ 
         public findEntry(iGuid: number): IDataEntry;
+        /**  */ 
         public findEntryData(iGuid: number): any;
         public isSceneWrited(): boolean;
         public isEntryExists(iGuid: number): boolean;
@@ -9122,8 +9132,6 @@ declare module akra.exchange {
         public encodeAnimationContainerEntry(pContainer: IAnimationContainer): IDataEntry;
         public encodeAnimationBlendEntry(pBlend: IAnimationBlend): IDataEntry;
         public encodeControllerEntry(pController: IAnimationController): IDataEntry;
-        public encodeMaterialEntry(pMaterial: IMaterial): IMaterialEntry;
-        public encodeColorEntry(pColor: IColor): IColorEntry;
         public toolInfo(): string;
         public createUnit(): IUnit;
         public createContributor(): IContributor;
@@ -9602,27 +9610,6 @@ declare module akra.animation {
     }
     function createContainer(pAnimation?: IAnimationBase, sName?: string): IAnimationContainer;
 }
-declare module akra.material {
-    class Material implements IMaterial {
-        public guid: number;
-        public name: string;
-        public diffuse: IColor;
-        public ambient: IColor;
-        public specular: IColor;
-        public emissive: IColor;
-        public transparency: number;
-        public shininess: number;
-        constructor(sName?: string, pMat?: IMaterialBase);
-        public set(pMat: IMaterialBase): IMaterial;
-        public set(sMat: string): IMaterial;
-        public isEqual(pMat: IMaterialBase): boolean;
-        public isTransparent(): boolean;
-        public toString(): string;
-    }
-}
-declare module akra.material {
-    function create(sName?: string, pMat?: IMaterialBase): IMaterial;
-}
 declare module akra.exchange {
     class Importer {
         private _pEngine;
@@ -9630,9 +9617,10 @@ declare module akra.exchange {
         private _pLibrary;
         constructor(_pEngine: IEngine);
         public getEngine(): IEngine;
+        /**  */ 
         public getDocument(): IDocument;
+        /**  */ 
         public getLibrary(): ILibrary;
-        public clear(): void;
         public import(pData: string, eFormat?: EDocumentFormat): Importer;
         public import(pData: Object, eFormat?: EDocumentFormat): Importer;
         public import(pData: ArrayBuffer, eFormat?: EDocumentFormat): Importer;
@@ -9647,14 +9635,11 @@ declare module akra.exchange {
         public findByIndex(eType: EDocumentEntry, i?: number): any;
         public findFirst(eType: EDocumentEntry): any;
         public getController(iContrller?: number): IAnimationController;
-        public getMaterials(): IMap<IMaterial>;
         public decodeEntry(pEntry: IDataEntry): any;
         public registerData(iGuid: number, pData: any): void;
         public decodeInstance(iGuid: number): any;
         public decodeEntryList(pEntryList: IDataEntry[], fnCallback: (pData: any) => void): void;
         public decodeInstanceList(pInstances: number[], fnCallback: (pData: any, n?: number) => void): void;
-        public decodeMaterialEntry(pEntry: IMaterialEntry): IMaterial;
-        public decodeColorEntry(pEntry: IColorEntry, pDest?: IColor): IColor;
         public decodeAnimationFrame(pEntry: IAnimationFrameEntry): IPositionFrame;
         public decodeAnimationTrack(pEntry: IAnimationTrackEntry): IAnimationTrack;
         public decodeAnimationEntry(pEntry: IAnimationEntry): IAnimation;
@@ -11966,7 +11951,6 @@ declare module akra.fx {
         public _pCreator: IAFXComponentPassInputBlend;
         private _iLastPassBlendId;
         private _iLastShaderId;
-        private _pMaterialContainer;
         private _nLastSufraceMaterialTextureUpdates;
         private _nLastSamplerUpdates;
         private _pLastSurfaceMaterial;
@@ -12162,6 +12146,26 @@ declare module akra.fx {
         private static binarySearchInSortArray<T>(pArray, iValue);
     }
 }
+declare module akra.material {
+    class Material implements IMaterial {
+        public guid: number;
+        public name: string;
+        public diffuse: IColor;
+        public ambient: IColor;
+        public specular: IColor;
+        public emissive: IColor;
+        public transparency: number;
+        public shininess: number;
+        private _pMatContainer;
+        constructor(sName?: string, pMat?: IMaterialBase);
+        public set(pMat: IMaterialBase): IMaterial;
+        public set(sMat: string): IMaterial;
+        public isEqual(pMat: IMaterialBase): boolean;
+        public isTransparent(): boolean;
+        public toString(): string;
+        public _getMatContainer(): IMaterialConatiner;
+    }
+}
 declare module akra {
     interface ICodec {
         getType(): string;
@@ -12282,10 +12286,11 @@ declare module akra.pool.resources {
         public create(iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         public freeMemory(): void;
         public set(pSrc: IImg): IImg;
-        private loadImageWithInternalFormatFromURL(sPath, cb?);
-        public load(sFileName: string, cb?: (e: Error) => void): IImg;
-        public load(pData: Uint8Array, sType?: string, cb?: (e: Error) => void): IImg;
-        public load(pCanvas: HTMLCanvasElement, cb?: (e: Error) => void): IImg;
+        public flipY(pDest?: IImg): IImg;
+        public flipX(pDest?: IImg): IImg;
+        public load(sFileName: string, fnCallBack?: Function): IImg;
+        public load(pData: Uint8Array, sType?: string, fnCallBack?: Function): IImg;
+        public load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
         public loadRawData(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         public loadDynamicImage(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         public convert(eFormat: EPixelFormats): boolean;
@@ -12305,8 +12310,6 @@ declare module akra.pool.resources {
         public generatePerlinNoise(fScale: number, iOctaves: number, fFalloff: number): void;
         public randomChannelNoise(iChannel: number, iMinRange: number, iMaxRange: number): void;
         static calculateSize(nMipMaps: number, nFaces: number, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats): number;
-        static isInternalImageFormat(sExt: string): boolean;
-        static decodeImageWithInternalFormatFromURL(sPath: string, cb: (e: Error, pData: Uint8Array, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats) => void): void;
         static getMaxMipmaps(iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats): number;
     }
 }
@@ -12365,9 +12368,9 @@ declare module akra.pool.resources {
         public _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes;
         public loadRawData(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): boolean;
         public loadImage(pImage: IImg): boolean;
-        public loadImages(pImages: string[]): boolean;
         public loadImages(pImages: IImg[]): boolean;
-        private _loadImages(pImageList);
+        public _loadImages(pImageList: IImg[]): boolean;
+        public _loadImages(pImage: IImg): boolean;
         public convertToImage(pDestImage: IImg, bIncludeMipMaps: boolean): void;
         public copyToTexture(pTarget: ITexture): void;
         public createInternalTexture(cFillColor?: IColor): boolean;
@@ -12388,7 +12391,6 @@ declare module akra.pool.resources {
         public _pTextureMatrices: IMat4[];
         public _nTextureUpdates: number;
         public _nTexcoordUpdates: number;
-        public notifyAltered(): void;
         public getTotalUpdatesOfTextures(): number;
         public getTotalUpdatesOfTexcoords(): number;
         public getTotalTextures(): number;
@@ -13422,6 +13424,9 @@ declare module akra.geometry {
     * Computes a bounding sphere - minimal.
     */
     function computeBoundingSphereMinimal(pVertexData: IVertexData, pSphere: ISphere): boolean;
+}
+declare module akra.material {
+    function create(sName?: string, pMat?: IMaterialBase): IMaterial;
 }
 declare module akra {
     interface IAFXPreRenderState {
@@ -15893,6 +15898,7 @@ declare module akra.render {
         public maker: IAFXMaker;
         public input: IShaderInput;
         public bufferMap: IBufferMap;
+        public surfaceMaterial: ISurfaceMaterial;
         public clear(): void;
     }
 }
@@ -16043,7 +16049,7 @@ declare module akra.webgl {
         public mousewheel: ISignal<(pCanvas: ICanvas3d, x: number, y: number, fDelta: number) => void>;
         public dragstart: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number) => void>;
         public dragstop: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number) => void>;
-        public dragging: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number, dx: number, dy: number) => void>;
+        public dragging: ISignal<(pCanvas: ICanvas3d, eBtn: EMouseButton, x: number, y: number) => void>;
         public _pCanvas: HTMLCanvasElement;
         public _pCanvasCreationInfo: ICanvasInfo;
         public _iRealWidth: number;
@@ -16172,7 +16178,6 @@ declare module akra.webgl {
         public getTranslatedShaderCode(eWebGLType: number): string;
         public printTranslatedShaderCode(eWebGLType?: number): void;
         public createWebGLShader(eType: number, csCode: string): WebGLShader;
-        public saveResource(sName?: string): boolean;
         public obtainWebGLUniforms(): void;
         public obtainWebGLAttributes(): void;
     }
@@ -16842,46 +16847,6 @@ declare module akra.pool.resources {
 }
 declare module akra.animation {
     function createController(pEngine: IEngine, sName?: string, iOptions?: number): IAnimationController;
-}
-declare module akra.deps {
-    function resolve(a: any, b?: any): string;
-    /**
-    * @param sType Resource string type.
-    * @param isResource Is the resource dependence?
-    */
-    function addDependenceHandler(pTypes: string[], fnPoolSelector: (pRsmgr: IResourcePoolManager) => IResourcePool<any>, fnHandler: IDepHandler): void;
-    /** Get lowest level of deps. */
-    function getLowestLevel(pDeps: IDependens): IDependens;
-    function calcDepth(pDeps: IDependens): number;
-    function eachLevel(pDeps: IDependens, fn: (pDeps: IDependens, pParentDeps: IDependens) => void): void;
-    /**
-    * Recursive walk
-    */
-    function walk(pDeps: IDependens, fn: (pDeps: IDependens, i: number, iDepth: number, pParentDeps: IDependens) => void, iDepth?: number, fnEnd?: Function, pParentDeps?: IDependens): void;
-    function each(pDeps: IDependens, fn: (pDep: IDep) => void): void;
-    function countFiles(pDeps: IDependens): number;
-    /**
-    * Make the <path> absolute for IDep
-    */
-    function normalize(pDeps: IDependens, sRoot?: string, iDepth?: number): void;
-    function getType(pDep: IDep): string;
-    function loadResource(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    function loadMap(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    function loadGrammar(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    function loadCustom(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    function loadJSON(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    function loadBSON(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    function loadARA(pEngine: IEngine, pArchiveDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
-    /**
-    * @param pEngine Engine instance.
-    * @param pDeps Dependencies list.
-    * @param sRoot Default root path for loading resources. (config.data for ex.)
-    * @param fnLoaded All loaded?
-    * @param fnStatusChanged
-    */
-    function load(pEngine: IEngine, pDeps: IDependens, sRoot: string, fnLoaded: (e: Error, pDeps: IDependens) => void, fnProgress?: (e: IDepEvent) => void): void;
-    function link(pParent: IDependens, pChild: IDependens): IDependens;
-    function createDependenceByPath(sPath: string, sType?: string, sRoot?: string): IDependens;
 }
 declare module akra.pool {
     function isVideoResource(pItem: IResourcePoolItem): boolean;
@@ -17618,6 +17583,45 @@ declare module akra.data {
 }
 declare module akra.model {
     function createSkeleton(sName?: string): ISkeleton;
+}
+declare module akra.deps {
+    /**
+    * @param sType Resource string type.
+    * @param isResource Is the resource dependence?
+    */
+    function addDependenceHandler(pTypes: string[], fnPoolSelector: (pRsmgr: IResourcePoolManager) => IResourcePool<any>, fnHandler: IDepHandler): void;
+    /** Get lowest level of deps. */
+    function getLowestLevel(pDeps: IDependens): IDependens;
+    function calcDepth(pDeps: IDependens): number;
+    function eachLevel(pDeps: IDependens, fn: (pDeps: IDependens, pParentDeps: IDependens) => void): void;
+    /**
+    * Recursive walk
+    */
+    function walk(pDeps: IDependens, fn: (pDeps: IDependens, i: number, iDepth: number, pParentDeps: IDependens) => void, iDepth?: number, fnEnd?: Function, pParentDeps?: IDependens): void;
+    function each(pDeps: IDependens, fn: (pDep: IDep) => void): void;
+    function countFiles(pDeps: IDependens): number;
+    /**
+    * Make the <path> absolute for IDep
+    */
+    function normalize(pDeps: IDependens, sRoot?: string, iDepth?: number): void;
+    function getType(pDep: IDep): string;
+    function loadResource(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    function loadMap(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    function loadGrammar(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    function loadCustom(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    function loadJSON(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    function loadBSON(pEngine: IEngine, pDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    function loadARA(pEngine: IEngine, pArchiveDep: IDep, cb: (pDep: IDep, eStatus: EDependenceStatuses, pData?: any) => void): void;
+    /**
+    * @param pEngine Engine instance.
+    * @param pDeps Dependencies list.
+    * @param sRoot Default root path for loading resources. (config.data for ex.)
+    * @param fnLoaded All loaded?
+    * @param fnStatusChanged
+    */
+    function load(pEngine: IEngine, pDeps: IDependens, sRoot: string, fnLoaded: (e: Error, pDeps: IDependens) => void, fnProgress?: (e: IDepEvent) => void): void;
+    function link(pParent: IDependens, pChild: IDependens): IDependens;
+    function createDependenceByPath(sPath: string, sType?: string, sRoot?: string): IDependens;
 }
 declare module akra.control {
     class GamepadMap implements IGamepadMap {

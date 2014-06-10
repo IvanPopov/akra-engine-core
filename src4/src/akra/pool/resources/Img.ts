@@ -171,8 +171,8 @@ module akra.pool.resources {
 			return this;
 		}
 
-		private loadImageWithInternalFormatFromURL(sPath: string, cb?: (e: Error) => void): void {
-			Img.decodeImageWithInternalFormatFromURL(sPath,
+		private loadImageWithInternalFormatFromURL(sPath: string, sExt: string, cb?: (e: Error) => void): void {
+			Img.decodeImageWithInternalFormatFromURL(sPath, sExt,
 				(e, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => {
 					if (e) {
 						cb && cb(new Error("Could not decode image with internal format."));
@@ -182,7 +182,7 @@ module akra.pool.resources {
 					this.loadDynamicImage(pData, iWidth, iHeight, 1, eFormat);
 
 					cb && cb(null);
-			})
+				})
 		}
 
 		//private loadCubemap(sPath: string, cb?: (e: Error) => void): void {
@@ -251,7 +251,7 @@ module akra.pool.resources {
 				}
 				else {
 					if (Img.isInternalImageFormat(sExt)) {
-						this.loadImageWithInternalFormatFromURL(sFilename, cb);
+						this.loadImageWithInternalFormatFromURL(sFilename, sExt, cb);
 					}
 					else {
 						io.fopen(sFilename, "rb").read((e: Error, pData: ArrayBuffer): void => {
@@ -274,7 +274,7 @@ module akra.pool.resources {
 
 			if (Img.isInternalImageFormat(sExt)) {
 				var sURL = conv.toURL(pData, 'image\/' + sExt);
-				this.loadImageWithInternalFormatFromURL(sURL, cb);
+				this.loadImageWithInternalFormatFromURL(sURL, sExt, cb);
 				return this;
 			}
 
@@ -340,6 +340,7 @@ module akra.pool.resources {
 
 		loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1,
 			eFormat: EPixelFormats = EPixelFormats.BYTE_RGB, nFaces: uint = 1, nMipMaps: uint = 0): IImg {
+
 			//size
 			this._iWidth = iWidth;
 			this._iHeight = iHeight;
@@ -531,9 +532,13 @@ module akra.pool.resources {
 			return false;
 		}
 
-		static decodeImageWithInternalFormatFromURL(sPath: string, cb: (e: Error, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => void) {
+		static decodeImageWithInternalFormatFromURL(sPath: string, sExt: string, cb: (e: Error, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => void) {
 
 			var pImg: HTMLImageElement = new Image();
+
+			if (isDefAndNotNull(sExt)) {
+				sExt = sExt.toUpperCase();
+			}
 
 			pImg.onload = () => {
 				var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
@@ -544,9 +549,38 @@ module akra.pool.resources {
 				pTempContext.drawImage(pImg, 0, 0);
 
 				var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
-				var pData: Uint8Array = new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength));
+				var pRGBAData: Uint8Array = new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength));
 
-				cb(null, pData, pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+				var pData: Uint8Array = null;
+				var eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+				var bNoAlpha: boolean = true;
+
+				if (sExt === "PNG" || sExt === "GIF") {
+					for (var i = 0; i < pRGBAData.length; i += 4) {
+						if (pRGBAData[i + 3] !== 0xff) {
+							bNoAlpha = false;
+							break;
+						}
+					}
+				}
+
+				if (sExt === "JPG" || sExt === "JPEG" || bNoAlpha) {
+					var pRGBData: Uint8Array = new Uint8Array(pRGBAData.length / 4 * 3);
+					for (var i = 0, j = 0; i < pRGBAData.length; i += 4, j += 3) {
+						pRGBData[j] = pRGBAData[i];
+						pRGBData[j + 1] = pRGBAData[i + 1];
+						pRGBData[j + 2] = pRGBAData[i + 2];
+					}
+
+					pData = pRGBData;
+					eFormat = EPixelFormats.BYTE_RGB;
+				}
+				else {
+					pData = pRGBAData;
+					eFormat = EPixelFormats.BYTE_RGBA;
+				}
+
+				cb(null, pData, pImg.width, pImg.height, 1, eFormat);
 			};
 
 			pImg.onerror = () => {

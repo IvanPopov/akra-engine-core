@@ -343,17 +343,107 @@ float TransBRDFApproxNonmetal( float Roughness, float NoV )
     return min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
 }
 
-float simpleReflectance(float NoV)
+float simpleTransmittance(float NoV)
 {
     return (NoV-0.5)*2.;
 }
 
-float reflSchlick(float VoH )
+float transSchlick(float VoH)
 {
     return 0.1 + 0.9 * exp2( (-5.55473 * VoH - 6.98316) * VoH );
 }
 
-float reflExp(float VoH )
+// @c Sivukhin 'General Physics'
+// s- and p- polarisations
+float transFresnel(float VoH)
 {
-    return 0.04 + 0.96 * exp2( (-5.55473 * VoH - 6.98316) * VoH );
+    float n = 1.5;
+    float rcpN = 1. / n;
+
+    float sinA = sqrt(1. - VoH*VoH);
+    float sinSqA = sinA * sinA;
+    float sin2A = 2. * sinA * VoH;
+
+    float sinB = sinA * rcpN;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = sin2A * sin2B;
+    float halfSin2ASin2B = 0.5*sin2ASin2B;
+
+    float pfSqAuB = sinSqA + sinSqB - 2.*sinSqA*sinSqB;
+    float sinSqApB = pfSqAuB + halfSin2ASin2B;
+    float cosSqAmB = 1. - pfSqAuB + halfSin2ASin2B;
+
+    float sTransmittance = sin2ASin2B / sinSqApB;
+    float pTransmittance = sin2ASin2B / (sinSqApB * cosSqAmB);
+
+    return sTransmittance;
 }
+
+float sTransFresnel(float VoH)
+{
+    // s-polarisation
+    // Ts = 1 - sin^2(a-b) / sin^2(a+b)
+    // sin(a)/sin(b) = n
+    float n = 1.5;
+    float rcpN = 1. / n;
+
+    float sinA = sqrt(1. - VoH*VoH);
+    float sinSqA = sinA * sinA;
+    float sin2A = 2. * sinA * VoH;
+
+    float sinB = sinA * rcpN;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = sin2A * sin2B;
+    float sinSqApB = sinSqA + sinSqB - 2.*sinSqA*sinSqB + 0.5*sin2ASin2B;
+
+    float sTransmittance = sin2ASin2B / sinSqApB;
+
+    return sTransmittance;
+}
+
+float sTransFresnelOptimized(float VoH)
+{
+    float sinA = sqrt(1. - VoH*VoH);
+    float sinSqA = sinA * sinA;
+
+    float sinB = sinA * 0.666;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = 4. * sinA * VoH * sinB * sqrt(1. - sinSqB);
+
+    return sin2ASin2B / (sinSqA + sinSqB - 2.*sinSqA*sinSqB + 0.5*sin2ASin2B);
+}
+
+float pTransFresnel(float VoH)
+{
+    // p-polarisation
+    // Tp = sin(2a)sin(2b)/(sin^2(a+b)*sin^2(a-b))
+    // sin(a)/sin(b) = n
+    float n = 1.5;
+    float rcpN = 1. / n;
+
+    float sinA = sqrt(1. - VoH*VoH);
+    float sinSqA = sinA * sinA;
+    float sin2A = 2. * sinA * VoH;
+
+    float sinB = sinA * rcpN;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = sin2A * sin2B;
+    float halfSin2ASin2B = 0.5*sin2ASin2B;
+
+    float pfSqAuB = sinSqA + sinSqB - 2.*sinSqA*sinSqB;
+    float sinSqApB = pfSqAuB + halfSin2ASin2B;
+    float cosSqAmB = 1. - pfSqAuB + halfSin2ASin2B;
+
+    float pTransmittance = sin2ASin2B / (sinSqApB * cosSqAmB);
+
+    return pTransmittance;
+}
+
