@@ -475,7 +475,7 @@ module akra {
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
 			var pModel = pCube.extractModel("box");
-			(<IForwardViewport>pViewport)._setSkyboxModel(pModel.getRenderable(0));
+			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}
 		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
 		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
