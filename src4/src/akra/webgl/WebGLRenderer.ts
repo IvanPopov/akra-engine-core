@@ -97,6 +97,8 @@ module akra.webgl {
 		private _pRenderStatesPool: IObjectArray<IWebGLContextStates> = new util.ObjectArray<IWebGLContextStates>();
 		private _pFreeRenderStatesPool: IObjectArray<IWebGLContextStates> = new util.ObjectArray<IWebGLContextStates>();
 
+		private _pLastMaker: IAFXMaker = null;
+
 		static DEFAULT_OPTIONS: IRendererOptions = {
 			depth: false,
 			stencil: false,
@@ -616,7 +618,6 @@ module akra.webgl {
 			logger.log(this._time.join("ms "));
 		}
 
-		private _pLastMaker: IAFXMaker = null;
 		_renderEntry(pEntry: IRenderEntry): void {
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
 			if (isNull(pViewport)) {
@@ -646,9 +647,11 @@ module akra.webgl {
 
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).getShaderProgram();
 
-			this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
+			if (this._pLastMaker !== pMaker) {
+				this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-			this.enableWebGLVertexAttribs(pWebGLProgram.getTotalAttributes());
+				this.enableWebGLVertexAttribs(pWebGLProgram.getTotalAttributes());
+			}
 
 			var pAttribLocations: IMap<int> = pWebGLProgram._getActiveAttribLocations();
 			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.getAttributeInfo();

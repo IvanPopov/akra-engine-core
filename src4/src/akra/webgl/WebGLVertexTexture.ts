@@ -203,9 +203,7 @@ module akra.webgl {
 				}																									\n\
 				",
 					"									\n\
-				#ifdef GL_ES                        \n\
-					precision highp float;          \n\
-				#endif								\n\
+				precision highp float;				\n\
 				varying vec4 color;                 \n\
 													\n\
 				void main(void) {                   \n\
@@ -248,9 +246,7 @@ module akra.webgl {
 				}																									\n\
 				",
 					"									\n\
-				#ifdef GL_ES                        \n\
-					precision highp float;          \n\
-				#endif								\n\
+				precision highp float;				\n\
 				varying vec4 v4fValue;              \n\
 													\n\
 				void main(void) {                   \n\

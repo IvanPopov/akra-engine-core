@@ -84,10 +84,8 @@ module akra.webgl {
 			}													\n";
 
 	var sPixelCode: string = "										\n\
-				#ifdef GL_ES                        				\n\
-					precision highp float;          				\n\
-				#endif												\n\
-				varying vec2 texPosition;              				\n\
+				precision highp float;								\n\
+				varying vec2 texPosition;							\n\
 																	\n\
 				uniform sampler2D srcTexture;						\n\
 				uniform vec2 halfSrcTexureStep;						\n\

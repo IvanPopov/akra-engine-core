@@ -54,13 +54,13 @@ module akra.render {
 			var i: uint = iStart;
 			var j: uint = iEnd;
 			var iMiddleMaker: uint = this._pEntryList.value((iStart + iEnd) >> 1).maker.guid;
-			var iMiddleMaterial: uint = this._pEntryList.value((iStart + iEnd) >> 1).surfaceMaterial.getMaterial().guid;
+			var iMiddleMaterial: uint = this._pEntryList.value((iStart + iEnd) >> 1).material;
 
 			do {
 				while (this._pEntryList.value(i).maker.guid < iMiddleMaker ||
-					(this._pEntryList.value(i).maker.guid === iMiddleMaker && this._pEntryList.value(i).surfaceMaterial.getMaterial().guid < iMiddleMaterial)) ++i;
+					(this._pEntryList.value(i).maker.guid === iMiddleMaker && this._pEntryList.value(i).material < iMiddleMaterial)) ++i;
 				while (this._pEntryList.value(j).maker.guid > iMiddleMaker ||
-					(this._pEntryList.value(j).maker.guid === iMiddleMaker && this._pEntryList.value(j).surfaceMaterial.getMaterial().guid > iMiddleMaterial)) --j;
+					(this._pEntryList.value(j).maker.guid === iMiddleMaker && this._pEntryList.value(j).material > iMiddleMaterial)) --j;
 
 				if (i <= j) {
 					this._pEntryList.swap(i, j);

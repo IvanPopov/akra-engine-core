@@ -16,7 +16,7 @@ module akra.render {
 		//needed for call direct render with index
 		bufferMap: IBufferMap = null;
 
-		surfaceMaterial: ISurfaceMaterial = null;
+		material: uint = 0;
 
 		clear(): void {
 			this.maker._releaseShaderInput(this.input);
@@ -25,7 +25,7 @@ module akra.render {
 			this.bufferMap = null;
 			this.input = null;
 			this.maker = null;
-			this.surfaceMaterial = null;
+			this.material = 0;
 		}
 	}
 }

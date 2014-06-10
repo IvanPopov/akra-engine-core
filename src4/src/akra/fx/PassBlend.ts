@@ -285,9 +285,25 @@ module akra.fx {
 				return false;
 			}
 
+			this.syncVaryings();
 			this.prepareFastObjects();
 
 			return true;
+		}
+
+		private syncVaryings(): void {
+			var pVarInfoListV: IAFXVariableBlendInfo[] = this._pVaryingContainerV.getVarsInfo();
+			var pVarForRemoveList: string[] = [];
+
+			for (var i: uint = 0; i < pVarInfoListV.length; i++) {
+				if (!this._pVaryingContainerP.hasVariableWithNameIndex(pVarInfoListV[i].nameIndex)) {
+					pVarForRemoveList.push(pVarInfoListV[i].name);
+				}
+			}
+
+			for (var i: uint = 0; i < pVarForRemoveList.length; i++) {
+				this._pVaryingContainerV.removeVaribale(pVarForRemoveList[i]);
+			}
 		}
 
 		private addPass(pPass: IAFXPassInstruction): boolean {
@@ -435,9 +451,11 @@ module akra.fx {
 					for (var i: uint = 0; i < pVaryingKeys.length; i++) {
 						pVarying = pVaryingMap[pVaryingKeys[i]];
 
-						if (!this._pVaryingContainerV.addVariable(pVarying, EAFXBlendMode.k_Varying)) {
-							logger.error("Could not add varying variable");
-							return false;
+						if (pVarying._getSemantic() !== "POSITION") {
+							if (!this._pVaryingContainerV.addVariable(pVarying, EAFXBlendMode.k_Varying)) {
+								logger.error("Could not add varying variable");
+								return false;
+							}
 						}
 					}
 				}
@@ -1353,7 +1371,7 @@ module akra.fx {
 			}
 			else {
 				sCode = "#define AKRA_FRAGMENT 1\n" +
-				"#ifdef GL_ES\nprecision highp float;\n#endif\n" +
+				"precision highp float;\n" +
 				"#extension GL_OES_standard_derivatives : enable\n" + sCode;
 				this._sSystemExtBlockCodeP = sCode;
 			}
