@@ -354,14 +354,28 @@ module akra.fx {
 		setUniform(iLocation: uint, pValue: any): void {
 			if (this._pShaderUniformInfoList[iLocation].type !== EAFXShaderVariableType.k_NotVar) {
 				if (config.WEBGL) {
-					var pApplyValue: any = pValue || this._pShaderUniformInfoList[iLocation].defaultValue;
+					var pUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoList[iLocation];
+					var pApplyValue: any = pValue || pUniformInfo.defaultValue;
 
-					if (this._pShaderUniformInfoList[iLocation].lastValue !== pApplyValue) {
-						this._pShaderUniformInfoList[iLocation].applyFunction.call(this._pShaderProgram,
-							this._pShaderUniformInfoList[iLocation].webGLLocation,
-							pValue || this._pShaderUniformInfoList[iLocation].defaultValue);
+					if (pUniformInfo.lastValue !== pApplyValue) {
+						if (pUniformInfo.length === 0 &&
+							(pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D || pUniformInfo.type === EAFXShaderVariableType.k_SamplerCUBE)) {
 
-						this._pShaderUniformInfoList[iLocation].lastValue = pApplyValue;
+							if (isNull(pUniformInfo.lastValue) ||
+								pUniformInfo.lastValue.texture !== pApplyValue.texture ||
+								pUniformInfo.lastValue.wrap_s !== pApplyValue.wrap_s ||
+								pUniformInfo.lastValue.warp_t !== pApplyValue.warp_t ||
+								pUniformInfo.lastValue.mag_filter !== pApplyValue.mag_filter ||
+								pUniformInfo.lastValue.min_filter !== pApplyValue.min_filter) {
+
+								pUniformInfo.applyFunction.call(this._pShaderProgram, pUniformInfo.webGLLocation, pApplyValue);
+							}
+						}
+						else {
+							pUniformInfo.applyFunction.call(this._pShaderProgram, pUniformInfo.webGLLocation, pApplyValue);
+						}
+
+						pUniformInfo.lastValue = pApplyValue;
 					}
 
 					//this._pShaderProgram[this._pShaderUniformInfoList[iLocation].applyFunctionName](this._pShaderUniformInfoList[iLocation].webGLLocation,

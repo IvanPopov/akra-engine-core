@@ -6482,7 +6482,7 @@ declare module akra {
         maker: IAFXMaker;
         input: IShaderInput;
         bufferMap: IBufferMap;
-        surfaceMaterial: ISurfaceMaterial;
+        material: number;
         clear(): void;
     }
 }
@@ -12445,9 +12445,11 @@ declare module akra.fx {
         public getVariableByNameIndex(iNameIndex: number): IAFXVariableDeclInstruction;
         constructor();
         public addVariable(pVariable: IAFXVariableDeclInstruction, eBlendMode: EAFXBlendMode): boolean;
+        public removeVaribale(sName: string): boolean;
         public getDeclCodeForVar(iIndex: number, bWithInitializer: boolean): string;
         public forEach(iIndex: number, fnModifier: (pVar: IAFXVariableDeclInstruction) => void): void;
         public setNameForEach(iIndex: number, sNewRealName: string): void;
+        private recalcMaps();
     }
 }
 declare module akra.data {
@@ -12687,6 +12689,7 @@ declare module akra.fx {
         public _hasUniformWithNameIndex(iNameIndex: number): boolean;
         public _getRenderStates(): IMap<ERenderStateValues>;
         private finalizeBlend();
+        private syncVaryings();
         private addPass(pPass);
         private finalizeBlendForVertex();
         private finalizeBlendForPixel();
@@ -15898,7 +15901,7 @@ declare module akra.render {
         public maker: IAFXMaker;
         public input: IShaderInput;
         public bufferMap: IBufferMap;
-        public surfaceMaterial: ISurfaceMaterial;
+        public material: number;
         public clear(): void;
     }
 }
@@ -16223,6 +16226,7 @@ declare module akra.webgl {
         private _pCurrentContextStates;
         private _pRenderStatesPool;
         private _pFreeRenderStatesPool;
+        private _pLastMaker;
         static DEFAULT_OPTIONS: IRendererOptions;
         public getType(): ERenderers;
         constructor(pEngine: IEngine);
@@ -16261,7 +16265,6 @@ declare module akra.webgl {
         public _beginRender(): void;
         private _time;
         public _printTime(): void;
-        private _pLastMaker;
         public _renderEntry(pEntry: IRenderEntry): void;
         public _endRender(): void;
         public _setViewport(pViewport: IViewport): void;
