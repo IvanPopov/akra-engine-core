@@ -125,8 +125,7 @@ module.exports = function (grunt) {
 		"build:addon-navigation",
 		"build:addon-filedrop",
 		"build:addon-base3dObjects",
-		"build:addon-progress",
-		"build:ui"
+		"build:addon-progress"
 	]);
 
 
