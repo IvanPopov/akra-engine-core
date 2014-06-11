@@ -1,0 +1,178 @@
+provide akra.system;
+
+include "common.afx";
+
+texture tex0:FONT_TEXTURE;
+
+sampler sampler_font:S_FONT  = sampler_state
+{
+    Texture = <tex0>;
+};
+
+struct VS_IN{
+    float3 position_offset : POSITION_OFFSET;
+};
+
+struct VS_OUT{
+    float3 fCurrentParameters : CURRENT_PARAMS;
+    //.x - current line
+    //.y - current line position
+    //.z - current line position in pixels
+    float4 position : POSITION;
+};
+
+float4x4 view_mat : VIEW_MATRIX;
+float4x4 model_mat : MODEL_MATRIX;
+float4x4 proj_mat : PROJ_MATRIX;
+
+float nLineQuantity : LINE_QUANTITY; //в буквах
+float nLineLength : LINE_LENGTH; //в буквах
+float nFontSize : FONT_SIZE;
+
+float2 nPixelsSizes : SPRITE_PIXEL_SIZES;//необходимые размеры спрайта в пикселях
+
+float2 v2fCanvasSizes : CANVAS_SIZE; //необходимы для ограничения максимального размера шрифта указанным ..размер в пикселях
+float fDistanceMultiplier : DISTANCE_MULTIPLIER;//параметр влияющтй на уменьшение текста с расстоянием 1 - уменьшение со скоростью сцены, 0 - фиксированный размер;
+
+VS_OUT vs_text3d(VS_IN IN) {
+    VS_OUT Out;
+    float3 position_offset = IN.position_offset;
+
+    Out.fCurrentParameters.x = (1. - (position_offset.y + 1.)/2.)*nLineQuantity;
+    Out.fCurrentParameters.y = (position_offset.x + 1.)/2.*nLineLength;
+    Out.fCurrentParameters.z = (position_offset.x + 1.)/2.*nPixelsSizes.x;
+
+    //vec3 realPositionOffset = vec3(position_offset.x*nLineLength,position_offset.y*nLineQuantity,0.);
+    //realPositionOffset.xy *= nFontSize/v2fCanvasSizes;
+    float3 realPositionOffset = position_offset;
+    realPositionOffset.xy *= nPixelsSizes/v2fCanvasSizes;
+
+    float4 position = proj_mat * view_mat * model_mat * float4(0.,0.,0., 1.);
+    float w = position.w;
+    float4 screenRelativePosition = position/w;//center position in gl relative coordinates
+    //if(position.w < 1.){
+    //
+    //}
+    float4 relativePositionOffset;
+    if(fDistanceMultiplier != 0.){
+        if(w < 1./(fDistanceMultiplier)){
+            relativePositionOffset = float4(realPositionOffset,0.);
+        }
+        else{
+            relativePositionOffset = float4(realPositionOffset,0.)/w/(fDistanceMultiplier);
+        }
+    }
+    else{
+        relativePositionOffset = float4(realPositionOffset,0.);
+    }
+    //relativePositionOffset = vec4(realPositionOffset,0.);
+    Out.position = screenRelativePosition + relativePositionOffset;
+
+    return Out;
+}
+
+float startIndex : START_INDEX;
+
+float4 v4fBackgroundColor : BACKGROUND_COLOR;
+float4 v4fFontColor : FONT_COLOR;
+
+video_buffer text_data : TEXT_DATA;
+
+shared PixelData pixelData;
+
+void fs_text3d(VS_OUT OUT){
+    //return float4(0.,1.,0.,1.);
+    
+    float3 fCurrentParameters = OUT.fCurrentParameters;
+    float4 color;
+
+    float nCurrentLine = floor(fCurrentParameters.x);
+    float nCurrentLinePosition = floor(fCurrentParameters.y);
+    float nCurrentPixelPosition = floor(fCurrentParameters.z);
+
+    float fAveragePixelsPerLetter = fCurrentParameters.z/fCurrentParameters.y;
+    float fCurrentPositionInLetter = mod(fCurrentParameters.z,fAveragePixelsPerLetter);
+
+    float4 currentLineData[](text_data);
+    @(currentLineData) = startIndex + nCurrentLine*4.;
+
+    float lineDataOffset = currentLineData.x;//оффсет указывающий на описание текущей строки
+    float letterDataOffset = currentLineData.y;//оффсет указывающий на описание укв в текущей строке
+
+    float4 positionData[](text_data);
+    @(positionData) = startIndex + (lineDataOffset + nCurrentLinePosition)*4.;
+
+    float firstLetterLength = positionData.w - positionData.z;
+    float currentXPosition;
+    float currentYPosition = fract(fCurrentParameters.x);
+
+    float currentLetter = positionData.x;
+
+    if(fCurrentParameters.z > currentLineData.z){
+        if(v4fBackgroundColor.w == 0.){
+            discard;
+        }
+        pixelData.material.emissive = v4fBackgroundColor;
+        return;
+    }
+
+    if(fCurrentPositionInLetter < firstLetterLength){
+        currentXPosition = (positionData.z + fCurrentPositionInLetter)/positionData.y;
+    }
+    else{
+        float totalLength = firstLetterLength;
+        float typographicalWidth;
+        //нам нужна следующая буква
+        float4 letterGeometry[](text_data);
+        for(int i=0;i<3;i++){
+            currentLetter++;
+
+            //данные о геометрии буквы
+            @(letterGeometry) = startIndex + (letterDataOffset + currentLetter*2. + 1.)*4.;
+
+            typographicalWidth = letterGeometry.x;
+
+            if(fCurrentPositionInLetter < totalLength + typographicalWidth){
+                break;
+            }
+            totalLength += typographicalWidth;
+        }
+        currentXPosition = (fCurrentPositionInLetter - totalLength)/typographicalWidth;
+    }
+
+    float4 letterData[](text_data);
+    @(letterData) = startIndex + (letterDataOffset + currentLetter*2.)*4.;
+
+    float2 realTextureCoords = letterData.xy + 
+            float2(currentXPosition,currentYPosition)*letterData.zw;
+
+    //довольно удачная модель прозрачности шрифтов и фона
+
+    float fontGeomenty = (tex2D(sampler_font,realTextureCoords)).w;
+    float fEffectiveFontTransparency = fontGeomenty*v4fFontColor.a;
+
+    float3 v3fEffectiveColor = fEffectiveFontTransparency*v4fFontColor.rgb +
+                                (1. - fEffectiveFontTransparency)*v4fBackgroundColor.a
+                                        *v4fBackgroundColor.rgb;
+
+    float fEffectiveTransperency = fEffectiveFontTransparency 
+                + (1. - fEffectiveFontTransparency)*v4fBackgroundColor.a;
+
+    if(fEffectiveTransperency == 0.){
+        discard;
+    }
+
+    color = float4(v3fEffectiveColor/fEffectiveTransperency,fEffectiveTransperency);
+    
+    pixelData.material.emissive = color;
+
+    //return color;
+}
+
+technique text3d{
+    pass p0 {
+        VertexShader = compile vs_text3d();
+        PixelShader = compile fs_text3d();
+    }
+}
+

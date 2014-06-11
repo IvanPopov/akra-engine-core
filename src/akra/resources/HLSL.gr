@@ -1,0 +1,518 @@
+S : Program
+Program : --AN
+Program : Decls
+
+Decls : Decl --NN
+Decls : Decls Decl
+Decl : ';'
+Decl : TypeDecl
+Decl : VariableDecl
+Decl : VarStructDecl
+Decl : FunctionDecl
+Decl : TechniqueDecl
+Decl : UseDecl
+Decl : ImportDecl
+Decl : ProvideDecl
+Decl : IncludeDecl
+
+IncludeDecl : T_KW_INCLUDE String --AN --F includeCode
+
+ImportDecl : T_KW_IMPORT ComplexNameOpt ShiftOpt ExtOpt
+ShiftOpt :
+ShiftOpt : T_KW_SHIFT Uint
+ShiftOpt : T_KW_SHIFT '-' Uint
+
+ExtOpt :
+ExtOpt : T_KW_TO T_KW_ALL_PASSES
+
+ProvideDecl : T_KW_PROVIDE ComplexNameOpt
+ProvideDecl : T_KW_PROVIDE ComplexNameOpt T_KW_AS ComplexNameOpt
+
+UseDecl : T_KW_USE Mode
+Mode : T_KW_STRICT
+
+Usages : Usage --NN
+Usages : Usages Usage
+Usage : T_KW_STATIC --AN
+Usage : T_KW_UNIFORM
+Usage : T_KW_EXTERN
+Usage : T_KW_VOLATILE
+Usage : T_KW_INLINE
+Usage : T_KW_SHARED
+Usage : T_KW_GLOBAL
+Usage : T_KW_FOREIGN
+Usage : ConstUsage
+
+ConstUsages : ConstUsage --NN
+ConstUsages : ConstUsages ConstUsage
+ConstUsage : T_KW_CONST
+ConstUsage : T_KW_ROW_MAJOR
+ConstUsage : T_KW_COLUMN_MAJOR
+
+UsageType : Type --AN
+UsageType : Usages Type
+
+UsageStructDecl : StructDecl --AN
+UsageStructDecl : Usages StructDecl
+
+TypeDecl : T_KW_TYPEDEF ConstType TypeDefs ';' --AN
+TypeDecl : T_KW_TYPEDEF ConstStructDecl TypeDefs ';'
+TypeDecl : StructDecl --F addType ';'
+TypeDefs : VariableDim
+TypeDefs : VariableDim ',' TypeDefs
+
+Type : BaseType --AN
+Type : Struct
+Type : TypeId
+Type : T_KW_STRUCT TypeId
+
+ConstType : Type --AN
+ConstType : ConstUsages Type
+ConstTypeDim : ConstType --NN
+ConstTypeDim : ConstTypeDim '[' ConstantExpr ']'
+
+BaseType : T_KW_VOID --AN
+BaseType : ScalarType
+BaseType : VectorType
+BaseType : MatrixType
+BaseType : ObjectType
+
+ScalarType : T_KW_BOOL --AN
+ScalarType : T_KW_INT
+ScalarType : T_KW_HALF
+ScalarType : T_KW_FLOAT
+ScalarType : T_KW_DOUBLE
+
+VectorType : T_KW_VECTOR --AN
+VectorType : T_KW_VECTOR '<' ScalarType ',' AddExpr '>'
+
+MatrixType : T_KW_MATRIX --AN
+MatrixType : T_KW_MATRIX '<' ScalarType ',' ConstantExpr ',' AddExpr '>'
+
+ObjectType : T_KW_STRING --AN
+ObjectType : T_KW_TEXTURE
+ObjectType : T_KW_TEXTURE1D
+ObjectType : T_KW_TEXTURE2D
+ObjectType : T_KW_TEXTURE3D
+ObjectType : T_KW_TEXTURECUBE
+ObjectType : T_KW_SAMPLER
+ObjectType : T_KW_SAMPLER1D
+ObjectType : T_KW_SAMPLER2D
+ObjectType : T_KW_SAMPLER3D
+ObjectType : T_KW_SAMPLERCUBE
+ObjectType : T_KW_PIXELSHADER
+ObjectType : T_KW_VERTEXSHADER
+ObjectType : T_KW_PIXELFRAGMENT
+ObjectType : T_KW_VERTEXFRAGMENT
+ObjectType : T_KW_STATEBLOCK
+ObjectType : T_KW_VIDEOBUFFER
+ObjectType : T_KW_PTR
+
+Struct : T_KW_STRUCT StructBegin StructEnd --AN
+Struct : T_KW_STRUCT StructBegin StructDecls StructEnd
+StructDecl : T_KW_STRUCT Id StructBegin StructEnd --AN
+StructDecl : T_KW_STRUCT Id StructBegin UseDecl StructDecls StructEnd
+StructDecl : T_KW_STRUCT Id StructBegin StructDecls StructEnd
+
+ConstStructDecl : StructDecl
+ConstStructDecl : ConstUsages StructDecl
+
+StructBegin : '{'
+StructDecls : VariableDecl --NN
+StructDecls : VariableDecl StructDecls
+StructEnd : '}'
+
+Semantic : ':' Id --AN
+Semantic : ':' T_KW_REGISTER '(' Register ')'
+Semantics : Semantic
+Semantics : Semantics Semantic
+SemanticsOpt :
+SemanticsOpt : Semantics
+
+Register : Id
+Register : Target ',' Id
+
+Annotation : AnnotationBegin AnnotationEnd  --AN
+Annotation : AnnotationBegin AnnotationDecls AnnotationEnd
+AnnotationOpt :
+AnnotationOpt : Annotation
+AnnotationBegin : '<'
+AnnotationDecls : VariableDecl
+AnnotationDecls : VariableDecl AnnotationDecls
+AnnotationEnd : '>'
+
+Initializer : '=' AssignmentExpr --AN
+Initializer : '=' '{' InitExprs '}'
+Initializer : '=' '{' InitExprs ',' '}'
+InitializerOpt :
+InitializerOpt : Initializer
+
+AddressOpt :
+AddressOpt : FromExpr
+
+VariableDecl : UsageType Variables ';' --AN
+VarStructDecl : UsageStructDecl Variables ';' --AN
+Variables : Variable --NN
+Variables : Variables ',' Variable
+Variable : VariableDim SemanticsOpt AnnotationOpt InitializerOpt --AN
+VariableDim : Id --AN
+VariableDim : VariableDim '[' ConstantExpr ']'
+VariableDim : VariableDim '[' ']' AddressOpt
+
+FunctionDecl : FunctionDef ';' --AN
+FunctionDecl : FunctionDef AnnotationOpt StmtBlock
+FunctionDef : UsageType Id ParamList SemanticsOpt
+
+ParamList : ParamListBegin ParamListEnd
+ParamList : ParamListBegin T_KW_VOID ParamListEnd
+ParamList : ParamListBegin ParameterDecls ParamListEnd
+ParamListBegin : '('
+ParamListEnd : ')'
+
+ParameterDecls : ParameterDecl --NN
+ParameterDecls : ParameterDecls ',' ParameterDecl
+ParameterDecl : ParamUsageType Variable
+
+ParamUsageType : Type --AN
+ParamUsageType : ParamUsages Type
+
+ParamUsages : ParamUsage --NN
+ParamUsages : ParamUsages ParamUsage
+ParamUsage : T_KW_IN --AN
+ParamUsage : T_KW_OUT
+ParamUsage : T_KW_INOUT
+ParamUsage : T_KW_UNIFORM
+ParamUsage : ConstUsage
+
+
+TechniqueDecl : T_KW_TECHNIQUE ComplexNameOpt SemanticsOpt AnnotationOpt TechniqueBody --AN
+TechniqueBody : TechniqueBegin TechniqueEnd  --AN
+TechniqueBody : TechniqueBegin PassDecls TechniqueEnd
+TechniqueBegin : '{'
+TechniqueEnd : '}'
+
+ComplexNameOpt : ComplexName --AN
+ComplexName : Id --NN
+ComplexName : ComplexName '.' Id
+
+PassDecls : PassDecl --NN
+PassDecls : PassDecls PassDecl
+PassDecl : T_KW_PASS IdOpt AnnotationOpt PassStateBlock --AN
+PassDecl : ImportDecl
+PassDecl : ';'
+
+PassStateBlock : '{' '}' --AN
+PassStateBlock : '{' PassStates '}'
+PassStates : PassState --NN
+PassStates : PassStates PassState
+
+PassState : Id StateIndex StateExprBegin PassStateExpr StateExprEnd --AN
+PassState : StateIf
+PassState : StateSwitch
+
+StateIf : T_KW_IF '(' Expr ')' PassStateBlock
+StateIf : T_KW_IF '(' Expr ')' PassStateBlock T_KW_ELSE PassStateBlock
+StateIf : T_KW_IF '(' Expr ')' PassStateBlock T_KW_ELSE StateIf
+StateSwitch : T_KW_SWITCH '(' Expr ')' CaseBlock
+
+CaseBlock : '{' CaseStates DefaultState '}'
+CaseStates : CaseState --NN
+CaseStates : CaseStates CaseState
+
+CaseState : T_KW_CASE AssignmentExpr ':' PassStates BreakOpt
+DefaultState : T_KW_DEFAULT ':' PassStates BreakOpt
+
+BreakOpt :  --NN
+BreakOpt : ';'
+BreakOpt : T_KW_BREAK ';'
+
+StateBlock : StateBlockBegin StateBlockEnd --AN
+StateBlock : StateBlockBegin States StateBlockEnd
+StateBlockBegin : '{'
+StateBlockEnd : '}'
+
+States : State --NN
+States : States State
+State : Id StateIndex StateExprBegin StateExpr StateExprEnd --AN
+
+StateIndex :
+StateIndex : '[' Uint ']'
+StateExprBegin : '='
+StateExprEnd : ';'
+
+StmtBlock : StmtBlockBegin StmtBlockEnd --AN
+StmtBlock : StmtBlockBegin Stmts StmtBlockEnd
+StmtBlockBegin : '{'
+StmtBlockEnd : '}'
+Stmts : Stmt --NN
+Stmts : Stmts Stmt
+SimpleStmt : ';' --AN
+SimpleStmt : Expr ';'
+SimpleStmt : T_KW_RETURN ';'
+SimpleStmt : T_KW_RETURN Expr ';'
+SimpleStmt : T_KW_DO Stmt T_KW_WHILE '(' Expr ')' ';'
+SimpleStmt : StmtBlock
+SimpleStmt : T_KW_DISCARD ';'
+SimpleStmt : TypeDecl
+SimpleStmt : VariableDecl
+SimpleStmt : VarStructDecl
+SimpleStmt : T_KW_BREAK ';'
+SimpleStmt : T_KW_CONTINUE ';'
+
+NonIfStmt : SimpleStmt --AN
+NonIfStmt : T_KW_WHILE '(' Expr ')' NonIfStmt
+NonIfStmt : For '(' ForInit ForCond ForStep ')' NonIfStmt
+
+Stmt : SimpleStmt --AN
+Stmt : UseDecl
+Stmt : T_KW_WHILE '(' Expr ')' Stmt
+Stmt : For '(' ForInit ForCond ForStep ')' Stmt
+Stmt : T_KW_IF '(' Expr ')' Stmt
+Stmt : T_KW_IF '(' Expr ')' NonIfStmt T_KW_ELSE Stmt
+
+
+For : T_KW_FOR
+ForInit : ';' --AN
+ForInit : Expr ';'
+ForInit : VariableDecl
+ForCond : ';' --AN
+ForCond : Expr ';'
+ForStep : --AN
+ForStep : Expr
+
+DwordExpr : Dword
+DwordExpr : Dword '|' DwordExpr
+
+DwordExprSeq : DwordExpr --NN
+DwordExprSeq : DwordExpr ',' DwordExprSeq
+
+PassStateExpr : DwordExpr --AN
+PassStateExpr : ComplexExpr
+PassStateExpr : '{' DwordExprSeq '}'
+
+StateExpr : DwordExpr --AN
+StateExpr : ComplexExpr
+StateExpr : '{' InitExprs '}'
+StateExpr : '{' InitExprs ',' '}'
+StateExpr : '<' RelationalExpr '>'
+
+SimpleExpr : T_KW_TRUE
+SimpleExpr : T_KW_FALSE
+SimpleExpr : Uint
+SimpleExpr : Float
+SimpleExpr : String
+SimpleExpr : NonTypeId
+
+ComplexExpr : '(' Expr ')'
+ComplexExpr : TypeId '(' ArgumentsOpt ')'
+ComplexExpr : BaseType '(' ArgumentsOpt ')'
+ComplexExpr : NonTypeId '(' ArgumentsOpt ')'
+ComplexExpr : ObjectExpr
+
+ObjectExpr : T_KW_COMPILE NonTypeId '(' ArgumentsOpt ')'
+ObjectExpr : T_KW_SAMPLER_STATE StateBlock
+ObjectExpr : T_KW_COMPILE_FRAGMENT Target NonTypeId '(' ArgumentsOpt ')'
+ObjectExpr : T_KW_STATEBLOCK_STATE StateBlock
+
+PrimaryExpr : ComplexExpr
+PrimaryExpr : SimpleExpr
+PrimaryExpr : '@' PrimaryExpr
+PostfixExpr : PrimaryExpr
+PostfixExpr : PostfixExpr '[' Expr ']'
+PostfixExpr : PostfixExpr '.' Id AddressOpt
+PostfixExpr : PostfixExpr T_OP_INC
+PostfixExpr : PostfixExpr T_OP_DEC
+
+UnaryExpr : PostfixExpr
+UnaryExpr : T_OP_INC UnaryExpr
+UnaryExpr : T_OP_DEC UnaryExpr
+UnaryExpr : '!' CastExpr
+UnaryExpr : '-' CastExpr
+UnaryExpr : '+' CastExpr
+
+CastExpr : UnaryExpr
+CastExpr : '(' ConstTypeDim ')' CastExpr
+
+MulExpr : CastExpr
+MulExpr : MulExpr '*' CastExpr
+MulExpr : MulExpr '/' CastExpr
+MulExpr : MulExpr '%' CastExpr
+
+AddExpr : MulExpr
+AddExpr : AddExpr '+' MulExpr
+AddExpr : AddExpr '-' MulExpr
+
+RelationalExpr : AddExpr
+RelationalExpr : RelationalExpr '<' AddExpr
+RelationalExpr : RelationalExpr '>' AddExpr
+RelationalExpr : RelationalExpr T_OP_LE AddExpr
+RelationalExpr : RelationalExpr T_OP_GE AddExpr
+
+EqualityExpr : RelationalExpr
+EqualityExpr : EqualityExpr T_OP_EQ RelationalExpr
+EqualityExpr : EqualityExpr T_OP_NE RelationalExpr
+
+AndExpr : EqualityExpr
+AndExpr : AndExpr T_OP_AND EqualityExpr
+OrExpr : AndExpr
+OrExpr : OrExpr T_OP_OR AndExpr
+ConditionalExpr : OrExpr
+ConditionalExpr : OrExpr '?' AssignmentExpr ':' ConditionalExpr
+
+AssignmentExpr : ConditionalExpr
+AssignmentExpr : MemExpr
+AssignmentExpr : CastExpr '=' AssignmentExpr
+AssignmentExpr : CastExpr T_OP_ME AssignmentExpr
+AssignmentExpr : CastExpr T_OP_DE AssignmentExpr
+AssignmentExpr : CastExpr T_OP_RE AssignmentExpr
+AssignmentExpr : CastExpr T_OP_AE AssignmentExpr
+AssignmentExpr : CastExpr T_OP_SE AssignmentExpr
+
+MemExpr : T_KW_MEMOF PostfixExpr
+FromExpr : '(' MemExpr ')'
+FromExpr : '(' NonTypeId ')'
+
+Arguments : AssignmentExpr --NN
+Arguments : Arguments ',' AssignmentExpr
+ArgumentsOpt : --NN
+ArgumentsOpt : Arguments
+
+InitExpr : AssignmentExpr --AN
+InitExpr : '{' InitExprs '}'
+InitExpr : '{' InitExprs ',' '}'
+InitExprs : InitExpr --NN
+InitExprs : InitExprs ',' InitExpr
+
+ConstantExpr : AssignmentExpr
+Expr : AssignmentExpr
+Expr : Expr ',' AssignmentExpr
+
+Dword : Uint
+Dword : '-' Uint
+Dword : Float
+Dword : '-' Float
+Dword : DwordId
+Dword : Uint DwordId
+DwordId : Id
+DwordId : T_KW_TRUE
+DwordId : T_KW_FALSE
+DwordId : T_KW_TEXTURE
+
+Id : TypeId
+Id : NonTypeId
+IdOpt :
+IdOpt : Id
+
+Target : NonTypeId
+
+Uint : T_UINT
+Uint : T_INT32
+Uint : T_UINT32
+
+Float : T_FLOAT
+Float : T_FLOAT16
+Float : T_FLOAT32
+Float : T_FLOAT64
+
+Strings : String
+Strings : Strings String
+String : T_STRING
+
+TypeId : T_TYPE_ID
+NonTypeId : T_NON_TYPE_ID
+
+AsmDecl : T_KW_DECL '{'
+Asm : T_KW_ASM '{'
+AsmFragment : T_KW_ASM_FRAGMENT '{'
+
+--LEXER--
+
+T_KW_STATIC : "static"
+T_KW_UNIFORM : "uniform"
+T_KW_EXTERN : "extern"
+T_KW_VOLATILE : "volatile"
+T_KW_INLINE : "inline"
+T_KW_SHARED : "shared"
+T_KW_GLOBAL : "global"
+T_KW_FOREIGN : "foreign"
+T_KW_CONST : "const"
+T_KW_ROW_MAJOR : "row_major"
+T_KW_COLUMN_MAJOR : "column_major"
+T_KW_TYPEDEF : "typedef"
+T_KW_STRUCT : "struct"
+T_KW_VOID : "void"
+T_KW_BOOL : "bool"
+T_KW_INT : "int"
+T_KW_HALF : "half"
+T_KW_FLOAT : "float"
+T_KW_DOUBLE : "double"
+T_KW_VECTOR : "vector"
+T_KW_MATRIX : "matrix"
+T_KW_STRING : "string"
+T_KW_TEXTURE : "texture"
+T_KW_TEXTURE1D : "texture1D"
+T_KW_TEXTURE2D : "texture2D"
+T_KW_TEXTURE3D : "texture3D"
+T_KW_TEXTURECUBE : "texturecube"
+T_KW_SAMPLER : "sampler"
+T_KW_SAMPLER1D : "sampler1D"
+T_KW_SAMPLER2D : "sampler2D"
+T_KW_SAMPLER3D : "sampler3D"
+T_KW_SAMPLERCUBE : "samplerCUBE"
+T_KW_PIXELSHADER : "pixelshader"
+T_KW_VERTEXSHADER : "vertexshader"
+T_KW_PIXELFRAGMENT : "pixelfragment"
+T_KW_VERTEXFRAGMENT : "vertexfragment"
+T_KW_STATEBLOCK : "stateblock"
+T_KW_REGISTER : "register"
+T_KW_IN : "in"
+T_KW_OUT : "out"
+T_KW_INOUT : "inout"
+T_KW_TECHNIQUE : "technique"
+T_KW_PASS : "pass"
+T_KW_RETURN : "return"
+T_KW_DO : "do"
+T_KW_DISCARD : "discard"
+T_KW_WHILE : "while"
+T_KW_IF : "if"
+T_KW_ELSE : "else"
+T_KW_FOR : "for"
+T_KW_TRUE : "true"
+T_KW_FALSE : "false"
+T_KW_COMPILE : "compile"
+T_KW_SAMPLER_STATE : "sampler_state"
+T_KW_COMPILE_FRAGMENT : "compile_fragment"
+T_KW_STATEBLOCK_STATE : "stateblock_state"
+T_KW_DECL : "decl"
+T_KW_ASM : "asm"
+T_KW_ASM_FRAGMENT : "asm_fragment"
+T_KW_MEMOF : "memof"
+T_KW_VIDEOBUFFER : "video_buffer"
+T_KW_USE : "use"
+T_KW_STRICT : "strict"
+T_KW_IMPORT : "import"
+T_KW_PROVIDE : "provide"
+T_KW_SWITCH : "switch"
+T_KW_CASE : "case"
+T_KW_DEFAULT : "default"
+T_KW_BREAK : "break"
+T_KW_CONTINUE : "continue"
+T_KW_AS : "as"
+T_KW_PTR : "ptr"
+T_KW_SHIFT : "shift"
+T_KW_INCLUDE : "include"
+T_KW_TO : "to"
+T_KW_ALL_PASSES : "ALL_PASSES"
+T_OP_INC : "++"
+T_OP_DEC : "--"
+T_OP_LE : ">="
+T_OP_GE : "<="
+T_OP_EQ : "=="
+T_OP_NE : "!="
+T_OP_AND : "&&"
+T_OP_OR : "||"
+T_OP_ME : "*="
+T_OP_DE : "/="
+T_OP_RE : "%="
+T_OP_AE : "+="
+T_OP_SE : "-="

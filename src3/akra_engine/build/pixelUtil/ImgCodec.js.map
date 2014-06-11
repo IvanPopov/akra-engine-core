@@ -1,1 +1,0 @@
-{"version":3,"file":"ImgCodec.js","sourceRoot":"","sources":["../../src/pixelUtil/ImgCodec.ts"],"names":["ImgCodec","ImgCodec.constructor","ImgCodec.getDataType"],"mappings":"AAAA,6CAA6C;AAC7C,iDAAiD;;;;;;;AADjD;IAGA,YAAuB,SAAiB;;IAExC;;QAAAA;;;AAICA,QAHGA,iCAAAA;YACFE,OAAOA,SAASA,CAAAA;QACjBA,CAACA;QACFF;AAACA,IAADA,CAACA,EAJsB,KAAK,EAI3B;;;;GAEiB"}

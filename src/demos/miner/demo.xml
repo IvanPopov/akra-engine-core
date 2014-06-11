@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Miner" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Miner animation demo</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="miner.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/miner/miner.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+      </Attachment>
+
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-navigation" />
+      <Module Name="addon-base3dObjects" />
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Folder Path="models" />
+        <Folder Path="textures" />
+        <ResourceFile Path="miner.map"/>
+        <ResourceFile Path="grid.jpg" Name="GRID_JPG"/>
+        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Performance" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>~800 draw calls per frame</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="performance.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/performance/performance.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+    </Dependencies>
+  </PropertyGroup>
+</Demo>

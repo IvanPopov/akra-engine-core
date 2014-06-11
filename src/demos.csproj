@@ -1,0 +1,798 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{D9011CDD-1918-4A34-AADA-109E4F9670E1}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>1.0</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="demos\anti-aliasing\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\anti-aliasing\data\effects\Measured BaseColor values Unreal.txt" />
+    <Content Include="demos\anti-aliasing\data\effects\physically_based_cheatsheet1.png" />
+    <Content Include="demos\anti-aliasing\data\effects\physically_based_cheatsheet2.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\oil_specular_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\oil\Images\_oil_specular_1024.png" />
+    <Content Include="demos\anti-aliasing\data\models\WoodSoldier\WoodSoldier.png" />
+    <Content Include="demos\anti-aliasing\data\textures\lensflare_cookies.png" />
+    <Content Include="demos\anti-aliasing\data\textures\lensflare_cookies_new.png" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\desert-2a.png" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\desert-2c.png" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\park-01-cube.png" />
+    <Content Include="demos\anti-aliasing\demo.xml" />
+    <Content Include="demos\atmospheric_scattering\demo.xml" />
+    <Content Include="demos\css\metro-bootstrap.css" />
+    <Content Include="demos\distance-fog\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\distance-fog\data\effects\Measured BaseColor values Unreal.txt" />
+    <Content Include="demos\distance-fog\data\effects\physically_based_cheatsheet1.png" />
+    <Content Include="demos\distance-fog\data\effects\physically_based_cheatsheet2.png" />
+    <Content Include="demos\distance-fog\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\distance-fog\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\distance-fog\data\models\oil\Images\oil_specular_1024.png" />
+    <Content Include="demos\distance-fog\data\models\oil\Images\_oil_specular_1024.png" />
+    <Content Include="demos\distance-fog\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\distance-fog\data\models\rock\images\normal.dds" />
+    <Content Include="demos\distance-fog\data\models\rock\images\specular.dds" />
+    <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.png" />
+    <Content Include="demos\distance-fog\data\textures\lensflare_cookies.png" />
+    <Content Include="demos\distance-fog\data\textures\lensflare_cookies_new.png" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\colosseum.dds" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\desert-2a.png" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\desert-2c.png" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\park-01-cube.png" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\perea-beach1.dds" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\rome-church.dds" />
+    <Content Include="demos\distance-fog\data\textures\skyboxes\saint-peters-basilica.dds" />
+    <Content Include="demos\distance-fog\demo.xml" />
+    <Content Include="demos\fonts\fontawesome-webfont.svg" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="demos\game\content\assets\about.png" />
+    <Content Include="demos\game\content\assets\Gamepad-2.svg" />
+    <Content Include="demos\game\content\assets\Gamepad.svg" />
+    <Content Include="demos\game\content\assets\Keyboard-2.svg" />
+    <Content Include="demos\game\content\assets\Keyboard.svg" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.default.css" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.default.icons.css" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.js" />
+    <Content Include="demos\game\content\pnotify\jquery.pnotify.min.js" />
+    <Content Include="demos\game\data\models\can\images\can_diffuse_1024.png" />
+    <Content Include="demos\game\data\models\can\images\can_normal_1024.png" />
+    <Content Include="demos\game\data\models\can\images\can_specular_1024.png" />
+    <Content Include="demos\game\data\models\character\images\diffuse.jpg" />
+    <Content Include="demos\game\data\models\character\images\normals.jpg" />
+    <Content Include="demos\game\data\models\character\images\specular.jpg" />
+    <Content Include="demos\game\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\game\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\game\data\models\oil\Images\oil_specular_1024.png" />
+    <Content Include="demos\game\data\models\tubing\images\tech_diffuse.png" />
+    <Content Include="demos\game\data\models\tubing\images\tech_normal.png" />
+    <Content Include="demos\game\data\models\tubing\images\tech_specular.png" />
+    <Content Include="demos\game\data\models\vehabar\images\v_diffuse.png" />
+    <Content Include="demos\game\data\models\vehabar\images\v_normal.png" />
+    <Content Include="demos\game\data\models\vehabar\images\v_specular.png" />
+    <Content Include="demos\game\data\models\windspot\images\WIND-SP.png" />
+    <Content Include="demos\game\data\models\windspot\images\wind_normal.png" />
+    <Content Include="demos\game\data\models\windspot\images\wind_WIND-DUST-DIFF.png" />
+    <Content Include="demos\game\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="demos\glass.png" />
+    <Content Include="demos\light-shafts\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\light-shafts\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\light-shafts\data\models\rock\images\normal.dds" />
+    <Content Include="demos\light-shafts\data\models\rock\images\specular.dds" />
+    <Content Include="demos\light-shafts\data\models\WoodSoldier\WoodSoldier.png" />
+    <Content Include="demos\light-shafts\data\textures\lensflare_cookies.png" />
+    <Content Include="demos\light-shafts\data\textures\lensflare_cookies_new.png" />
+    <Content Include="demos\light-shafts\demo.xml" />
+    <Content Include="demos\mercedes\css\mercedes-benz-logo.png" />
+    <Content Include="demos\mercedes\dat.gui\dat.gui.js" />
+    <Content Include="demos\mercedes\demo.xml" />
+    <Content Include="demos\mercedes\grid.jpg" />
+    <Content Include="demos\mercedes\models\images\0_grille1_alpha.png" />
+    <Content Include="demos\mercedes\models\images\1_nodamage_lod0.png" />
+    <Content Include="demos\mercedes\models\images\2_interior_lod0.png" />
+    <Content Include="demos\mercedes\models\images\3_undercarriage.png" />
+    <Content Include="demos\mercedes\models\images\4_carbonfiber.png" />
+    <Content Include="demos\mercedes\models\images\5_sls_interior.png" />
+    <Content Include="demos\mercedes\models\images\6_engine.png" />
+    <Content Include="demos\mercedes\models\images\7_lights_lod0.png" />
+    <Content Include="demos\mercedes\models\images\8_tire%283%29.png" />
+    <Content Include="demos\mercedes\textures\grid.png" />
+    <Content Include="demos\mercedes\textures\lightmap.png" />
+    <Content Include="demos\miner\dat.gui\dat.gui.js" />
+    <Content Include="demos\miner\demo.xml" />
+    <Content Include="demos\miner\grid.jpg" />
+    <Content Include="demos\miner\models\miner\images\gun_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\gun_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\gun_specular.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\hammer_specular.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_diffuse.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_normal.dds" />
+    <Content Include="demos\miner\models\miner\images\miner_specular.dds" />
+    <Content Include="demos\miner\textures\desert-3.dds" />
+    <Content Include="demos\miner\textures\light_icon.png" />
+    <Content Include="demos\miner\textures\light_icon1.png" />
+    <Content Include="demos\model-viewer\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\model-viewer\data\effects\Measured BaseColor values Unreal.txt" />
+    <Content Include="demos\model-viewer\data\effects\physically_based_cheatsheet1.png" />
+    <Content Include="demos\model-viewer\data\effects\physically_based_cheatsheet2.png" />
+    <Content Include="demos\model-viewer\data\models\barrel\images\barrel_diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\barrel\images\barrel_normal.dds" />
+    <Content Include="demos\model-viewer\data\models\barrel\images\barrel_specular.dds" />
+    <Content Include="demos\model-viewer\data\models\barrel\images\stand_diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\barrel\images\stand_normal.dds" />
+    <Content Include="demos\model-viewer\data\models\barrel\images\stand_specular.dds" />
+    <Content Include="demos\model-viewer\data\models\box\images\diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\box\images\normal.dds" />
+    <Content Include="demos\model-viewer\data\models\box\images\specular.dds" />
+    <Content Include="demos\model-viewer\data\models\can\images\can_diffuse_1024.png" />
+    <Content Include="demos\model-viewer\data\models\can\images\can_normal_1024.png" />
+    <Content Include="demos\model-viewer\data\models\can\images\can_specular_1024.png" />
+    <Content Include="demos\model-viewer\data\models\character\images\diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\character\images\diffuse.jpg" />
+    <Content Include="demos\model-viewer\data\models\character\images\normals.dds" />
+    <Content Include="demos\model-viewer\data\models\character\images\normals.jpg" />
+    <Content Include="demos\model-viewer\data\models\character\images\specular.dds" />
+    <Content Include="demos\model-viewer\data\models\character\images\specular.jpg" />
+    <Content Include="demos\model-viewer\data\models\miner\images\gun_diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\gun_normal.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\gun_specular.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\hammer_diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\hammer_normal.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\hammer_specular.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\miner_diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\miner_normal.dds" />
+    <Content Include="demos\model-viewer\data\models\miner\images\miner_specular.dds" />
+    <Content Include="demos\model-viewer\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\model-viewer\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\model-viewer\data\models\oil\Images\oil_specular_1024.png" />
+    <Content Include="demos\model-viewer\data\models\oil\Images\_oil_specular_1024.png" />
+    <Content Include="demos\model-viewer\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\model-viewer\data\models\rock\images\normal.dds" />
+    <Content Include="demos\model-viewer\data\models\rock\images\specular.dds" />
+    <Content Include="demos\model-viewer\data\models\windspot\images\WIND-SP.dds" />
+    <Content Include="demos\model-viewer\data\models\windspot\images\WIND-SP.png" />
+    <Content Include="demos\model-viewer\data\models\windspot\images\wind_normal.dds" />
+    <Content Include="demos\model-viewer\data\models\windspot\images\wind_normal.png" />
+    <Content Include="demos\model-viewer\data\models\windspot\images\wind_WIND-DUST-DIFF.dds" />
+    <Content Include="demos\model-viewer\data\models\windspot\images\wind_WIND-DUST-DIFF.png" />
+    <Content Include="demos\model-viewer\data\models\WoodSoldier\WoodSoldier.png" />
+    <Content Include="demos\model-viewer\data\textures\lensflare_cookies.png" />
+    <Content Include="demos\model-viewer\data\textures\lensflare_cookies_new.png" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\colosseum.dds" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\desert-2a.png" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\desert-2c.png" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\park-01-cube.png" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\perea-beach1.dds" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\rome-church.dds" />
+    <Content Include="demos\model-viewer\data\textures\skyboxes\saint-peters-basilica.dds" />
+    <Content Include="demos\model-viewer\demo.xml" />
+    <Content Include="demos\model-viewer\miner\dat.gui\dat.gui.js" />
+    <Content Include="demos\model-viewer\miner\demo.xml" />
+    <Content Include="demos\model-viewer\miner\grid.jpg" />
+    <Content Include="demos\model-viewer\miner\textures\light_icon.png" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\activeline.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\changemode.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\closetag.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\complete.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\emacs.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\folding.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\formatting.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\fullscreen.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\marker.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\matchhighlighter.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\mustache.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\preview.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\resize.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\runmode.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\search.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\theme.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\vim.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\demo\visibletabs.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\baboon.png" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\baboon_vector.svg" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\compress.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\docs.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\internals.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\manual.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\oldrelease.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\reporting.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\doc\upgrade_v2.2.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\keymap\emacs.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\keymap\vim.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\codemirror.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\codemirror.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\closetag.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\dialog.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\dialog.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\foldcode.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\formatting.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\javascript-hint.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\match-highlighter.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\overlay.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\runmode.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\search.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\searchcursor.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\simple-hint.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\lib\util\simple-hint.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\clike\clike.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\clike\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\clojure\clojure.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\clojure\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\coffeescript\coffeescript.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\coffeescript\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\css\css.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\css\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\diff\diff.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\diff\diff.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\diff\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ecl\ecl.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ecl\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\gfm\gfm.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\gfm\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\go\go.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\go\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\groovy\groovy.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\groovy\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\haskell\haskell.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\haskell\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\htmlembedded\htmlembedded.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\htmlembedded\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\htmlmixed\htmlmixed.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\htmlmixed\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\javascript\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\javascript\javascript.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\jinja2\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\jinja2\jinja2.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\less\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\less\less.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\lua\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\lua\lua.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\markdown\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\markdown\markdown.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\mysql\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\mysql\mysql.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ntriples\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ntriples\ntriples.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\pascal\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\pascal\pascal.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\perl\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\perl\perl.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\php\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\php\php.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\plsql\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\plsql\plsql.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\python\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\python\LICENSE.txt" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\python\python.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rpm\changes\changes.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rpm\changes\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rpm\spec\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rpm\spec\spec.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rpm\spec\spec.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rst\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rst\rst.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ruby\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ruby\ruby.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rust\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\rust\rust.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\r\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\r\r.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\scheme\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\scheme\scheme.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\smalltalk\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\smalltalk\smalltalk.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\smarty\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\smarty\smarty.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\sparql\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\sparql\sparql.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\stex\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\stex\stex.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\stex\test.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\tiddlywiki\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\tiddlywiki\tiddlywiki.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\tiddlywiki\tiddlywiki.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\vbscript\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\vbscript\vbscript.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\velocity\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\velocity\velocity.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\verilog\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\verilog\verilog.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xmlpure\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xmlpure\xmlpure.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xml\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xml\xml.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\testBase.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\testEmptySequenceKeyword.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\testMultiAttr.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\testNamespaces.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\testProcessingInstructions.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\test\testQuotes.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\xquery.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\yaml\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\yaml\yaml.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\test\index.html" />
+    <Content Include="demos\parser\CodeMirror-2.23\test\mode_test.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\test\mode_test.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\test\test.js" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\cobalt.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\eclipse.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\elegant.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\lesser-dark.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\monokai.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\neat.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\night.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\rubyblue.css" />
+    <Content Include="demos\parser\CodeMirror-2.23\theme\xq-dark.css" />
+    <Content Include="demos\parser\demo.xml" />
+    <Content Include="demos\parser\patch.js" />
+    <Content Include="demos\parser\test_files.js" />
+    <Content Include="demos\pbs-demo\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\pbs-demo\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\pbs-demo\data\models\rock\images\normal.dds" />
+    <Content Include="demos\pbs-demo\data\models\rock\images\specular.dds" />
+    <Content Include="demos\pbs-demo\data\models\WoodSoldier\WoodSoldier.png" />
+    <Content Include="demos\pbs-demo\data\textures\lensflare_cookies.png" />
+    <Content Include="demos\pbs-demo\data\textures\lensflare_cookies_new.png" />
+    <Content Include="demos\pbs-demo\demo.xml" />
+    <Content Include="demos\performance\demo.xml" />
+    <Content Include="demos\WoodSoldier\WoodSoldier.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\arteries\arteries.ts" />
+    <Content Include="demos\idl\3d-party\codemirror.d.ts" />
+    <Content Include="demos\idl\3d-party\dat.gui.d.ts" />
+    <Content Include="demos\idl\3d-party\jquery.d.ts" />
+    <Content Include="demos\idl\3d-party\jqueryui.d.ts" />
+    <Content Include="demos\idl\3d-party\raphael.d.ts" />
+    <Content Include="demos\idl\3d-party\swig.d.ts" />
+    <Content Include="demos\model-viewer\miner\miner.ts" />
+    <Content Include="demos\performance\performance.ts" />
+    <Content Include="demos\std\std.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\arteries\dat.gui\dat.gui.js" />
+    <Content Include="demos\arteries\data\AG\001.jpg" />
+    <Content Include="demos\arteries\data\AG\002.jpg" />
+    <Content Include="demos\arteries\data\AG\003.jpg" />
+    <Content Include="demos\arteries\data\AG\004.jpg" />
+    <Content Include="demos\arteries\data\AG\005.jpg" />
+    <Content Include="demos\arteries\data\AG\006.jpg" />
+    <Content Include="demos\arteries\data\AG\007.jpg" />
+    <Content Include="demos\arteries\data\AG\008.jpg" />
+    <Content Include="demos\arteries\data\AG\009.jpg" />
+    <Content Include="demos\arteries\data\AG\010.jpg" />
+    <Content Include="demos\arteries\data\AG\011.jpg" />
+    <Content Include="demos\arteries\data\AG\012.jpg" />
+    <Content Include="demos\arteries\data\AG\013.jpg" />
+    <Content Include="demos\arteries\data\AG\014.jpg" />
+    <Content Include="demos\arteries\data\AG\015.jpg" />
+    <Content Include="demos\arteries\data\AG\016.jpg" />
+    <Content Include="demos\arteries\data\AG\017.jpg" />
+    <Content Include="demos\arteries\data\AG\018.jpg" />
+    <Content Include="demos\arteries\data\AG\019.jpg" />
+    <Content Include="demos\arteries\data\AG\020.jpg" />
+    <Content Include="demos\arteries\data\AG\021.jpg" />
+    <Content Include="demos\arteries\data\AG\022.jpg" />
+    <Content Include="demos\arteries\data\AG\023.jpg" />
+    <Content Include="demos\arteries\data\AG\024.jpg" />
+    <Content Include="demos\arteries\data\AG\025.jpg" />
+    <Content Include="demos\arteries\data\AG\026.jpg" />
+    <Content Include="demos\arteries\data\AG\027.jpg" />
+    <Content Include="demos\arteries\data\AG\028.jpg" />
+    <Content Include="demos\arteries\data\AG\029.jpg" />
+    <Content Include="demos\arteries\data\AG\030.jpg" />
+    <Content Include="demos\arteries\data\AG\031.jpg" />
+    <Content Include="demos\arteries\data\AG\032.jpg" />
+    <Content Include="demos\arteries\data\AG\033.jpg" />
+    <Content Include="demos\arteries\data\AG\034.jpg" />
+    <Content Include="demos\arteries\data\AG\035.jpg" />
+    <Content Include="demos\arteries\data\AG\036.jpg" />
+    <Content Include="demos\arteries\data\AG\037.jpg" />
+    <Content Include="demos\arteries\data\AG\038.jpg" />
+    <Content Include="demos\arteries\data\AG\039.jpg" />
+    <Content Include="demos\arteries\data\AG\040.jpg" />
+    <Content Include="demos\arteries\data\AG\041.jpg" />
+    <Content Include="demos\arteries\data\coords\coord4.txt" />
+    <Content Include="demos\arteries\data\coords\coord_real_ag.txt" />
+    <Content Include="demos\arteries\demo.xml" />
+    <Content Include="demos\cube.dae" />
+    <Content Include="demos\arteries\data\AG\all.map" />
+    <Content Include="demos\arteries\data\fx\arteries.afx" />
+    <Content Include="demos\arteries\data\fx\arteries2.afx" />
+    <Content Include="demos\arteries\data\models\arteries_hp.obj" />
+    <Content Include="demos\arteries\data\models\caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline.2n_poyda.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2-tan.spline_smoothed.2n.obj" />
+    <Content Include="demos\arteries\data\models\tof_multislab_tra_2.obj" />
+    <Content Include="demos\fonts\fontawesome-webfont.eot" />
+    <Content Include="demos\fonts\fontawesome-webfont.ttf" />
+    <Content Include="demos\fonts\fontawesome-webfont.woff" />
+    <Content Include="demos\fonts\FontAwesome.otf" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="demos\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="demos\model-viewer\miner\miner.map" />
+    <Content Include="demos\model-viewer\miner\models\cube.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\idle0.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\idle1.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\idle2.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\gun_diffuse.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\gun_normal.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\gun_specular.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\hammer_diffuse.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\hammer_normal.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\hammer_specular.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\miner_diffuse.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\miner_normal.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\images\miner_specular.dds" />
+    <Content Include="demos\model-viewer\miner\models\miner\miner.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\walk1.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\walk2.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\walk3.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\work_gun.DAE" />
+    <Content Include="demos\model-viewer\miner\models\miner\work_hammer.DAE" />
+    <Content Include="demos\light-shafts\data\effects\blur.afx" />
+    <Content Include="demos\light-shafts\data\effects\dirtylens.afx" />
+    <Content Include="demos\light-shafts\data\effects\dof.afx" />
+    <Content Include="demos\light-shafts\data\effects\lensflare.afx" />
+    <Content Include="demos\light-shafts\data\effects\sunshaft.afx" />
+    <Content Include="demos\light-shafts\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\light-shafts\data\models\torusknot.DAE" />
+    <Content Include="demos\light-shafts\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\pbs-demo\data\effects\blur.afx" />
+    <Content Include="demos\pbs-demo\data\effects\dirtylens.afx" />
+    <Content Include="demos\pbs-demo\data\effects\dof.afx" />
+    <Content Include="demos\pbs-demo\data\effects\lensflare.afx" />
+    <Content Include="demos\pbs-demo\data\effects\sunshaft.afx" />
+    <Content Include="demos\pbs-demo\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\pbs-demo\data\models\torusknot.DAE" />
+    <Content Include="demos\pbs-demo\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\pbs-demo\data\models\room-with-room.DAE" />
+    <Content Include="demos\pbs-demo\data\models\teapot.dae" />
+    <Content Include="demos\game\data\data.map" />
+    <Content Include="demos\game\data\models\barrel\barrel_and_support.DAE" />
+    <Content Include="demos\game\data\models\barrel\images\barrel_diffuse.dds" />
+    <Content Include="demos\game\data\models\barrel\images\barrel_normal.dds" />
+    <Content Include="demos\game\data\models\barrel\images\barrel_specular.dds" />
+    <Content Include="demos\game\data\models\barrel\images\stand_diffuse.dds" />
+    <Content Include="demos\game\data\models\barrel\images\stand_normal.dds" />
+    <Content Include="demos\game\data\models\barrel\images\stand_specular.dds" />
+    <Content Include="demos\game\data\models\box\closed_box.DAE" />
+    <Content Include="demos\game\data\models\box\images\diffuse.dds" />
+    <Content Include="demos\game\data\models\box\images\normal.dds" />
+    <Content Include="demos\game\data\models\box\images\specular.dds" />
+    <Content Include="demos\game\data\models\character\all-ih.json" />
+    <Content Include="demos\game\data\models\character\charZ.DAE" />
+    <Content Include="demos\game\data\models\character\images\diffuse.dds" />
+    <Content Include="demos\game\data\models\character\images\normals.dds" />
+    <Content Include="demos\game\data\models\character\images\specular.dds" />
+    <Content Include="demos\game\data\models\tube\images\diffuse.dds" />
+    <Content Include="demos\game\data\models\tube\images\normal.dds" />
+    <Content Include="demos\game\data\models\tube\images\specular.dds" />
+    <Content Include="demos\game\data\models\tube\tube.DAE" />
+    <Content Include="demos\game\data\models\tubing\images\tech_diffuse.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tech_normal.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tech_specular.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tubeA_diffuse.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tubeA_normal.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tubeA_specular.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tubeB_diffuse.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tubeB_normal.dds" />
+    <Content Include="demos\game\data\models\tubing\images\tubeB_specular.dds" />
+    <Content Include="demos\game\data\models\tubing\tube_beeween_rocks.DAE" />
+    <Content Include="demos\game\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\game\data\textures\terrain\diffuse.dds" />
+    <Content Include="demos\game\data\textures\terrain\main_height_map_1025.dds" />
+    <Content Include="demos\game\data\textures\terrain\main_terrain_normal_map.dds" />
+    <Content Include="demos\arteries\index.jade" />
+    <Content Include="demos\game\data\effects\sunshaft.afx" />
+    <Content Include="demos\game\data\models\can\can.DAE" />
+    <Content Include="demos\game\data\models\oil\oil.DAE" />
+    <Content Include="demos\game\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\game\data\models\rock\images\normal.dds" />
+    <Content Include="demos\game\data\models\rock\images\specular.dds" />
+    <Content Include="demos\game\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\game\data\models\tube\rock_tube_door_2.max" />
+    <Content Include="demos\game\data\models\character\all-ed.json" />
+    <Content Include="demos\game\data\models\character\character.DAE" />
+    <Content Include="demos\game\data\models\character\character.max" />
+    <Content Include="demos\game\data\models\character\charX.DAE" />
+    <Content Include="demos\game\data\models\character\charY.DAE" />
+    <Content Include="demos\game\data\models\character\gun_draw_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_draw_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_draw_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_fire_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_fire_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_fire_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_idle_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_idle_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_idle_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_undraw_down.DAE" />
+    <Content Include="demos\game\data\models\character\gun_undraw_frw.DAE" />
+    <Content Include="demos\game\data\models\character\gun_undraw_up.DAE" />
+    <Content Include="demos\game\data\models\character\gun_walk.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_combo.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_draw.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_idle.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_undraw.DAE" />
+    <Content Include="demos\game\data\models\character\harpoon_walk.DAE" />
+    <Content Include="demos\game\data\models\character\idle_0.DAE" />
+    <Content Include="demos\game\data\models\character\idle_1.DAE" />
+    <Content Include="demos\game\data\models\character\run.DAE" />
+    <Content Include="demos\game\data\models\character\run2.DAE" />
+    <Content Include="demos\game\data\models\character\walk.DAE" />
+    <Content Include="demos\game\data\models\character\walkback_new.DAE" />
+    <Content Include="demos\game\data\models\box\box_fin.max" />
+    <Content Include="demos\game\data\models\box\opened_box.DAE" />
+    <Content Include="demos\game\data\models\barrel\barrel.DAE" />
+    <Content Include="demos\game\data\models\barrel\barrel_support.DAE" />
+    <Content Include="demos\game\data\models\vehabar\vehabar.DAE" />
+    <Content Include="demos\game\data\models\windspot\images\WIND-SP.dds" />
+    <Content Include="demos\game\data\models\windspot\images\wind_normal.dds" />
+    <Content Include="demos\game\data\models\windspot\images\wind_WIND-DUST-DIFF.dds" />
+    <Content Include="demos\game\data\models\windspot\WINDSPOT.DAE" />
+    <Content Include="demos\game\index.jade" />
+    <Content Include="demos\dragon.dae" />
+    <Content Include="demos\kr360.dae" />
+    <Content Include="demos\seymourplane\images\planeDiffuse.dds" />
+    <Content Include="demos\seymourplane\images\planeDiffuse.tga" />
+    <Content Include="demos\seymourplane\seymourplane.dae" />
+    <Content Include="demos\teapot.dae" />
+    <Content Include="demos\Weldinggun.dae" />
+    <Content Include="demos\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\parser\CodeMirror-2.23\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\coffeescript\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\pascal\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\perl\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\ruby\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\r\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\mode\xquery\LICENSE" />
+    <Content Include="demos\parser\CodeMirror-2.23\README.md" />
+    <Content Include="demos\parser\index.jade" />
+    <Content Include="demos\model-viewer\data\effects\blur.afx" />
+    <Content Include="demos\model-viewer\data\effects\dirtylens.afx" />
+    <Content Include="demos\model-viewer\data\effects\dof.afx" />
+    <Content Include="demos\model-viewer\data\effects\lensflare.afx" />
+    <Content Include="demos\model-viewer\data\effects\sunshaft.afx" />
+    <Content Include="demos\model-viewer\data\models\barrel\barrel.DAE" />
+    <Content Include="demos\model-viewer\data\models\barrel\barrel_and_support.DAE" />
+    <Content Include="demos\model-viewer\data\models\barrel\barrel_support.DAE" />
+    <Content Include="demos\model-viewer\data\models\box\box_fin.max" />
+    <Content Include="demos\model-viewer\data\models\box\closed_box.DAE" />
+    <Content Include="demos\model-viewer\data\models\box\opened_box.DAE" />
+    <Content Include="demos\model-viewer\data\models\can\can.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\all-ed.json" />
+    <Content Include="demos\model-viewer\data\models\character\all-ih.json" />
+    <Content Include="demos\model-viewer\data\models\character\character.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\character.max" />
+    <Content Include="demos\model-viewer\data\models\character\charX.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\charY.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\charZ.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_draw_down.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_draw_frw.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_draw_up.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_fire_down.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_fire_frw.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_fire_up.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_idle_down.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_idle_frw.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_idle_up.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_undraw_down.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_undraw_frw.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_undraw_up.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\gun_walk.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\harpoon_combo.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\harpoon_draw.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\harpoon_idle.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\harpoon_undraw.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\harpoon_walk.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\idle_0.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\idle_1.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\run.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\run2.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\walk.DAE" />
+    <Content Include="demos\model-viewer\data\models\character\walkback_new.DAE" />
+    <Content Include="demos\model-viewer\data\models\Donut.dae" />
+    <Content Include="demos\model-viewer\data\models\miner\idle0.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\idle1.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\idle2.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\miner.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\walk1.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\walk2.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\walk3.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\work_gun.DAE" />
+    <Content Include="demos\model-viewer\data\models\miner\work_hammer.DAE" />
+    <Content Include="demos\model-viewer\data\models\oil\oil.DAE" />
+    <Content Include="demos\model-viewer\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\model-viewer\data\models\room-with-room.DAE" />
+    <Content Include="demos\model-viewer\data\models\Sphere.dae" />
+    <Content Include="demos\model-viewer\data\models\teapot.dae" />
+    <Content Include="demos\model-viewer\data\models\torusknot.DAE" />
+    <Content Include="demos\model-viewer\data\models\windspot\WINDSPOT.DAE" />
+    <Content Include="demos\model-viewer\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\miner\miner.map" />
+    <Content Include="demos\miner\models\cube.DAE" />
+    <Content Include="demos\miner\models\miner\idle0.DAE" />
+    <Content Include="demos\miner\models\miner\idle1.DAE" />
+    <Content Include="demos\miner\models\miner\idle2.DAE" />
+    <Content Include="demos\miner\models\miner\miner.DAE" />
+    <Content Include="demos\miner\models\miner\walk1.DAE" />
+    <Content Include="demos\miner\models\miner\walk2.DAE" />
+    <Content Include="demos\miner\models\miner\walk3.DAE" />
+    <Content Include="demos\miner\models\miner\work_gun.DAE" />
+    <Content Include="demos\miner\models\miner\work_hammer.DAE" />
+    <Content Include="demos\distance-fog\data\effects\blur.afx" />
+    <Content Include="demos\distance-fog\data\effects\common.afx" />
+    <Content Include="demos\distance-fog\data\effects\dirtylens.afx" />
+    <Content Include="demos\distance-fog\data\effects\dof.afx" />
+    <Content Include="demos\distance-fog\data\effects\fresnel_texture.afx" />
+    <Content Include="demos\distance-fog\data\effects\lensflare.afx" />
+    <Content Include="demos\distance-fog\data\effects\sunshaft.afx" />
+    <Content Include="demos\distance-fog\data\models\Donut.dae" />
+    <Content Include="demos\distance-fog\data\models\oil\oil.DAE" />
+    <Content Include="demos\distance-fog\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\distance-fog\data\models\room-with-room.DAE" />
+    <Content Include="demos\distance-fog\data\models\Sphere.dae" />
+    <Content Include="demos\distance-fog\data\models\teapot.dae" />
+    <Content Include="demos\distance-fog\data\models\torusknot.DAE" />
+    <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\mercedes\models\mercedes.DAE" />
+    <Content Include="demos\anti-aliasing\data\effects\blur.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\common.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\dirtylens.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\dof.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\fresnel_texture.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\lensflare.afx" />
+    <Content Include="demos\anti-aliasing\data\effects\sunshaft.afx" />
+    <Content Include="demos\anti-aliasing\data\models\Donut.dae" />
+    <Content Include="demos\anti-aliasing\data\models\oil\oil.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\anti-aliasing\data\models\rock\images\normal.dds" />
+    <Content Include="demos\anti-aliasing\data\models\rock\images\specular.dds" />
+    <Content Include="demos\anti-aliasing\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\room-with-room.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\Sphere.dae" />
+    <Content Include="demos\anti-aliasing\data\models\teapot.dae" />
+    <Content Include="demos\anti-aliasing\data\models\torusknot.DAE" />
+    <Content Include="demos\anti-aliasing\data\models\WoodSoldier\WoodSoldier.DAE" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\colosseum.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\perea-beach1.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\rome-church.dds" />
+    <Content Include="demos\anti-aliasing\data\textures\skyboxes\saint-peters-basilica.dds" />
+    <Content Include="demos\cubeWithTexture.dae" />
+    <Content Include="demos\mercedes\data\textures\skyboxes\nightsky.dds" />
+    <Content Include="demos\mercedes\data\textures\skyboxes\nightsky.dds~" />
+    <Content Include="demos\mercedes\skins\black_moon.skin" />
+    <Content Include="demos\mercedes\skins\dark-blue.skin" />
+    <Content Include="demos\mercedes\skins\default.skin" />
+    <Content Include="demos\mercedes\skins\hot_lemon.skin" />
+    <Content Include="demos\mercedes\skins\hot_red_pepper.skin" />
+    <Content Include="demos\mercedes\skins\red-origin.skin" />
+    <Content Include="demos\mercedes\skins\red.skin" />
+    <Content Include="demos\mercedes\skins\silver-bezh.skin" />
+    <Content Include="demos\mercedes\skins\unknown.skin" />
+    <Content Include="demos\mercedes\index.jade" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\pbs-demo\pbs-demo.ts" />
+    <Content Include="demos\light-shafts\light-shafts.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\game\idl\IGameCameraParameters.ts" />
+    <Content Include="demos\game\idl\IGameControls.ts" />
+    <Content Include="demos\game\idl\IGameHeroParameters.ts" />
+    <Content Include="demos\game\idl\IGamePadParameters.ts" />
+    <Content Include="demos\game\idl\IGameTimeParameters.ts" />
+    <Content Include="demos\game\idl\IGameTrigger.ts" />
+    <Content Include="demos\game\idl\IGameTriggersParamerers.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\game\game.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="demos\atmospheric_scattering\demo.ts" />
+    <Content Include="demos\game\lib\createCameras.ts" />
+    <Content Include="demos\game\lib\createLightShafts.ts" />
+    <Content Include="demos\game\lib\createModelEntry.ts" />
+    <Content Include="demos\game\lib\createModelEx.ts" />
+    <Content Include="demos\game\lib\createSceneEnvironment.ts" />
+    <Content Include="demos\game\lib\createSky.ts" />
+    <Content Include="demos\game\lib\createSkyBox.ts" />
+    <Content Include="demos\game\lib\createTerrain.ts" />
+    <Content Include="demos\game\lib\createViewports.ts" />
+    <Content Include="demos\game\lib\fetchAllCameras.ts" />
+    <Content Include="demos\game\lib\putOnTerrain.ts" />
+    <Content Include="demos\game\lib\setup.ts" />
+    <Content Include="demos\game\lib\updateCamera.ts" />
+    <Content Include="demos\game\lib\updateKeyboardControls.ts" />
+    <Content Include="demos\game\lib\virtualGamepad.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="demos\anti-aliasing\anti-aliasing.ts" />
+    <TypeScriptCompile Include="demos\distance-fog\distance-fog.ts" />
+    <TypeScriptCompile Include="demos\mercedes\mercedes.ts" />
+    <TypeScriptCompile Include="demos\miner\miner.ts" />
+    <TypeScriptCompile Include="demos\model-viewer\model-viewer.ts" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>demos</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>7849</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:7849/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>none</TypeScriptModuleKind>
+    <Optimize>true</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>none</TypeScriptModuleKind>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
+</Project>

@@ -1,0 +1,82 @@
+provide akra.system;
+
+include "floatSpecialFunctions.afx";
+include "common.afx";
+
+shared PixelData pixelData;
+
+int objectId : RENDER_OBJECT_ID;
+bool normalFix;
+
+float4 prepareForDeferredShadingPass1() : COLOR {
+	float4 data;
+	
+    //pixelData.material.emissive *= 254./255.;
+    //pixelData.material.diffuse *= 254./255.;
+    //pixelData.material.ambient *= 254./255.;
+
+    pixelData.material.emissive = min(pixelData.material.emissive, 0.99);
+    pixelData.material.diffuse = min(pixelData.material.diffuse, 0.99);
+    
+    
+    float3 tmp;
+
+    if(normalFix){
+    	tmp = float3((pixelData.normal.xyz + 1.)/2.);
+    }
+    else {
+    	tmp = float3((pixelData.normal.xy + 1.)/2., pixelData.material.shininess);
+    }
+     
+    tmp *= 254./255.;
+
+	data.x = float3ToFloat(pixelData.material.emissive.xyz);
+	data.y = float3ToFloat(tmp);
+	data.z = float3ToFloat(pixelData.material.diffuse.xyz);
+	
+	data.w = float(objectId);
+
+	return data;
+};
+
+
+
+float4 prepareForDeferredShadingPass2() : COLOR {
+	float4 data;
+	
+    //pixelData.material.specular *= 254./255.;
+    pixelData.material.specular = min(pixelData.material.specular, 0.99);
+    pixelData.material.ambient = min(pixelData.material.ambient, 0.99);
+
+	data.x = float3ToFloat(pixelData.material.ambient.xyz);
+	data.y = float3ToFloat(pixelData.material.specular.xyz);
+	
+	if(normalFix){
+		data.z = pixelData.material.shininess;
+	}
+	
+	return data;
+};
+
+//float4 simplePrepareForDeferredShadingPass1() : COLOR {
+//    float4 data;
+//
+//    data.x = float3ToFloat(pixelData.material.emissive.xyz);
+//
+//    return data;
+//};
+
+technique prepareForDeferredShading{
+	pass pass1{
+		PixelShader = compile prepareForDeferredShadingPass1();
+	};
+	pass pass2{
+		PixelShader = compile prepareForDeferredShadingPass2();
+	};
+};
+
+//technique simplePrepareForDeferredShading{
+//    pass pass1{
+//        PixelShader = compile simplePrepareForDeferredShadingPass1();
+//    };
+//};
