@@ -1,0 +1,124 @@
+provide akra.system;
+
+include "common.afx";
+
+float4x4 viewProjectionInverseMatrix: VIEW_PROJ_INV_MATRIX;
+//float4x4 previousViewProjectionMatrix: PREV_VIEW_PROJ_MATRIX;
+float4x4 invView: INV_VIEW_CAMERA_MAT;
+float4x4 projMat : PROJ_MATRIX;
+float4x4 prevViewMat : PREV_VIEW_MATRIX;
+float4x4 viewMat : VIEW_MATRIX;
+
+texture tex4 : SCENE_DEPTH_TEXTURE;
+texture tex0 : INPUT_TEXTURE;
+
+float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
+float2 inputTextureRatio : INPUT_TEXTURE_RATIO;
+
+sampler depthTexture : SAMPLER_SCENE_DEPTH = sampler_state
+{
+	Texture = <tex4>;
+};
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+	float2 texCoordsDeferred : TEXCOORD1;
+};
+
+
+VS_OUT vs_motion_blur(float2 pos: POSITION) 
+{
+  VS_OUT Out;
+  Out.position = float4(pos,0.,1.);
+  Out.screenPosition = pos;
+  Out.textureCoords = (pos + 1.)/2. * inputTextureRatio;
+  Out.texCoordsDeferred = (pos + 1.) / 2. * screenTextureRatio;
+	
+	return Out;
+};
+
+
+
+
+float uVelocityScale = 1.;
+float2 screenSize : INPUT_TEXTURE_SIZE;
+float2 framebufferSize : FRAMEBUFFER_SIZE;
+float2 viewportSize : VIEWPORT_SIZE;
+int MAX_SAMPLES = 4;
+
+
+
+float4 fs_motion_blur(VS_OUT IN) : COLOR
+{
+   float2 texCoord = IN.textureCoords;
+   float2 texCoordDef = IN.texCoordsDeferred;
+
+  float sceneDepth = tex2D(depthTexture, texCoordDef).x;  
+  float depth = sceneDepth * 2. - 1.;
+  float4 H = float4(IN.screenPosition.xy, depth, 1.);
+
+	//float4 D = viewProjectionInverseMatrix * H;
+  float4 worldPos = float4(invView * float4(unproj(projMat, H.xyz), 1.));
+  //worldPos /= worldPos.w;
+  //float4 worldPos = D / D.w;  
+
+
+   float4 currentPos =  H;//projMat * viewMat * worldPos;  
+   float4 previousPos = projMat * prevViewMat * worldPos;
+   currentPos /= currentPos.w;  
+   previousPos /= previousPos.w;  
+
+   float2 velocity = (currentPos - previousPos).xy * 0.5;
+   //velocity = pow(velocity, 1.0 / 3.0);
+   //velocity = velocity * 2.0 - 1.0;
+
+
+  float speed = length(velocity * viewportSize);
+  int nSamples = int(clamp(speed, 1., float(MAX_SAMPLES)));
+  int rSamples = 1;
+  float4 oResult = tex2D(screenSampler, texCoord);
+  
+   for(float i = 1.; i < 16.; i++){
+    if(i < float(nSamples)){
+      float2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
+      float2 totalOffset = texCoord + offset;
+      if (totalOffset.x < inputTextureRatio.x && totalOffset.y < inputTextureRatio.y) {
+        oResult += tex2D(screenSampler, totalOffset);
+        rSamples ++;
+      }
+    }
+    else {
+      break;
+    }
+  }
+
+  oResult /= float(rSamples);
+ // if (texCoord.y < inputTextureRatio.y / 2. && texCoord.x < inputTextureRatio.x / 2.) {
+ //   return float4(abs(currentPos.xy), 0., 1.);
+ // }
+  //if (texCoord.y < inputTextureRatio.y / 2.) {
+    return oResult;
+ // }
+  //if (texCoord.x < inputTextureRatio.x / 2.) {
+  //  return float4(abs(previousPos.xy), 0, 1.);
+  //}
+  //return float4(abs(currentPos.xyz), 1.);
+  //return float4(abs(velocity) * 10., 0., 1.);
+}
+
+technique motionBlur {
+	pass {
+		VertexShader = compile vs_motion_blur();
+		PixelShader = compile fs_motion_blur();
+	};
+};
+

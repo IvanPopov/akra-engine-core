@@ -1,0 +1,388 @@
+provide akra.system;
+
+include "lightingFunctions.afx";
+
+foreign int NUM_OMNI;
+foreign int NUM_OMNI_SHADOWS;
+foreign int NUM_PROJECT;
+foreign int NUM_PROJECT_SHADOWS;
+foreign int NUM_SUN;
+foreign int NUM_SUN_SHADOWS;
+
+foreign int NUM_OMNI_RESTRICTED;
+
+texture envTex0 : ENVMAP;
+
+sampler2D envSampler0 : ENV_SAMPLER_0 = sampler_state
+{
+    Texture = <envTex0>;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+sampler project_shadow_sampler[NUM_PROJECT_SHADOWS] : PROJECT_SHADOW_SAMPLER;
+sampler omni_shadow_sampler[NUM_OMNI_SHADOWS * 6] : OMNI_SHADOW_SAMPLER;
+sampler sun_shadow_sampler[NUM_SUN_SHADOWS] : SUN_SHADOW_SAMPLER;
+
+LightOmni points_omni[NUM_OMNI];
+LightOmniShadows points_omni_shadows[NUM_OMNI_SHADOWS];
+
+LightProject points_project[NUM_PROJECT];
+LightProjectShadows points_project_shadows[NUM_PROJECT_SHADOWS];
+
+LightSun points_sun[NUM_SUN];
+LightSunShadows points_sun_shadows[NUM_SUN_SHADOWS];
+
+LightOmniRestricted points_omni_restricted[NUM_OMNI_RESTRICTED];
+
+shared float4 result_color = float4(0.);
+shared PixelData pixelData;
+
+float4 applyMaterialAlpha() : COLOR {
+    float4 color = resultAFXColor;
+    //color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
+    color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
+    float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
+
+    // Simple model:
+    //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
+    // Physically based shading:
+    //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
+    // Fresnel eq solve:
+    color.a = sTransFresnelOptimized(1.-NoV) * pixelData.material.transparency * pixelData.material.diffuse.a;
+    //color.a = NoV;
+
+    //color.g = color.a;
+    //color.a = 1.0;
+    //color.r = 0.;
+    //color.b = 0.;
+
+    return color;
+}
+
+float4 applyLightOmni() : COLOR {
+    for(int i = 0; i < NUM_OMNI; i++){
+        result_color += applyBaseLightParams(pixelData, points_omni[i].lightData);
+    }
+    
+    //result_color = float4(pixelData.normal, 1.);
+    return returnColor(result_color);
+}
+
+float4 applyLightOmniRestricted() : COLOR {
+    for(int i = 0; i < NUM_OMNI_RESTRICTED; i++){
+    	if(isPointInBox((points_omni_restricted[i].toLightSpace * float4(pixelData.position, 1.)).xyz,  points_omni_restricted[i].point0, points_omni_restricted[i].point1)){
+        	result_color += applyBaseLightParams(pixelData, points_omni_restricted[i].lightData);
+    	}
+    }
+    
+    //result_color = float4(pixelData.normal, 1.);
+    return returnColor(result_color);
+}
+
+float4 applyLightProject() : COLOR{
+    for(int i = 0; i < NUM_PROJECT; i++){
+        float lightAttenuation = calcProjectLightInfluence(points_project[i].shadow_matrix, pixelData.position);
+        if(lightAttenuation >= 0.) {
+            result_color += applyBaseLightParams(pixelData, points_project[i].lightData) * lightAttenuation;
+        }
+    }
+
+    return returnColor(result_color);
+}
+
+float4 applyLightOmniShadow() : COLOR{
+    for(int i = 0; i < NUM_OMNI_SHADOWS; i++){
+        float4 tmpColor = applyBaseLightParams(pixelData, points_omni_shadows[i].lightData);
+        float shadowMultiplier = 1.;
+
+        bool isOk = true;
+        for(int j = 0; j < 6; j++){
+            float2 shadowTexCoords;
+            float realDepth;
+            if(isOk){
+                if(isUnderShadowInfluence(points_omni_shadows[i].toLightSpace[j], 
+                                        points_omni_shadows[i].optimized_projection_matrix[j],
+                                        pixelData.position,
+                                        shadowTexCoords, realDepth)){
+
+                    shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[i * 6 + j], shadowTexCoords,
+                                                                 points_omni_shadows[i].optimized_projection_matrix[j], realDepth);
+                    isOk = false;
+                    break;
+                }
+            }
+            else {
+                break;
+            }
+        }
+
+        result_color += tmpColor * shadowMultiplier;
+    }
+
+    return returnColor(result_color);
+}
+
+float4 applyLightProjectShadow() : COLOR{
+    for(int i = 0; i < NUM_PROJECT_SHADOWS; i++){
+        float lightAttenuation = calcProjectLightInfluence(points_project_shadows[i].real_projection_matrix * points_project_shadows[i].toLightSpace, pixelData.position);
+
+        if(lightAttenuation >= 0.){
+            float4 tmpColor = applyBaseLightParams(pixelData,points_project_shadows[i].lightData) * lightAttenuation;
+            float shadowMultiplier = 1.;
+            float2 shadowTexCoords;
+            float realDepth;
+
+            if(isUnderShadowInfluence(points_project_shadows[i].toLightSpace, 
+                                    points_project_shadows[i].optimized_projection_matrix,
+                                    pixelData.position,
+                                    shadowTexCoords, realDepth)) {
+                shadowMultiplier = calculateShadowMultiplier(project_shadow_sampler[i], shadowTexCoords,
+                                                                points_project_shadows[i].optimized_projection_matrix, realDepth);
+            }
+
+            result_color += tmpColor * shadowMultiplier;
+        }
+    }
+
+    return returnColor(result_color);
+}
+
+bool isNeedLightFromSun(PixelData pixelData){
+    for(int j = 0; j < NUM_SUN; j++) {
+        if(pixelData.id == points_sun[j].lightData.skyDomeId){
+            return false;
+        }
+    }
+
+    for(int j = 0; j < NUM_SUN_SHADOWS; j++) {
+        if(pixelData.id == points_sun_shadows[j].lightData.skyDomeId){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+float4 applySunLight() : COLOR {
+    float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
+
+    if(isNeedLightFromSun(pixelData)) {
+        for(int i = 0; i < NUM_SUN; i++) {
+            float4 color = applyBaseLightParamsSun(pixelData, points_sun[i].lightData, worldPos);
+
+            if(IS_FOR_REAL_SHADING){
+                float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+                color = float4(lerp(points_sun[i].lightData.ground0, color.rgb, fFogValue), 1.);
+            }
+            
+            result_color += color;
+        }
+    }
+
+    return returnColor(result_color);
+}
+
+float4 applySunLightShadows() : COLOR {
+    float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
+
+    if(isNeedLightFromSun(pixelData)) {
+        for(int i = 0; i < NUM_SUN_SHADOWS; i++){
+            float4 color = applyBaseLightParamsSun(pixelData, points_sun_shadows[i].lightData, worldPos);
+            float shadowMultiplier = 1.;
+            float2 shadowTexCoords;
+            float realDepth;
+
+            if(isUnderShadowInfluence(points_sun_shadows[i].toLightSpace,
+                                    points_sun_shadows[i].optimized_projection_matrix,
+                                    pixelData.position,
+                                    shadowTexCoords, realDepth)){
+
+                shadowMultiplier = calculateSunShadowMultiplierUpgraded(sun_shadow_sampler[i], shadowTexCoords,
+                                                                points_sun_shadows[i].optimized_projection_matrix, realDepth);
+            }
+            color = color * shadowMultiplier;
+
+            if(IS_FOR_REAL_SHADING){
+                float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+                color = float4(lerp(points_sun_shadows[i].lightData.ground0, color.rgb, fFogValue), 1.);
+            }
+
+            result_color += color;
+        }
+    }
+
+    return returnColor(result_color);
+};
+
+
+float3 calulateEnvMapColor(float3 position, float3 normal, sampler2D envSampler) 
+{
+    // calculating reflection separately
+    float3 view_dir = normalize(-position);
+    float3 normal_dir = normal;
+    float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
+    // float3 reflect_dir = reflect(view_dir, normal_dir);
+    float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
+
+    return getEnvMapColor(directionInsideCube, .5, envSampler);
+};
+
+float4 applyPBSReflection(): COLOR {
+    // float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
+    // //float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
+
+    // LightData envLight;
+    // envLight.diffuse = float4(colorFromCubemap, 1.);
+    // envLight.specular = float4(colorFromCubemap, 1.);
+    // //envLight.ambient = float4(intensity);
+    // envLight.attenuation = float3(1., 0., 0.);
+    // envLight.position = pixelData.normal * 1.;
+
+    float4 color = resultAFXColor;
+    // float4 s = pixelData.material.specular;
+// 
+    // pixelData.material.specular = float4(0.);
+    // color += applyBaseLightParams(pixelData, envLight);
+    // pixelData.material.specular = s;
+
+    float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
+            pixelData.material.specular.xyz, pixelData.material.shininess, envSampler0);
+    // lowering reflection brightness if we have a strong lighting already
+    
+    //reflection *= float4(1.) - color;
+    color += reflection;
+
+    //if (){
+        //return float4(1.0, 0.3, 0.3, 0.0);
+    //}
+    return color;
+};
+
+float3 fogColor : FOG_COLOR;
+float fogStart : FOG_START;
+float fogIndex : FOG_INDEX;
+
+float4 applyLinearFogfs(): COLOR {// required fog variables
+    float4 color = resultAFXColor;
+    float dist = length(pixelData.position);
+
+    // get a fog factor (thickness of fog) based on the distance
+    float fogFac = (dist - fogStart) / (fogIndex - fogStart);
+    // constrain the fog factor between 0 and 1
+    fogFac = clamp (fogFac, 0.0, 1.0);
+
+    // blend the fog color with the lighting color, based on the fog factor
+    color.rgb = mix (color.rgb, fogColor, fogFac);
+    return color;
+};
+
+float4 applyExponentialFogfs(): COLOR {// required fog variables
+    float4 color = resultAFXColor;
+    float dist = length(pixelData.position);
+
+    // get a fog factor (thickness of fog) based on the distance
+    float fogFac;
+    // Saves a little bit of calculation
+    if (dist < fogStart){
+        fogFac = 0.;
+    }
+    else if (dist - fogStart < fogIndex * 6.){
+        fogFac = 1. - exp(- (dist-fogStart) / fogIndex);
+    }
+    else {
+        fogFac = 1.;
+    }
+
+    // blend the fog color with the lighting color, based on the fog factor
+    color.rgb = mix (color.rgb, fogColor, fogFac);
+    return color;
+};
+
+technique applyAlpha {
+    pass {
+        PixelShader = compile applyMaterialAlpha();
+    }
+}
+
+technique omniLighting{
+    pass applyOmniLighting{
+        if(NUM_OMNI > 0){
+            PixelShader = compile applyLightOmni();
+        }
+    };
+};
+
+technique omniLightingRestricted{
+    pass {
+        if(NUM_OMNI_RESTRICTED > 0){
+            PixelShader = compile applyLightOmniRestricted();
+        }
+    };
+};
+
+technique projectLighting{
+    pass applyProjectLighting{
+        if(NUM_PROJECT > 0){
+            PixelShader = compile applyLightProject();
+        }
+    };
+};
+
+technique omniShadowsLighting{
+    pass applyOmniShadowsLighting{
+        if(NUM_OMNI_SHADOWS > 0){
+            PixelShader = compile applyLightOmniShadow();
+        }
+    };   
+};
+
+technique projectShadowsLighting{
+    pass applyProjectShadowsLighting{
+        if(NUM_PROJECT_SHADOWS > 0){
+            PixelShader = compile applyLightProjectShadow();
+        }
+    };   
+};
+
+technique sunLighting{
+    pass applySunLighting{
+        if(NUM_SUN > 0){
+            PixelShader = compile applySunLight();
+        }
+    }
+};
+
+technique sunShadowsLighting{
+    pass applySunShadowsLighting{
+        if(NUM_SUN_SHADOWS > 0){
+            PixelShader = compile applySunLightShadows();
+        }
+    }
+};
+
+
+technique pbsReflection{
+    pass applyPbsReflection{
+        if(IS_USED_PBS_REFLECTIONS /*&& IS_USED_PBS_SIMPLE*/){
+            PixelShader = compile applyPBSReflection();
+        }
+    }
+};
+
+technique linearFog{
+    pass applyLinearFog{
+        if(USE_LINEAR_FOG){
+            PixelShader = compile applyLinearFogfs();
+        }
+    }
+};
+
+technique exponentialFog{
+    pass applyExponentialFog{
+        if(USE_EXPONENTIAL_FOG){
+            PixelShader = compile applyExponentialFogfs();
+        }
+    }
+};

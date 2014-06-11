@@ -1,0 +1,103 @@
+provide akra.system;
+
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float2 screenTextureSize : INPUT_TEXTURE_SIZE;
+float2 aspectRatio : SCREEN_ASPECT_RATIO = float2(1.,1.);
+texture tex0 : INPUT_TEXTURE;
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+	float2 blurBasis : BLUR_BASIS;
+};
+
+VS_OUT vs_blur_shading1(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	Out.blurBasis = float2(1.,0.);
+	
+	return Out;
+};
+VS_OUT vs_blur_shading2(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	Out.blurBasis = float2(.5,.87);
+	
+	return Out;
+};
+VS_OUT vs_blur_shading3(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	Out.blurBasis = float2(-.5,.87);
+	
+	return Out;
+};
+
+int samples : BLUR_SAMPLES = 5;
+float blurRadius : BLUR_RADIUS = 0.1;
+
+float4 fs_blur_shading(VS_OUT IN) : COLOR {
+	float blurRadiusInTexture = clamp(blurRadius,0.,250.) / max(screenTextureSize.x,screenTextureSize.y);
+	int samp = int(min(float(ceil(pow(blurRadius,0.7))),25.));// int(max(min(float(samples), 50.),1.));
+
+	float4 baseImage = tex2D(screenSampler, IN.textureCoords);
+
+	if(blurRadiusInTexture < 2. / max(screenTextureSize.x,screenTextureSize.y)) {
+		return baseImage;
+	}
+
+	float2 top_right = float2(1.) * screenTextureRatio;
+
+	float blurStep = 1./float(samp);
+	float stepWeight = 1./(1.+(2.*float(samp)));
+
+	float4 blur_result = float4(0.);
+
+	for(int i=1;i<=25;i++) {
+		if(i>samp) {
+			break;
+		}
+		else {
+			for(int j=-1;j<=1;j+=2) {
+				float dr = blurRadiusInTexture*(float(i)*float(j)*blurStep);
+				blur_result += tex2D(screenSampler, clamp(IN.textureCoords + IN.blurBasis*float2(dr)/aspectRatio, float2(0.), screenTextureRatio-float2(1.)/screenTextureSize))*stepWeight*exp(-dr*dr/blurRadius/blurRadius);
+			}
+		}
+	}
+	return blur_result + baseImage*stepWeight;
+};
+
+technique blur : POST_EFFECT {
+	pass pass1{
+		VertexShader = compile vs_blur_shading1();
+		PixelShader = compile fs_blur_shading();
+	};
+	pass pass2{
+		VertexShader = compile vs_blur_shading2();
+		PixelShader = compile fs_blur_shading();
+	};
+	pass pass3{
+		VertexShader = compile vs_blur_shading3();
+		PixelShader = compile fs_blur_shading();
+	};
+};
+
+

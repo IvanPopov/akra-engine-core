@@ -1,0 +1,221 @@
+.ae-preloader {
+	width: 504px;
+	height: 613px;
+	background-color: #343637;
+	margin: 0 auto;
+	background-image: url(bg.png);
+	text-align: center;
+
+	position: relative;
+	left: -50%;
+	top: -306px;
+
+	animation: bounceInLeft 1s;
+	-webkit-animation: bounceInLeft 1s;
+}
+
+	.ae-preloader .ae-title {
+		display: block;
+		padding-top: 175px;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 45px;
+		color: black;
+		letter-spacing: 7px;
+		text-align: center;
+	}
+
+div.ae-progress:last-child {
+	margin-bottom: 0px;
+}
+
+div.ae-progress {
+	width: 70%;
+	margin: 0 auto;
+	padding-top: 0px;
+	padding-bottom: 70px;
+	text-align: left;
+}
+
+.ae-string {
+	color: #f1f1f1;
+	font-size: 11px;
+	padding-bottom: 5px;
+	display: inline-block;
+	font-family: Tahoma;
+	padding-left: 1px;
+}
+
+div.ae-bar {
+	background-color: #262626;
+	height: 2px;
+	padding: 0;
+}
+
+.ae-tip {
+	color: #f1f1f1;
+	padding-top: 7px;
+}
+
+.ae-complete {
+	background-color: #ff9600;
+	height: 100%;
+	-webkit-transition: width 1s ease-in-out;
+	-moz-transition: width 1s ease-in-out;
+	-o-transition: width 1s ease-in-out;
+	transition: width 1s ease-in-out;
+	width: 0%;
+}
+
+/**animation**/
+.ae-circle {
+	margin-top: 15px;
+	display: inline-block;
+	margin-bottom: 80px;
+}
+
+	.ae-circle .circle {
+		background-color: #000;
+		float: left;
+		height: 7px;
+		margin-left: 29px;
+		width: 7px;
+		-webkit-animation-name: bounce_circle;
+		-webkit-border-radius: 4px;
+		-webkit-animation-duration: 2.45s;
+		-webkit-animation-iteration-count: infinite;
+		-webkit-animation-direction: linear;
+		opacity: 1.0;
+	}
+
+	.ae-circle .circle_1 {
+		-webkit-animation-delay: 0.35s;
+		margin-left: 0;
+	}
+
+	.ae-circle .circle_2 {
+		-webkit-animation-delay: 0.7s;
+	}
+
+	.ae-circle .circle_3 {
+		-webkit-animation-delay: 1.05s;
+	}
+
+	.ae-circle .circle_4 {
+		-webkit-animation-delay: 1.4s;
+	}
+
+	.ae-circle .circle_5 {
+		-webkit-animation-delay: 1.75s;
+	}
+
+	.ae-circle .circle_6 {
+		-webkit-animation-delay: 2.1s;
+	}
+
+	.ae-circle .circle_7 {
+		-webkit-animation-delay: 2.45s;
+	}
+
+@-webkit-keyframes bounce_circle {
+	0% {
+		opacity: 1;
+		background-color: #000;
+		box-shadow: 0 0 0px #000;
+	}
+
+	15% {
+		opacity: 1;
+		background-color: #ffae00;
+		box-shadow: 0 0 10px #ffae00;
+	}
+
+	30% {
+		opacity: 1;
+		background-color: #000;
+		box-shadow: 0 0 0px #000;
+	}
+
+	100% {
+		opacity: 1;
+		background-color: #000;
+		box-shadow: 0 0 0px #000;
+	}
+}
+
+
+
+@-webkit-keyframes bounceInLeft {
+	0% {
+		opacity: 0;
+		-webkit-transform: translateX(-2000px);
+	}
+
+	60% {
+		opacity: 1;
+		-webkit-transform: translateX(30px);
+	}
+
+	80% {
+		-webkit-transform: translateX(-10px);
+	}
+
+	100% {
+		-webkit-transform: translateX(0);
+	}
+}
+
+@keyframes bounceInLeft {
+	0% {
+		opacity: 0;
+		transform: translateX(-2000px);
+	}
+
+	60% {
+		opacity: 1;
+		transform: translateX(30px);
+	}
+
+	80% {
+		transform: translateX(-10px);
+	}
+
+	100% {
+		transform: translateX(0);
+	}
+}
+
+@-webkit-keyframes bounceOutRight {
+	0% {
+	}
+
+	20% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes bounceOutRight {
+	0% {
+	}
+
+	20% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+
+.bounceOutRight {
+	-webkit-animation-name: bounceOutRight !important;
+	-webkit-animation-iteration-count: 1  !important;
+	-webkit-animation-fill-mode: forwards  !important;
+
+	animation-name: bounceOutRight;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+}

@@ -1,0 +1,10 @@
+doctype html
+html(lang="en")
+  head
+    title= "Index"
+    meta(name='description', content="all demos")
+  body
+    ul
+      - for (var i in index)
+        li
+          a(href=index[i].link)= index[i].name

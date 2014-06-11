@@ -1,0 +1,135 @@
+provide akra.system;
+
+include "floatSpecialFunctions.afx";
+include "common.afx";
+
+texture tex0 : DEFERRED_TEXTURE0;
+texture tex1 : DEFERRED_TEXTURE1;
+texture tex2 : DEFERRED_TEXTURE2;
+texture tex3 : DEFERRED_TEXTURE3;
+texture tex4 : SCENE_DEPTH_TEXTURE;
+
+sampler deferredTexture0 : SAMPLER_TEXTURE0 = sampler_state
+{
+	Texture = <tex0>;
+	MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+sampler deferredTexture1 : SAMPLER_TEXTURE1 = sampler_state
+{
+	Texture = <tex1>;
+	MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+sampler deferredTexture2 : SAMPLER_TEXTURE2 = sampler_state
+{
+	Texture = <tex2>;
+	MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+sampler deferredTexture3 : SAMPLER_TEXTURE3 = sampler_state
+{
+	Texture = <tex3>;
+	MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+sampler sceneDepthTexture : SAMPLER_SCENE_DEPTH = sampler_state
+{
+	TEXTURE = <tex4>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
+
+float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
+
+struct VS_IN{
+	float2 position : POSITION;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};;
+
+VS_OUT vs_deferred_shading(VS_IN IN){
+	VS_OUT Out;
+
+	//float texCoodrX = (IN.position.x + 1.)/2. * screenTextureRatio.x;
+	//float texCoordY = 1. - (1. - (IN.position.y + 1.)/2.) * screenTextureRatio.y;
+	//float texCoordY = (IN.position.y + 1.)/2. * screenTextureRatio.y;
+
+	Out.position = float4(IN.position,0.,1.);
+	Out.screenPosition = IN.position;
+	//Out.textureCoords = float2(texCoodrX,texCoordY);
+	Out.textureCoords = (IN.position + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float4x4 projMat : PROJ_MATRIX;
+
+shared PixelData pixelData;
+shared float4 result_color = float4(0.);
+
+bool normalFix;
+
+foreign bool IS_USED_BLINN_PNONG = false;
+foreign bool IS_USED_PNONG = true;
+foreign bool IS_USED_PBS_SIMPLE = false;
+
+float4 fs_deferred_shading(VS_OUT IN) : COLOR{
+	float2 textureCoords = IN.textureCoords;
+	float4 data0 = tex2D(deferredTexture0,textureCoords);
+
+	pixelData.id = int(data0.w);
+
+	if(pixelData.id == 0){
+		discard;
+	}
+
+	float sceneDepth = tex2D(sceneDepthTexture,textureCoords).x;
+	float4 data1 = tex2D(deferredTexture1,textureCoords);
+	float depth = sceneDepth*2.-1.;
+	
+	pixelData.position = unproj(projMat, float3(IN.screenPosition.xy,depth));
+	pixelData.depth = sceneDepth;
+	
+	float4 emissive = float4(floatToFloat3(data0.x),1.);
+	float3 temp = floatToFloat3(data0.y);
+
+	if (normalFix) {
+		pixelData.normal = float3((temp.xyz * 2. - 1.) * 0.95);
+		pixelData.material.shininess = data1.z;
+	}
+	else {
+		temp.xy = (temp.xy * 2. - 1.) * 0.95;//fix me
+		pixelData.normal = normalize(float3(temp.xy, sqrt(1. - clamp(dot(temp.xy,temp.xy),0.,1.))));
+		pixelData.material.shininess = temp.z;
+	}    
+
+	pixelData.material.emissive = emissive;
+	pixelData.material.diffuse = float4(floatToFloat3(data0.z), 1.);
+	pixelData.material.specular = float4(floatToFloat3(data1.y), 1.);
+
+	if(IS_USED_PNONG){
+		pixelData.material.ambient = float4(floatToFloat3(data1.x), 1.);
+	}
+
+	result_color = emissive;
+
+	return result_color;
+};	
+
+technique deferredShading{
+	pass applyDeferredShading
+	{
+		VertexShader = compile vs_deferred_shading();
+		PixelShader = compile fs_deferred_shading();
+	};
+};
+

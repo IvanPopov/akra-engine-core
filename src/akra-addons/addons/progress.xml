@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <ItemGroup>
+    <TypeScriptCompile Include="progress.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/addons/progress.addon.js</TypeScriptOutFile>
+    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
+    <TypeScriptDeclarationDir>../../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
+    <Dependencies>
+      <Module Name="core" />
+    </Dependencies>
+    <!--<Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>-->
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Dependencies>
+      <Attachment Name="AE_PROGRESS_CSS">
+        <File Path="progress/full/progress.css" />
+        <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
+      </Attachment>
+     <Attachment>
+        <File Path="progress/full/bg.png" />
+        <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
+      </Attachment>
+    </Dependencies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Dependencies>
+      <Attachment Name="AE_PROGRESS_CSS">
+        <File Path="progress/min/progress.css" />
+        <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
+      </Attachment>
+     <Attachment>
+        <File Path="progress/min/bg.png" />
+        <Format>Enclosure</Format>
+        <CollapsePath>True</CollapsePath>
+        <OutDir>progress</OutDir>
+      </Attachment>
+    </Dependencies>
+    <ClosureCompiler>
+      <CompilationLevel>ADVANCED_OPTIMIZATIONS</CompilationLevel>
+      <CreateSourceMap>False</CreateSourceMap>
+    </ClosureCompiler>
+  </PropertyGroup>
+</Project>

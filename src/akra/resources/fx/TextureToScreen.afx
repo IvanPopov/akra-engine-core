@@ -1,0 +1,135 @@
+provide akra.system;
+include "floatSpecialFunctions.afx";
+
+struct VS_IN
+{
+	float2 position : POSITION;
+};
+
+struct VS_OUT
+{
+	float4 position: POSITION;
+	float2 texCoord: TEXCOORD0;
+};
+
+texture tex0: TEXTURE_FOR_SCREEN;
+float4 viewport: VIEWPORT = float4(0., 0., 1., 1.);
+
+sampler sampler0:SAMPLER_TEXTURE0  = sampler_state
+{
+    Texture = <tex0>;
+    
+    MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+VS_OUT vs_sprite(VS_IN IN)
+{
+	VS_OUT Out;
+
+	float4 pos = float4(IN.position, 0., 1.);
+
+	Out.position = pos;
+	Out.texCoord = (IN.position +  1.) / 2.;
+
+	Out.texCoord.x = viewport.x + Out.texCoord.x * viewport.z;
+	Out.texCoord.y = viewport.y + Out.texCoord.y * viewport.w;
+
+	return Out;
+};
+
+foreign bool SAVE_ALPHA = false;
+float4 fs_sprite(VS_OUT IN) : COLOR
+{
+
+	float2 texturePosition = IN.texCoord;
+	float4 textureColor = float4(0.);
+
+    textureColor = tex2D(sampler0, texturePosition);
+
+    return float4(textureColor.xyz, SAVE_ALPHA ? textureColor.w : 1.0);
+};
+
+bool normalFix;
+
+float4 fs_display_normals(VS_OUT IN) : COLOR 
+{
+	float3 temp = floatToFloat3(resultAFXColor.y);
+	float3 normal;
+
+	if (normalFix) {
+    	normal = float3((temp.xyz * 2. - 1.) * 0.95);
+    }
+    else {
+    	temp.xy = (temp.xy * 2. - 1.) * 0.95; //fix me
+    	normal = normalize(float3(temp.xy, sqrt(1. - clamp(dot(temp.xy, temp.xy), 0., 1.))));
+    }  
+
+	return float4(normal, 1.);
+}
+
+float4 fs_display_lpp_normals(VS_OUT IN) : COLOR 
+{
+	float3 normal = float3(resultAFXColor.xy, sqrt(1. - dot(resultAFXColor.xy, resultAFXColor.xy)));
+
+	if(resultAFXColor.z >= 30000.){
+		normal.z *= -1.;
+	}
+
+	normal = (normal + 1.) / 2.;
+
+	return float4(normal, 1.);
+}
+
+float4 fs_display_consistent_colors(VS_OUT IN) : COLOR 
+{
+	return float4(floatToFloat3(resultAFXColor.z), 1.);
+}
+
+float2 depthRange = float2(0.5, 1.);
+float4 fs_display_depth(VS_OUT IN) : COLOR 
+{
+	return float4(float3(resultAFXColor.x / (depthRange.y - depthRange.x) - depthRange.x/(depthRange.y - depthRange.x)), 1.);
+}
+
+
+technique texture_to_screen
+{
+	pass p0
+	{
+		VertexShader = compile vs_sprite();
+		PixelShader = compile fs_sprite();
+	}
+}
+
+technique display_normals 
+{
+	pass p0
+	{
+		PixelShader = compile fs_display_normals();
+	}
+}
+
+technique display_lpp_normals 
+{
+	pass p0
+	{
+		PixelShader = compile fs_display_lpp_normals();
+	}
+}
+
+technique display_consistent_colors
+{
+	pass p0
+	{
+		PixelShader = compile fs_display_consistent_colors();
+	}
+}
+
+technique display_depth
+{
+	pass p0
+	{
+		PixelShader = compile fs_display_depth();
+	}
+}

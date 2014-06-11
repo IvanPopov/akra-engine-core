@@ -1,0 +1,157 @@
+doctype html
+html
+  head
+    title
+    
+    script(src='//code.jquery.com/jquery-1.10.2.min.js')
+    script(src='//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js')
+
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
+    - for (var i in demo.styles)
+      link(href=demo.styles[i], rel='stylesheet')
+
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css')
+    link(rel='stylesheet', href='http://talkslab.com/metro-bootstrap/css/metro-bootstrap.css')
+
+    link(rel='stylesheet', href='../css/demo.css')
+  body
+    #progress
+    include noncompatible
+    button.btn.btn-primary.btn-lg(type='button', data-toggle='modal', data-target='#cfg', style='position: fixed; bottom: 25px; right: 25px; z-index: 100;')
+      span.glyphicon.glyphicon-cog
+    #cfg.modal.fade(tabindex='-1', role='dialog', aria-labelledby='CfgLabel', aria-hidden='true')
+      .modal-dialog(style='width: 800px;')
+        .modal-content(style='width: 800px;')
+          .modal-header
+            button.close(type='button', data-dismiss='modal', aria-hidden='true') &times;
+            h4#CfgLabel.modal-title Config
+          .modal-body
+            #gamepad-info.alert.alert-danger Gamepad not founded.
+            ul.nav.nav-tabs
+              li
+                a(href='#main', data-toggle='tab') Main
+              li
+                a(href='#keyboard', data-toggle='tab') Keyboard layout
+              li
+                a(href='#gamepad', data-toggle='tab') Gamepad layout
+            .tab-content
+              #main.tab-pane.fade.in.active
+                form.form-horizontal(role='form')
+                  .form-group
+                    label.col-sm-4.control-label Use mega-texture streaming:
+                    .col-sm-8
+                      .checkbox
+                        label
+                          input#useMegaTexture(type='checkbox')
+                  .form-group
+                    label.col-sm-4.control-label Terrain display mode:
+                    .col-sm-8
+                      select#terrainDisplayMode.form-control
+                        option(value='n') Normal
+                        option(value='c') Texture LOD
+                        option(value='t') Geometry LOD
+                        option(value='tc') Texture LOD & Geometry LOD
+                        option(value='tn') Normal with Geometry LOD's
+                  .form-group
+                    label.col-sm-4.control-label Day time
+                    .col-sm-8
+                      input#daytime.form-control(type='range', min='0', max='17', step='0.1', value='14')
+              #keyboard.tab-pane.fade
+                img(src='content/assets/Keyboard-2.svg', style='width: 100%; height: 100%;')
+              #gamepad.tab-pane.fade
+                img(src='content/assets/Gamepad-2.svg', style='width: 100%; height: 100%;')
+          .modal-footer
+            button#screenshot.btn.btn-primary(type='button') Screenshot
+            button.btn.btn-default(type='button', data-dismiss='modal') Close
+    
+    script(src=demo.src)
+    script(type='text/javascript').
+      $('#useMegaTexture').change(function(){
+        var megaTexture = akra.self.terrain.getMegaTexture();
+        if (this.checked) {
+          megaTexture.connectToServer("ws://odserve.org:6112");
+        }
+      else {
+        megaTexture.disconnectFromServer();
+      }
+      });
+      $('#terrainDisplayMode').on('change', function() {
+      
+        var mode = this.value;
+        var T = mode.indexOf("t") != -1;
+        var C = mode.indexOf("c") != -1;
+        var N = mode.indexOf("n") != -1;
+
+        var pEngine = akra.self.engine;
+        var pTerrain = akra.self.terrain;
+
+        pEngine.getComposer().bShowTriangles = T;
+        pTerrain.getMegaTexture()._bColored = C;
+        pTerrain.setShowMegaTexture(N || C);
+      });
+
+      $('#cfg').on('show.bs.modal', function (e) {
+        $('#terrainDisplayMode').val("");
+      });
+
+      function showGamepadNotification(gamepad) {
+        var msg = "Gamepad '" + gamepad.id + "' connected.";
+        $("#gamepad-info").removeClass("alert-danger").addClass("alert-success").text(msg);
+        $.pnotify({
+          title: 'Gamepad conected.',
+          text: gamepad.id,
+          type: 'success',
+          hide: true
+        });
+      }
+
+      akra.self.engine.ready(function() {
+        var g0 = akra.self.gamepads.find(0);
+        if (g0) {
+          showGamepadNotification(g0);
+          $.pnotify({
+            title: 'Hint',
+            text: 'Press "START" to start the game.<br />Press "RIGHT_SHOULDER" to switch to the character camera.',
+            type: 'info'
+          });
+        }
+        else {
+          $.pnotify({
+            title: 'Hint',
+            text: 'Press "G" to start the game.<br />Press "1" to switch to the character camera.',
+            type: 'info'
+          });
+        }
+      });
+      
+      akra.self.engine.inactive.connect(function() {
+        $.pnotify({
+          title: 'Game paused',
+          type: 'info',
+          opacity: .8
+        });
+      });
+
+      akra.self.engine.active.connect(function() {
+        $.pnotify({
+          title: 'Game unpaused',
+          type: 'info',
+          opacity: .8
+        });
+      });
+
+      akra.self.gamepads.updated.connect(function(map, gamepad) {
+        showGamepadNotification(gamepad);
+      });
+
+      $("#screenshot").click(function(){
+        saveAs(
+          akra.conv.dutob(akra.self.engine.getRenderer().getDefaultCanvas().getElement().toDataURL("image/png")), 
+          "screen.png");
+      });
+
+      $("#daytime").change(function() {
+        console.log(parseFloat($(this).val()));
+        akra.self.sky.setTime(parseFloat($(this).val()));
+      });

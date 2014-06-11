@@ -1,0 +1,113 @@
+provide akra.system;
+
+include "common.afx";
+
+sampler sampler_normal : S_NORMAL;
+shared PixelData pixelData;
+
+int objectId : RENDER_OBJECT_ID;
+const float MAX_SHININESS = 1.;
+
+float4 fsPrepareLPPGeometry() : COLOR {   
+    float3 normalAndShininess = float3(pixelData.normal.xy, 0.);
+    normalAndShininess.z = min(pixelData.material.shininess, MAX_SHININESS);
+
+    if(pixelData.normal.z < 0.) {
+        normalAndShininess.z += MAX_SHININESS + 0.1;
+    }
+
+    return float4(normalAndShininess, float(objectId));
+}
+
+technique prepare_lpp_geometry {
+    pass p1{
+        PixelShader = compile fsPrepareLPPGeometry();
+    };
+}
+
+
+float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
+
+struct VS_OUT_2{
+    float4 position : POSITION;
+    float2 screenPosition : SCREEN_POSITION;
+    float2 textureCoords : TEXCOORD0;
+};
+
+VS_OUT_2 vsPrepareLPPDataBase(float2 position : POSITION){
+    VS_OUT_2 Out;
+
+    //float texCoodrX = (IN.position.x + 1.)/2. * screenTextureRatio.x;
+    //float texCoordY = 1. - (1. - (IN.position.y + 1.)/2.) * screenTextureRatio.y;
+    //float texCoordY = (IN.position.y + 1.)/2. * screenTextureRatio.y;
+
+    Out.position = float4(position,0.,1.);
+    Out.screenPosition = position;
+    //Out.textureCoords = float2(texCoodrX,texCoordY);
+    Out.textureCoords = (position + 1.)/2. * screenTextureRatio;
+    
+    return Out;
+}
+
+
+texture tex0 : LPP_NORMAL_BUFFER_TEXTURE;
+texture tex1 : LPP_DEPTH_BUFFER_TEXTURE;
+
+sampler normalBuffer : SAMPLER_NORMAL_BUFFER = sampler_state
+{
+    Texture = <tex0>;
+    MinFilter = NEAREST;
+    MagFilter = NEAREST;
+};
+
+sampler depthBuffer : SAMPLER_DEPTH_BUFFER = sampler_state
+{
+    Texture = <tex1>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+float4x4 projMat : PROJ_MATRIX;
+
+shared float4 result_color = float4(0.);
+
+void fsPrepareLPPDataBase(float2 texCoords: TEXCOORD0, float2 screenPosition : SCREEN_POSITION) {
+    float4 bufferData = tex2D(normalBuffer, texCoords);
+    if(bufferData.w == 0.){
+       discard;
+    }
+
+    fsPrepareLPPDataPositionOnly(texCoords, screenPosition);
+    float3 normal = float3(bufferData.xy, sqrt(1. - dot(bufferData.xy, bufferData.xy)));
+    float shininess = bufferData.z > MAX_SHININESS ? (bufferData.z - MAX_SHININESS - 0.1) : bufferData.z;
+
+    if(bufferData.z > MAX_SHININESS){
+        normal.z *= -1.;
+    }
+    
+    pixelData.normal = normal;
+    pixelData.material.shininess = shininess;
+    pixelData.id = int(bufferData.w);
+}
+
+void fsPrepareLPPDataPositionOnly(float2 texCoords: TEXCOORD0, float2 screenPosition : SCREEN_POSITION) {
+    float depth = tex2D(depthBuffer, texCoords).x * 2. - 1.;
+    float3 pixelPos = unproj(projMat, float3(screenPosition.xy,depth));
+    pixelData.depth = depth;
+    pixelData.position = pixelPos;
+}
+
+foreign bool PREPARE_ONLY_POSITION;
+foreign bool IS_USED_PBS_SIMPLE = false;
+
+technique prepare_lpp_lights_base {
+    pass p1{
+        VertexShader = compile vsPrepareLPPDataBase();
+        if(PREPARE_ONLY_POSITION && !IS_USED_PBS_SIMPLE) {
+           PixelShader = compile fsPrepareLPPDataPositionOnly();            
+        }
+        else {
+            PixelShader = compile fsPrepareLPPDataBase();
+        }
+    }
+}

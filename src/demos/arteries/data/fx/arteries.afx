@@ -1,0 +1,116 @@
+provide akra.custom;
+
+include "common.afx";
+
+texture depthTex: ARTERIES_DEPTH;
+
+sampler sampler_depth = sampler_state
+{
+    Texture = <depthTex>;
+    MinFilter = NEAREST;
+	MagFilter = NEAREST;
+};
+
+shared PixelData pixelData;
+
+struct VS_OUT 
+{
+    float3 tc_diffuse: TEXCOORD0;
+    float3 tc_emissive: TEXCOORD3;
+};
+
+float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
+
+
+void fs_arteries(VS_OUT IN): COLOR
+{
+	float2 textureCoords = IN.tc_diffuse.xy;// * screenTextureRatio;
+	float depth = tex2D(sampler_depth, textureCoords).x;
+	if (depth > .99) depth = .99;
+	if (depth < 0.) depth = 0.;
+
+	depth /= 10.;
+
+	pixelData.material.emissive = float4(float3(depth), 1.);
+}
+
+technique arteries
+{
+    pass 
+    {
+        PixelShader = compile fs_arteries();
+    }
+}
+
+//========================================
+
+float4x4 invView: INV_VIEW_CAMERA_MAT;
+float3 sliceNormal: SPLICE_NORMAL;
+float spliceD: SPLICE_D;
+float3 worldPos: WORLD_POSITION;
+
+float3 projectPointToPlane(float3 vNorm, float fD, float3 vPoint) {
+	float fDistance = fD + dot(vNorm, vPoint);
+
+	return float3(vPoint.x - fDistance * vNorm.x, vPoint.y - fDistance * vNorm.y, vPoint.z - fDistance * vNorm.z);
+}
+
+void fs_highlight_mri_slice(float4 pos: POSITION, float3 vertex: VERTEX): COLOR {
+	float4 v = invView * float4(vertex, 1.);
+	float l = length(v.xyz - projectPointToPlane(sliceNormal, spliceD, v.xyz));
+	if (l < .025) {
+		pixelData.material.emissive = float4(1., 0., 0., 1.);
+		if (l < .005) {
+			pixelData.material.emissive = float4(1., 1., 0., 1.);
+		}
+	}
+	else {
+		pixelData.material.diffuse = float4(abs(float3(v.xyz - worldPos)), 1.);
+	}
+}
+
+technique highlight_mri_slice 
+{
+	pass
+	{
+		PixelShader = compile fs_highlight_mri_slice();
+	}
+}
+
+//=========================
+
+texture slice_A: SLICE_A;
+texture slice_B: SLICE_B;
+float slice_K: SLICE_K;
+float slice_opacity: SLICE_OPACITY;
+
+sampler sampler_A = sampler_state
+{
+    Texture = <slice_A>;
+    MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
+
+sampler sampler_B = sampler_state
+{
+    Texture = <slice_B>;
+    MinFilter = LINEAR;
+	MagFilter = LINEAR;
+};
+
+void fs_arteries_slice(float3 tc: TEXCOORD0): COLOR {
+	pixelData.material.emissive = tex2D(sampler_A, tc.xy) * (1. - slice_K) + tex2D(sampler_B, tc.xy) * slice_K;
+
+	if (pixelData.material.emissive.r < slice_opacity) {
+		discard;
+	}
+}
+
+
+technique arteries_slice 
+{
+	pass
+	{
+		PixelShader = compile fs_arteries_slice();
+	}
+}
