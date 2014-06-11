@@ -1,4 +1,4 @@
-/// <reference path="../idl/IEngine.ts" />
+﻿/// <reference path="../idl/IEngine.ts" />
 /// <reference path="../idl/IResourcePoolManager.ts" />
 /// <reference path="../idl/IResourcePool.ts" />
 /// <reference path="../idl/IResourcePoolItem.ts" />
@@ -34,7 +34,7 @@
 /// <reference path="../webgl/WebGLTextureBuffer.ts" />
 /// <reference path="../webgl/WebGLShaderProgram.ts" />
 /// <reference path="../webgl/WebGLIndexBuffer.ts" />
-/// <reference path="../webgl/WebGLInternalRenderbuffer.ts" />
+/// <reference path="../webgl/WebGLInternalRenderBuffer.ts" />
 /// <reference path="../webgl/WebGLDepthBuffer.ts" />
 
 
