@@ -191,9 +191,7 @@ module akra.webgl {
 																																				\n\
 				",
 				"																																\n\
-				#ifdef GL_ES                        																							\n\
-					precision highp float;          																							\n\
-				#endif																															\n\
+				precision highp float;          																								\n\
 				varying vec4 data;                  																							\n\
 																																				\n\
 				void main(void) {                   																							\n\
@@ -212,9 +210,7 @@ module akra.webgl {
 					vTexcoord = (aVertexPosition + 1.)/2.;			\n\
 				}",
 				"													\n\
-				#ifdef GL_ES										\n\
-					precision highp float;							\n\
-				#endif												\n\
+				precision highp float;								\n\
 				uniform sampler2D videoBuffer;						\n\
 				varying vec2 vTexcoord;								\n\
 				void main(void) {									\n\

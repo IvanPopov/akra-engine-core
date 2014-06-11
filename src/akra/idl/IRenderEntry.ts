@@ -11,6 +11,7 @@ module akra {
 		maker: IAFXMaker;
 		input: IShaderInput;
 		bufferMap: IBufferMap;
+		material: uint;
 	
 		clear(): void;
 	}

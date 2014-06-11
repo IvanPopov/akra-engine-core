@@ -380,16 +380,19 @@ module akra {
 			});
 		}
 
+		var v4fFogColor: IVec4 = new Vec4();
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			//var pDepthTexture: ITexture = (<IShadedViewport>pViewport).getDepthTexture();
 
+			v4fFogColor.set(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity);
+
 			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", pCameraParams.current.orbitRadius < .2 ? 1. : fSkyboxSharpness);
 			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
 
-			pPass.setUniform("FOG_EFFECT_COLOR", math.Vec4.temp(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity));
+			pPass.setUniform("FOG_EFFECT_COLOR", v4fFogColor);
 			pPass.setUniform("FOG_EFFECT_START", pFogEffectData.fogStart);
 			pPass.setUniform("FOG_EFFECT_INDEX", pFogEffectData.fogIndex);
 			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogEffectData.fogHeight);
@@ -403,7 +406,7 @@ module akra {
 			pTransparencyViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 				var pPass: IRenderPass = pTechnique.getPass(iPass);
-				pPass.setUniform("FOG_EFFECT_COLOR", math.Vec4.temp(pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogColor, pFogEffectData.fogOpacity));
+				pPass.setUniform("FOG_EFFECT_COLOR", v4fFogColor);
 				pPass.setUniform("FOG_EFFECT_START", pFogEffectData.fogStart);
 				pPass.setUniform("FOG_EFFECT_INDEX", pFogEffectData.fogIndex);
 				pPass.setUniform("FOG_EFFECT_HEIGHT", pFogEffectData.fogHeight);

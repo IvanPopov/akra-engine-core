@@ -97,6 +97,8 @@ module akra.webgl {
 		private _pRenderStatesPool: IObjectArray<IWebGLContextStates> = new util.ObjectArray<IWebGLContextStates>();
 		private _pFreeRenderStatesPool: IObjectArray<IWebGLContextStates> = new util.ObjectArray<IWebGLContextStates>();
 
+		private _pLastMaker: IAFXMaker = null;
+
 		static DEFAULT_OPTIONS: IRendererOptions = {
 			depth: false,
 			stencil: false,
@@ -692,14 +694,11 @@ module akra.webgl {
 			logger.log(this._time.join("ms "));
 		}
 
-		private _pLastMaker: IAFXMaker = null;
 		_renderEntry(pEntry: IRenderEntry): void {
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
-
 			if (isNull(pViewport)) {
 				logger.log(pEntry);
 			}
-
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
@@ -724,9 +723,11 @@ module akra.webgl {
 
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).getShaderProgram();
 
-			this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
+			if (this._pLastMaker !== pMaker) {
+				this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-			this.enableWebGLVertexAttribs(pWebGLProgram.getTotalAttributes());
+				this.enableWebGLVertexAttribs(pWebGLProgram.getTotalAttributes());
+			}
 
 			var pAttribLocations: IMap<int> = pWebGLProgram._getActiveAttribLocations();
 			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.getAttributeInfo();
@@ -734,20 +735,14 @@ module akra.webgl {
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
 			if (!isNull(pBufferMap.getIndex())) {
-				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER,
-					(<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
+				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
 			}
 
 			for (var i: uint = 0; i < pAttributeInfo.length; i++) {
-				//attribute name in WebGL shaders, like aa0, aa1 etc...
 				var sAttrName: string = pAttributeInfo[i].name;
-				//attribute semantics in AFX shader, like POSITION, NORMAL etc...
 				var sAttrSemantic: string = pAttributeInfo[i].semantic;
-
-				//location in WebGL shader
 				var iLoc: int = pAttribLocations[sAttrName];
 				var pFlow: IDataFlow = pInput.attrs[i];
-
 				var pData: data.VertexData = null;
 				var sSemantics: string = null;
 
@@ -919,36 +914,36 @@ module akra.webgl {
 
 		/** Texture Objects. */
 		bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
-			//if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
-			this._pWebGLContext.bindTexture(eTarget, pTexture);
-			this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
-			//}
+			if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
+				this._pWebGLContext.bindTexture(eTarget, pTexture);
+				this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			}
 		}
 
 		activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
-			// this._iCurrentTextureSlot = iWebGLSlot - gl.TEXTURE0;
+			this._iCurrentTextureSlot = iWebGLSlot - gl.TEXTURE0;
 		}
 
 		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {
+			var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
 
-			// var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
+			if(iSlot === -1) {
+				iSlot = this._iNextTextureSlot;
 
-			// if(iSlot === -1) {
-			var iSlot = this._iNextTextureSlot;
+				this._iNextTextureSlot++;
 
-			this._iNextTextureSlot++;
+				if (this._iNextTextureSlot === maxTextureImageUnits) {
+					this._iNextTextureSlot = 0;
+				}
 
-			if (this._iNextTextureSlot === maxTextureImageUnits) {
-				this._iNextTextureSlot = 0;
-			}
-
-			this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-			this.bindWebGLTexture(eTarget, pTexture);
-			// }
-			// else {
-			// 	this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-			// }
+				this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+				this.bindWebGLTexture(eTarget, pTexture);
+			 }
+			 else {
+				 this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+				 this.bindWebGLTexture(eTarget, pTexture);
+			 }
 
 			return iSlot;
 		}

@@ -75,7 +75,7 @@ module akra.webgl {
 			}
 
 			this._pActiveTextureList.clear();
-			this._pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);
+			//this._pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);
 		}
 
 		getTextureState(iGuid: uint): IMap<int> {

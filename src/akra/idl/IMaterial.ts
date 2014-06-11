@@ -16,6 +16,16 @@ module akra {
 		 */
 		transparency: float;
 	}
+
+	export interface IMaterialConatiner {
+		DIFFUSE: IVec4;
+		AMBIENT: IVec4;
+		SPECULAR: IVec4;
+		EMISSIVE: IVec4;
+
+		SHININESS: float;
+		TRANSPARENCY: float;
+	}
 	
 	export interface IMaterial extends IMaterialBase, IUnique {
 		guid: uint;
@@ -40,5 +50,7 @@ module akra {
 
 		isEqual(pMat: IMaterialBase): boolean;
 		isTransparent(): boolean;
+
+		_getMatContainer(): IMaterialConatiner;
 	}
 }

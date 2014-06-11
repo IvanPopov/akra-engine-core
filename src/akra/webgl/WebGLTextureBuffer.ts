@@ -247,9 +247,7 @@ module akra.webgl {
 				}                                                                                                   \n\
 				",
 				"                                                   \n\
-				#ifdef GL_ES                                        \n\
-					precision highp float;                          \n\
-				#endif                                              \n\
+				precision highp float;           	                \n\
 				varying vec3 texcoord;                              \n\
 				uniform sampler2D uSampler;                         \n\
 																	\n\
@@ -277,9 +275,7 @@ module akra.webgl {
 				}                                                                                                   \n\
 				",
 				"                                                   \n\
-				#ifdef GL_ES                                        \n\
-					precision highp float;                          \n\
-				#endif                                              \n\
+				precision highp float;                          	\n\
 				varying vec3 texcoord;                              \n\
 				uniform sampler2D uSampler;                         \n\
 																	\n\
@@ -312,9 +308,7 @@ module akra.webgl {
 				}                                                                                                   \n\
 				",
 				"                                                   \n\
-				#ifdef GL_ES                                        \n\
-					precision highp float;                          \n\
-				#endif                                              \n\
+				precision highp float;                          	\n\
 																	\n\
 				varying vec3 texcoord;                              \n\
 				uniform sampler2D uSampler;                         \n\
@@ -363,9 +357,7 @@ module akra.webgl {
 				}                                                                                                   \n\
 				",
 					"                                                   \n\
-				#ifdef GL_ES                                        \n\
-					precision highp float;                          \n\
-				#endif                                              \n\
+				precision highp float;                          	\n\
 				varying vec3 texcoord;                              \n\
 				uniform samplerCube cubeSampler;                    \n\
 																	\n\

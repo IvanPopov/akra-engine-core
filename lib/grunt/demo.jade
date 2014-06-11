@@ -6,11 +6,12 @@ html(lang="en")
     meta(name='description', content=demo.description)
     link(href='../css/demo.css', rel='stylesheet')
 
-    - for (var i in demo.scripts)
-      script(src=demo.scripts[i])
     - for (var i in demo.styles)
       link(href=demo.styles[i], rel='stylesheet')
   body
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
+        
     #progress
     include noncompatible
     script(src=demo.src)

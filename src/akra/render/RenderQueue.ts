@@ -53,11 +53,14 @@ module akra.render {
 		quickSortQueue(iStart: uint, iEnd: uint): void {
 			var i: uint = iStart;
 			var j: uint = iEnd;
-			var iMiddle: uint = this._pEntryList.value((iStart + iEnd) >> 1).maker.guid;
+			var iMiddleMaker: uint = this._pEntryList.value((iStart + iEnd) >> 1).maker.guid;
+			var iMiddleMaterial: uint = this._pEntryList.value((iStart + iEnd) >> 1).material;
 
 			do {
-				while (this._pEntryList.value(i).maker.guid < iMiddle)++i;
-				while (this._pEntryList.value(j).maker.guid > iMiddle)--j;
+				while (this._pEntryList.value(i).maker.guid < iMiddleMaker ||
+					(this._pEntryList.value(i).maker.guid === iMiddleMaker && this._pEntryList.value(i).material < iMiddleMaterial)) ++i;
+				while (this._pEntryList.value(j).maker.guid > iMiddleMaker ||
+					(this._pEntryList.value(j).maker.guid === iMiddleMaker && this._pEntryList.value(j).material > iMiddleMaterial)) --j;
 
 				if (i <= j) {
 					this._pEntryList.swap(i, j);

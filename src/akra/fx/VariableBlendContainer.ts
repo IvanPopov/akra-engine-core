@@ -104,6 +104,23 @@ module akra.fx {
 			return true;
 		}
 
+		removeVaribale(sName: string): boolean {
+			var iIndex: int = this.getKeyIndexByName(sName);
+
+			if (iIndex === -1) {
+				return false;
+			}
+
+			var iNameIndex: uint = this._pVarBlendInfoList[iIndex].nameIndex;
+			this._pNameToIndexMap[sName] = -1;
+			this._pNameIndexToIndexMap[iNameIndex] = -1;
+
+			this._pVarBlendInfoList.splice(iIndex, 1);
+
+			this.recalcMaps();
+			return true;
+		}
+
 		getDeclCodeForVar(iIndex: uint, bWithInitializer: boolean): string {
 			var pInfo: IAFXVariableBlendInfo = this._pVarBlendInfoList[iIndex];
 			var pType: IAFXVariableTypeInstruction = pInfo.blendType;
@@ -150,6 +167,13 @@ module akra.fx {
 
 			for (var i: uint = 0; i < pVarList.length; i++) {
 				pVarList[i]._setRealName(sNewRealName);
+			}
+		}
+
+		private recalcMaps(): void {
+			for (var i: uint = 0; i < this._pVarBlendInfoList.length; i++) {
+				this._pNameToIndexMap[this._pVarBlendInfoList[i].name] = i;
+				this._pNameIndexToIndexMap[this._pVarBlendInfoList[i].nameIndex] = i;
 			}
 		}
 	}

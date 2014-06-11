@@ -631,6 +631,7 @@ module akra.fx {
 			pEntry.input = pInput;
 			pEntry.viewport = this._pCurrentViewport;
 			pEntry.bufferMap = this._pCurrentBufferMap;
+			pEntry.material = this._pCurrentSurfaceMaterial ? this._pCurrentSurfaceMaterial.getMaterial().guid : 0;
 
 			this.prepareRenderTarget(pEntry, pRenderTechnique, iPass);
 
