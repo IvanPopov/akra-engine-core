@@ -3,45 +3,29 @@
 Build all:
 
 ```
-grunt
+grunt all
 ```
 
 Build core:
 
 ```
-grunt build:core
+grunt build:core [--release | --debug | -dev] [--webgl-debug] [--pretty_print] 
 ```
 
 Build addons:
 
 ```
-grunt build:addon-:name
+grunt build:addon-{name}
 ```
 
 For example:
 
 ```
-grunt build:addon-navigation
+grunt build:addon-navigation [--release | --debug | -dev]
 ```
 
-Build with declaration(*.d.ts):
+Build demo:
 
 ```
-grunt decl
-grunt decl:addon-navigation
-``` 
-
-Release/Debug build:
-
-```
-grunt --configuration Release
-grunt --configuration Debug
-```
-
-By default configuration is 'Debug'.
-
-View debug info:
-
-```
-grunt --debug
+grunt demo:{name} [--release | --debug | -dev]
 ```
