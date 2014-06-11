@@ -79,6 +79,14 @@ module akra.scene.light {
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: int = 256): boolean {
 			var isOk: boolean = super.create();
+			var pRenderer: IRenderer = this.getScene().getManager().getEngine().getRenderer();
+
+			//our shadows use shadow maps, but without depth textures we can't rendr shadows
+			if (!pRenderer.hasCapability(ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER) ||
+				!config.render.shadows.enabled) {
+				isShadowCaster = false;
+				iMaxShadowResolution = 0;
+			}
 
 			//есть тени от источника или нет
 			this._isShadowCaster = isShadowCaster;

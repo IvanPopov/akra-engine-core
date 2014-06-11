@@ -81,11 +81,9 @@ module akra.scene.light {
 		}
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
-			if (!this.getScene().getManager().getEngine().getRenderer().hasCapability(ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER)) {
-				return super.create(false, 0);
-			}
-
 			var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
+
+
 
 			var pCasterCube: IShadowCaster[] = this._pShadowCasterCube;
 			var pCaster: IShadowCaster;
@@ -153,7 +151,7 @@ module akra.scene.light {
 			return isOk;
 		}
 
-		protected initializeTextures(): void {
+		private initializeTextures(): void {
 			var pEngine: IEngine = this.getScene().getManager().getEngine();
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
@@ -177,10 +175,12 @@ module akra.scene.light {
 				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 
+				var eColorFormat: EPixelFormats = EPixelFormats.A4R4G4B4;
+
 				var pColorTexture: ITexture = this._pColorTextureCube[i] =
 					pResMgr.createTexture("light_color_texture_" + i + "_" + this.guid);
 				pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
-					0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+					0, 0, ETextureTypes.TEXTURE_2D, eColorFormat);
 
 				//TODO: Multiple render target
 				this.getRenderTarget(i).attachDepthTexture(pDepthTexture);
@@ -193,8 +193,6 @@ module akra.scene.light {
 			if (this.isEnabled() && this.isShadowCaster()) {
 				for (var i: uint = 0; i < 6; i++) {
 					this.getRenderTarget(i).update();
-					// this.getRenderTarget(i).getRenderer()._setViewport(this.getRenderTarget(i).getViewport(0));
-					// console.log("GL_DEPTH_RANLE", (<webgl.WebGLRenderer>this.getRenderTarget(i).getRenderer()).getWebGLContext().getParameter(0x0B70));
 				}
 			}
 		}
@@ -318,7 +316,7 @@ module akra.scene.light {
 						v3fMidPoint.subtract(pCamera.getWorldPosition(), v3fCameraDir);
 
 						if (v3fCameraDir.dot(v3fShadowDir) > 0 &&
-							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE) {
+							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.render.shadows.discardDistance) {
 						}
 						else {
 							pResult.push(pObject);

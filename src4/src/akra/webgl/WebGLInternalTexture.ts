@@ -287,6 +287,8 @@ module akra.webgl {
 					switch (this._eTextureType) {
 
 						case ETextureTypes.TEXTURE_2D:
+							//debug.log(gl.TEXTURE_2D, mip, EPixelFormats[this._eFormat] + " (" + iWebGLFormat + ")",
+							//	iWidth, iHeight, 0, null);
 							pWebGLContext.compressedTexImage2D(gl.TEXTURE_2D, mip, iWebGLFormat,
 								iWidth, iHeight, 0, pEmptyData);
 							break;
@@ -316,7 +318,8 @@ module akra.webgl {
 					// Normal formats
 					switch (this._eTextureType) {
 						case ETextureTypes.TEXTURE_2D:
-							//console.log(mip,iWidth, iHeight);
+							//debug.log(gl.TEXTURE_2D, mip, EPixelFormats[this._eFormat] + " (" + iWebGLFormat + ")",
+							//	iWidth, iHeight, 0, EPixelFormats[this._eFormat] + " (" + iWebGLFormat + ")", EPixelComponentTypes[pixelUtil.getComponentType(this._eFormat)] + " (" + iWebGLDataType+ ")", null);
 							pWebGLContext.texImage2D(gl.TEXTURE_2D, mip, iWebGLFormat,
 								iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
 							break;

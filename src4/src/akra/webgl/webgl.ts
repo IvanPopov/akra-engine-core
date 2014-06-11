@@ -571,22 +571,16 @@ module akra.webgl {
 		return gl.POINTS;
 	}
 
-	//не знаю что делает эта функция
-	export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: boolean = false): int {
+	// Takes the AKRA pixel format and returns the type that must be provided to WebGL as internal format.
+	// If no match exists, returns the closest match.
+	export function getClosestWebGLInternalFormat(eFormat: EPixelFormats): int {
 		var iGLFormat: int = getWebGLInternalFormat(eFormat);
 
 		if (iGLFormat === gl.NONE) {
-			if (isHWGamma) {
-				// TODO not supported
-				return 0;
-			}
-			else {
-				return gl.RGBA;
-			}
+			return gl.RGBA;
 		}
-		else {
-			return iGLFormat;
-		}
+
+		return iGLFormat;
 	}
 
 	/**

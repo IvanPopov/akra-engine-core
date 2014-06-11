@@ -55,12 +55,6 @@ module akra.config {
 	 */
 	export const PROFILE_TESSEALLATION: boolean = false;
 
-
-	/**
-	 * Distance in meters, after which the shadow of the object will not be rendered.
-	 */
-	export const SHADOW_DISCARD_DISTANCE: float = 70.;
-
 	//path to data folder
 	export var data = config['data'] || uri.currentPath();
 
@@ -108,10 +102,17 @@ module akra.config {
 		"idleTime": 30, //maximum IDLE time (sec)
 	};
 
-	//akra.config.ajax = {}
-	//akra.config.some = '';
 
-	//config.data + "../src/akra..."
+	export var render = {
+		shadows: {
+			enabled: true,
+			/**
+			 * Distance in meters, after which the shadow of the object will not be rendered.
+			 */
+			discardDistance: 70. 
+		}
+	};
+	
 	
 	export var io = {
 		//thread file config

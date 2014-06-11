@@ -6776,10 +6776,6 @@ declare module akra.config {
     * @debug
     */
     var PROFILE_TESSEALLATION: boolean;
-    /**
-    * Distance in meters, after which the shadow of the object will not be rendered.
-    */
-    var SHADOW_DISCARD_DISTANCE: number;
     var data: any;
     var coreDeps: IDependens;
     /** Unknown constants. */
@@ -6810,6 +6806,12 @@ declare module akra.config {
         "min": number;
         "max": number;
         "idleTime": number;
+    };
+    var render: {
+        shadows: {
+            enabled: boolean;
+            discardDistance: number;
+        };
     };
     var io: {
         "tfile": {
@@ -8210,7 +8212,7 @@ declare module akra.webgl {
     function getWebGLDataType(eFormat: EPixelFormats): number;
     function getWebGLInternalFormat(eFormat: EPixelFormats): number;
     function getWebGLPrimitiveType(eType: EPrimitiveTypes): number;
-    function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma?: boolean): number;
+    function getClosestWebGLInternalFormat(eFormat: EPixelFormats): number;
     /**
     * Convert GL format to EPixelFormat.
     */
@@ -15449,7 +15451,7 @@ declare module akra.scene.light {
         public getDepthTexture(): ITexture;
         public getRenderTarget(): IRenderTarget;
         public create(isShadowCaster?: boolean, iMaxShadowResolution?: number): boolean;
-        public initializeTextures(): void;
+        private initializeTextures();
         public _calculateShadows(): void;
         public _prepareForLighting(pCamera: ICamera): boolean;
         public _defineLightingInfluence(pCamera: ICamera): IObjectArray<ISceneObject>;
@@ -15483,7 +15485,7 @@ declare module akra.scene.light {
         public getRenderTarget(iFace: number): IRenderTarget;
         public getShadowCaster(): IShadowCaster[];
         public create(isShadowCaster?: boolean, iMaxShadowResolution?: number): boolean;
-        public initializeTextures(): void;
+        private initializeTextures();
         public _calculateShadows(): void;
         public _prepareForLighting(pCamera: ICamera): boolean;
         public _defineLightingInfluence(pCamera: ICamera, iFace: number): IObjectArray<ISceneObject>;
@@ -15522,7 +15524,7 @@ declare module akra.scene.light {
         public _defineLightingInfluence(pCamera: ICamera): IObjectArray<ISceneObject>;
         public _defineShadowInfluence(pCamera: ICamera): IObjectArray<ISceneObject>;
         public updateSunDirection(v3fSunDir: IVec3): void;
-        public initializeTextures(): void;
+        private initializeTextures();
         static _pFrustumPlanes: IPlane3d[];
         static _pTmpPlanePoints: IVec3[];
         static _pTmpIndexList: number[];

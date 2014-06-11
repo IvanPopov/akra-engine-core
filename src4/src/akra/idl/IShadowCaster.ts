@@ -4,8 +4,6 @@
 /// <reference path="IMat4.ts" />
 /// <reference path="IFrustum.ts" />
 
-// #define SHADOW_DISCARD_DISTANCE 70.
-
 module akra {
 	export interface IShadowCaster extends ICamera {
 		getLightPoint(): ILightPoint;

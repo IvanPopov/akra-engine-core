@@ -80,11 +80,9 @@ module akra.scene.light {
 		}
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: uint = 256): boolean {
-			if (!this.getScene().getManager().getEngine().getRenderer().hasCapability(ERenderCapabilities.RTT_SEPARATE_DEPTHBUFFER)) {
-				return super.create(false, 0);
-			}
-
 			var isOk: boolean = super.create(isShadowCaster, iMaxShadowResolution);
+
+
 
 			var pCaster: IShadowCaster = this._pShadowCaster;
 
@@ -225,7 +223,7 @@ module akra.scene.light {
 						v3fMidPoint.subtract(pCamera.getWorldPosition(), v3fCameraDir);
 
 						if (v3fCameraDir.dot(v3fShadowDir) > 0 &&
-							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE) {
+							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.render.shadows.discardDistance) {
 						}
 						else {
 							pResult.push(pObject);
@@ -262,7 +260,7 @@ module akra.scene.light {
 			//this.localMatrix.setTranslation();
 		}
 
-		protected initializeTextures(): void {
+		private initializeTextures(): void {
 			var pEngine: IEngine = this.getScene().getManager().getEngine();
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
@@ -277,10 +275,12 @@ module akra.scene.light {
 			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 
+			var eColorFormat: EPixelFormats = EPixelFormats.A4R4G4B4;
+
 
 			var pColorTexture: ITexture = pResMgr.createTexture("light_color_texture_" + this.guid);
 			pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
-				0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+				0, 0, ETextureTypes.TEXTURE_2D, eColorFormat);
 
 			this._pColorTexture = pColorTexture;
 
