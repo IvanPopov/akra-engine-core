@@ -134,11 +134,11 @@ float D_Beckmann( float Roughness, float NoH )
 // [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
 float D_GGX( float Roughness, float NoH )
 {
-    float m = Roughness * Roughness; 			// 1 mul
-    float m2 = m * m;							// 1 mul
-    float d = ( NoH * m2 - NoH ) * NoH + 1.;	// 2 mul 2 add
-    return m2 / max( d*d, 0.00001 );			// 2 mul, 1 rcp
-}	// 2 add 6 mul 1 rcp
+    float m = Roughness * Roughness;            // 1 mul
+    float m2 = m * m;                           // 1 mul
+    float d = ( NoH * m2 - NoH ) * NoH + 1.;    // 2 mul 2 add
+    return m2 / max( d*d, 0.00001 );            // 2 mul, 1 rcp
+}   // 2 add 6 mul 1 rcp
 
 float D_Func( float Roughness, float NoH )
 {
@@ -151,7 +151,7 @@ float D_Func( float Roughness, float NoH )
     }
     
     if (PhysicalSpecD == 2){
-        return D_GGX( Roughness, NoH );	// 2 add 6 mul 1 rcp
+        return D_GGX( Roughness, NoH ); // 2 add 6 mul 1 rcp
     }
 
     return 0.;
@@ -180,11 +180,11 @@ float G_Kelemen( float3 L, float3 V )
 // [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
 float G_Schlick( float Roughness, float NoV, float NoL )
 {
-    float k = Roughness * Roughness * 0.5;		//3 mul
-    float G_SchlickV = NoV * (1. - k) + k;		//2 add 1 mul
-    float G_SchlickL = NoL * (1. - k) + k;		//2 add 1 mul
-    return 0.25 / ( G_SchlickV * G_SchlickL);	//2 mul 1 rcp
-}	//4 add 7 mul 1 rcp
+    float k = Roughness * Roughness * 0.5;      //3 mul
+    float G_SchlickV = NoV * (1. - k) + k;      //2 add 1 mul
+    float G_SchlickL = NoL * (1. - k) + k;      //2 add 1 mul
+    return 0.25 / ( G_SchlickV * G_SchlickL);   //2 mul 1 rcp
+}   //4 add 7 mul 1 rcp
 
 // Smith term for GGX modified by Disney to be less "hot" for small roughness values
 // [Smith 1967, "Geometrical shadowing of a random rough surface"]
@@ -209,10 +209,10 @@ float GeometricVisibility( float Roughness, float NoV, float NoL,
     //if (PhysicalSpecG == 1){
         //return G_Neumann( NoV, NoL );
     //}
-//	
+//  
     //if (PhysicalSpecG == 2){
         //return G_Kelemen( L, V );
-//	}
+//  }
     
     if (PhysicalSpecG == 3){
         return G_Schlick( Roughness, NoV, NoL );//4 add 7 mul 1 rcp
@@ -239,9 +239,9 @@ float3 F_Schlick( float3 SpecularColor, float VoH )
     return SpecularColor + ( saturate( 50.0 * SpecularColor.g ) - SpecularColor )
                             * exp2( (-5.55473 * VoH - 6.98316) * VoH );
 
-    //float Fc = exp2( (-5.55473 * VoH - 6.98316) * VoH );	// 1 mad, 1 mul, 1 exp
-    //return Fc + (1 - Fc) * SpecularColor;					// 1 add, 3 mad
-}	//3 add 3 mul 1 exp
+    //float Fc = exp2( (-5.55473 * VoH - 6.98316) * VoH );  // 1 mad, 1 mul, 1 exp
+    //return Fc + (1 - Fc) * SpecularColor;                 // 1 add, 3 mad
+}   //3 add 3 mul 1 exp
 
 // Loads Schlick parameters from precalculated texture
 float3 F_Texture( float3 SpecularColor, float VoH )
@@ -317,12 +317,12 @@ float3 EnvBRDFApprox( float3 SpecularColor, float Roughness, float NoV )
     // Adaptation to fit our G term.
     const float4 c0 = { -1., -0.0275, -0.572, 0.022 };
     const float4 c1 = { 1., 0.0425, 1.04, -0.04 };
-    float4 r = Roughness * c0 + c1;						// 1 add 1 mul
+    float4 r = Roughness * c0 + c1;                     // 1 add 1 mul
     float a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y; //2 mul 1 pow
-    float2 AB = float2( -1.04, 1.04 ) * a004 + r.zw;	// 1 add 1 mul
+    float2 AB = float2( -1.04, 1.04 ) * a004 + r.zw;    // 1 add 1 mul
 
     return SpecularColor * AB.x + AB.y; // 1 add 1 mul
-}	//3 add 3 mul 1 pow
+}   //3 add 3 mul 1 pow
 
 float EnvBRDFApproxNonmetal( float Roughness, float NoV )
 {
@@ -348,21 +348,21 @@ float simpleTransmittance(float NoV)
     return (NoV-0.5)*2.;
 }
 
-float transSchlick(float VoH)
+float transSchlick(float NoV)
 {
-    return 0.1 + 0.9 * exp2( (-5.55473 * VoH - 6.98316) * VoH );
+    return 0.1 + 0.9 * exp2( (-5.55473 * NoV - 6.98316) * NoV );
 }
 
 // @c Sivukhin 'General Physics'
 // s- and p- polarisations
-float transFresnel(float VoH)
+float transFresnel(float NoV)
 {
-    float n = 1.5;
+    float n = 1.5;  //glass index of refraction
     float rcpN = 1. / n;
 
-    float sinA = sqrt(1. - VoH*VoH);
+    float sinA = sqrt(1. - NoV*NoV);
     float sinSqA = sinA * sinA;
-    float sin2A = 2. * sinA * VoH;
+    float sin2A = 2. * sinA * NoV;
 
     float sinB = sinA * rcpN;
     float sinSqB = sinB * sinB;
@@ -378,10 +378,37 @@ float transFresnel(float VoH)
     float sTransmittance = sin2ASin2B / sinSqApB;
     float pTransmittance = sin2ASin2B / (sinSqApB * cosSqAmB);
 
-    return sTransmittance;
+    return (sTransmittance + pTransmittance) / 2.;
 }
 
-float sTransFresnel(float VoH)
+float transFresnelOptimized(float NoV)
+{
+    float sinA = sqrt(1. - NoV*NoV);    //1 sum 1 mul 1 sqrt
+    float sinSqA = sinA * sinA;         //1 mul
+
+    float sinB = sinA * 0.666;          //1 mul
+    float sinSqB = sinB * sinB;         //1 mul
+
+    float halfSin2ASin2B = 2. * NoV * sinA * sinB * sqrt(1. - sinSqB);  //1 sum 4 mul 1 sqrt
+    float pfSqAuB = sinSqA + sinSqB - 2.*sinSqA*sinSqB;                 //2 sum 2 mul
+
+    return halfSin2ASin2B * (1. + 1. / (1. - pfSqAuB + halfSin2ASin2B) ) / (pfSqAuB + halfSin2ASin2B); //4 sum 3 mul 2 rcp
+}// 8 sum 13 mul 2 rcp 2 sqrt
+
+float transFresnelApprox(float x)
+{
+    // Series of:
+    // sin(2arccos(x))sin(2arcsin(sin(arccos(x))/1.5))(1+1/cos^2(arccos(x)-arcsin(sin(arccos(x))/1.5))) / 
+    //      (2sin^2(arccos(x)+arcsin(sin(arccos(x))/1.5)))
+    // at 0.5, power of 6, n = 1.5
+    //return 0.05525 + x * (4.9116 + x * (-12.670 + x * (19.958 + x * (-19.838 + x * (11.473 - 2.9459 * x)))));
+
+    // Spline approximation, power of 5 (more precise then series)
+    // Rsq = 0.99994 at 0.001 step, n = 1.5
+    return 0.0086 + x * (5.3888 + x * (-14.06 + x * (20.216 + x * (-15.205 + x * 4.6155))));
+}// 5 sum 5 mul
+
+float sTransFresnel(float NoV)
 {
     // s-polarisation
     // Ts = 1 - sin^2(a-b) / sin^2(a+b)
@@ -389,9 +416,9 @@ float sTransFresnel(float VoH)
     float n = 1.5;
     float rcpN = 1. / n;
 
-    float sinA = sqrt(1. - VoH*VoH);
+    float sinA = sqrt(1. - NoV*NoV);
     float sinSqA = sinA * sinA;
-    float sin2A = 2. * sinA * VoH;
+    float sin2A = 2. * sinA * NoV;
 
     float sinB = sinA * rcpN;
     float sinSqB = sinB * sinB;
@@ -405,21 +432,30 @@ float sTransFresnel(float VoH)
     return sTransmittance;
 }
 
-float sTransFresnelOptimized(float VoH)
+float sTransFresnelOptimized(float NoV)
 {
-    float sinA = sqrt(1. - VoH*VoH);
+    float sinA = sqrt(1. - NoV*NoV);
     float sinSqA = sinA * sinA;
 
     float sinB = sinA * 0.666;
     float sinSqB = sinB * sinB;
     float sin2B = 2. * sinB * sqrt(1. - sinSqB);
 
-    float sin2ASin2B = 4. * sinA * VoH * sinB * sqrt(1. - sinSqB);
+    float sin2ASin2B = 4. * sinA * NoV * sinB * sqrt(1. - sinSqB);
 
     return sin2ASin2B / (sinSqA + sinSqB - 2.*sinSqA*sinSqB + 0.5*sin2ASin2B);
 }
 
-float pTransFresnel(float VoH)
+// for n=1.5
+// Rsq = 0.99998 with 0.01 step
+float sTransFresnelApprox(float NoV)
+{// BIG ARTIFACT
+    //return NoV * (NoV * (NoV * (4.1731 - 1.3011*NoV) - 5.3509) + 3.433) + 0.0046;
+    // Rsq = 0.99856 with 0.01 step
+    return NoV * (NoV * (1.6372*NoV - 3.8556) + 3.1885);
+}
+
+float pTransFresnel(float NoV)
 {
     // p-polarisation
     // Tp = sin(2a)sin(2b)/(sin^2(a+b)*sin^2(a-b))
@@ -427,9 +463,9 @@ float pTransFresnel(float VoH)
     float n = 1.5;
     float rcpN = 1. / n;
 
-    float sinA = sqrt(1. - VoH*VoH);
+    float sinA = sqrt(1. - NoV*NoV);
     float sinSqA = sinA * sinA;
-    float sin2A = 2. * sinA * VoH;
+    float sin2A = 2. * sinA * NoV;
 
     float sinB = sinA * rcpN;
     float sinSqB = sinB * sinB;
@@ -446,4 +482,3 @@ float pTransFresnel(float VoH)
 
     return pTransmittance;
 }
-
