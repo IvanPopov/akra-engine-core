@@ -1,6 +1,6 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
-/// <reference path="../../../built/Lib/base3dobjects.addon.d.ts" />
+/// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
 /// <reference path="../../../built/Lib/compatibility.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
