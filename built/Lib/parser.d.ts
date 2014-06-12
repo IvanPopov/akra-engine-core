@@ -342,7 +342,7 @@ declare module akra.conv {
     /**
     * Convert ArrayBuffer to string.
     */
-    function abtos(pBuf: ArrayBuffer): string;
+    function abtos(pBuf: ArrayBuffer, iByteOffset?: number, iByteLength?: number): string;
     /**
     * Convert ArrayBuffer to string via BlobReader.
     */
