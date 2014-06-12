@@ -12,7 +12,7 @@
 
 ~tmp.ts
 
-obj/
+#obj/
 bin/
 properties/
 app.js
@@ -33,7 +33,7 @@ x64/
 build/
 bld/
 [Bb]in/
-[Oo]bj/
+#[Oo]bj/
 built/Dev/*
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
@@ -52,7 +52,7 @@ TestResult.xml
 *_i.h
 *.ilk
 *.meta
-*.obj
+#*.obj
 *.pch
 *.pdb
 *.pgc
