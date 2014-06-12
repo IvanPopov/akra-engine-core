@@ -185,28 +185,17 @@ module akra.pool.resources {
 				})
 		}
 
-		//private loadCubemap(sPath: string, cb?: (e: Error) => void): void {
-		//	io.fopen(sPath, EIO.JSON | EIO.IN).read((e: Error, pCubemap: ICubemap) => {
-		//		var pSides: Uint8Array[] = new Array<Uint8Array>(6);
-
-		//		Object.keys(pCubemap).forEach((sSidename: string) => {
-		//			var pSide: IImg = this.getManager().loadImage(uri.resolve(pCubemap[sSidename], sPath));
-
-		//			pSide.loaded.connect((pSide: IImg) => {
-
-		//			});
-		//		});
-		//	});
-		//}
 
 		load(sFileName: string, cb?: (e: Error) => void): IImg;
 		load(pData: Uint8Array, sType?: string, cb?: (e: Error) => void): IImg;
 		load(pCanvas: HTMLCanvasElement, cb?: (e: Error) => void): IImg;
+		load(pImage: HTMLImageElement, cb?: (e: Error) => void): IImg;
 		load(): IImg {
 			var cb: (e: Error) => void = null;
 			var sFilename: string;
 			var sExt: string;
 			var pCanvas: HTMLCanvasElement;
+			var pImage: HTMLImageElement;
 			var pData: Uint8Array;
 
 			//load from HTMLCanvasElement
@@ -233,6 +222,9 @@ module akra.pool.resources {
 				}
 
 				return this;
+			}
+			else if (arguments[0] instanceof HTMLImageElement) {
+				//TODO: handle images
 			}
 			//load from URL
 			else if (isString(arguments[0])) {

@@ -395,7 +395,7 @@ module akra.terrain {
 
 			    if (pImageNormalMap.isResourceLoaded()) {
 			    	this._pNormalMapTexture = this._pEngine.getResourceManager().createTexture(".terrain-normal-texture" + this.guid);
-			        this._pNormalMapTexture.loadImage(pImageNormalMap);
+			        this._pNormalMapTexture.loadImages(pImageNormalMap);
 			        this._pNormalMapImage = pImageNormalMap;
 			    }
 			    else {
@@ -485,7 +485,7 @@ module akra.terrain {
 			var pRmgr: IResourcePoolManager = this._pEngine.getResourceManager();
 
 			this._pHeightMapTexture = pRmgr.createTexture(".terrain-hight-texture" + this.guid);
-			this._pHeightMapTexture.loadImage(pImageHightMap);
+			this._pHeightMapTexture.loadImages(pImageHightMap);
 
 			this._pBaseNormalTexture = pRmgr.createTexture(".terrain-base-normal-texture" + this.guid);
 			this._pBaseNormalTexture.create(pImageHightMap.getWidth(), pImageHightMap.getHeight(), 1, null, 

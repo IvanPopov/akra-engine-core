@@ -49,7 +49,8 @@ module akra {
 		set(pSrc: IImg): IImg;
 	
 		load(sFileName: string,  fnCallBack?: Function): IImg;
-		load(pData: Uint8Array, sType?: string,  fnCallBack?: Function): IImg;
+		load(pData: Uint8Array, sType?: string, fnCallBack?: Function): IImg;
+		load(pImage: HTMLImageElement, cb?: (e: Error) => void): IImg;
 		load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 	
 	
