@@ -126,7 +126,7 @@ module akra {
 			//var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
 			var pSkyboxModel = addons.cube(pScene);//pCube.extractModel("box");
 			//pSkyboxModel.attachToParent(pScene.getRootNode());
-			(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
+			(<any>pViewport).setSkyboxModel(pSkyboxModel.getRenderable(0));
 		}
 
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -276,7 +276,7 @@ module akra {
 			'ANIM_MINER_WORK_GUN',
 			'ANIM_MINER_WORK_HAMMER'
 		]).onChange((sName: string) => {
-			//pController.play.emit(sName);
+			pController.play.emit(sName);
 		});
 
 
@@ -286,8 +286,8 @@ module akra {
 		pModel.addController(pController);
 		pModel.scale(.5);
 
-		//pController.play.emit(0);
-		pController.stop();
+		pController.play.emit(0);
+		//pController.stop();
 
 		var pBB: IRect3d;
 		var pLibeCube = addons.lineCube(pScene);

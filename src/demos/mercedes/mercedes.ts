@@ -16,11 +16,11 @@ module akra {
 	//config.DEBUG = false;
 
 	if (!config.DEBUG) {
-		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
-		addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
-		addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
-		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
-		addons.compatibility.ignoreWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
+		// addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+		// addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
+		// addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
+		// addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+		// addons.compatibility.ignoreWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 	}
 
 

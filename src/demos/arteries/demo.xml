@@ -42,6 +42,7 @@
       <Archive>False</Archive>
       <UseInlining>False</UseInlining>
       <Data>
+        <Folder Path="data/fx" />
         <ResourceFile Path="data/fx/arteries2.afx"/>
         <ResourceFile Path="data/AG/all.map"/>
         <Folder Path="data/AG">

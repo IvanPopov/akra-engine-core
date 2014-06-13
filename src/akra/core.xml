@@ -100,7 +100,6 @@
           <ResourceFile Path="resources/fx/fxaa.afx"/>
           <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
-          <ResourceFile Path="resources/fx/blur.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx">
@@ -121,6 +120,7 @@
           <ResourceFile Path="resources/fx/generate_normal_map.afx"/>
           <ResourceFile Path="resources/fx/sky.afx"/>
           <ResourceFile Path="resources/fx/motion_blur.afx"/>
+          <ResourceFile Path="resources/fx/blur.afx"/>
           <ResourceFile Path="resources/fx/edge_detection.afx"/>
           <ResourceFile Path="resources/fx/wireframe.afx"/>
           <ResourceFile Path="resources/fx/sprite.afx"/>
@@ -163,6 +163,7 @@
           </ResourceFile>
           <ResourceFile Path="resources/fx/generate_normal_map.afx"/>
           <ResourceFile Path="resources/fx/sky.afx"/>
+          <ResourceFile Path="resources/fx/blur.afx"/>
           <ResourceFile Path="resources/fx/motion_blur.afx"/>
           <ResourceFile Path="resources/fx/edge_detection.afx"/>
           <ResourceFile Path="resources/fx/wireframe.afx"/>

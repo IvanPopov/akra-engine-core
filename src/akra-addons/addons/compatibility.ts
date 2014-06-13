@@ -95,6 +95,10 @@ module akra.addons.compatibility {
 		extIgnoreList.push(extension);
 	}
 
+	export function requireWebGLExtension(extension: string): void {
+		checkWebGLExtension(extension);
+	}
+
 	/**
 	 * @param id View element with @id if compatibility tests failed.
 	 */
@@ -115,11 +119,11 @@ module akra.addons.compatibility {
 		}
 
 
-		checkWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
-		checkWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
-		checkWebGLExtension(webgl.OES_TEXTURE_FLOAT);
-		checkWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
-		checkWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
+		//checkWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+		//checkWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+		//checkWebGLExtension(webgl.OES_TEXTURE_FLOAT);
+		//checkWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
+		//checkWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 
 		require({
 			name: "LocalFileSystem",
