@@ -22,7 +22,7 @@ module.exports = function (grunt) {
 	grunt.initConfig({
 		//configuration
 		Configuration: 'Debug',//Release
-		Version: util.getVersion(),
+		Version: null,//util.getVersion(),
 		DemosSourceDir: "src/demos",
 		BuiltDir: "built",
 		Pkg: grunt.file.readJSON("package.json"),
@@ -106,7 +106,12 @@ module.exports = function (grunt) {
 	//clean up build path
 	grunt.config("clean.build.src", grunt.config("clean.build.src").map(function(path) { return path.replace(/built\/\*/g, grunt.config("BuiltDir")); }));
 
-	
+	if (grunt.config.get("Configuration").toUpperCase() === "DEBUG") {
+		process.env['DEBUG'] = 'DEBUG';
+	}
+
+	grunt.config("Version", util.getVersion());
+
 	grunt.log.writeln("Version: " + grunt.config.get("Version").full);
 	
 
