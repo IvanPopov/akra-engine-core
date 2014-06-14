@@ -251,10 +251,16 @@ module akra.render {
 						//pRenderable.render(this, csMethod, pSceneObject);
 
 						var pSubMesh: IMeshSubset = <IMeshSubset>pRenderable;
-						pSubMesh.getBoundingBox().midPoint(v3fMidPoint);
-						v4fMidPoint.set(v3fMidPoint, 1.);
 
-						pSceneObject.getWorldMatrix().multiplyVec4(v4fMidPoint);
+						if (pRenderable.getType() === ERenderableTypes.MESH_SUBSET) {
+							pSubMesh.getBoundingBox().midPoint(v3fMidPoint);
+							v4fMidPoint.set(v3fMidPoint, 1.);
+							pSceneObject.getWorldMatrix().multiplyVec4(v4fMidPoint);
+						}
+						else {
+							v4fMidPoint.set(pSceneObject.getWorldPosition(), 1.);
+						}
+
 						pCamera.getProjViewMatrix().multiplyVec4(v4fMidPoint);
 
 						this.pushTransparencyObjectInQueue(v4fMidPoint.z / v4fMidPoint.w, pRenderable, pSceneObject);

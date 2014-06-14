@@ -27,21 +27,9 @@
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="data"/>
-        <ResourceFile Path="data/textures/lensflare_cookies_new.png" Name="LENSFLARE_COOKIES_TEXTURE"/>
 
-        <ResourceFile Path="data/effects/lensflare.afx"/>
-        <ResourceFile Path="data/effects/blur.afx"/>
-        <ResourceFile Path="data/effects/dof.afx"/>
-        <ResourceFile Path="data/effects/fresnel_texture.afx"/>
-
-        <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.dae" Name="WOOD_SOLDIER.DAE"/>
-        <ResourceFile Path="data/models/rock/rock-1-low-p.DAE" Name="ROCK.DAE"/>
-        <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
-        <ResourceFile Path="data/models/room-with-room.DAE" Name="ROOMWITHROOM.DAE"/>
-        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
-        <ResourceFile Path="data/models/teapot.dae" Name="TEAPOT.DAE"/>
-        <ResourceFile Path="data/models/Donut.dae" Name="DONUT.DAE"/>
-        <ResourceFile Path="data/models/Sphere.dae" Name="SPHERE.DAE"/>
+        <ResourceFile Path="data/models/teapot.DAE" Name="TEAPOT.DAE"/>
+        <ResourceFile Path="data/models/Sphere.DAE" Name="SPHERE.DAE"/>
         <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
         <ResourceFile Path="data/textures/skyboxes/colosseum.dds" Name="SKYBOX_COLOSSEUM"/>
