@@ -121,8 +121,10 @@ module akra {
 		
 		loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, iDepth?: uint, eFormat?: EPixelFormats, nFaces?: uint, nMipMaps?: uint): boolean;
 
-		loadImage(pImage: IImg): boolean;
-
+		/**
+		 * Load images to this texture.
+		 */
+		loadImages(pImage: IImg): boolean;
 		loadImages(pImages: IImg[]): boolean;
 		loadImages(pImages: string[]): boolean;
 	

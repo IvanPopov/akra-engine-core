@@ -183,17 +183,17 @@ module akra.pool.resources {
 			var pImage: IImg = this.getManager().loadImage(sFilename);
 
 			if (pImage.isResourceLoaded()) {
-				return this.loadImage(pImage);
+				return this.loadImages(pImage);
 			}
 
-			pImage.loaded.connect(this, this._onImageLoad);
+			pImage.loaded.connect(this, this._imageLoadedHandler);
 
 			return true;
 		}
 
-		_onImageLoad(pImage: IImg): void {
-			pImage.loaded.disconnect(this, this._onImageLoad);
-			this.loadImage(pImage);
+		private _imageLoadedHandler(pImage: IImg): void {
+			pImage.loaded.disconnect(this, this._imageLoadedHandler);
+			this.loadImages(pImage);
 		}
 
 		destroyResource(): boolean {
@@ -264,42 +264,17 @@ module akra.pool.resources {
 			}
 
 			pTempImg.loadRawData(pData, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
-			var isLoaded: boolean = this.loadImage(pTempImg);
+			var isLoaded: boolean = this.loadImages(pTempImg);
 			this.getManager().getImagePool().destroyResource(pTempImg);
 
 			return isLoaded;
 		}
 
-		loadImage(pImage: IImg): boolean {
-			var isLoaded: boolean = this._loadImages(pImage);
 
-			if (isLoaded) {
-				this.notifyLoaded();
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-
-		loadImages(pImages: string[]): boolean;
-		loadImages(pImages: IImg[]): boolean;
-		loadImages(pImages): boolean {
-			var isLoaded: boolean = this._loadImages(pImages);
-
-			if (isLoaded) {
-				this.notifyLoaded();
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-
-		private _loadImages(pImageList: string[]): boolean;
-		private _loadImages(pImageList: IImg[]): boolean;
-		private _loadImages(pImage: IImg): boolean;
-		private _loadImages(pImage: any): boolean {
+		loadImages(pImageList: string[]): boolean;
+		loadImages(pImageList: IImg[]): boolean;
+		loadImages(pImage: IImg): boolean;
+		loadImages(pImage: any): boolean {
 
 			if (this.isResourceLoaded()) {
 				logger.warn("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
@@ -432,6 +407,8 @@ module akra.pool.resources {
 					this.getBuffer(i, mip).blitFromMemory(pSrc);
 				}
 			}
+
+			this.notifyLoaded();
 
 			return true;
 		}

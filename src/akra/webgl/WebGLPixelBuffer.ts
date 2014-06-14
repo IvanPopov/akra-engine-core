@@ -191,6 +191,11 @@ module akra.webgl {
 			return false;
 		}
 
+		blitFromHTMLlImage(pImage: HTMLImageElement): boolean {
+			//check, if image not loaded
+			return false;
+		}
+
 		blitFromMemory(pSource: IPixelBox): boolean;
 		blitFromMemory(pSource: IPixelBox, pDestBox: IBox): boolean;
 		blitFromMemory(): boolean {
