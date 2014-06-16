@@ -1,0 +1,150 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset='UTF-8')
+    title= demo.name
+    meta(name='description', content=demo.description)
+    link(href='../css/demo.css', rel='stylesheet')
+    style.
+      body {
+        background: #222222 !important;
+      }
+
+      h1.ci {
+        position: absolute;
+        left: 0px;
+        top: 31px;
+        margin: 0;
+        padding: 5px;
+        width: 100%;
+        height: 51px;
+        text-indent: -9999px;
+        z-index: 1;
+        overflow: hidden;
+        background-color: rgba(67, 65, 66, .85);
+        border-bottom: 1px solid rgba(72, 70, 71, .9);
+        padding-left: 0;
+        padding-right: 0;
+        /*background: url(css/mercedes-benz-logo.png) 5px 5px no-repeat;
+        background-position-x: 94.5%;
+        background-size: 151px 40px;*/
+      }
+
+      h1.ci img:first-child {
+        position: absolute;
+        right: 96px;
+        height: 40px;
+        width: 151px;
+        margin-top: 7px;
+      }
+
+      div.sf {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        margin: 0;
+        padding: 5px;
+        width: 100%;
+        height: 30px;
+        border-top: 1px solid rgba(72, 70, 71, .9);
+        z-index: 1;
+        overflow: hidden;
+        background-color: rgba(42, 40, 41, .9);
+        background-position-x: 85%;
+        padding-left: 0;
+        padding-right: 0;
+
+      }
+
+      hr.cj {
+        background-color: rgb(67, 65, 66);
+        height: 1px;
+        color: rgb(67, 65, 66);
+        position: absolute;
+        z-index: 1;
+        border: none;
+        width: 100%;
+        border-top: 1px solid rgba(27, 25, 26, .85);
+        padding: 0;
+        margin: 0;
+      }
+
+      hr.f1 {
+        bottom: 33px;
+        background-color: rgba(92, 90, 91, .9);
+        color: rgba(92, 90, 91, .9);
+        top: inherit;
+      }
+
+      table.skins {
+        position: absolute;
+        right: 2px;
+        top: 100px;
+        padding: 0;
+        margin: 0;
+        font-family: Arial;
+        color: #a8a8a8;
+        font-size: 13px;
+        line-height: 13px;
+        border-spacing: 7px 3px;
+        border-collapse: separate;
+        margin-top: 7px;
+      }
+
+      table.skins caption {
+        text-align: left;
+        font-size: 18px;
+        padding: 7px;
+        font-family: arial;
+        font-weight: lighter;
+        color: #a8a8a8;
+        padding-bottom: 10px;
+      }
+
+      table.skins tr {
+        cursor: pointer;
+      }
+
+      table.skins td:first-child {
+        width: 10px;
+      }
+
+      table.skins tr td:first-child {
+        -webkit-filter: grayscale(0.5);
+        -moz-filter: grayscale(0.5);
+        filter: grayscale(0.5);
+      }
+
+      table.skins tr:hover td:first-child {	
+        -webkit-filter: none;
+        -moz-filter: none;
+        filter: none;
+      }
+
+      table.skins td:last-child {
+        width: 150px;
+        background-color: rgba(67, 65, 66, .9);
+        padding-left: 20px;
+        padding-top: 1px;
+        padding-bottom: 1px;
+      }
+
+      table.skins td:last-child:hover {
+        background-color: rgba(0,0,0, .9);
+      }
+
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
+    - for (var i in demo.styles)
+      link(href=demo.styles[i], rel='stylesheet')
+  body
+    h1.ci
+      img(src="css/mercedes-benz-logo.png")
+    hr.cj(style="top: 101px;")
+    hr.cj.f1(style="bottom: 52px; border-top: 1px solid rgba(27, 25, 26, .85); background-color: rgba(20, 20, 20, .9);")
+    div.sf(style="background-color: rgba(67, 65, 66, 0.9); bottom: 41px; height: 10px; padding: 0;")
+    div.sf
+    hr.cj.f1(style="border-top: none;")
+    #progress
+    include noncompatible
+    script(src=demo.src)
