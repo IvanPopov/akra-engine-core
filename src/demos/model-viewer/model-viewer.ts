@@ -246,6 +246,7 @@ module akra {
 			_Gloss: 0,
 		}
 
+
 		//pBlurData = {
 		//	BLUR_RADIUS: 0,
 		//};
@@ -275,12 +276,14 @@ module akra {
 
 			//pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
 
-			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+
+		//	pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
 
 			//pPass.setUniform("INPUT_TEXTURE_RATIO",
 			//	math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
 			//pPass.setUniform("SCREEN_ASPECT_RATIO",
 			//	math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
+
 
 
 		});
@@ -313,6 +316,10 @@ module akra {
 
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
 		pRenderTarget.setAutoUpdated(false);
+
+		var pDepthTexture = pRmgr.createTexture(".mirror_depth");
+		pDepthTexture.create(512, 512, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+		pRenderTarget.attachDepthTexture(pDepthTexture);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
@@ -397,7 +404,6 @@ module akra {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
-			//var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
 			var pModel = addons.cube(pScene);
 			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}

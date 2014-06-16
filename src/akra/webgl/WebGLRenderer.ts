@@ -728,6 +728,7 @@ module akra.webgl {
 
 				this.enableWebGLVertexAttribs(pWebGLProgram.getTotalAttributes());
 			}
+			this._iNextTextureSlot = 0;
 
 			var pAttribLocations: IMap<int> = pWebGLProgram._getActiveAttribLocations();
 			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.getAttributeInfo();
@@ -926,24 +927,24 @@ module akra.webgl {
 		}
 
 		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {
-			var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
+			//var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
 
-			if(iSlot === -1) {
-				iSlot = this._iNextTextureSlot;
+			//if(iSlot === -1) {
+			var iSlot = this._iNextTextureSlot;
 
-				this._iNextTextureSlot++;
+			this._iNextTextureSlot++;
 
-				if (this._iNextTextureSlot === maxTextureImageUnits) {
-					this._iNextTextureSlot = 0;
-				}
+			if (this._iNextTextureSlot === maxTextureImageUnits) {
+				this._iNextTextureSlot = 0;
+			}
 
-				this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-				this.bindWebGLTexture(eTarget, pTexture);
-			 }
-			 else {
-				 this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
-				 this.bindWebGLTexture(eTarget, pTexture);
-			 }
+			this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+			this.bindWebGLTexture(eTarget, pTexture);
+			 //}
+			 //else {
+			 //    this.activateWebGLTexture(gl.TEXTURE0 + iSlot);
+			 //    this.bindWebGLTexture(eTarget, pTexture);
+			 //}
 
 			return iSlot;
 		}

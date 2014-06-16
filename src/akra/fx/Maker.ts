@@ -357,24 +357,10 @@ module akra.fx {
 					var pUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoList[iLocation];
 					var pApplyValue: any = pValue || pUniformInfo.defaultValue;
 
-					if (pUniformInfo.lastValue !== pApplyValue) {
-						if (pUniformInfo.length === 0 &&
-							(pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D || pUniformInfo.type === EAFXShaderVariableType.k_SamplerCUBE)) {
+					if (pUniformInfo.lastValue !== pApplyValue ||
+						(pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D || pUniformInfo.type === EAFXShaderVariableType.k_SamplerCUBE)) {
 
-							if (isNull(pUniformInfo.lastValue) ||
-								pUniformInfo.lastValue.texture !== pApplyValue.texture ||
-								pUniformInfo.lastValue.wrap_s !== pApplyValue.wrap_s ||
-								pUniformInfo.lastValue.warp_t !== pApplyValue.warp_t ||
-								pUniformInfo.lastValue.mag_filter !== pApplyValue.mag_filter ||
-								pUniformInfo.lastValue.min_filter !== pApplyValue.min_filter) {
-
-								pUniformInfo.applyFunction.call(this._pShaderProgram, pUniformInfo.webGLLocation, pApplyValue);
-							}
-						}
-						else {
-							pUniformInfo.applyFunction.call(this._pShaderProgram, pUniformInfo.webGLLocation, pApplyValue);
-						}
-
+						pUniformInfo.applyFunction.call(this._pShaderProgram, pUniformInfo.webGLLocation, pApplyValue);
 						pUniformInfo.lastValue = pApplyValue;
 					}
 
