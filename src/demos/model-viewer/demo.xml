@@ -17,8 +17,7 @@
         <CollapsePath>True</CollapsePath>
       </Attachment>
       <Attachment Name="AE_MODELS">
-        <Folder Path="data/models/"/>
-        <Format>Enclosure</Format>
+        <File Path="data/models/"/>
       </Attachment>
       
       <Module Name="addon-progress" />
@@ -32,10 +31,6 @@
       <Data>
         <Folder Path="data"/>
         <ResourceFile Path="data/textures/lensflare_cookies_new.png" Name="LENSFLARE_COOKIES_TEXTURE"/>
-        
-        <ResourceFile Path="data/effects/lensflare.afx"/>
-        <ResourceFile Path="data/effects/blur.afx"/>
-        <ResourceFile Path="data/effects/dof.afx"/>
 
         <!-- <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.DAE" Name="WOOD_SOLDIER.DAE"/>
         <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
