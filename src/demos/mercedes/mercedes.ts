@@ -16,11 +16,11 @@ module akra {
 	//config.DEBUG = false;
 
 	if (!config.DEBUG) {
-		// addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
-		// addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
-		// addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
-		// addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
-		// addons.compatibility.ignoreWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
+		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_TEXTURE_FLOAT);
+		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+		addons.compatibility.ignoreWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 	}
 
 
@@ -518,20 +518,33 @@ module akra {
 		var pOmniLight: IOmniLight;
 		var pOmniLightSphere;
 
-		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
+		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.PROJECT, true, 2048, "test-omni-0");
 
 		pOmniLight.attachToParent(pOmniLights);
 		pOmniLight.setEnabled(true);
-		pOmniLight.getParams().ambient.set(0.1);
-		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
-		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
+		pOmniLight.getParams().ambient.set(0.1/2);
+		pOmniLight.getParams().diffuse.set(1.0/2, 1.0/2, 1.0/2);
+		pOmniLight.getParams().specular.set(1.0/2, 1.0/2, 1.0/2, 1.0/2);
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(true);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 
 		pOmniLight.setPosition(lightPos1);
 
-		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
+		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512, "test-omni-0");
+
+		pOmniLight.attachToParent(pOmniLights);
+		pOmniLight.setEnabled(true);
+		pOmniLight.getParams().ambient.set(0.1/2);
+		pOmniLight.getParams().diffuse.set(1.0/2, 1.0/2, 1.0/2);
+		pOmniLight.getParams().specular.set(1.0/2, 1.0/2, 1.0/2, 1.0/2);
+		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
+		pOmniLight.setShadowCaster(false);
+		pOmniLight.setInheritance(ENodeInheritance.ALL);
+
+		pOmniLight.setPosition(lightPos1);
+
+		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512, "test-omni-0");
 
 		pOmniLight.attachToParent(pOmniLights);
 		pOmniLight.setEnabled(true);
@@ -656,7 +669,7 @@ module akra {
 			pGroundLight.getParams().specular.set(color.LIGHT_BLUE);
 		}
 
-		createSceneLights();
+		//createSceneLights();
 
 		var pModelTableSubset = pModelTable.getMesh().getSubset(0);
 
