@@ -43,15 +43,15 @@ float4 applyMaterialAlpha() : COLOR {
     float4 color = resultAFXColor;
     //color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
     color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
-    float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
+    // float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
 
-    // Simple model:
-    //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
-    // Physically based shading:
-    //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
-    // Fresnel eq solve:
-    color.a = sTransFresnelOptimized(1.-NoV) * pixelData.material.transparency * pixelData.material.diffuse.a;
-    //color.a = NoV;
+    // // Simple model:
+    // //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
+    // // Physically based shading:
+    // //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
+    // // Fresnel eq solve:
+    // color.a = sTransFresnelOptimized(1.-NoV) * pixelData.material.transparency * pixelData.material.diffuse.a;
+    // //color.a = NoV;
 
     //color.g = color.a;
     //color.a = 1.0;

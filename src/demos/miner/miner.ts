@@ -126,7 +126,7 @@ module akra {
 			//var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
 			var pSkyboxModel = addons.cube(pScene);//pCube.extractModel("box");
 			//pSkyboxModel.attachToParent(pScene.getRootNode());
-			(<any>pViewport)._setSkyboxModel(pSkyboxModel.getRenderable(0));
+			(<any>pViewport).setSkyboxModel(pSkyboxModel.getRenderable(0));
 		}
 
 		pCanvas.resize(window.innerWidth, window.innerHeight);
