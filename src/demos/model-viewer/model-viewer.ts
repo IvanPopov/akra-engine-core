@@ -17,6 +17,7 @@ module akra {
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
 		preserveDrawingBuffer: true,
+		depth: true,
 	};
 
 	var pOptions: IEngineOptions = {
@@ -151,7 +152,7 @@ module akra {
 				pCamera.addRelPosition(0, -fSpeed, 0);
 			}
 		});
-		(<render.LPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+		(<render.ForwardViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
 			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta/pViewport.getActualHeight()*2., 2., 15.);
@@ -161,7 +162,7 @@ module akra {
 	var pGUI;
 
 	function createViewport(): IViewport3D {
-		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: IForwardViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
@@ -169,11 +170,11 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.LPPViewport>pViewport).setFXAA(false);
+		(<render.ForwardViewport>pViewport).setFXAA(false);
 		var counter = 0;
-		var pEffect = (<render.LPPViewport>pViewport).getEffect();
+		// var pEffect = (<render.ForwardViewport>pViewport).getEffect();
 		//pEffect.addComponent("akra.system.dof");
-		pEffect.addComponent("akra.system.blur");
+		// pEffect.addComponent("akra.system.blur");
 		// pEffect.addComponent("akra.system.lensflare");
 
 		pGUI = new dat.GUI();
@@ -246,33 +247,32 @@ module akra {
 		var pPBSFolder = pGUI.addFolder("pbs");
 		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS");
 		(<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-			}
+			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+				(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+			// }
 			 (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
-		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+		(<IForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
-			var pDeferredTexture: ITexture = (<ILPPViewport>pViewport).getTextureWithObjectID();
-			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
+			// var pDeferredTexture: ITexture = (<IForwardViewport>pViewport).getTextureWithObjectID();
+			// var pDepthTexture: ITexture = (<render.ForwardViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
+			// pPass.setTexture('DEFERRED_TEXTURE', pDeferredTexture);
 
 			pPass.setUniform('BLUR_RADIUS', pBlurData.BLUR_RADIUS);
 
 			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
 
-			pPass.setUniform("INPUT_TEXTURE_RATIO",
-				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
+			// pPass.setUniform("INPUT_TEXTURE_RATIO",
+				// math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pDepthTexture.getWidth() / pDepthTexture.getHeight()));
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
-
-
 		});
 		return pViewport;
 	}
@@ -305,11 +305,11 @@ module akra {
 		pRenderTarget.setAutoUpdated(false);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
-		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
+		var pEffect = (<render.ForwardViewport>pTexViewport.getInternalViewport()).getEffect();
 
 		// pEffect.addComponent("akra.system.blur");
 
-		(<render.LPPViewport>pTexViewport.getInternalViewport()).render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
+		(<render.ForwardViewport>pTexViewport.getInternalViewport()).render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			pPass.setUniform("BLUR_RADIUS", 5.0);
@@ -387,12 +387,11 @@ module akra {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
-			var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
-			var pModel = pCube.extractModel("box");
+			var pModel = addons.cube(pScene);
 			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}
 		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-		(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTexture);
 		//}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
@@ -400,7 +399,7 @@ module akra {
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
 		
-		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<IForwardViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 	}
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
