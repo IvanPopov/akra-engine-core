@@ -259,6 +259,39 @@ float4 applyPBSReflection(): COLOR {
     return color;
 };
 
+float4 applyPBSSkyboxLighting(): COLOR {
+    // float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
+    // //float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
+
+    // LightData envLight;
+    // envLight.diffuse = float4(colorFromCubemap, 1.);
+    // envLight.specular = float4(colorFromCubemap, 1.);
+    // //envLight.ambient = float4(intensity);
+    // envLight.attenuation = float3(1., 0., 0.);
+    // envLight.position = pixelData.normal * 1.;
+
+    float4 color = resultAFXColor;
+    // float4 s = pixelData.material.specular;
+// 
+    // pixelData.material.specular = float4(0.);
+    // color += applyBaseLightParams(pixelData, envLight);
+    // pixelData.material.specular = s;
+
+    float3 direction = (invView*float4(pixelData.normal,0.)).xyz;
+
+    float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5;
+    // lowering reflection brightness if we have a strong lighting already
+    
+    //reflection *= float4(1.) - color;
+
+    color += float4(envColor, 1.) * pixelData.material.diffuse;
+
+    //if (){
+        //return float4(1.0, 0.3, 0.3, 0.0);
+    //}
+    return color;
+};
+
 float3 fogColor : FOG_COLOR;
 float fogStart : FOG_START;
 float fogIndex : FOG_INDEX;
@@ -358,6 +391,13 @@ technique sunShadowsLighting{
         if(NUM_SUN_SHADOWS > 0){
             PixelShader = compile applySunLightShadows();
         }
+    }
+};
+
+
+technique pbsSkyboxLighting{
+    pass applyPbsSkyboxLighting{
+        PixelShader = compile applyPBSSkyboxLighting();
     }
 };
 

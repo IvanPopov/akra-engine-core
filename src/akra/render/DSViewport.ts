@@ -198,6 +198,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
+			pDSEffect.addComponent("akra.system.pbsSkyboxLighting");
 			pDSEffect.addComponent("akra.system.pbsReflection");
 
 			pDSMethod.setEffect(pDSEffect);
