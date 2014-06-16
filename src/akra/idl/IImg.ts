@@ -69,12 +69,14 @@ module akra {
 		getPixelSize(): uint;
 		getBPP(): uint;
 		getData(): Uint8Array;
+		getHTMLImage(): HTMLImageElement;
 	
 		hasFlag(eFlag: EImageFlags): boolean;
 	
 		hasAlpha(): boolean;
 		isCompressed(): boolean;
 		isLuminance(): boolean;
+		isHTMLImageContainer(): boolean;
 	
 		freeMemory();
 	

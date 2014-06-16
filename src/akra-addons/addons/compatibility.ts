@@ -9,7 +9,7 @@ module akra.addons.compatibility {
 		flag?: int;
 	}
 
-	var pRequirements: IMap<IRequirement> = null;
+	var pRequirements: IMap<IRequirement> = {};
 	var iTotal: int = 0;
 	var extIgnoreList: string[] = [];
 
@@ -104,7 +104,7 @@ module akra.addons.compatibility {
 	 */
 	export function verify(id: string = null): boolean {
 
-		pRequirements = <any>{};
+		//pRequirements = <any>{};
 
 		require({
 			name: "WebGL",

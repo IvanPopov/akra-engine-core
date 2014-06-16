@@ -48,11 +48,6 @@ module akra.webgl {
 
 		getFormat(): EPixelFormats { return this._eFormat; }
 
-		constructor () {
-			super();
-		}
-
-
 		//upload(download) data to(from) videocard.
 		protected upload(pData: IPixelBox, pDestBox: IBox): void {
 			logger.critical("Upload not possible for this pixelbuffer type");
@@ -192,6 +187,7 @@ module akra.webgl {
 		}
 
 		blitFromHTMLlImage(pImage: HTMLImageElement): boolean {
+			logger.critical("WebGLPixelBuffer::blitFromHTMLImage() not implemented.");
 			//check, if image not loaded
 			return false;
 		}

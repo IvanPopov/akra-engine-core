@@ -238,11 +238,11 @@ module akra.pool.resources {
 				this._iWidth = this._pHTMLImage.width;
 				this._iHeight = this._pHTMLImage.height;
 				this._iDepth = 1;
-				this._nMipMaps = 1;
+				this._nMipMaps = 0;
 				this._iFlags = 0;
 				this._iCubeFlags = 0;
-
 				this._eFormat = EPixelFormats.BYTE_RGBA;
+
 				this.notifyLoaded();
 				return this;
 			}
@@ -588,33 +588,31 @@ module akra.pool.resources {
 			var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
 			var pRGBAData: Uint8Array = new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength));
 
-			var pData: Uint8Array = null;
-			var eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+			var pData: Uint8Array = pRGBAData;
+			var eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA;
 			var bNoAlpha: boolean = true;
 
-			if (sExt === "PNG" || sExt === "GIF") {
-				for (var i = 0; i < pRGBAData.length; i += 4) {
-					if (pRGBAData[i + 3] !== 0xff) {
-						bNoAlpha = false;
-						break;
+			if (isString(sExt)) {
+				if (sExt === "PNG" || sExt === "GIF") {
+					for (var i = 0; i < pRGBAData.length; i += 4) {
+						if (pRGBAData[i + 3] !== 0xff) {
+							bNoAlpha = false;
+							break;
+						}
 					}
 				}
-			}
 
-			if (sExt === "JPG" || sExt === "JPEG" || bNoAlpha) {
-				var pRGBData: Uint8Array = new Uint8Array(pRGBAData.length / 4 * 3);
-				for (var i = 0, j = 0; i < pRGBAData.length; i += 4, j += 3) {
-					pRGBData[j] = pRGBAData[i];
-					pRGBData[j + 1] = pRGBAData[i + 1];
-					pRGBData[j + 2] = pRGBAData[i + 2];
+				if (sExt === "JPG" || sExt === "JPEG" || bNoAlpha) {
+					var pRGBData: Uint8Array = new Uint8Array(pRGBAData.length / 4 * 3);
+					for (var i = 0, j = 0; i < pRGBAData.length; i += 4, j += 3) {
+						pRGBData[j] = pRGBAData[i];
+						pRGBData[j + 1] = pRGBAData[i + 1];
+						pRGBData[j + 2] = pRGBAData[i + 2];
+					}
+
+					pData = pRGBData;
+					eFormat = EPixelFormats.BYTE_RGB;
 				}
-
-				pData = pRGBData;
-				eFormat = EPixelFormats.BYTE_RGB;
-			}
-			else {
-				pData = pRGBAData;
-				eFormat = EPixelFormats.BYTE_RGBA;
 			}
 
 			//cb(null, pData, pImg.width, pImg.height, 1, eFormat);
@@ -652,9 +650,11 @@ module akra.pool.resources {
 					if (iWidth > 1) {
 						iWidth = iWidth >>> 1;
 					}
+
 					if (iHeight > 1) {
 						iHeight = iHeight >>> 1;
 					}
+
 					if (iDepth > 1) {
 						iDepth = iDepth >>> 1;
 					}

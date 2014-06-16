@@ -21,6 +21,7 @@
         <File Path="data/models/"/>
       </Attachment>
       
+      <Module Name="addon-compatibility" />
       <Module Name="addon-progress" />
       <Module Name="addon-base3dObjects" />
       
@@ -34,7 +35,7 @@
         <!-- <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.DAE" Name="WOOD_SOLDIER.DAE"/>
         <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>
         <ResourceFile Path="data/models/room-with-room.DAE" Name="ROOMWITHROOM.DAE"/> -->
-        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
+        <!--<ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>-->
         <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
         <ResourceFile Path="data/textures/skyboxes/colosseum.dds" Name="SKYBOX_COLOSSEUM"/>

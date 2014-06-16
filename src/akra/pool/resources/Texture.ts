@@ -391,6 +391,11 @@ module akra.pool.resources {
 			var i: uint = 0;
 			for (mip = 0; mip <= this._nMipLevels; ++mip) {
 				for (i = 0; i < iFaces; ++i) {
+					//if (pImageList[i].isHTMLImageContainer()) {
+					//	this.getBuffer(i, mip).blitFromHTMLlImage(pImageList[i].getHTMLImage());
+					//	continue;
+					//}
+
 					var pSrc: IPixelBox;
 
 					if (isMultiImage) {
@@ -408,13 +413,14 @@ module akra.pool.resources {
 				}
 			}
 
+
+
 			this.notifyLoaded();
 
 			return true;
 		}
 
 		convertToImage(pDestImage: IImg, bIncludeMipMaps: boolean): void {
-			// logger.critical("!!!нехуй")
 			var iNumMips: uint = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
 			var iDataSize: uint = pixelUtil.calculateSizeForImage(iNumMips, this.getNumFaces(),
 				this._iWidth, this._iHeight, this._iDepth,

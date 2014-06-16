@@ -4213,6 +4213,7 @@ declare module akra {
         blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): boolean;
         blit(pSource: IPixelBuffer): any;
         unwrapFromCubeTexture(pCubeTex: ITexture): boolean;
+        blitFromHTMLlImage(pImage: HTMLImageElement): boolean;
         blitFromMemory(pSource: IPixelBox): boolean;
         blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): boolean;
         blitToMemory(pDest: IPixelBox): boolean;
@@ -5649,6 +5650,7 @@ declare module akra {
         set(pSrc: IImg): IImg;
         load(sFileName: string, fnCallBack?: Function): IImg;
         load(pData: Uint8Array, sType?: string, fnCallBack?: Function): IImg;
+        load(pImage: HTMLImageElement, cb?: (e: Error) => void): IImg;
         load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
         loadRawData(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         loadDynamicImage(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
@@ -5658,10 +5660,12 @@ declare module akra {
         getPixelSize(): number;
         getBPP(): number;
         getData(): Uint8Array;
+        getHTMLImage(): HTMLImageElement;
         hasFlag(eFlag: EImageFlags): boolean;
         hasAlpha(): boolean;
         isCompressed(): boolean;
         isLuminance(): boolean;
+        isHTMLImageContainer(): boolean;
         freeMemory(): any;
         getColorAt(pColor: IColor, x: number, y: number, z?: number): IColor;
         setColorAt(pColor: IColor, x: number, y: number, z?: number): void;
@@ -6359,7 +6363,10 @@ declare module akra {
         getFilter(eParam: ETextureParameters): ETextureFilters;
         getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
         loadRawData(pData: ArrayBufferView, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): boolean;
-        loadImage(pImage: IImg): boolean;
+        /**
+        * Load images to this texture.
+        */
+        loadImages(pImage: IImg): boolean;
         loadImages(pImages: IImg[]): boolean;
         loadImages(pImages: string[]): boolean;
         convertToImage(pDestImage: IImg, bIncludeMipMaps: boolean): void;
@@ -12271,6 +12278,7 @@ declare module akra.pool.resources {
         public _iCubeFlags: number;
         public _eFormat: EPixelFormats;
         public _pBuffer: Uint8Array;
+        public _pHTMLImage: HTMLImageElement;
         public getByteLength(): number;
         public getWidth(): number;
         public getHeight(): number;
@@ -12294,12 +12302,15 @@ declare module akra.pool.resources {
         public load(sFileName: string, cb?: (e: Error) => void): IImg;
         public load(pData: Uint8Array, sType?: string, cb?: (e: Error) => void): IImg;
         public load(pCanvas: HTMLCanvasElement, cb?: (e: Error) => void): IImg;
+        public load(pImage: HTMLImageElement, cb?: (e: Error) => void): IImg;
         public loadRawData(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         public loadDynamicImage(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): IImg;
         public convert(eFormat: EPixelFormats): boolean;
         public getRawSpan(): number;
         public getBPP(): number;
         public getPixelSize(): number;
+        public isHTMLImageContainer(): boolean;
+        public getHTMLImage(): HTMLImageElement;
         public getData(): Uint8Array;
         public hasFlag(eFlag: EImageFlags): boolean;
         public hasAlpha(): boolean;
@@ -12314,6 +12325,14 @@ declare module akra.pool.resources {
         public randomChannelNoise(iChannel: number, iMinRange: number, iMaxRange: number): void;
         static calculateSize(nMipMaps: number, nFaces: number, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats): number;
         static isInternalImageFormat(sExt: string): boolean;
+        static loadImageWithInternalFormatFromURL(sPath: string, sExt: string, cb: (e: Error, pImage: HTMLImageElement) => void): void;
+        static decodeImageWithInternalFormatSync(pImg: HTMLImageElement, sExt?: string): {
+            data: Uint8Array;
+            width: number;
+            height: number;
+            depth: number;
+            format: EPixelFormats;
+        };
         static decodeImageWithInternalFormatFromURL(sPath: string, sExt: string, cb: (e: Error, pData: Uint8Array, iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats) => void): void;
         static getMaxMipmaps(iWidth: number, iHeight: number, iDepth: number, eFormat: EPixelFormats): number;
     }
@@ -12361,7 +12380,7 @@ declare module akra.pool.resources {
         public create(iWidth: number, iHeight: number, iDepth: number, pPixels?: any[], eFlags?: ETextureFlags, nMipLevels?: number, nFaces?: number, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
         public create(iWidth: number, iHeight: number, iDepth: number, pPixels?: ArrayBufferView, eFlags?: ETextureFlags, nMipLevels?: number, nFaces?: number, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
         public loadResource(sFilename?: string): boolean;
-        public _onImageLoad(pImage: IImg): void;
+        private _imageLoadedHandler(pImage);
         public destroyResource(): boolean;
         public setFilter(eParam: ETextureParameters, eValue: ETextureFilters): boolean;
         public setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): boolean;
@@ -12372,10 +12391,9 @@ declare module akra.pool.resources {
         public _getFilterInternalTexture(eParam: ETextureParameters): ETextureFilters;
         public _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes;
         public loadRawData(pData: Uint8Array, iWidth: number, iHeight: number, iDepth?: number, eFormat?: EPixelFormats, nFaces?: number, nMipMaps?: number): boolean;
-        public loadImage(pImage: IImg): boolean;
-        public loadImages(pImages: string[]): boolean;
-        public loadImages(pImages: IImg[]): boolean;
-        private _loadImages(pImageList);
+        public loadImages(pImageList: string[]): boolean;
+        public loadImages(pImageList: IImg[]): boolean;
+        public loadImages(pImage: IImg): boolean;
         public convertToImage(pDestImage: IImg, bIncludeMipMaps: boolean): void;
         public copyToTexture(pTarget: ITexture): void;
         public createInternalTexture(cFillColor?: IColor): boolean;
@@ -14001,7 +14019,6 @@ declare module akra.webgl {
         public getHeight(): number;
         public getDepth(): number;
         public getFormat(): EPixelFormats;
-        constructor();
         public upload(pData: IPixelBox, pDestBox: IBox): void;
         public download(pData: IPixelBox): void;
         public _bindToFramebuffer(pAttachment: number, iZOffset: number): void;
@@ -14022,6 +14039,7 @@ declare module akra.webgl {
         public blit(pSource: IPixelBuffer): boolean;
         public blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): boolean;
         public unwrapFromCubeTexture(pCubeTex: ITexture): boolean;
+        public blitFromHTMLlImage(pImage: HTMLImageElement): boolean;
         public blitFromMemory(pSource: IPixelBox): boolean;
         public blitFromMemory(pSource: IPixelBox, pDestBox: IBox): boolean;
         public blitToMemory(pDest: IPixelBox): boolean;
