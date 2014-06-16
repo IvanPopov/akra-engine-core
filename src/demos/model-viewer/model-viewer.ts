@@ -304,6 +304,10 @@ module akra {
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
 		pRenderTarget.setAutoUpdated(false);
 
+		var pDepthTexture = pRmgr.createTexture(".mirror - depth");
+		pDepthTexture.create(512, 512, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+		pRenderTarget.attachDepthTexture(pDepthTexture);
+
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
 		var pEffect = (<render.ForwardViewport>pTexViewport.getInternalViewport()).getEffect();
 
@@ -338,7 +342,7 @@ module akra {
 		pOmniLight.getParams().diffuse.set(1.0, 1.0, 1.0);
 		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
-		pOmniLight.setShadowCaster(true);
+		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 		pOmniLightSphere = loadModel( modelsPath + "/Sphere.dae", 
 			(model) => {
