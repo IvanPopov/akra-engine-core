@@ -504,7 +504,7 @@ module akra.webgl {
 			if (this.isUserEventSupported(EUserEvents.DRAGSTART)
 				&& this._eUserEventDragBtn === EMouseButton.UNKNOWN) {
 				//only for viewport with drag events
-				if (pViewport.isUserEventSupported(EUserEvents.DRAGSTART)) {
+				if (!isNull(pViewport) && pViewport.isUserEventSupported(EUserEvents.DRAGSTART)) {
 					this._pUserEventDragTarget = pViewport;
 				}
 				else {

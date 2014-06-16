@@ -27,9 +27,9 @@
       <Archive>False</Archive>
       <UseInlining>False</UseInlining>
       <Data>
-        <ResourceFile Path="../seymourplane/seymourplane.dae" Name="SEYMOURPLANE.DAE"/>
+        <ResourceFile Path="../seymourplane/seymourplane.DAE" Name="SEYMOURPLANE.DAE"/>
         <Folder Path="../seymourplane/images" />
-        <!--<ResourceFile Path="../cube.dae" Name="CUBE.DAE"/>-->
+        <!--<ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>-->
       </Data>
     </Resource>
   </PropertyGroup>

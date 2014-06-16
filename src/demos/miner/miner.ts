@@ -276,7 +276,7 @@ module akra {
 			'ANIM_MINER_WORK_GUN',
 			'ANIM_MINER_WORK_HAMMER'
 		]).onChange((sName: string) => {
-			//pController.play.emit(sName);
+			pController.play.emit(sName);
 		});
 
 
@@ -286,8 +286,8 @@ module akra {
 		pModel.addController(pController);
 		pModel.scale(.5);
 
-		//pController.play.emit(0);
-		pController.stop();
+		pController.play.emit(0);
+		//pController.stop();
 
 		var pBB: IRect3d;
 		var pLibeCube = addons.lineCube(pScene);

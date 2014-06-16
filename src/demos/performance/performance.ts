@@ -1,6 +1,6 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
-/// <reference path="../../../built/Lib/base3dobjects.addon.d.ts" />
+/// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
 /// <reference path="../../../built/Lib/compatibility.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
@@ -21,7 +21,7 @@ module akra {
 	var pScene = pEngine.getScene();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera = null;
-	var pViewport: ILPPViewport = null;
+	var pViewport: IForwardViewport = null;
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 	function loadManyCubes(nCount: uint): void {

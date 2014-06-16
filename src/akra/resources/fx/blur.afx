@@ -28,6 +28,7 @@ VS_OUT vs_blur_shading1(float2 pos: POSITION){
 	
 	return Out;
 };
+
 VS_OUT vs_blur_shading2(float2 pos: POSITION){
 	VS_OUT Out;
 
@@ -39,6 +40,7 @@ VS_OUT vs_blur_shading2(float2 pos: POSITION){
 	
 	return Out;
 };
+
 VS_OUT vs_blur_shading3(float2 pos: POSITION){
 	VS_OUT Out;
 
@@ -85,7 +87,7 @@ float4 fs_blur_shading(VS_OUT IN) : COLOR {
 	return blur_result + baseImage*stepWeight;
 };
 
-technique blur : POST_EFFECT {
+technique blur: POST_EFFECT {
 	pass pass1{
 		VertexShader = compile vs_blur_shading1();
 		PixelShader = compile fs_blur_shading();
