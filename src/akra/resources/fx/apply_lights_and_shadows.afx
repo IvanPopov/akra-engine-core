@@ -332,9 +332,12 @@ float4 applyExponentialFogfs(): COLOR {// required fog variables
     return color;
 };
 
+foreign bool IS_ENABLE_ALPHA = true;
 technique applyAlpha {
     pass {
-        PixelShader = compile applyMaterialAlpha();
+        if(IS_ENABLE_ALPHA){
+            PixelShader = compile applyMaterialAlpha();
+        }
     }
 }
 

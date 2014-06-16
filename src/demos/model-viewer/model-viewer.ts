@@ -245,14 +245,13 @@ module akra {
 
 
 
-
 		var pPBSFolder = pGUI.addFolder("pbs");
 		
 	  (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 	   // if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-	    (<render.ForwardViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 	   // }
-	    (<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
+		(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 	  });
 
 		(<IForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);

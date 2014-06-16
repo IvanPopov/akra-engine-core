@@ -113,14 +113,14 @@ module akra {
 		createKeymap(pCamera);
 
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
-		var pDSViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 1);
+		//var pDSViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 1);
 		pViewport = new render.ForwardViewport(pCamera, 0., 0., 0.5, 1., 0.);
 
 		pCanvas.addViewport(pViewport);
-		pCanvas.addViewport(pDSViewport);
+		//pCanvas.addViewport(pDSViewport);
 
 		pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+		//pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			//var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
@@ -137,9 +137,9 @@ module akra {
 		pViewport.setBackgroundColor(color.GRAY);
 		//pViewport.setFXAA(false);
 
-		pDSViewport.setClearEveryFrame(true);
-		pDSViewport.setBackgroundColor(color.GRAY);
-		pDSViewport.setAntialiasing(true);
+		//pDSViewport.setClearEveryFrame(true);
+		//pDSViewport.setBackgroundColor(color.GRAY);
+		//pDSViewport.setAntialiasing(true);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -173,8 +173,8 @@ module akra {
 			pSprite.attachToParent(pLightOmni);
 
 			var pMaterial: IMaterial = pSprite.getRenderable().getMaterial();
-			pMaterial.transparency = 0.99;
-			pMaterial.diffuse.a = 0.;
+			pMaterial.transparency = 1.;
+			pMaterial.diffuse.a = 1.;
 			pMaterial.specular.a = 0.;
 			pMaterial.ambient.a = 0.;
 			pMaterial.emissive.a = 0.;
@@ -198,7 +198,7 @@ module akra {
 				});
 			})(pSprite, pLightOmni);
 
-			//animateLight(pLightOmni, pSprite);
+			animateLight(pLightOmni, pSprite);
 			//animateLight(pLightOmni, null);
 		}
 

@@ -317,6 +317,9 @@ module akra.fx.instructions {
 			if (!isNull(this._pOwnUsedForeignVariableMap)) {
 				for (var i in this._pOwnUsedForeignVariableMap) {
 					this._pFullForeignVariableMap[i] = this._pOwnUsedForeignVariableMap[i];
+					if (this._pOwnUsedForeignVariableMap[i]._hasConstantInitializer()) {
+						this._pOwnUsedForeignVariableMap[i]._prepareDefaultValue();
+					}
 				}
 			}
 		}

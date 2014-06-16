@@ -130,7 +130,7 @@ void SkyFromGround_PS( vertexOutput In)
 	//Out.color.rgba =0;
 	//Out.color.rgba = In.t0.x;
 	pixelData.material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
-	//pixelData.material.emissive = S00;
+	// pixelData.material.emissive = float4(1., 0., 0., 1.);
 }
 
 float ComputeVolumetricFog( float3 cameraToWorldPos )
@@ -236,7 +236,7 @@ technique sky {
 		ZEnable = true;
 		ZWriteEnable = false;
 		ZFunc = LESS;
-		AlphaBlendEnable = false;
+		// AlphaBlendEnable = false;
     
     	VertexShader = compile SkyFromGround_VS( );
     	PixelShader = compile SkyFromGround_PS( );
