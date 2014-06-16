@@ -20,6 +20,8 @@ module akra {
 		premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
+		depth: true,
+		antialias: true,
 		//for black background & and avoiding composing with other html
 	};
 
@@ -53,7 +55,7 @@ module akra {
 
 		window["camera"] = pCamera;
 
-		pViewport = new render.LPPViewport(pCamera);
+		pViewport = new render.ForwardViewport(pCamera);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);

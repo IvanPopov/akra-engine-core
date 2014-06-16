@@ -648,6 +648,7 @@ module akra.render {
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
 						pTechnique.addComponent("akra.system.apply_lpp_shading");
+						pTechnique.addComponent("akra.system.pbsSkyboxLighting");
 						pTechnique.addComponent("akra.system.pbsReflection");
 					}
 				}
