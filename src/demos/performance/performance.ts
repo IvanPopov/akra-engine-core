@@ -21,7 +21,7 @@ module akra {
 	var pScene = pEngine.getScene();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera = null;
-	var pViewport: ILPPViewport = null;
+	var pViewport: IForwardViewport = null;
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 	function loadManyCubes(nCount: uint): void {

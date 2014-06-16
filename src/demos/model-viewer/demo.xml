@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Demo Name="PBS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Demo Name="Model-viewer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
-  <Description>Physically based shading demo.</Description>
+  <Description>Model viewer demo.</Description>
   <ItemGroup>
     <TypeScriptCompile Include="model-viewer.ts"/>
   </ItemGroup>
