@@ -8,6 +8,7 @@
   <PropertyGroup>
     <TypeScriptOutFile>../../../$(BuiltDir)/demos/model-viewer/model-viewer.js</TypeScriptOutFile>
     <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <!--<Variable Name="AE_MODELS">data/models/</Variable>-->
     <Dependencies>
       <Attachment>
         <File Path="dat.gui/dat.gui.min.js"/>
@@ -18,7 +19,8 @@
       </Attachment>
 
       <Attachment Name="AE_MODELS">
-        <File Path="data/models/"/>
+        <Folder Path="data/models/"/>
+        <Format>Enclosure</Format>
       </Attachment>
       
       <Module Name="addon-compatibility" />

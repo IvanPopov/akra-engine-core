@@ -11,6 +11,7 @@
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
     <TypeScriptDeclarationDir>../../$(BuiltDir)/../Lib</TypeScriptDeclarationDir>
     <Variable Name="AE_DEBUG">'$(Configuration)' == 'Debug'</Variable>
+    
     <Variable Name="AE_VERSION">'$(Version.full)'</Variable>
     <Variable Name="AE_WEBGL_DEBUG">$(WebGLDebug)</Variable>
     <Dependencies>

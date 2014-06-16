@@ -15,7 +15,7 @@ module akra {
 	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
-	var modelsPath = AE_MODELS.content;
+	export var modelsPath = path.parse(( AE_MODELS.content ).split(';')[0]).getDirName() + '/';
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
@@ -328,7 +328,7 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel(modelsPath + "/Sphere.dae",
+		pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
 			(model) => {
 				model.explore(function (node) {
 					if (scene.SceneModel.isModel(node)) {
@@ -349,7 +349,7 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel(modelsPath + "/Sphere.dae",
+		pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
 			(model) => {
 				model.explore(function (node) {
 					if (scene.SceneModel.isModel(node)) {
@@ -508,7 +508,7 @@ module akra {
 		});
 
 		var pModelsKeys = [
-			'mercedes',
+			//'mercedes',
 			'miner',
 			'character',
 			'head',
@@ -523,10 +523,10 @@ module akra {
 			// 'barrel',
 		];
 		var pModelsFiles = {
-			mercedes: {
-				path: modelsPath + "/../../../mercedes/models/mercedes.DAE",
-				init: () => { }
-			},
+			//mercedes: {
+			//	path: modelsPath + "/../../../mercedes/models/mercedes.DAE",
+			//	init: () => { }
+			//},
 			miner: {
 				path: modelsPath + "/miner/miner.DAE",
 				init: function (model) { },
@@ -552,7 +552,7 @@ module akra {
 				init: function (model) { },
 			},
 			sphere: {
-				path: modelsPath + "/Sphere.dae",
+				path: modelsPath + "/Sphere.DAE",
 				init: function (model) { },
 			},
 			rock: {
