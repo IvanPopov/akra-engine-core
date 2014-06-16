@@ -14,7 +14,8 @@ module akra {
 		progress: pProgress.getListener(),
 		renderer: {
 			depth: true,
-			alpha: false
+			alpha: false,
+			antialias: true
 		}
 	});
 

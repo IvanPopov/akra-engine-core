@@ -204,7 +204,7 @@ module akra {
 
 
 		var pGrid = pRmgr.createTexture("GRID");
-		pGrid.loadImage(pRmgr.getImagePool().findResource("GRID_JPG"));
+		pGrid.loadImages(pRmgr.getImagePool().findResource("GRID_JPG"));
 		pGrid.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
 		pGrid.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
 		pGrid.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
