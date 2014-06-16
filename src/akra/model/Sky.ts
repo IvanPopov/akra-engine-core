@@ -513,8 +513,8 @@ module akra.model {
 			pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 			pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
 			pMatrial.emissive = new Color(0., 0., 0., 1.);
-			pMatrial.shininess = 30.;
-
+			pMatrial.shininess = 0.25;
+			
 			if ((<core.Engine>this.getEngine()).isLoaded()) {
 				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.sky");
 			}
@@ -565,7 +565,7 @@ module akra.model {
 			pPass.setUniform("vInvWavelength", this._v3fInvWavelength4);
 			pPass.setUniform("vEye", this._v3fEye);
 			pPass.setUniform("fOuterRadius", this._fOuterRadius);
-
+			pPass.setForeign("IS_ENABLE_ALPHA", false);
 			pPass.setTexture("tSkyBuffer", this.getRead());
 		}
 

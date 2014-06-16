@@ -407,7 +407,7 @@ module akra.render {
 				pPass.setForeign("IS_USED_PBS_REFLECTIONS", false);
 			}
 
-			pPass.setForeign("IS_FOG_ENABLED", this._isFogEnabled)
+			pPass.setForeign("IS_FOG_ENABLED", this._isFogEnabled);
 		}
 
 		private prepareForForwardShading(): void {

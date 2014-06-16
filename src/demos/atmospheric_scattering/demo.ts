@@ -18,6 +18,7 @@ module akra {
 		preserveDrawingBuffer: true,
 		//for black background & and avoiding composing with other html
 		alpha: true,
+		depth: true
 	};
 
 	var pDeps: IDependens = {
@@ -78,7 +79,7 @@ module akra {
 	}
 
 	function createViewports(): void {
-		pViewport = pCanvas.addViewport(new render.LPPViewport(pCamera));
+		pViewport = pCanvas.addViewport(new render.ForwardViewport(pCamera));
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
