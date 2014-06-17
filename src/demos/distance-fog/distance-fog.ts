@@ -336,8 +336,10 @@ module akra {
 
 		/////////////////// LIGHT SOURCES MARKS
 		// Four constant points of light in front of objects
+		var pSphere = pEngine.getResourceManager().getColladaPool().loadResource("SPHERE.DAE");
+		var pCube = pEngine.getResourceManager().getColladaPool().loadResource("CUBE.DAE");
 		for(var i=0; i<omniLightConst; i++) {
-			var pModelRoot: ISceneModel = addons.cube(pScene);
+			var pModelRoot: ISceneModel = pCube.extractModel(pScene);//addons.cube(pScene);
 
 			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
 			pMat.shininess=0.;
@@ -355,7 +357,7 @@ module akra {
 		// Moving lights in round
 		var pCubeRoundList: ISceneModel[] = new Array(omniLightRound);
 		for(var i=0; i<omniLightRound; i++) {
-			pCubeRoundList[i] = addons.cube(pScene);
+			pCubeRoundList[i] = pCube.extractModel(pScene);
 
 			var pMat: IMaterial = pCubeRoundList[i].getMesh().getSubset(0).getMaterial();
 			pMat.shininess=0.;
@@ -377,7 +379,7 @@ module akra {
 		// Moving lights in spiral
 		var pCubeSpiralList: ISceneModel[] = new Array(totalLightSources);
 		for(var i=0; i<totalLightSources; i++) {
-			pCubeSpiralList[i] = addons.cube(pScene);
+			pCubeSpiralList[i] = pCube.extractModel(pScene);
 
 			var pMat: IMaterial = pCubeSpiralList[i].getMesh().getSubset(0).getMaterial();
 			pMat.shininess=0.;
@@ -426,7 +428,7 @@ module akra {
 		var silverColorSpecular: color.Color = new Color(0.95, 0.93, 0.88, 1.0);
 		var silverColorDiffuse: color.Color = new Color(0.98, 0.97, 0.95, 1.0);
 		for(var i=0; i<totalCubes; i++) {
-			var pModelRoot: ISceneModel = addons.cube(pScene);
+			var pModelRoot: ISceneModel = pCube.extractModel(pScene);
 
 			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
 			pMat.shininess=calcShi(i, totalCubes);
@@ -444,7 +446,7 @@ module akra {
 		var plasticColorSpecular: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
 		var plasticColorDiffuse: color.Color = new Color(0.21, 0.21, 0.21, 1.0);
 		for(var i=0; i<totalCubes; i++) {
-			var pModelRoot: ISceneModel = addons.cube(pScene);
+			var pModelRoot: ISceneModel = pCube.extractModel(pScene);
 
 			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
 			pMat.shininess=calcShi(i, totalCubes);
