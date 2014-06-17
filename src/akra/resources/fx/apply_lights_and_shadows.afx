@@ -39,10 +39,18 @@ LightOmniRestricted points_omni_restricted[NUM_OMNI_RESTRICTED];
 shared float4 result_color = float4(0.);
 shared PixelData pixelData;
 
+bool useEmissiveAlpha: USE_EMISSIVE_ALPHA = false;
+
 float4 applyMaterialAlpha() : COLOR {
     float4 color = resultAFXColor;
     //color.a = (pixelData.material.emissive.a + pixelData.material.diffuse.a + pixelData.material.specular.a + pixelData.material.ambient.a) * pixelData.material.transparency;
     //color.a = (pixelData.material.diffuse.a) * pixelData.material.transparency;
+    float materialAlpha = pixelData.material.diffuse.a;
+    
+    if(useEmissiveAlpha){
+        materialAlpha += pixelData.material.emissive.a;
+    }
+
     float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
 
     // Simple model:
@@ -52,7 +60,7 @@ float4 applyMaterialAlpha() : COLOR {
     // Fresnel eq solve: (Remember that this transparency is in fact opacity)
     NoV = NoV * NoV;    // looks better
     NoV = NoV * NoV;    // NoV = NoV^4
-    color.a = (1. - transFresnelApprox(NoV) * ( 1. - pixelData.material.transparency)) * pixelData.material.diffuse.a;
+    color.a = (1. - transFresnelApprox(NoV) * ( 1. - pixelData.material.transparency)) * materialAlpha;
     //color.a = NoV;
 
     //color.g = color.a;

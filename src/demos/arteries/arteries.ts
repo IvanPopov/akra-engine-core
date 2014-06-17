@@ -17,6 +17,8 @@ module akra {
 	var pProgress = new addons.Progress(document.getElementById("progress"))
 
 	var pRenderOpts: IRendererOptions = {
+		depth: true,
+		antialias: true,
 		premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,

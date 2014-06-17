@@ -112,14 +112,14 @@ module akra {
 		createKeymap(pCamera);
 
 		//pViewport = new render.DSViewport(pCamera, 0.5, 0., 0.5, 1., 0.);
-		//var pDSViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 1);
+		var pDSViewport = new render.DSViewport(pCamera, 0.5, 0, 0.5, 1., 1);
 		pViewport = new render.ForwardViewport(pCamera, 0., 0., 0.5, 1., 0.);
 
 		pCanvas.addViewport(pViewport);
-		//pCanvas.addViewport(pDSViewport);
+		pCanvas.addViewport(pDSViewport);
 
 		pViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
-		//pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
+		pDSViewport.setSkybox(<ITexture>pRmgr.getTexturePool().loadResource("SKYBOX"));
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			//var pCube = pRmgr.getColladaPool().findResource("CUBE.DAE");
@@ -136,9 +136,9 @@ module akra {
 		pViewport.setBackgroundColor(color.GRAY);
 		//pViewport.setFXAA(false);
 
-		//pDSViewport.setClearEveryFrame(true);
-		//pDSViewport.setBackgroundColor(color.GRAY);
-		//pDSViewport.setAntialiasing(true);
+		pDSViewport.setClearEveryFrame(true);
+		pDSViewport.setBackgroundColor(color.GRAY);
+		pDSViewport.setAntialiasing(true);
 
 		//pCanvas.addViewport(new render.TextureViewport(pViewport["_pLightBufferTextures"][0], 0.01, 0.01, 0.15, 0.15, 1));
 
@@ -172,8 +172,8 @@ module akra {
 			pSprite.attachToParent(pLightOmni);
 
 			var pMaterial: IMaterial = pSprite.getRenderable().getMaterial();
-			pMaterial.transparency = 1.;
-			pMaterial.diffuse.a = 1.;
+			pMaterial.transparency = 0.99;
+			pMaterial.diffuse.a = 0.;
 			pMaterial.specular.a = 0.;
 			pMaterial.ambient.a = 0.;
 			pMaterial.emissive.a = 0.;
@@ -369,36 +369,6 @@ module akra {
 		pGUI.add({ usePBS: true }, 'usePBS').onChange(function (bValue: boolean) {
 			pViewport.setShadingModel(bValue ? EShadingModel.PBS_SIMPLE : EShadingModel.BLINNPHONG);
 		});
-
-		//var pCubeCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CUBE.DAE");
-		//var pCubeModel = pCubeCollada.extractModel();
-
-		//pCubeModel.attachToParent(pScene.getRootNode());
-		//pCubeModel.setPosition(0., 2., -2.).scale(50.);
-		//pCubeModel.addRotationByXYZAxis(0., Math.PI, 0.);
-		//pCubeModel.getRenderable().getMaterial().diffuse.a = 0.0;
-		//pCubeModel.getRenderable().getMaterial().diffuse.r = 0.0;
-		//pCubeModel.getRenderable().getMaterial().emissive.a = 0.0;
-		//pCubeModel.getRenderable().getMaterial().specular.a = 0.0;
-		//pCubeModel.getRenderable().getMaterial().ambient.a = 0.;
-		//pCubeModel.getRenderable().getMaterial().transparency = 0;
-
-		//window["cubeMaterial"] = pCubeModel.getRenderable().getMaterial();
-		//pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
-		//	if (pRenderable === pCubeModel.getRenderable()) {
-		//		pTechnique.getPass(iPass).setUniform("bSetAlpha", true);
-		//	}
-		//});
-
-
-		//var pCarCollada: ICollada = <ICollada>pRmgr.getColladaPool().findResource("CAR");
-		//var pCarModel = pCarCollada.extractModel();
-
-		//pCarModel.attachToParent(pScene.getRootNode());
-		//var pGlass: ITexture = pRmgr.createTexture("GLASS");
-		//pGlass.loadImage(<IImg>pRmgr.getImagePool().findResource("GLASS"));
-		//pCubeModel.getRenderable().getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.DIFFUSE, pGlass);
-
 
 		pProgress.destroy();
 	}

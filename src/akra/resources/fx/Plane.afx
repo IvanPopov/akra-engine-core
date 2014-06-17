@@ -5,6 +5,7 @@ include "common.afx";
 struct VS_OUT {
     float3 tex : TEXCOORD0;
     float4 pos : POSITION;
+    float3 vert: VERTEX;
 };
 
 float4x4 model_mat:MODEL_MATRIX;
@@ -18,6 +19,7 @@ VS_OUT vs_plain(float3 pos:POSITION){
     float4 pos_temp = model_mat * float4(pos, 1.);
     Out.tex = pos_temp.xyz;
     Out.pos = proj_mat * view_mat * pos_temp;
+    Out.vert = (view_mat * pos_temp).xyz;
     return Out;
 }
 

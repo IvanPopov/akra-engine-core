@@ -19,7 +19,7 @@ module akra.scene {
 
 		_allocateSprite(pSprite: ISprite): IRenderData {
 			var pDataSubset: IRenderData = 
-				this._pDataFactory.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP, 0);
+				this._pDataFactory.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP, ERenderDataBufferOptions.RD_SINGLE_INDEX);
 
 			this._pSprites.push(pSprite);
 
@@ -58,6 +58,9 @@ module akra.scene {
 			pEffect.addComponent("akra.system.mesh_texture");
 
 			pRenderable.getTechnique().setMethod(pRenderMethod);
+			pRenderable.getTechnique().render.connect((pTech: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => {
+				pTech.getPass(iPass).setUniform("USE_EMISSIVE_ALPHA", true);
+			});
 
 			this._pManager = pManager;
 			this._pRenderable = pRenderable;
@@ -67,10 +70,8 @@ module akra.scene {
 
 		create(fSizeX: float = 2, fSizeY: float = 2): boolean {
 			super.create();
-			//4 vertex * (4 coords + 3 texcoords)
-			var pGeometry = new Float32Array(4 * 4);
-			var pTexCoords = new Float32Array(4 * 3);
-			var pNormals = new Float32Array([0., 0., 1., 0.]);
+			//3 vertex  + 3 normals + 2 texcoords
+			var pGeometryData = new Float32Array(4 * 8);
 
 			for (var i = 0; i < 4; i ++) {
 				//-1, -1, -1, 1, 1, -1, 1, 1
@@ -78,14 +79,16 @@ module akra.scene {
 				var signX: int = math.floor(i / 2) * 2 - 1;
 				var signY: int = (i % 2) * 2 - 1;
 
-				pGeometry[4 * i    ] = signX * fSizeX / 2;
-				pGeometry[4 * i + 1] = signY * fSizeY / 2;
-				pGeometry[4 * i + 2] = 0;
-				pGeometry[4 * i + 3] = 0;
+				pGeometryData[8 * i    ] = signX * fSizeX / 2;
+				pGeometryData[8 * i + 1] = signY * fSizeY / 2;
+				pGeometryData[8 * i + 2] = 0;
 
-				pTexCoords[3 * i + 0] = (signX + 1) / 2;
-				pTexCoords[3 * i + 1] = (signY + 1) / 2;
-				pTexCoords[3 * i + 2] = 0;
+				pGeometryData[8 * i + 3] = (signX + 1) / 2;
+				pGeometryData[8 * i + 4] = (signY + 1) / 2;
+
+				pGeometryData[8 * i + 5] = 0;
+				pGeometryData[8 * i + 6] = 0;
+				pGeometryData[8 * i + 7] = 1;
 			}
 
 			var fMaxSize = (fSizeX > fSizeY) ? fSizeX : fSizeY;
@@ -94,15 +97,7 @@ module akra.scene {
 			
 			var pData: IRenderData = this.getSpriteManager()._allocateSprite(this);
 			
-			pData.allocateData([VE.float4("POSITION")], pGeometry);
-			pData.allocateData([VE.float3("TEXCOORD0")], pTexCoords);
-			pData.allocateData([VE.float4("NORMAL")], pNormals);
-			pData.allocateIndex([VE.float('INDEX0')], new Float32Array([0,1,2,3]));
-			pData.allocateIndex([VE.float('INDEX1')], new Float32Array([0,1,2,3]));
-			pData.allocateIndex([VE.float('INDEX2')], new Float32Array([0,0,0,0]));
-			pData.index('POSITION', 'INDEX0');
-			pData.index('TEXCOORD0', 'INDEX1');
-			pData.index('NORMAL', 'INDEX2');
+			pData.allocateData(data.VertexDeclaration.normalize([VE.float3('POSITION'), VE.float2('TEXCOORD0'), VE.float3('NORMAL')]), pGeometryData);
 
 			this._pRenderable._setRenderData(pData);
 			
