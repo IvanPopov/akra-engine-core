@@ -358,7 +358,9 @@ module akra.fx {
 					var pApplyValue: any = pValue || pUniformInfo.defaultValue;
 
 					if (pUniformInfo.lastValue !== pApplyValue ||
-						(pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D || pUniformInfo.type === EAFXShaderVariableType.k_SamplerCUBE)) {
+						pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D ||
+						pUniformInfo.type === EAFXShaderVariableType.k_SamplerCUBE ||
+						pUniformInfo.type === EAFXShaderVariableType.k_SamplerVertexTexture) {
 
 						pUniformInfo.applyFunction.call(this._pShaderProgram, pUniformInfo.webGLLocation, pApplyValue);
 						pUniformInfo.lastValue = pApplyValue;

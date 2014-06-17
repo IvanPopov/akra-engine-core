@@ -257,6 +257,11 @@ module akra.render {
 							v4fMidPoint.set(v3fMidPoint, 1.);
 							pSceneObject.getWorldMatrix().multiplyVec4(v4fMidPoint);
 						}
+						else if (pSceneObject.getType() === EEntityTypes.SPRITE) {
+							pSceneObject.getLocalBounds().midPoint(v3fMidPoint);
+							v4fMidPoint.set(v3fMidPoint, 1.);
+							pSceneObject.getWorldMatrix().multiplyVec4(v4fMidPoint);
+						}
 						else {
 							v4fMidPoint.set(pSceneObject.getWorldPosition(), 1.);
 						}
