@@ -405,7 +405,9 @@
     <Content Include="demos\arteries\data\coords\coord4.txt" />
     <Content Include="demos\arteries\data\coords\coord_real_ag.txt" />
     <Content Include="demos\arteries\demo.xml" />
-    <Content Include="demos\cube.dae" />
+    <Content Include="demos\cube.dae">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\arteries\data\AG\all.map" />
     <Content Include="demos\arteries\data\fx\arteries.afx" />
     <Content Include="demos\arteries\data\fx\arteries2.afx" />
@@ -615,7 +617,9 @@
     <Content Include="demos\model-viewer\data\models\oil\oil.DAE" />
     <Content Include="demos\model-viewer\data\models\rock\rock-1-low-p.DAE" />
     <Content Include="demos\model-viewer\data\models\room-with-room.DAE" />
-    <Content Include="demos\model-viewer\data\models\Sphere.dae" />
+    <Content Include="demos\model-viewer\data\models\Sphere.dae">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\model-viewer\data\models\teapot.dae" />
     <Content Include="demos\model-viewer\data\models\torusknot.DAE" />
     <Content Include="demos\model-viewer\data\models\windspot\WINDSPOT.DAE" />
@@ -641,10 +645,8 @@
     <Content Include="demos\distance-fog\data\models\Donut.dae" />
     <Content Include="demos\distance-fog\data\models\oil\oil.DAE" />
     <Content Include="demos\distance-fog\data\models\rock\rock-1-low-p.DAE" />
-    <Content Include="demos\distance-fog\data\models\room-with-room.DAE" />
     <Content Include="demos\distance-fog\data\models\Sphere.dae" />
     <Content Include="demos\distance-fog\data\models\teapot.dae" />
-    <Content Include="demos\distance-fog\data\models\torusknot.DAE" />
     <Content Include="demos\distance-fog\data\models\WoodSoldier\WoodSoldier.DAE" />
     <Content Include="demos\mercedes\models\mercedes.DAE" />
     <Content Include="demos\cubeWithTexture.dae" />

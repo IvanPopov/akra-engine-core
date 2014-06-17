@@ -2428,8 +2428,9 @@ module akra.pool.resources {
 
 				for (var j: int = 0; j < pMesh.getLength(); ++j) {
 					var pSubMesh: IMeshSubset = pMesh.getSubset(j);
+					var sExpectedMaterial: string = pGeometryInstance.geometry.mesh.polygons[j].material;
 
-					if (pSubMesh.getMaterial().name === sMaterial) {
+					if (/*pSubMesh.getMaterial().name*/sExpectedMaterial === sMaterial) {
 						//setup materials
 						//pSubMesh.getMaterial().set(pMaterial);
 						pSubMesh.getSurfaceMaterial().setMaterial(pMaterial);
@@ -2529,8 +2530,6 @@ module akra.pool.resources {
 					pMesh.clone(EMeshCloneOptions.GEOMETRY_ONLY | EMeshCloneOptions.SHARED_GEOMETRY),
 					pGeometryInstance);
 			}
-
-			var iBegin: int = Date.now();
 
 			pMesh = this.getEngine().createMesh(
 				sMeshName,
