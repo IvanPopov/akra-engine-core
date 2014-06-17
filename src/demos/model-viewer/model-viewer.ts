@@ -197,9 +197,9 @@ module akra {
 			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
 			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
 
-			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
-			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+			//pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
+			//pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			//pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 		};
 
 		var pMaterialPresets = {
