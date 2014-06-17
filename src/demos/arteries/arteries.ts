@@ -17,6 +17,8 @@ module akra {
 	var pProgress = new addons.Progress(document.getElementById("progress"))
 
 	var pRenderOpts: IRendererOptions = {
+		depth: true,
+		antialias: true,
 		premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
@@ -53,7 +55,7 @@ module akra {
 
 		window["camera"] = pCamera;
 
-		pViewport = new render.LPPViewport(pCamera);
+		pViewport = new render.ForwardViewport(pCamera);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
