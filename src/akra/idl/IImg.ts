@@ -49,7 +49,8 @@ module akra {
 		set(pSrc: IImg): IImg;
 	
 		load(sFileName: string,  fnCallBack?: Function): IImg;
-		load(pData: Uint8Array, sType?: string,  fnCallBack?: Function): IImg;
+		load(pData: Uint8Array, sType?: string, fnCallBack?: Function): IImg;
+		load(pImage: HTMLImageElement, cb?: (e: Error) => void): IImg;
 		load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 	
 	
@@ -68,12 +69,14 @@ module akra {
 		getPixelSize(): uint;
 		getBPP(): uint;
 		getData(): Uint8Array;
+		getHTMLImage(): HTMLImageElement;
 	
 		hasFlag(eFlag: EImageFlags): boolean;
 	
 		hasAlpha(): boolean;
 		isCompressed(): boolean;
 		isLuminance(): boolean;
+		isHTMLImageContainer(): boolean;
 	
 		freeMemory();
 	

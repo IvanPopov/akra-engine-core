@@ -445,6 +445,7 @@ module akra.render {
 						pTechnique.addComponent("akra.system.projectShadowsLighting");
 						pTechnique.addComponent("akra.system.sunLighting");
 						pTechnique.addComponent("akra.system.sunShadowsLighting");
+						pTechnique.addComponent("akra.system.pbsSkyboxLighting");
 						pTechnique.addComponent("akra.system.pbsReflection");
 						//pTechnique.addComponent("akra.system.forceSetAlpha");
 						pTechnique.addComponent("akra.system.applyAlpha");

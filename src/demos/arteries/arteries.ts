@@ -22,6 +22,8 @@ module akra {
 		premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
+		depth: true,
+		antialias: true,
 		//for black background & and avoiding composing with other html
 	};
 

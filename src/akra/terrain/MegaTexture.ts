@@ -449,7 +449,7 @@ module akra.terrain {
 
 		setMinLevelTexture(pImg: IImg): void {
 			this._pTextures[0].destroyResource();
-			this._pTextures[0].loadImage(pImg);
+			this._pTextures[0].loadImages(pImg);
 			this._pXY[0].isLoaded = true;
 
 			this.minLevelLoaded.emit();
@@ -547,7 +547,7 @@ module akra.terrain {
 					
 					pTempImg.load(pData, sExt, function(isLoaded){
 						me._pTextures[0].destroyResource();
-						me._pTextures[0].loadImage(pTempImg);
+						me._pTextures[0].loadImages(pTempImg);
 						me._pXY[0].isLoaded = true;
 						pTempImg.destroyResource();
 

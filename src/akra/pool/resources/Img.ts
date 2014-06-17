@@ -27,8 +27,11 @@ module akra.pool.resources {
 
 		protected _pBuffer: Uint8Array = null;
 
+		//Internal image
+		protected _pHTMLImage: HTMLImageElement = null;
+
 		getByteLength(): uint {
-			return this._pBuffer.buffer.byteLength;
+			return this.getData().buffer.byteLength;
 		}
 
 		getWidth(): uint {
@@ -152,6 +155,7 @@ module akra.pool.resources {
 			this._iHeight = 0;
 			this._iDepth = 0;
 			this._pBuffer = null;
+			this._pHTMLImage = null;
 		}
 
 		set(pSrc: IImg): IImg {
@@ -166,47 +170,39 @@ module akra.pool.resources {
 
 			this._nMipMaps = pSrc.getNumMipMaps();
 
+			//TODO: copy only HTMLImage if can.
+
+			this._pHTMLImage = null;
 			this._pBuffer = new Uint8Array(pSrc.getData());
 
 			return this;
 		}
 
 		private loadImageWithInternalFormatFromURL(sPath: string, sExt: string, cb?: (e: Error) => void): void {
-			Img.decodeImageWithInternalFormatFromURL(sPath, sExt,
-				(e, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => {
+			Img.loadImageWithInternalFormatFromURL(sPath, sExt,
+				(e, pImg: HTMLImageElement) => {
 					if (e) {
 						cb && cb(new Error("Could not decode image with internal format."));
 						return;
 					}
 
-					this.loadDynamicImage(pData, iWidth, iHeight, 1, eFormat);
+					this.load(pImg);
 
 					cb && cb(null);
 				})
 		}
 
-		//private loadCubemap(sPath: string, cb?: (e: Error) => void): void {
-		//	io.fopen(sPath, EIO.JSON | EIO.IN).read((e: Error, pCubemap: ICubemap) => {
-		//		var pSides: Uint8Array[] = new Array<Uint8Array>(6);
-
-		//		Object.keys(pCubemap).forEach((sSidename: string) => {
-		//			var pSide: IImg = this.getManager().loadImage(uri.resolve(pCubemap[sSidename], sPath));
-
-		//			pSide.loaded.connect((pSide: IImg) => {
-
-		//			});
-		//		});
-		//	});
-		//}
 
 		load(sFileName: string, cb?: (e: Error) => void): IImg;
 		load(pData: Uint8Array, sType?: string, cb?: (e: Error) => void): IImg;
 		load(pCanvas: HTMLCanvasElement, cb?: (e: Error) => void): IImg;
+		load(pImage: HTMLImageElement, cb?: (e: Error) => void): IImg;
 		load(): IImg {
 			var cb: (e: Error) => void = null;
 			var sFilename: string;
 			var sExt: string;
 			var pCanvas: HTMLCanvasElement;
+			var pImage: HTMLImageElement;
 			var pData: Uint8Array;
 
 			//load from HTMLCanvasElement
@@ -232,6 +228,22 @@ module akra.pool.resources {
 					cb(null);
 				}
 
+				return this;
+			}
+			else if (arguments[0] instanceof HTMLImageElement) {
+				//TODO: handle images
+				this._pHTMLImage = arguments[0];
+				this._pBuffer = null;
+
+				this._iWidth = this._pHTMLImage.width;
+				this._iHeight = this._pHTMLImage.height;
+				this._iDepth = 1;
+				this._nMipMaps = 0;
+				this._iFlags = 0;
+				this._iCubeFlags = 0;
+				this._eFormat = EPixelFormats.BYTE_RGBA;
+
+				this.notifyLoaded();
 				return this;
 			}
 			//load from URL
@@ -303,6 +315,7 @@ module akra.pool.resources {
 
 			var pImgData: IImgData = new ImgData();
 
+			this._pHTMLImage = null;
 			this._pBuffer = pCodec.decode(pData, pImgData);
 
 			this._iWidth = pImgData.getWidth();
@@ -365,6 +378,7 @@ module akra.pool.resources {
 				logger.critical("Number of faces currently must be 6 or 1.\n" + "Img.loadDynamicImage");
 			}
 
+			this._pHTMLImage = null;
 			this._pBuffer = pData;
 			this.notifyLoaded();
 			return this;
@@ -387,9 +401,20 @@ module akra.pool.resources {
 			return pixelUtil.getNumElemBytes(this._eFormat);
 		}
 
+		isHTMLImageContainer(): boolean {
+			return !isNull(this._pHTMLImage);
+		}
 
+		getHTMLImage(): HTMLImageElement {
+			return this._pHTMLImage;
+		}
 
 		getData(): Uint8Array {
+			if (this.isHTMLImageContainer() && isNull(this._pBuffer)) {
+				//TODO: decode HTML Image.
+				this._pBuffer = Img.decodeImageWithInternalFormatSync(this._pHTMLImage).data;
+			}
+
 			return this._pBuffer;
 		}
 
@@ -418,13 +443,13 @@ module akra.pool.resources {
 
 		getColorAt(pColor: IColor, x: uint, y: uint, z: uint= 0): IColor {
 			var iStart: uint = this.getPixelSize() * (z * this._iWidth * this._iHeight + this._iWidth * y + x);
-			pixelUtil.unpackColour(pColor, this._eFormat, this._pBuffer.subarray(iStart, iStart + this.getPixelSize()));
+			pixelUtil.unpackColour(pColor, this._eFormat, this.getData().subarray(iStart, iStart + this.getPixelSize()));
 			return pColor;
 		}
 
 		setColorAt(pColor: IColor, x: uint, y: uint, z: uint= 0): void {
 			var iStart: uint = this.getPixelSize() * (z * this._iWidth * this._iHeight + this._iWidth * y + x);
-			pixelUtil.packColour(pColor, this._eFormat, this._pBuffer.subarray(iStart, iStart + this.getPixelSize()));
+			pixelUtil.packColour(pColor, this._eFormat, this.getData().subarray(iStart, iStart + this.getPixelSize()));
 		}
 
 		getPixels(iFace?: uint, iMipMap?: uint): IPixelBox {
@@ -532,29 +557,42 @@ module akra.pool.resources {
 			return false;
 		}
 
-		static decodeImageWithInternalFormatFromURL(sPath: string, sExt: string, cb: (e: Error, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => void) {
-
+		static loadImageWithInternalFormatFromURL(sPath: string, sExt: string,
+			cb: (e: Error, pImage: HTMLImageElement) => void): void {
 			var pImg: HTMLImageElement = new Image();
 
-			if (isDefAndNotNull(sExt)) {
-				sExt = sExt.toUpperCase();
-			}
-
 			pImg.onload = () => {
-				var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
-				pTempCanvas.width = pImg.width;
-				pTempCanvas.height = pImg.height;
+				cb(null, pImg);
+			};
 
-				var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
-				pTempContext.drawImage(pImg, 0, 0);
+			pImg.onerror = () => {
+				cb(new Error("HTML Image element loading error."), null);
+			};
 
-				var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
-				var pRGBAData: Uint8Array = new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength));
+			pImg.onabort = () => {
+				cb(new Error("HTML Image element loading aborted."), null);
+			};
 
-				var pData: Uint8Array = null;
-				var eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
-				var bNoAlpha: boolean = true;
+			pImg.src = sPath;
+		}
 
+		static decodeImageWithInternalFormatSync(pImg: HTMLImageElement, sExt?: string):
+			{ data: Uint8Array; width: uint; height: uint; depth: uint; format: EPixelFormats; } {
+			var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
+			pTempCanvas.width = pImg.width;
+			pTempCanvas.height = pImg.height;
+
+			var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
+			pTempContext.drawImage(pImg, 0, 0);
+
+			var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
+			var pRGBAData: Uint8Array = new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength));
+
+			var pData: Uint8Array = pRGBAData;
+			var eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA;
+			var bNoAlpha: boolean = true;
+
+			if (isString(sExt)) {
 				if (sExt === "PNG" || sExt === "GIF") {
 					for (var i = 0; i < pRGBAData.length; i += 4) {
 						if (pRGBAData[i + 3] !== 0xff) {
@@ -575,23 +613,34 @@ module akra.pool.resources {
 					pData = pRGBData;
 					eFormat = EPixelFormats.BYTE_RGB;
 				}
-				else {
-					pData = pRGBAData;
-					eFormat = EPixelFormats.BYTE_RGBA;
+			}
+
+			//cb(null, pData, pImg.width, pImg.height, 1, eFormat);
+			return {
+				data: pData,
+				width: pImg.width,
+				height: pImg.height,
+				depth: 1,
+				format: eFormat
+			};
+		}
+
+		static decodeImageWithInternalFormatFromURL(sPath: string, sExt: string,
+			cb: (e: Error, pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats) => void): void {
+
+			if (isDefAndNotNull(sExt)) {
+				sExt = sExt.toUpperCase();
+			}
+
+			Img.loadImageWithInternalFormatFromURL(sPath, sExt, (e: Error, pImg: HTMLImageElement) => {
+				if (e) {
+					return cb(new Error("HTML Image element loading error."), null, 0, 0, 0, EPixelFormats.UNKNOWN);
 				}
 
-				cb(null, pData, pImg.width, pImg.height, 1, eFormat);
-			};
+				var pResult = Img.decodeImageWithInternalFormatSync(pImg, sExt);
 
-			pImg.onerror = () => {
-				cb(new Error("HTML Image element loading error."), null, 0, 0, 0, EPixelFormats.UNKNOWN);
-			};
-
-			pImg.onabort = () => {
-				cb(new Error("HTML Image element loading aborted."), null, 0, 0, 0, EPixelFormats.UNKNOWN);
-			};
-
-			pImg.src = sPath;
+				cb(null, pResult.data, pResult.width, pResult.height, pResult.depth, pResult.format);
+			});
 		}
 
 		static getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats): int {
@@ -601,9 +650,11 @@ module akra.pool.resources {
 					if (iWidth > 1) {
 						iWidth = iWidth >>> 1;
 					}
+
 					if (iHeight > 1) {
 						iHeight = iHeight >>> 1;
 					}
+
 					if (iDepth > 1) {
 						iDepth = iDepth >>> 1;
 					}

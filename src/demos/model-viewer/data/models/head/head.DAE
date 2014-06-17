@@ -15,7 +15,7 @@
       <init_from>lambertian.png</init_from>
     </image>
     <image id="bump" name="bump">
-      <init_from>bump-lowRes.png</init_from>
+      <init_from>normal.png</init_from>
     </image>
   </library_images>
   <library_effects>
@@ -53,26 +53,21 @@
               <texture texture="lambertian_png-sampler" texcoord="UVMap"/>
             </diffuse>
             <specular>
-              <color sid="specular">0.05 0.05 0.05 1</color>
+              <color sid="specular">0.1 0.1 0.1 1</color>
             </specular>
             <shininess>
-              <float sid="shininess">2</float>
+              <float sid="shininess">.9</float>
             </shininess>
             <index_of_refraction>
               <float sid="index_of_refraction">1</float>
             </index_of_refraction>
           </phong>
           <extra>
-            <!-- <technique profile="OpenCOLLADA3dsMax">
+            <technique profile="OpenCOLLADA3dsMax">
               <bump bumptype="HEIGHTFIELD">
                 <texture texture="bump-sampler" texcoord="UVMap"/>
               </bump>
-            </technique> -->
-            <!-- <technique profile="FCOLLADA">
-              <bump>
-                <texture texture="bump-sampler" texcoord="UVMap"/>
-              </bump>
-            </technique> -->
+            </technique>
           </extra>
         </technique>
       </profile_COMMON>

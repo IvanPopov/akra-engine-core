@@ -3,8 +3,51 @@ html(lang="en")
   head
     title= "Index"
     meta(name='description', content="all demos")
+    meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
+
+    link(rel="stylesheet", href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css")
+
+    link(rel="stylesheet", href="http://talkslab.github.io/metro-bootstrap/css/metro-bootstrap.css")
+
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js")
+    script(src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js")
+
+    style.
+      .bs-examples {
+        margin-left: 0;
+        margin-right: 0;
+        background-color: #fff;
+        border-width: 1px;
+        border-color: #ddd;
+        box-shadow: none;
+        position: relative;
+        padding: 45px 15px 15px;
+        margin: 0 -15px 15px;
+        border-style: solid;
+
+        border: none;
+      }
+      .bs-examples:after {
+        content: "Examples";
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #bbb;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
   body
-    ul
-      - for (var i in index)
-        li
-          a(href=index[i].link)= index[i].name
+    div.container(style="margin: 0 auto; width: 100%;")
+      div.bs-examples
+        div.row
+          - for (var j in index)
+              div.thumbnail(style="display: inline-block;")
+                img(style="width: 300px; height: 200px;", src="./img/default-thumb-300x200.png", alt="...")
+                div.caption
+                  h3= index[j].name
+                  p= index[j].description
+                  p
+                    a.btn.btn-primary(href=index[j].link role="button").
+                      Launch
