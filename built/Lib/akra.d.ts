@@ -12610,6 +12610,8 @@ declare module akra.fx {
         private _pInputSamplerInfoList;
         private _pInputSamplerArrayInfoList;
         private _pUnifromInfoForStructFieldMap;
+        private static _pZeroSample2d;
+        private static _pZeroSampleCube;
         public isArray(sName: string): boolean;
         public getType(sName: string): EAFXShaderVariableType;
         public getLength(sName: string): number;
@@ -12617,6 +12619,7 @@ declare module akra.fx {
         public getAttributeInfo(): IAFXBaseAttrInfo[];
         public getUniformNames(): string[];
         constructor(pComposer: IAFXComposer, pPassBlend: IAFXPassBlend);
+        private initZeroSamplers();
         public _create(sVertex: string, sPixel: string): boolean;
         public _getShaderInput(): IShaderInput;
         public _releaseShaderInput(pPool: IShaderInput): void;

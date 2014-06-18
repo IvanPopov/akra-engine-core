@@ -51,15 +51,24 @@ float4 applyMaterialAlpha() : COLOR {
         materialAlpha += pixelData.material.emissive.a;
     }
 
-    float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
+    float NoV = dot(pixelData.normal, normalize(-pixelData.position));
 
-    // Simple model:
-    //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
-    // Physically based shading:
-    //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
-    // Fresnel eq solve: (Remember that this transparency is in fact opacity)
-    NoV = NoV * NoV;    // looks better
-    NoV = NoV * NoV;    // NoV = NoV^4
+    if(NoV < 0.){
+        //color.a = pixelData.material.transparency * materialAlpha;
+        NoV = saturate(abs(NoV));
+    }
+    else {
+        NoV = saturate(NoV);
+
+        // Simple model:
+        //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
+        // Physically based shading:
+        //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
+        // Fresnel eq solve: (Remember that this transparency is in fact opacity)
+        NoV = NoV * NoV;    // looks better
+        NoV = NoV * NoV;    // NoV = NoV^4        
+    }
+
     color.a = (1. - transFresnelApprox(NoV) * ( 1. - pixelData.material.transparency)) * materialAlpha;
     //color.a = NoV;
 
@@ -293,7 +302,6 @@ float4 applyPBSSkyboxLighting(): COLOR {
     //reflection *= float4(1.) - color;
 
     color += float4(envColor, 1.) * pixelData.material.diffuse;
-
     //if (){
         //return float4(1.0, 0.3, 0.3, 0.0);
     //}
