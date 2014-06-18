@@ -34,6 +34,7 @@
       <UseInlining>False</UseInlining>
       <Data>
         <Folder Path="data"/>
+        <ResourceFile Path="data/textures/fire.png" Name="FIRE_TEXTURE"/>
 
         <!-- <ResourceFile Path="data/models/WoodSoldier/WoodSoldier.DAE" Name="WOOD_SOLDIER.DAE"/>
         <ResourceFile Path="data/models/torusknot.DAE" Name="TORUSKNOT.DAE"/>

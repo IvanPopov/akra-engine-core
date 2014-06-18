@@ -50,6 +50,7 @@ module akra {
 	export var pSkyboxTextures: IMap<ITexture> = null;
 	export var pEnvTexture = null;
 	export var pDepthViewport = null;
+	export var pEffectData = null;
 
 	var pState = {
 		animate: true,
@@ -157,7 +158,7 @@ module akra {
 				pCamera.addRelPosition(0, -fSpeed, 0);
 			}
 		});
-		(<render.ForwardViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+		(<ILPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
 			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
@@ -168,7 +169,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 
-		var pViewport: IForwardViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -177,7 +178,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.ForwardViewport>pViewport).setFXAA(false);
+		(<render.LPPViewport>pViewport).setFXAA(true);
 		var counter = 0;
 
 		pGUI = new dat.GUI();
@@ -245,25 +246,36 @@ module akra {
 
 
 
+		pEffectData = { BLUR_RADIUS: 0.01, FIRE_THRESHOLD: 0.01 };
+		var pEffetsFolder = pGUI.addFolder("effects");
+		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'BLUR_RADIUS')).min(0.).max(250.).name("Blur radius");
+		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'FIRE_THRESHOLD')).min(0.).max(1.).step(0.01).name("Fire gate").__precision = 2;
+
+
 		var pPBSFolder = pGUI.addFolder("pbs");
 		
 	  (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 	   // if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+		(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 	   // }
 		(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 	  });
 
-		(<IForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
+		var pEffect = pViewport.getEffect();
+		pEffect.addComponent("akra.system.blur");
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var pDepthTexture: ITexture = (<ILPPViewport>pViewport).getDepthTexture();
 
-			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+			// pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+			pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
+			pPass.setUniform("BLUR_RADIUS", pEffectData.BLUR_RADIUS);
 		});
 
 		return pViewport;
@@ -302,7 +314,7 @@ module akra {
 		pRenderTarget.attachDepthTexture(pDepthTexture);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
-		var pEffect = (<render.ForwardViewport>pTexViewport.getInternalViewport()).getEffect();
+		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 		return pTexViewport;
 	}
 
@@ -379,7 +391,7 @@ module akra {
 			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}
 		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTexture);
+		(<ILPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		//}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
@@ -387,7 +399,7 @@ module akra {
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
 
-		(<IForwardViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 	}
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -492,6 +504,15 @@ module akra {
 		console.log("------------- Start preloading models");
 		console.log("------------- + Models table");
 
+		var pFireTexture: ITexture = pRmgr.createTexture(".fire-degrade-texture");
+		pFireTexture.loadResource("FIRE_TEXTURE");
+
+		var applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
+			pTech.getPass(iPass).setUniform("IS_USED_ALPHATEST", true);
+			pTech.getPass(iPass).setTexture('ALPHATEST_TEXTURE', pFireTexture);
+			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
+		};
+
 		pModelTable = addons.trifan(pScene, 2.5, 96);
 		pModelTable.attachToParent(pScene.getRootNode());
 		pModelTable.setPosition(0., -1.25, 0.);
@@ -500,6 +521,7 @@ module akra {
 				node.getMesh().getSubset(0).getMaterial().shininess = 0.7;
 				node.getMesh().getSubset(0).getMaterial().specular = plasticColorSpecular;
 				node.getMesh().getSubset(0).getMaterial().diffuse = plasticColorDiffuse;
+				node.getMesh().getSubset(0).getTechnique().render.connect(applyAlphaTest);
 				node.getMesh().getSubset(0).getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
 					pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
 					pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
@@ -591,6 +613,7 @@ module akra {
 		pMirror.attachToParent(pModelTable);
 		pMirror.setPosition(0., 0., 0.);
 		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, 0.5, 96);
+		pCylinder.getRenderable().getTechnique().render.connect(applyAlphaTest);
 		pCylinder.attachToParent(pModelTable);
 		pCylinder.setPosition(0., -0.25, 0.);
 
