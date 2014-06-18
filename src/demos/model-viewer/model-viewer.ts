@@ -51,6 +51,9 @@ module akra {
 	export var pEnvTexture = null;
 	export var pDepthViewport = null;
 	export var pEffectData = null;
+	export var pModelsFiles = null;
+	export var pFireTexture: ITexture = null;
+	export var applyAlphaTest = null;
 
 	var pState = {
 		animate: true,
@@ -504,11 +507,10 @@ module akra {
 		console.log("------------- Start preloading models");
 		console.log("------------- + Models table");
 
-		var pFireTexture: ITexture = pRmgr.createTexture(".fire-degrade-texture");
+		pFireTexture = pRmgr.createTexture(".fire-degrade-texture");
 		pFireTexture.loadResource("FIRE_TEXTURE");
 
-		var applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
-			pTech.getPass(iPass).setUniform("IS_USED_ALPHATEST", true);
+		applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
 			pTech.getPass(iPass).setTexture('ALPHATEST_TEXTURE', pFireTexture);
 			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
 		};
@@ -544,14 +546,20 @@ module akra {
 			// 'box',
 			// 'barrel',
 		];
-		var pModelsFiles = {
+		pModelsFiles = {
 			//mercedes: {
 			//	path: modelsPath + "/../../../mercedes/models/mercedes.DAE",
 			//	init: () => { }
 			//},
 			miner: {
 				path: modelsPath + "/miner/miner.DAE",
-				init: function (model) { },
+				init: function (model) {
+					model.explore(function (node) {
+						if (scene.SceneModel.isModel(node)) {
+							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
+						}
+					});
+					},
 			},
 			character: {
 				path: modelsPath + "/character/character.DAE",
@@ -592,17 +600,17 @@ module akra {
 		};
 		pModels = {};
 
-		pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
-		pCurrentModel = pModels["miner"];
+		var sFirstModelKey = "miner";
+		pModels[sFirstModelKey] = loadModel(pModelsFiles[sFirstModelKey].path, pModelsFiles[sFirstModelKey].init, sFirstModelKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
+		pCurrentModel = pModels[sFirstModelKey];
 		pCurrentModel.addPosition(0., 1000., 0.);
 
 		var pModelsFolder = pGUI.addFolder("models");
 
-		(<dat.OptionController>pModelsFolder.add({ Model: "miner" }, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
+		(<dat.OptionController>pModelsFolder.add({ Model: sFirstModelKey }, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
 			pCurrentModel.addPosition(0., -1000., 0.);
 			if (pModels[sKey] == null) {
-				pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
-				pModelsFiles[sKey].init(pModels[sKey]);
+				pModels[sKey] = loadModel(pModelsFiles[sKey].path, pModelsFiles[sKey].init, sKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
 			}
 			pCurrentModel = pModels[sKey];
 			pCurrentModel.addPosition(0., 1000., 0.);
