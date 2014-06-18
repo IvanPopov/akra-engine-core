@@ -32,6 +32,7 @@ module akra.pool.resources {
 	import VE = data.VertexElement;
 
 
+
 	/* COMMON FUNCTIONS
 	------------------------------------------------------
 	*/
@@ -52,6 +53,30 @@ module akra.pool.resources {
 	//function firstChild(pXML: Element, sTag?: string): Element;
 
 
+	function replaceTagName(pXML: Element, sNewName: string): Element {
+		var pOriginal: HTMLElement = <HTMLElement>pXML;
+		var pReplacement: HTMLElement = document.createElement(sNewName);
+
+		for (var i = 0, l = pOriginal.attributes.length; i < l; ++i) {
+			var nodeName = pOriginal.attributes.item(i).nodeName;
+			var nodeValue = pOriginal.attributes.item(i).nodeValue;
+
+			pReplacement.setAttribute(nodeName, nodeValue);
+		}
+
+		// Persist contents
+		//pReplacement.innerHTML = pOriginal.innerHTML;
+
+		var pChildren = pOriginal.children;
+		while (pChildren.length) {
+			pReplacement.appendChild(pChildren[0]);
+		}
+
+		// Switch!
+		pOriginal.parentNode.replaceChild(pReplacement, pOriginal);
+
+		return pReplacement;
+	}
 
 
 	// globals
@@ -162,7 +187,7 @@ module akra.pool.resources {
 			var tmp: uint[] = new Array(iStride), n: uint;
 			var pIndexes: uint[] = [];
 
-			this.eachByTag(pXML, "p", function (pXMLData) {
+			this.eachByTag(pXML, "p", (pXMLData: Element) => {
 				n = conv.stoia(stringData(pXMLData), pData);
 
 				for (var i: int = 0; i < 3; i++) {
@@ -182,7 +207,11 @@ module akra.pool.resources {
 						}
 					}
 				}
+			});
 
+
+
+			this.eachByTagAsArray(pXML, "p").forEach((pXMLData: Element) => {
 				//filling changes back to COLLADA
 				//removing <p /> elements from <trifan /> element
 				pXML.removeChild(pXMLData);
@@ -222,7 +251,9 @@ module akra.pool.resources {
 						}
 					}
 				}
+			});
 
+			this.eachByTagAsArray(pXML, "p").forEach((pXMLData: Element) => {
 				//filling changes back to COLLADA
 				//removing <p /> elements from <tristrip /> element
 				pXML.removeChild(pXMLData);
@@ -320,6 +351,12 @@ module akra.pool.resources {
 
 		private eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void {
 			this.eachNode(pXML.getElementsByTagName(sTag), fnCallback, nMax);
+		}
+
+		private eachByTagAsArray(pXML: Element, sTag: string, nMax?: uint): Element[] {
+			var pResult: Array<Element> = [];
+			this.eachByTag(pXML, sTag, (pXMLData: Element) => { pResult.push(pXMLData); }, nMax);
+			return pResult;
 		}
 
 
@@ -983,8 +1020,12 @@ module akra.pool.resources {
 			if (sType !== "triangles") {
 				//filling changes back to COLLADA
 
-				pXML.tagName = "triangles";
-				pXML.setAttribute("count", String(pPolygons.p.length / 3));
+				var iTriCount: uint = pPolygons.p.length / 3;
+				//pXML.tagName = "triangles";
+				pXML = pPolygons.xml = replaceTagName(pXML, "triangles");
+
+				pXML.setAttribute("count", String(iTriCount));
+				pPolygons.count = iTriCount;
 
 				var pXMLp: Element = <Element>conv.parseHTML("<p></p>")[0];
 				pXMLp.textContent = pPolygons.p.join(" ");
@@ -1555,7 +1596,7 @@ module akra.pool.resources {
 				//FIXME: at now, all materials draws similar..
 				case "blinn":
 				case "lambert":
-					//debug.warn("<blinn /> or <lambert /> material interprated as phong");
+				//debug.warn("<blinn /> or <lambert /> material interprated as phong");
 				case "phong":
 					pMat = this.COLLADAPhong(pValue);
 					break;
@@ -2387,8 +2428,9 @@ module akra.pool.resources {
 
 				for (var j: int = 0; j < pMesh.getLength(); ++j) {
 					var pSubMesh: IMeshSubset = pMesh.getSubset(j);
+					var sExpectedMaterial: string = pGeometryInstance.geometry.mesh.polygons[j].material;
 
-					if (pSubMesh.getMaterial().name === sMaterial) {
+					if (/*pSubMesh.getMaterial().name*/sExpectedMaterial === sMaterial) {
 						//setup materials
 						//pSubMesh.getMaterial().set(pMaterial);
 						pSubMesh.getSurfaceMaterial().setMaterial(pMaterial);
@@ -2488,8 +2530,6 @@ module akra.pool.resources {
 					pMesh.clone(EMeshCloneOptions.GEOMETRY_ONLY | EMeshCloneOptions.SHARED_GEOMETRY),
 					pGeometryInstance);
 			}
-
-			var iBegin: int = Date.now();
 
 			pMesh = this.getEngine().createMesh(
 				sMeshName,
@@ -3301,9 +3341,9 @@ module akra.pool.resources {
 			replaceColor(firstChild(pXML, "ambient"), pMaterial.ambient);
 			replaceColor(firstChild(pXML, "emission"), pMaterial.emissive);
 			replaceValue(firstChild(pXML, "transparency"), pMaterial.transparency);
-			replaceValue(firstChild(pXML, "shininess"), pXML.tagName === "phong"? pMaterial.shininess * 128.: pMaterial.shininess);
+			replaceValue(firstChild(pXML, "shininess"), pXML.tagName === "phong" ? pMaterial.shininess * 128. : pMaterial.shininess);
 
-			
+
 		}
 
 		private syncMaterials(): void {

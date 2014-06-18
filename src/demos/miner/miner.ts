@@ -19,12 +19,11 @@ module akra {
 	var pRenderOpts: IRendererOptions = {
 		alpha: true,
 		depth: true,
+		//for black background & and avoiding composing with other html
 		premultipliedAlpha: true,
 		antialias : true,
-		//premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
-		//for black background & and avoiding composing with other html
 	};
 
 	var pOptions: IEngineOptions = {

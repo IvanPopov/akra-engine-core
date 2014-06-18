@@ -254,7 +254,6 @@ module akra.model {
 					pClone.appendSubset(this._pSubMeshes[i].getName(), pRenderData);
 					pClone.getSubset(i).getMaterial().name = this._pSubMeshes[i].getMaterial().name;
 				}
-				//trace('created clone', pClone);
 			}
 			else {
 				//TODO: clone mesh data.

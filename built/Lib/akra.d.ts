@@ -16952,6 +16952,7 @@ declare module akra.pool.resources {
         private eachNode(pXMLList, fnCallback, nMax?);
         private eachChild(pXML, fnCallback);
         private eachByTag(pXML, sTag, fnCallback, nMax?);
+        private eachByTagAsArray(pXML, sTag, nMax?);
         private findNode(pNodes, sNode?, fnNodeCallback?);
         private COLLADATranslateMatrix(pXML);
         private COLLADARotateMatrix(pXML);

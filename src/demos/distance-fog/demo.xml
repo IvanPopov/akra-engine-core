@@ -28,7 +28,9 @@
       <Data>
         <Folder Path="data"/>
         <ResourceFile Path="data/models/teapot.DAE" Name="TEAPOT.DAE"/>
-        <ResourceFile Path="data/models/cube.DAE" Name="CUBE.DAE"/>
+        <!--<ResourceFile Path="data/models/cube.DAE" Name="CUBE.DAE"/>-->
+        <ResourceFile Path="data/models/Sphere.DAE" Name="SPHERE.DAE"/>
+        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
       </Data>
     </Resource>
   </PropertyGroup>
