@@ -214,7 +214,6 @@ float4 applyBaseLightParamsSun(PixelData pixelData, SunLightData lightData, floa
 
     lightDiffuse.rgb = getRayleighPhase(fCos2) * lightData.ground0 + Mie;
     lightDiffuse.rgb = HDR(lightDiffuse.rgb);
-    float fFogValue = ComputeVolumetricFog(worldPos - camPos);
     
     CalculatedLightParams lightParams = prepareBaseLightParamsSun(pixelData, float4(view * float4(lightData.sunDir, 0.)).xyz, lightDiffuse, float4(fSunAmbient), float4(fSunSpecular));
 

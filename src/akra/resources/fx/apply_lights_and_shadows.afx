@@ -188,10 +188,10 @@ float4 applySunLight() : COLOR {
         for(int i = 0; i < NUM_SUN; i++) {
             float4 color = applyBaseLightParamsSun(pixelData, points_sun[i].lightData, worldPos);
 
-            if(IS_FOR_REAL_SHADING){
-                float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-                color = float4(lerp(points_sun[i].lightData.ground0, color.rgb, fFogValue), 1.);
-            }
+            // if(IS_FOR_REAL_SHADING){
+            //     float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+            //     color = float4(lerp(points_sun[i].lightData.ground0, color.rgb, fFogValue), 1.);
+            // }
             
             result_color += color;
         }
@@ -220,10 +220,10 @@ float4 applySunLightShadows() : COLOR {
             }
             color = color * shadowMultiplier;
 
-            if(IS_FOR_REAL_SHADING){
-                float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-                color = float4(lerp(points_sun_shadows[i].lightData.ground0, color.rgb, fFogValue), 1.);
-            }
+            // if(IS_FOR_REAL_SHADING){
+            //     float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+            //     color = float4(lerp(points_sun_shadows[i].lightData.ground0, color.rgb, fFogValue), 0.);
+            // }
 
             result_color += color;
         }
