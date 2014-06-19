@@ -224,7 +224,6 @@ void applyMirrorReflection(){
 void applyAlphatestDegrade(float2 texPos){
     if(isUseAlphatest) {
         float temp = tex2D(sampler_ALPHATEST, texPos).r;
-        temp = (temp + Alphatest_width*3.*(0.5-abs(fract(texPos.x*60.)-0.5)*0.5 )*2. * (0.5-abs(fract(texPos.y*60.)-0.5)*0.5)*2. )/(1.+Alphatest_width*3.);
         if(temp >= Alphatest_treshold) {
             if(temp < Alphatest_treshold+Alphatest_width) {
                 float dr = (Alphatest_treshold+Alphatest_width-temp)/Alphatest_width;
