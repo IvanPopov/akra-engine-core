@@ -40,10 +40,12 @@ texture tex3:TEXTURE3;
 texture tex4:TEXTURE4;
 texture tex5:TEXTURE5;
 
+foreign bool isUseAlphatest : IS_USE_ALPHATEST;
+
 texture textureAlphatest : ALPHATEST_TEXTURE;
 
 float Alphatest_treshold : ALPHATEST_THRESHOLD = -1.;
-float Alphatest_width : ALPHATEST_WIDTH = 0.02;
+float Alphatest_width : ALPHATEST_WIDTH = 0.03;
 
 sampler sampler_diffuse:S_DIFFUSE  = sampler_state
 {
@@ -220,15 +222,22 @@ void applyMirrorReflection(){
 }
 
 void applyAlphatestDegrade(float2 texPos){
-    if(Alphatest_treshold > 0.) {
+    if(isUseAlphatest) {
         float temp = tex2D(sampler_ALPHATEST, texPos).r;
-        if(temp < Alphatest_treshold) {
-            discard;
+        if(temp >= Alphatest_treshold) {
+            if(temp < Alphatest_treshold+Alphatest_width) {
+                float dr = (Alphatest_treshold+Alphatest_width-temp)/Alphatest_width;
+                // float r = clamp(6.*abs(dr-0.5)-1., 0., 1.);
+                // float g = clamp(-6.*abs(dr-0.333)+2.,0.,1.);
+                // float b = clamp(-6.*abs(dr-0.666)+2.,0.,1.);
+                float4 color2 = float4(1.,0.3,0.1,1.);
+                float4 color1 = float4(1.,0.9,0.3,0.3);
+                pixelData.material.emissive = color1*(1.-dr) + color2*dr;
+                // pixelData.material.emissive = float4(r,g,b,1.);
+            }
         }
         else {
-            if(temp < Alphatest_treshold+Alphatest_width) {
-                pixelData.material.emissive = float4(1.,0.6,0.,1.);
-            }
+            discard;
         }
     }
     //pixelData.material.diffuse = float4(float3(temp),1.);
