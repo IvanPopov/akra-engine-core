@@ -18,6 +18,16 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="Main" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="Exclude" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="Path" type="xs:anyURI" use="required">
+              <xs:annotation>
+                <xs:documentation>Folder path.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
           <xs:annotation>
             <xs:documentation>
               Path to demo entry point. If Main tag not specified, will
@@ -38,6 +48,36 @@
             <xs:simpleContent>
               <xs:extension base="xs:string"/>
             </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Preview" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>
+              Link to preview image or YouTube video.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="YouTube" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                  <xs:documentation>
+                    Link to YouTube video.
+                  </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:attribute name="Src" type="xs:anyURI" use="required">
+                    <xs:annotation>
+                      <xs:documentation>Path to youtube embeded video.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="Src" type="xs:anyURI" use="required">
+              <xs:annotation>
+                <xs:documentation>Path to preview image.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
           </xs:complexType>
         </xs:element>
         <xs:element name="PropertyGroup">
@@ -167,7 +207,7 @@
         <xs:element name="CollapsePath">
           <xs:annotation>
             <xs:documentation>
-             Collapse path. (Remove original file structure).
+              Collapse path. (Remove original file structure).
             </xs:documentation>
           </xs:annotation>
           <xs:complexType>
@@ -514,7 +554,7 @@
       </xs:all>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="ItemGroup">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded" minOccurs="0">
@@ -522,7 +562,7 @@
       </xs:choice>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:simpleType name="variableName">
     <xs:annotation>
       <xs:documentation>Uppercase variable name style.</xs:documentation>
