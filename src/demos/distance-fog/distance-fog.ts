@@ -87,12 +87,10 @@ module akra {
 	}
 
 	function createViewport(): IViewport3D {
-		var pViewport: ILPPViewport = new render.DSViewport(pCamera);
+		var pViewport: ILPPViewport = new render.ForwardViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
-		pViewport.getEffect().addComponent("akra.system.linearFog");
-		pViewport.getEffect().addComponent("akra.system.exponentialFog");
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
@@ -105,23 +103,29 @@ module akra {
 		var fogType = {
 			none: 0,
 			linear: 1,
-			exponential: 2
+			exponential: 2,
+			vertical: 3
 		};
 
 		var pFogData = {
-			fogColor: 0,
-			fogStart: 35,
-			fogIndex: 15
+			fColor: 0,
+			fStart: 35,
+			fIndex: 15,
+			fHeight: 0.7,
+			fDensity: 0.2
 		};
 
+		(<IViewportFogged>pViewport).setFog(EFogType.EXPONENTIAL);
+
 		var pFogFolder = pGUI.addFolder("fog");
-		var iFogType = 2;
 		(<dat.OptionController>pFogFolder.add({ FogType: "exponential" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
-			iFogType = fogType[sKey];
+			(<IViewportFogged>pViewport).setFog(fogType[sKey]);
 		});
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogStart')).min(0.).max(200.).name("start");
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fogIndex')).min(0.01).max(200.).name("index");
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fStart')).min(0.).max(200.).name("start");
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fIndex')).min(0.01).max(200.).name("index");
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		(<IShadedViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
@@ -129,7 +133,7 @@ module akra {
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 
 			var pDeferredTexture: ITexture = (<IDSViewport>pViewport).getTextureWithObjectID();
-			var pDepthTexture: ITexture = (<render.LPPViewport>pViewport).getDepthTexture();
+			var pDepthTexture: ITexture = (<IDSViewport>pViewport).getDepthTexture();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			var v3fLightDir: IVec3 = math.Vec3.temp(math.Vec3.temp(pLight.getWorldPosition()).subtract(pCamera.getWorldPosition()).normalize());
@@ -139,21 +143,13 @@ module akra {
 			pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
 			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
-			if (iFogType == 0) {
-				pPass.setForeign("USE_LINEAR_FOG", false);
-				pPass.setForeign("USE_EXPONENTIAL_FOG", false);
-			}
-			else if (iFogType == 1) {
-				pPass.setForeign("USE_LINEAR_FOG", true);
-				pPass.setForeign("USE_EXPONENTIAL_FOG", false);
-			}
-			else if (iFogType == 2) {
-				pPass.setForeign("USE_LINEAR_FOG", false);
-				pPass.setForeign("USE_EXPONENTIAL_FOG", true);
-			}
-			pPass.setUniform("FOG_COLOR", new math.Vec3(pFogData.fogColor));
-			pPass.setUniform("FOG_START", pFogData.fogStart);
-			pPass.setUniform("FOG_INDEX", pFogData.fogIndex);
+			pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
+				pFogData.fColor, pFogData.fColor, pFogData.fColor, pFogData.fDensity));
+			pPass.setUniform("FOG_EFFECT_START", pFogData.fStart);
+			pPass.setUniform("FOG_EFFECT_INDEX", pFogData.fIndex);
+			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
+
+			pPass.setTexture("DEPTH_TEXTURE", pDepthTexture);
 
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
@@ -425,7 +421,7 @@ module akra {
 
 		// SILVER CUBES: second row
 		var cubeDistance: float = 10.0; // distance between cubes
-		var totalCubes: float = 10;
+		var totalCubes: float = 30;
 		var silverColorSpecular: color.Color = new Color(0.95, 0.93, 0.88, 1.0);
 		var silverColorDiffuse: color.Color = new Color(0.98, 0.97, 0.95, 1.0);
 		for (var i = 0; i < totalCubes; i++) {
@@ -441,6 +437,20 @@ module akra {
 			pModelRoot.setInheritance(ENodeInheritance.ALL);
 			pModelRoot.attachToParent(pScene.getRootNode());
 			pModelRoot.scale(0.8).setPosition(cubeDistance * (i - (totalCubes - 1) / 2), 4.0, 20.0);
+		};
+		for(var i=0; i<totalCubes; i++) {
+			var pModelRoot: ISceneModel = addons.cube(pScene);
+
+			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
+			pMat.shininess=calcShi(i, totalCubes);
+			pMat.specular=silverColorSpecular;
+			pMat.diffuse=silverColorDiffuse;
+			pMat.emissive =new Color(0.0, 0.0, 0.0, 1.);
+
+			pModelRoot.setName('cube-metal-vert-'+i.toString());
+			pModelRoot.setInheritance(ENodeInheritance.ALL);
+			pModelRoot.attachToParent(pScene.getRootNode());
+			pModelRoot.scale(0.8).setPosition(4.0, cubeDistance*(i-(totalCubes-1)/2), 24.0);
 		};
 
 		// PLASTIC CUBES: third row
@@ -459,6 +469,20 @@ module akra {
 			pModelRoot.setInheritance(ENodeInheritance.ALL);
 			pModelRoot.attachToParent(pScene.getRootNode());
 			pModelRoot.scale(0.8).setPosition(cubeDistance * (i - (totalCubes - 1) / 2), 0.0, 20.0);
+		};
+		for(var i=0; i<totalCubes; i++) {
+			var pModelRoot: ISceneModel = addons.cube(pScene);
+
+			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
+			pMat.shininess=calcShi(i, totalCubes);
+			pMat.specular=plasticColorSpecular;
+			pMat.diffuse=plasticColorDiffuse;
+			pMat.emissive =new Color(0.0, 0.0, 0.0, 1.);
+
+			pModelRoot.setName('cube-plastic-vert-'+i.toString());
+			pModelRoot.setInheritance(ENodeInheritance.ALL);
+			pModelRoot.attachToParent(pScene.getRootNode());
+			pModelRoot.scale(0.8).setPosition(-4.0, cubeDistance*(i-(totalCubes-1)/2), 24.0);
 		};
 
 		// PLASTIC CUBE: wigwag

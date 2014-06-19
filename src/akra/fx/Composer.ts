@@ -610,6 +610,9 @@ module akra.fx {
 				logger.error("Could not render. Error with generation pass-blend.");
 				return;
 			}
+			else if (!isDef(pPassBlend)) {
+				return;
+			}
 
 			pMaker = pPassBlend.generateFXMaker(pPassInput,
 				this._pCurrentSurfaceMaterial,

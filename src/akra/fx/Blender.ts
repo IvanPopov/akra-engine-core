@@ -229,6 +229,7 @@ module akra.fx {
 			this._pPassBlendHashTree.release();
 
 			render.clearRenderStateMap(this._pTmpRenderStateMap);
+			var bHasAnyShader: boolean = false;
 
 			for (var i: uint = 0; i < pPassList.length; i++) {
 				var pPass: IAFXPassInstruction = pPassList[i];
@@ -240,28 +241,37 @@ module akra.fx {
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass._getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass._getPixelShader();
 
+				bHasAnyShader = bHasAnyShader || !isNull(pVertexShader) || !isNull(pPixelShader);
+
 				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader._getInstructionID());
 				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader._getInstructionID());
 			}
 
 			var pBlend: IAFXPassBlend = this._pPassBlendHashTree.getContent();
 
-			if (!pBlend) {
-				var pNewPassBlend: IAFXPassBlend = new PassBlend(this._pComposer);
-				var isOk: boolean = pNewPassBlend.initFromPassList(pPassList);
+			if (isNull(pBlend)) {
+				if (bHasAnyShader) {
+					var pNewPassBlend: IAFXPassBlend = new PassBlend(this._pComposer);
+					var isOk: boolean = pNewPassBlend.initFromPassList(pPassList);
 
-				if (!isOk) {
-					return null;
+					if (!isOk) {
+						return null;
+					}
+
+					this._pPassBlendByIdMap[pNewPassBlend.guid] = pNewPassBlend;
+				}
+				else {
+					pNewPassBlend = undefined;
 				}
 
 				this._pPassBlendHashTree.addContent(pNewPassBlend);
-				this._pPassBlendByIdMap[pNewPassBlend.guid] = pNewPassBlend;
-
 				return pNewPassBlend;
 			}
 			else {
-				render.clearRenderStateMap(pBlend._getRenderStates());
-				render.copyRenderStateMap(this._pTmpRenderStateMap, pBlend._getRenderStates());
+				if (isDef(pBlend)) {
+					render.clearRenderStateMap(pBlend._getRenderStates());
+					render.copyRenderStateMap(this._pTmpRenderStateMap, pBlend._getRenderStates());
+				}
 				return pBlend;
 			}
 		}
