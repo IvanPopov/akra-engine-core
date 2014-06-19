@@ -439,7 +439,10 @@ module akra {
 				sPrefix + "_NEG_Z"
 			];
 
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFlags(ETextureFlags.AUTOMIPMAP);
 			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 		}
 
 
