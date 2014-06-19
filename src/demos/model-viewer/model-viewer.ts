@@ -203,7 +203,7 @@ module akra {
 			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
 			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
 			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		};
 
 		var pMaterialPresets = {

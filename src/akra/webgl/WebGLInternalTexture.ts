@@ -344,7 +344,7 @@ module akra.webgl {
 
 			pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture); 
 
-			if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && this._isMipmapsHardwareGenerated && this._nMipLevels === 0/* && !pixelUtil.isCompressed(this._eFormat)*/) {
+			if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && this._isMipmapsHardwareGenerated && this._nMipLevels === 0 && !pixelUtil.isCompressed(this._eFormat)) {
 				pWebGLContext.generateMipmap(this._eTextureType);
 			}
 			
