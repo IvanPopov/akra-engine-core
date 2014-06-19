@@ -328,15 +328,15 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-			(model) => {
-				model.explore(function (node) {
-					if (scene.SceneModel.isModel(node)) {
-						node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
-					}
-				})
-				}, "test-omni-0-model", pOmniLight).scale(0.15);
-		pOmniLightSphere.setPosition(0., 0., 0.);
+		//pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+		//	(model) => {
+		//		model.explore(function (node) {
+		//			if (scene.SceneModel.isModel(node)) {
+		//				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
+		//			}
+		//		})
+		//		}, "test-omni-0-model", pOmniLight).scale(0.15);
+		//pOmniLightSphere.setPosition(0., 0., 0.);
 		pOmniLight.setPosition(lightPos1);
 
 		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
@@ -349,15 +349,15 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-			(model) => {
-				model.explore(function (node) {
-					if (scene.SceneModel.isModel(node)) {
-						node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
-					}
-				})
-				}, "test-omni-0-model", pOmniLight).scale(0.15);
-		pOmniLightSphere.setPosition(0., 0., 0.);
+		//pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+		//	(model) => {
+		//		model.explore(function (node) {
+		//			if (scene.SceneModel.isModel(node)) {
+		//				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
+		//			}
+		//		})
+		//		}, "test-omni-0-model", pOmniLight).scale(0.15);
+		//pOmniLightSphere.setPosition(0., 0., 0.);
 		pOmniLight.setPosition(lightPos2);
 	}
 

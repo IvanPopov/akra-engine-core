@@ -567,10 +567,12 @@ module akra.render {
 
 					if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
 						pPass.setForeign("IS_USED_PBS_REFLECTIONS", true);
+						pPass.setForeign("IS_USED_SKYBOX_LIGHTING", true);
 						pPass.setTexture("ENVMAP", this.getDefaultEnvironmentMap());
 					}
 					else {
 						pPass.setForeign("IS_USED_PBS_REFLECTIONS", false);
+						pPass.setForeign("IS_USED_SKYBOX_LIGHTING", false);
 					}
 
 					break;
