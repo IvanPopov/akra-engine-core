@@ -293,19 +293,23 @@ float4 applyPBSSkyboxLighting(): COLOR {
     // pixelData.material.specular = float4(0.);
     // color += applyBaseLightParams(pixelData, envLight);
     // pixelData.material.specular = s;
+    if(pixelData.normal == float3(0.)){
+        return color;
+    }
+    else {
+        float3 direction = (invView*float4(pixelData.normal,0.)).xyz;
 
-    float3 direction = (invView*float4(pixelData.normal,0.)).xyz;
+        float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5;
+        // lowering reflection brightness if we have a strong lighting already
+        
+        //reflection *= float4(1.) - color;
 
-    float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5;
-    // lowering reflection brightness if we have a strong lighting already
-    
-    //reflection *= float4(1.) - color;
-
-    color += float4(envColor, 1.) * pixelData.material.diffuse;
-    //if (){
-        //return float4(1.0, 0.3, 0.3, 0.0);
-    //}
-    return color;
+        color += float4(envColor, 1.) * pixelData.material.diffuse;
+        //if (){
+            //return float4(1.0, 0.3, 0.3, 0.0);
+        //}
+        return color;
+    }
 };
 
 float3 fogColor : FOG_COLOR;
@@ -413,10 +417,12 @@ technique sunShadowsLighting{
     }
 };
 
-
+foreign bool IS_USED_SKYBOX_LIGHTING = false;
 technique pbsSkyboxLighting{
     pass applyPbsSkyboxLighting{
-        PixelShader = compile applyPBSSkyboxLighting();
+        if(IS_USED_SKYBOX_LIGHTING){
+            PixelShader = compile applyPBSSkyboxLighting();
+        }
     }
 };
 
