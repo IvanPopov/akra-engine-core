@@ -224,14 +224,15 @@ void applyMirrorReflection(){
 void applyAlphatestDegrade(float2 texPos){
     if(isUseAlphatest) {
         float temp = tex2D(sampler_ALPHATEST, texPos).r;
+        temp = (temp + Alphatest_width*2.*((cos(80.*texPos.x*2.*3.1415926)+1.)*0.5 * (cos(80.*texPos.y*2.*3.1415926)+1.)*0.5))/(1.+Alphatest_width*2.);
         if(temp >= Alphatest_treshold) {
             if(temp < Alphatest_treshold+Alphatest_width) {
                 float dr = (Alphatest_treshold+Alphatest_width-temp)/Alphatest_width;
                 // float r = clamp(6.*abs(dr-0.5)-1., 0., 1.);
                 // float g = clamp(-6.*abs(dr-0.333)+2.,0.,1.);
                 // float b = clamp(-6.*abs(dr-0.666)+2.,0.,1.);
-                float4 color2 = float4(1.,0.3,0.1,1.);
-                float4 color1 = float4(1.,0.9,0.3,0.3);
+                float4 color2 = float4(1.,0.3,0.1,0.3);
+                float4 color1 = float4(1.,0.9,0.3,1.);
                 pixelData.material.emissive = color1*(1.-dr) + color2*dr;
                 // pixelData.material.emissive = float4(r,g,b,1.);
             }
