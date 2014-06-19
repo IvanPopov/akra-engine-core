@@ -425,8 +425,8 @@ module akra {
 		var silverColorSpecular: color.Color = new Color(0.95, 0.93, 0.88, 1.0);
 		var silverColorDiffuse: color.Color = new Color(0.98, 0.97, 0.95, 1.0);
 		for (var i = 0; i < totalCubes; i++) {
-			var pModelRoot: ISceneModel = window["cube_tc_" + i] = pCube.extractModel(pScene);
-
+			//var pModelRoot: ISceneModel = window["cube_tc_" + i] = pCube.extractModel(pScene);
+			var pModelRoot: ISceneModel = addons.cube(pScene);
 			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
 			pMat.shininess = calcShi(i, totalCubes);
 			pMat.specular = silverColorSpecular;
@@ -457,8 +457,8 @@ module akra {
 		var plasticColorSpecular: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
 		var plasticColorDiffuse: color.Color = new Color(0.21, 0.21, 0.21, 1.0);
 		for (var i = 0; i < totalCubes; i++) {
-			var pModelRoot: ISceneModel = window["cube_tc2_" + i] = pCube.extractModel(pScene);
-
+			//var pModelRoot: ISceneModel = window["cube_tc2_" + i] = pCube.extractModel(pScene);
+			var pModelRoot: ISceneModel = addons.cube(pScene);
 			var pMat: IMaterial = pModelRoot.getMesh().getSubset(0).getMaterial();
 			pMat.shininess = calcShi(i, totalCubes);
 			pMat.specular = plasticColorSpecular;
