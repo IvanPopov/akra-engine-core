@@ -511,6 +511,7 @@ module akra {
 		pFireTexture.loadResource("FIRE_TEXTURE");
 
 		applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
+			pTech.getPass(iPass).setForeign('IS_USE_ALPHATEST', true);
 			pTech.getPass(iPass).setTexture('ALPHATEST_TEXTURE', pFireTexture);
 			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
 		};
@@ -567,7 +568,14 @@ module akra {
 			},
 			head: {
 				path: modelsPath + "/head/head.DAE",
-				init: function (model) { model.scale(0.7); },
+				init: function (model) {
+					model.scale(0.7);
+					model.explore(function (node) {
+						if (scene.SceneModel.isModel(node)) {
+							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
+						}
+					});
+					},
 			},
 			sponza: {
 				path: modelsPath + "/sponza/sponza.DAE",
