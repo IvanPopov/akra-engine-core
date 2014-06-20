@@ -65,6 +65,11 @@ body
 												a.b-showcase-list-item-title= index[x].name
 												p.b-showcase-list-item-description= index[x].description
 												a.b-showcase-list-item-readmore.btn.btn-default(href=index[x].link, role="button")= "Launch"
+												- if (index[x].youtube) 
+														a.btn.btn-default.b-showcase-list-item-youtube(href=index[x].youtube) 
+															img(src="img/showcase/YouTube-logo-light.png")
+												- if (index[x].byteLength !== 0)
+													div(style="position: absolute; font-size: 10px; color: black;margin-top: -15px; margin-left: 200px;")= ((index[x].byteLength / (1024 * 1024)).toFixed(2) + " mb")
 												//- span.label.label-default= "Default"
 										div.b-showcase-list.b-showcase-list-light
 										
