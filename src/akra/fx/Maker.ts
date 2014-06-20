@@ -379,7 +379,7 @@ module akra.fx {
 			if (this._pShaderUniformInfoList[iLocation].type !== EAFXShaderVariableType.k_NotVar) {
 				if (config.WEBGL) {
 					var pUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoList[iLocation];
-					var pApplyValue: any = pValue || pUniformInfo.defaultValue;
+					var pApplyValue: any = isDefAndNotNull(pValue) ? pValue : pUniformInfo.defaultValue;//pUniformInfo.defaultValue;
 
 					if (pUniformInfo.lastValue !== pApplyValue ||
 						pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D ||

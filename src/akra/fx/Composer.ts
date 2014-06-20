@@ -720,8 +720,8 @@ module akra.fx {
 		public fSunAmbient: float = 0.22;
 
 		//fog
-		public cHeightFalloff: float = 0.;/*0.04;*/
-		public cGlobalDensity: float = 0.;/*0.002;*/
+		public cHeightFalloff: float = 0.; /*0.04;*/
+		public cGlobalDensity: float = 0.; /*0.002;*/
 
 		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: boolean = false): int {
 			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
