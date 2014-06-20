@@ -4,14 +4,10 @@ include "common.afx";
 shared PixelData pixelData;
 shared float4 result_color = float4(0.);
 
+int objectId : RENDER_OBJECT_ID;
+
 float4 fsForwardShading0(float3 vert: VERTEX) : COLOR {
-	pixelData.position = vert;
-	result_color += pixelData.material.emissive;
-
-	return result_color;
-}
-
-float4 fsForwardShading1(float3 vert: VERTEX) : COLOR {
+	pixelData.id = objectId;
 	pixelData.position = vert;
 	result_color += pixelData.material.emissive;
 

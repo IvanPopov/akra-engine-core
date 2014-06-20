@@ -106,8 +106,6 @@ foreign bool IS_USED_BLINN_PNONG = false;
 foreign bool IS_USED_PNONG = true;
 foreign bool IS_USED_PBS_SIMPLE = false;
 foreign bool IS_USED_PBS_REFLECTIONS = false;
-foreign bool USE_LINEAR_FOG = false;
-foreign bool USE_EXPONENTIAL_FOG = false;
 
 CalculatedLightParams prepareBaseLightParams(PixelData pixelData, LightData lightData) {
     CalculatedLightParams lightParams;
@@ -214,7 +212,6 @@ float4 applyBaseLightParamsSun(PixelData pixelData, SunLightData lightData, floa
 
     lightDiffuse.rgb = getRayleighPhase(fCos2) * lightData.ground0 + Mie;
     lightDiffuse.rgb = HDR(lightDiffuse.rgb);
-    float fFogValue = ComputeVolumetricFog(worldPos - camPos);
     
     CalculatedLightParams lightParams = prepareBaseLightParamsSun(pixelData, float4(view * float4(lightData.sunDir, 0.)).xyz, lightDiffuse, float4(fSunAmbient), float4(fSunSpecular));
 
@@ -416,7 +413,11 @@ float4 calulatePBSReflection(float3 position, float3 normal,
     float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
     // float3 reflect_dir = reflect(view_dir, normal_dir);
     float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
-    float NoV = saturate(dot(normal_dir, view_dir));
+    float NoV = dot(normal_dir, view_dir);
+    if(NoV < 0.){
+        return float4(0.);
+    }
+    NoV = saturate(NoV);
 
     float3 fresnelReflectance;
 

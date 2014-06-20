@@ -258,7 +258,7 @@ module akra {
 		//(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_FOCAL_PLANE')).min(1.).max(100.).name("focal plane");
 		//(<dat.NumberControllerSlider>pDofFolder.add(pDofData, 'DOF_QUALITY')).min(0.1).max(1.).name("quality");
 
-		//console.log((<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImage(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE")));
+		(<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImages(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE"));
 		//var iCounter: int = 0;
 		var pDofFocalPlane: float = 0.;
 

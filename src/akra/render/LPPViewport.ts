@@ -36,6 +36,7 @@ module akra.render {
 
 		private _pHighlightedObject: IRIDPair = { object: null, renderable: null };
 		private _pSkyboxTexture: ITexture = null;
+		private _eFogType: EFogType = EFogType.NONE;
 		
 		
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
@@ -101,7 +102,7 @@ module akra.render {
 				this.initTextureForTransparentObjects();
 			}
 
-			(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(this.isFogged());
+			(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(this._eFogType);
 
 			if (bEnable) {
 				this.getEffect().addComponent("akra.system.applyTransparency", 3, 0);
@@ -303,21 +304,16 @@ module akra.render {
 			return this.isFXAA();
 		}
 
-		setFog(bEnabled: boolean = true): void {
-			if (bEnabled) {
-				this.getEffect().addComponent("akra.system.fog", 2, 0);
-			}
-			else {
-				this.getEffect().delComponent("akra.system.fog", 2, 0);
-			}
+		setFog(eFogType: EFogType = EFogType.LINEAR): void {
+			this._eFogType = eFogType;
 
 			if (this.isTransparencySupported()) {
-				(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(bEnabled);
+				(<IViewportFogged>this._pTextureForTransparentObjects.getBuffer().getRenderTarget().getViewport(0)).setFog(eFogType);
 			}
 		}
 
 		isFogged(): boolean {
-			return this.getEffect().hasComponent("akra.system.fog");
+			return this._eFogType !== EFogType.NONE;
 		}
 
 		highlight(iRid: int): void;
@@ -436,10 +432,12 @@ module akra.render {
 
 			if (isDefAndNotNull(this.getDefaultEnvironmentMap())) {
 				pPass.setForeign("IS_USED_PBS_REFLECTIONS", true);
+				pPass.setForeign("IS_USED_SKYBOX_LIGHTING", true);
 				pPass.setTexture("ENVMAP", this.getDefaultEnvironmentMap());
 			}
 			else {
 				pPass.setForeign("IS_USED_PBS_REFLECTIONS", false);
+				pPass.setForeign("IS_USED_SKYBOX_LIGHTING", false);
 			}
 		}
 
@@ -457,6 +455,7 @@ module akra.render {
 				case 3:
 					//fog
 					pPass.setTexture("DEPTH_TEXTURE", this.getDepthTexture());
+					pPass.setForeign("FOG_TYPE", this._eFogType);
 					//transparency
 					pPass.setTexture("TRANSPARENT_TEXTURE", this._pTextureForTransparentObjects);
 					//skybox
@@ -576,6 +575,7 @@ module akra.render {
 		private prepareRenderMethods(): void {
 			this._pViewScreen.switchRenderMethod(null);
 			this._pViewScreen.getEffect().addComponent("akra.system.texture_to_screen");
+			this._pViewScreen.getEffect().addComponent("akra.system.fog", 2, 0);
 			//this._pViewScreen.getEffect().addComponent("akra.system.applyTransparency", 2, 0);
 
 			for (var i: uint = 0; i < 2; i++) {

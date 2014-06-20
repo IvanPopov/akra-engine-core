@@ -98,7 +98,7 @@ shared PixelData pixelData;
 
 void SkyFromGround_PS( vertexOutput In)
 {
-	float4 color;
+	float4 color = float4(0.);
 
 	float2 interp = frac( In.t0 * Tex.x );
 
@@ -131,6 +131,12 @@ void SkyFromGround_PS( vertexOutput In)
 	//Out.color.rgba = In.t0.x;
 	pixelData.material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
 	// pixelData.material.emissive = float4(1., 0., 0., 1.);
+	pixelData.material.diffuse = float4(0., 0., 0., 1.);
+	pixelData.material.specular = float4(0., 0., 0., 1.);
+	pixelData.material.ambient = float4(0., 0., 0., 1.);
+	pixelData.material.shininess = 0.;
+	pixelData.material.transparency = 1.;
+	//pixelData.material.diffuse = float4(0., 0., 0., 1.); 
 }
 
 float ComputeVolumetricFog( float3 cameraToWorldPos )

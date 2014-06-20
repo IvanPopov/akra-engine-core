@@ -12610,6 +12610,8 @@ declare module akra.fx {
         private _pInputSamplerInfoList;
         private _pInputSamplerArrayInfoList;
         private _pUnifromInfoForStructFieldMap;
+        private static _pZeroSample2d;
+        private static _pZeroSampleCube;
         public isArray(sName: string): boolean;
         public getType(sName: string): EAFXShaderVariableType;
         public getLength(sName: string): number;
@@ -12617,6 +12619,7 @@ declare module akra.fx {
         public getAttributeInfo(): IAFXBaseAttrInfo[];
         public getUniformNames(): string[];
         constructor(pComposer: IAFXComposer, pPassBlend: IAFXPassBlend);
+        private initZeroSamplers();
         public _create(sVertex: string, sPixel: string): boolean;
         public _getShaderInput(): IShaderInput;
         public _releaseShaderInput(pPool: IShaderInput): void;
@@ -13625,10 +13628,17 @@ declare module akra {
         */
         isAntialiased(): boolean;
     }
+    enum EFogType {
+        NONE = 0,
+        LINEAR = 1,
+        EXPONENTIAL = 2,
+        EXPONENTIAL_HEIGHT_DEPENDENT = 3,
+        VERTICAL = 3,
+    }
     /** Viewport that can support fog. */
     interface IViewportFogged extends IViewport3D {
         /** Enable fog. */
-        setFog(bEnabled?: boolean): void;
+        setFog(eType?: EFogType): void;
         /** Is fog enabled?
         * @return TRUE if fog enabled.
         */
@@ -15625,6 +15635,7 @@ declare module akra.render {
         private _pDeferredSkyTexture;
         private _pLightDL;
         private _pHighlightedObject;
+        private _eFogType;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15654,7 +15665,7 @@ declare module akra.render {
         public isFXAA(): boolean;
         public isAntialiased(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;
-        public setFog(bEnabled?: boolean): void;
+        public setFog(eFogType?: EFogType): void;
         public isFogged(): boolean;
         public destroy(): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
@@ -15684,6 +15695,7 @@ declare module akra.render {
         private _v2fScreenSize;
         private _pHighlightedObject;
         private _pSkyboxTexture;
+        private _eFogType;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15705,7 +15717,7 @@ declare module akra.render {
         public isFXAA(): boolean;
         public setAntialiasing(bEnabled?: boolean): void;
         public isAntialiased(): boolean;
-        public setFog(bEnabled?: boolean): void;
+        public setFog(eFogType?: EFogType): void;
         public isFogged(): boolean;
         public highlight(iRid: number): void;
         public highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
@@ -15744,7 +15756,7 @@ declare module akra.render {
         private _pTextureToScreenViewport;
         private _bRenderOnlyTransparentObjects;
         private _pSkybox;
-        private _isFogEnabled;
+        private _eFogType;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
         public getType(): EViewportTypes;
@@ -15769,7 +15781,7 @@ declare module akra.render {
         public setAntialiasing(bEnabled?: boolean): void;
         public isAntialiased(): boolean;
         public highlight(a: any): void;
-        public setFog(bEnabled?: boolean): void;
+        public setFog(eFogType?: EFogType): void;
         public isFogged(): boolean;
         public _onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         public _onRender(pTechnique: IRenderTechnique, iPass: number, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;

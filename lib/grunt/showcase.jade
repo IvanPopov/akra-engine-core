@@ -1,0 +1,88 @@
+﻿- var URL = "http://odserve.org"
+
+doctype html
+html(lang="en")
+	head
+		title= "Showcase"
+		meta(http-equiv="Content-Type", content="text/html; charset=UTF-8")
+		link(href="img/favicon.ico", rel="shortcut icon", type="image/vnd.microsoft.icon")
+		link(rel="stylesheet", href="css/bootstrap.min.css", type="text/css")
+		link(rel="stylesheet", href="css/showcase.css", type="text/css")
+		link(rel="stylesheet", href="css/fonts.css", type="text/css")
+body
+	div.b-page
+		div.b-top-shadow
+			div.b-top-wrap
+				div.b-top
+					a.b-logo(href=(URL + "/"))
+					ul.b-top-menu
+						li.item-101.b-top-menu-item
+							a.b-top-menu-item-link(href=(URL + "/news"))= "News"
+						li.item-102.b-top-menu-item
+							a.b-top-menu-item-link(href=(URL + "/technology"))= "Technology"
+						li.item-103.b-top-menu-item
+							a.b-top-menu-item-link(href=(URL + "/licensing"))= "Licensing"
+						li.item-104.b-top-menu-item
+							a.b-top-menu-item-link(href=(URL + "/showcase"))= "Showcase"
+						li.item-105.b-top-menu-item
+							a.b-top-menu-item-link(href=(URL + "/partners"))= "Partners"
+						li.item-106.b-top-menu-item
+							a.b-top-menu-item-link(href=(URL + "/contacts"))= "Contacts"
+		div.b-center
+			div.b-content
+				ul.b-3bonners
+					li.b-3bonners-item
+					li.b-3bonners-item
+					li.b-3bonners-item.last
+				div.clr
+				div.item-page
+					h1.b-title= "Showcase"
+					div.b-article-text
+						div.b-showcase
+							div.b-showcase-text
+								ul.b-showcase-list
+									- for (var x = 0; x < index.length; )
+										- for (var r = 0; r < 3 && x < index.length; r++, x++)
+											li.b-showcase-list-item(class=((x + 1) % 3? "": "last"))
+												a.b-showcase-list-item-image(href=index[x].link, style="box-shadow: none; border: 1px solid rgba(60, 60, 60, 0.3);")
+													img(src="./img/default-thumb-300x200.png", alt="...")
+												a.b-showcase-list-item-title(style="margin-left: 3px; margin-bottom: 1px; font-size: 23px; font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe WP', 'Helvetica Neue', sans-serif;")= index[x].name
+												p.b-showcase-list-item-description(style="margin-left: 3px; font-size: 16px; color: white; font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe WP', 'Helvetica Neue', sans-serif;")= index[x].description
+												a.b-showcase-list-item-readmore.btn.btn-default(href=index[x].link, role="button", style="margin-left: 3px; margin-top: 10px; font-size: 17px; background-color: #333; color: white; border: none; font-weight: bold; width: 80px; border-radius: 0px; font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe WP', 'Helvetica Neue', sans-serif;")= "Launch"
+												//- span.label.label-default= "Default"
+										div.b-showcase-list(style="margin-top: 15px; margin-bottom: 15px; opacity: .5;")
+										
+								div.clr
+								div.b-showcase-text
+									p.
+										TODO: ....
+	div.b-footer-wrap
+		div.b-footer
+			ul.b-footer-menu
+				li.b-footer-menu-item
+					ul.b-footer-sub-menu
+						li.item-116.b-footer-sub-menu-item.active
+							a.b-footer-sub-menu-item-link(href=(URL + "/"))= "Main page"
+						li.item-117.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/technology"))= "Technology"
+						li.item-118.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/documents"))= "Documents"
+						li.item-137.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/downloads"))= "Downloads"
+				li.b-footer-menu-item
+					ul.b-footer-sub-menu
+						li.item-119.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/licensing"))= "Licensing"
+						li.item-120.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/vacancies"))= "Vacancies"
+						li.item-121.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/news"))= "News"
+				li.b-footer-menu-item
+					ul.b-footer-sub-menu
+						li.item-122.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/demo"))= "Demo"
+						li.item-123.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/team"))= "Team"
+						li.item-124.b-footer-sub-menu-item
+							a.b-footer-sub-menu-item-link(href=(URL + "/contacts"))= "Contacts"
+			div.b-footer-copy

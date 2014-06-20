@@ -80,10 +80,18 @@ module akra {
 		isAntialiased(): boolean;
 	}
 
+	export enum EFogType {
+		NONE = 0,
+		LINEAR,
+		EXPONENTIAL,
+		EXPONENTIAL_HEIGHT_DEPENDENT,
+		VERTICAL = EXPONENTIAL_HEIGHT_DEPENDENT
+	}
+
 	/** Viewport that can support fog. */
 	export interface IViewportFogged extends IViewport3D {
 		/** Enable fog. */
-		setFog(bEnabled?: boolean): void;
+		setFog(eType?: EFogType): void;
 
 		/** Is fog enabled? 
 		 * @return TRUE if fog enabled.

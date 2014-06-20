@@ -205,6 +205,9 @@ module akra.fx {
 
 		private _pUnifromInfoForStructFieldMap: IUniformStructInfoMap = null;
 
+		private static _pZeroSample2d: IAFXSamplerState = null;
+		private static _pZeroSampleCube: IAFXSamplerState = null;
+
 		isArray(sName: string) {
 			return this.getLength(sName) > 0;
 		}
@@ -233,6 +236,27 @@ module akra.fx {
 		constructor(pComposer: IAFXComposer, pPassBlend: IAFXPassBlend) {
 			this._pComposer = pComposer;
 			this._pPassBlend = pPassBlend;
+
+			
+			this.initZeroSamplers();
+		}
+
+		private initZeroSamplers() {
+			if (!isNull(Maker._pZeroSample2d)) {
+				return;
+			}
+
+			var pTexture2d: ITexture = this._pComposer.getEngine().getResourceManager().getTexturePool().createResource(".zero_texture_2d");
+			pTexture2d.create(2, 2, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
+
+			var pTextureCube: ITexture = this._pComposer.getEngine().getResourceManager().getTexturePool().createResource(".zero_texture_cube");
+			pTextureCube.create(2, 2, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_CUBE_MAP, EPixelFormats.BYTE_RGB);
+
+			Maker._pZeroSample2d = render.createSamplerState();
+			Maker._pZeroSampleCube = render.createSamplerState();
+
+			Maker._pZeroSample2d.texture = pTexture2d;
+			Maker._pZeroSampleCube.texture = pTextureCube;
 		}
 
 		_create(sVertex: string, sPixel: string): boolean {
@@ -355,7 +379,7 @@ module akra.fx {
 			if (this._pShaderUniformInfoList[iLocation].type !== EAFXShaderVariableType.k_NotVar) {
 				if (config.WEBGL) {
 					var pUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoList[iLocation];
-					var pApplyValue: any = pValue || pUniformInfo.defaultValue;
+					var pApplyValue: any = isDefAndNotNull(pValue) ? pValue : pUniformInfo.defaultValue;//pUniformInfo.defaultValue;
 
 					if (pUniformInfo.lastValue !== pApplyValue ||
 						pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D ||
@@ -440,14 +464,14 @@ module akra.fx {
 					if (this._isUsedZero2D) {
 						pShaderUniformInfo = this._pShaderUniformInfoMap["as0"];
 
-						pShaderUniformInfo.type = EAFXShaderVariableType.k_Int;
+						pShaderUniformInfo.type = EAFXShaderVariableType.k_Sampler2D;//EAFXShaderVariableType.k_Int;
 						pShaderUniformInfo.length = 0;
 					}
 
 					if (this._isUsedZeroCube) {
 						pShaderUniformInfo = this._pShaderUniformInfoMap["asc0"];
 
-						pShaderUniformInfo.type = EAFXShaderVariableType.k_Int;
+						pShaderUniformInfo.type = EAFXShaderVariableType.k_SamplerCUBE;//EAFXShaderVariableType.k_Int;
 						pShaderUniformInfo.length = 0;
 					}
 
@@ -682,11 +706,11 @@ module akra.fx {
 			}
 
 			if (this._isUsedZero2D) {
-				pInput.uniforms[this._pShaderUniformInfoMap["as0"].location] = 19;
+				pInput.uniforms[this._pShaderUniformInfoMap["as0"].location] = Maker._pZeroSample2d;//19;
 			}
 
 			if (this._isUsedZeroCube) {
-				pInput.uniforms[this._pShaderUniformInfoMap["asc0"].location] = 19;
+				pInput.uniforms[this._pShaderUniformInfoMap["asc0"].location] = Maker._pZeroSampleCube;//19;
 			}
 
 			render.mergeRenderStateMap(pPassInputRenderStates, this._pPassBlend._getRenderStates(), pInput.renderStates);

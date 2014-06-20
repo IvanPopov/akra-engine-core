@@ -51,15 +51,24 @@ float4 applyMaterialAlpha() : COLOR {
         materialAlpha += pixelData.material.emissive.a;
     }
 
-    float NoV = saturate(dot( pixelData.normal, normalize(-pixelData.position) ));
+    float NoV = dot(pixelData.normal, normalize(-pixelData.position));
 
-    // Simple model:
-    //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
-    // Physically based shading:
-    //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
-    // Fresnel eq solve: (Remember that this transparency is in fact opacity)
-    NoV = NoV * NoV;    // looks better
-    NoV = NoV * NoV;    // NoV = NoV^4
+    if(NoV < 0.){
+        //color.a = pixelData.material.transparency * materialAlpha;
+        NoV = saturate(abs(NoV));
+    }
+    else {
+        NoV = saturate(NoV);
+
+        // Simple model:
+        //color.a = (1. - simpleTransmittance(NoV) * pixelData.material.transparency) * pixelData.material.diffuse.a;
+        // Physically based shading:
+        //color.a = 5.*transSchlick( NoV ) * pixelData.material.transparency * pixelData.material.diffuse.a;
+        // Fresnel eq solve: (Remember that this transparency is in fact opacity)
+        NoV = NoV * NoV;    // looks better
+        NoV = NoV * NoV;    // NoV = NoV^4        
+    }
+
     color.a = (1. - transFresnelApprox(NoV) * ( 1. - pixelData.material.transparency)) * materialAlpha;
     //color.a = NoV;
 
@@ -213,7 +222,8 @@ float4 applySunLightShadows() : COLOR {
 
             if(IS_FOR_REAL_SHADING){
                 float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-                color = float4(lerp(points_sun_shadows[i].lightData.ground0, color.rgb, fFogValue), 1.);
+                color = float4(lerp(points_sun_shadows[i].lightData.ground0, color.rgb, fFogValue), 0.);
+                // color = float4(float3(fFogValue), 0.);
             }
 
             result_color += color;
@@ -237,107 +247,29 @@ float3 calulateEnvMapColor(float3 position, float3 normal, sampler2D envSampler)
 };
 
 float4 applyPBSReflection(): COLOR {
-    // float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
-    // //float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
-
     // LightData envLight;
-    // envLight.diffuse = float4(colorFromCubemap, 1.);
-    // envLight.specular = float4(colorFromCubemap, 1.);
-    // //envLight.ambient = float4(intensity);
-    // envLight.attenuation = float3(1., 0., 0.);
-    // envLight.position = pixelData.normal * 1.;
-
     float4 color = resultAFXColor;
-    // float4 s = pixelData.material.specular;
-// 
-    // pixelData.material.specular = float4(0.);
-    // color += applyBaseLightParams(pixelData, envLight);
-    // pixelData.material.specular = s;
 
     float4 reflection = calulatePBSReflection(pixelData.position, pixelData.normal, 
             pixelData.material.specular.xyz, pixelData.material.shininess, envSampler0);
     // lowering reflection brightness if we have a strong lighting already
-    
-    //reflection *= float4(1.) - color;
     color += reflection;
 
-    //if (){
-        //return float4(1.0, 0.3, 0.3, 0.0);
-    //}
     return color;
 };
 
 float4 applyPBSSkyboxLighting(): COLOR {
-    // float3 colorFromCubemap = 50. * calulateEnvMapColor(pixelData.position, pixelData.normal, envSampler0);
-    // //float intensity = (0.2126 * colorFromCubemap.r + 0.7152 * colorFromCubemap.g + 0.0722 * colorFromCubemap.b);
-
-    // LightData envLight;
-    // envLight.diffuse = float4(colorFromCubemap, 1.);
-    // envLight.specular = float4(colorFromCubemap, 1.);
-    // //envLight.ambient = float4(intensity);
-    // envLight.attenuation = float3(1., 0., 0.);
-    // envLight.position = pixelData.normal * 1.;
-
     float4 color = resultAFXColor;
-    // float4 s = pixelData.material.specular;
-// 
-    // pixelData.material.specular = float4(0.);
-    // color += applyBaseLightParams(pixelData, envLight);
-    // pixelData.material.specular = s;
-
-    float3 direction = (invView*float4(pixelData.normal,0.)).xyz;
-
-    float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5;
-    // lowering reflection brightness if we have a strong lighting already
-    
-    //reflection *= float4(1.) - color;
-
-    color += float4(envColor, 1.) * pixelData.material.diffuse;
-
-    //if (){
-        //return float4(1.0, 0.3, 0.3, 0.0);
-    //}
-    return color;
-};
-
-float3 fogColor : FOG_COLOR;
-float fogStart : FOG_START;
-float fogIndex : FOG_INDEX;
-
-float4 applyLinearFogfs(): COLOR {// required fog variables
-    float4 color = resultAFXColor;
-    float dist = length(pixelData.position);
-
-    // get a fog factor (thickness of fog) based on the distance
-    float fogFac = (dist - fogStart) / (fogIndex - fogStart);
-    // constrain the fog factor between 0 and 1
-    fogFac = clamp (fogFac, 0.0, 1.0);
-
-    // blend the fog color with the lighting color, based on the fog factor
-    color.rgb = mix (color.rgb, fogColor, fogFac);
-    return color;
-};
-
-float4 applyExponentialFogfs(): COLOR {// required fog variables
-    float4 color = resultAFXColor;
-    float dist = length(pixelData.position);
-
-    // get a fog factor (thickness of fog) based on the distance
-    float fogFac;
-    // Saves a little bit of calculation
-    if (dist < fogStart){
-        fogFac = 0.;
-    }
-    else if (dist - fogStart < fogIndex * 6.){
-        fogFac = 1. - exp(- (dist-fogStart) / fogIndex);
+    if(pixelData.normal == float3(0.)){
+        return color;
     }
     else {
-        fogFac = 1.;
-    }
+        float3 direction = (invView*float4(pixelData.normal,0.)).xyz;
 
-    // blend the fog color with the lighting color, based on the fog factor
-    color.rgb = mix (color.rgb, fogColor, fogFac);
-    return color;
+        float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5;
+        color += float4(envColor, 1.) * pixelData.material.diffuse;
+        return color;
+    }
 };
 
 foreign bool IS_ENABLE_ALPHA = true;
@@ -405,10 +337,12 @@ technique sunShadowsLighting{
     }
 };
 
-
+foreign bool IS_USED_SKYBOX_LIGHTING = false;
 technique pbsSkyboxLighting{
     pass applyPbsSkyboxLighting{
-        PixelShader = compile applyPBSSkyboxLighting();
+        if(IS_USED_SKYBOX_LIGHTING){
+            PixelShader = compile applyPBSSkyboxLighting();
+        }
     }
 };
 
@@ -417,22 +351,6 @@ technique pbsReflection{
     pass applyPbsReflection{
         if(IS_USED_PBS_REFLECTIONS /*&& IS_USED_PBS_SIMPLE*/){
             PixelShader = compile applyPBSReflection();
-        }
-    }
-};
-
-technique linearFog{
-    pass applyLinearFog{
-        if(USE_LINEAR_FOG){
-            PixelShader = compile applyLinearFogfs();
-        }
-    }
-};
-
-technique exponentialFog{
-    pass applyExponentialFog{
-        if(USE_EXPONENTIAL_FOG){
-            PixelShader = compile applyExponentialFogfs();
         }
     }
 };
