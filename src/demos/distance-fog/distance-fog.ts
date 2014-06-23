@@ -384,7 +384,7 @@ module akra {
 			pMat.diffuse = new Color(0.0, 0.0, 0.0, 1.0);
 			pMat.emissive = new Color(0.9, 0.9, 0.9, 1.);
 
-			pCubeSpiralList[i].setName('cube-light-round-' + i.toString());
+			pCubeSpiralList[i].setName('cube-light-spiral-' + i.toString());
 			pCubeSpiralList[i].setInheritance(ENodeInheritance.ALL);
 			pCubeSpiralList[i].attachToParent(nd);
 			pCubeSpiralList[i].scale(0.2).addRelPosition(spiralPosition(i), 0, 0);

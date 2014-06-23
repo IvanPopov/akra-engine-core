@@ -1,5 +1,6 @@
 include "common.afx";
 include "brdf.afx";
+include "transparency.afx";
 
 struct LightData {
     float4 diffuse     : DIFFUSE;

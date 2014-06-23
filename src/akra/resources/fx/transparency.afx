@@ -1,0 +1,150 @@
+
+//********* for Transparency ****** */
+float TransBRDFApproxNonmetal( float Roughness, float NoV )
+{
+    // Same as EnvBRDFApprox( 0.04, Roughness, NoV )
+    const float2 c0 = { -1., -0.0275 };
+    const float2 c1 = { 1., 0.0425 };
+    float2 r = Roughness * c0 + c1;
+    return min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+}
+
+float simpleTransmittance(float NoV)
+{
+    return (NoV-0.5)*2.;
+}
+
+float transSchlick(float NoV)
+{
+    return 0.1 + 0.9 * exp2( (-5.55473 * NoV - 6.98316) * NoV );
+}
+
+// @c Sivukhin 'General Physics'
+// s- and p- polarisations
+float transFresnel(float NoV)
+{
+    float n = 1.5;  //glass index of refraction
+    float rcpN = 1. / n;
+
+    float sinA = sqrt(1. - NoV*NoV);
+    float sinSqA = sinA * sinA;
+    float sin2A = 2. * sinA * NoV;
+
+    float sinB = sinA * rcpN;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = sin2A * sin2B;
+    float halfSin2ASin2B = 0.5*sin2ASin2B;
+
+    float pfSqAuB = sinSqA + sinSqB - 2.*sinSqA*sinSqB;
+    float sinSqApB = pfSqAuB + halfSin2ASin2B;
+    float cosSqAmB = 1. - pfSqAuB + halfSin2ASin2B;
+
+    float sTransmittance = sin2ASin2B / sinSqApB;
+    float pTransmittance = sin2ASin2B / (sinSqApB * cosSqAmB);
+
+    return (sTransmittance + pTransmittance) / 2.;
+}
+
+float transFresnelOptimized(float NoV)
+{
+    float sinA = sqrt(1. - NoV*NoV);    //1 sum 1 mul 1 sqrt
+    float sinSqA = sinA * sinA;         //1 mul
+
+    float sinB = sinA * 0.666;          //1 mul
+    float sinSqB = sinB * sinB;         //1 mul
+
+    float halfSin2ASin2B = 2. * NoV * sinA * sinB * sqrt(1. - sinSqB);  //1 sum 4 mul 1 sqrt
+    float pfSqAuB = sinSqA + sinSqB - 2.*sinSqA*sinSqB;                 //2 sum 2 mul
+
+    return halfSin2ASin2B * (1. + 1. / (1. - pfSqAuB + halfSin2ASin2B) ) / (pfSqAuB + halfSin2ASin2B); //4 sum 3 mul 2 rcp
+}// 8 sum 13 mul 2 rcp 2 sqrt
+
+float transFresnelApprox(float x)
+{
+    // Series of:
+    // sin(2arccos(x))sin(2arcsin(sin(arccos(x))/1.5))(1+1/cos^2(arccos(x)-arcsin(sin(arccos(x))/1.5))) / 
+    //      (2sin^2(arccos(x)+arcsin(sin(arccos(x))/1.5)))
+    // at 0.5, power of 6, n = 1.5
+    //return 0.05525 + x * (4.9116 + x * (-12.670 + x * (19.958 + x * (-19.838 + x * (11.473 - 2.9459 * x)))));
+
+    // Spline approximation, power of 5 (more precise then series)
+    // Rsq = 0.99994 at 0.001 step, n = 1.5
+    return 0.0086 + x * (5.3888 + x * (-14.06 + x * (20.216 + x * (-15.205 + x * 4.6155))));
+}// 5 sum 5 mul
+
+float sTransFresnel(float NoV)
+{
+    // s-polarisation
+    // Ts = 1 - sin^2(a-b) / sin^2(a+b)
+    // sin(a)/sin(b) = n
+    float n = 1.5;
+    float rcpN = 1. / n;
+
+    float sinA = sqrt(1. - NoV*NoV);
+    float sinSqA = sinA * sinA;
+    float sin2A = 2. * sinA * NoV;
+
+    float sinB = sinA * rcpN;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = sin2A * sin2B;
+    float sinSqApB = sinSqA + sinSqB - 2.*sinSqA*sinSqB + 0.5*sin2ASin2B;
+
+    float sTransmittance = sin2ASin2B / sinSqApB;
+
+    return sTransmittance;
+}
+
+float sTransFresnelOptimized(float NoV)
+{
+    float sinA = sqrt(1. - NoV*NoV);
+    float sinSqA = sinA * sinA;
+
+    float sinB = sinA * 0.666;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = 4. * sinA * NoV * sinB * sqrt(1. - sinSqB);
+
+    return sin2ASin2B / (sinSqA + sinSqB - 2.*sinSqA*sinSqB + 0.5*sin2ASin2B);
+}
+
+// for n=1.5
+// Rsq = 0.99998 with 0.01 step
+float sTransFresnelApprox(float NoV)
+{// BIG ARTIFACT
+    //return NoV * (NoV * (NoV * (4.1731 - 1.3011*NoV) - 5.3509) + 3.433) + 0.0046;
+    // Rsq = 0.99856 with 0.01 step
+    return NoV * (NoV * (1.6372*NoV - 3.8556) + 3.1885);
+}
+
+float pTransFresnel(float NoV)
+{
+    // p-polarisation
+    // Tp = sin(2a)sin(2b)/(sin^2(a+b)*sin^2(a-b))
+    // sin(a)/sin(b) = n
+    float n = 1.5;
+    float rcpN = 1. / n;
+
+    float sinA = sqrt(1. - NoV*NoV);
+    float sinSqA = sinA * sinA;
+    float sin2A = 2. * sinA * NoV;
+
+    float sinB = sinA * rcpN;
+    float sinSqB = sinB * sinB;
+    float sin2B = 2. * sinB * sqrt(1. - sinSqB);
+
+    float sin2ASin2B = sin2A * sin2B;
+    float halfSin2ASin2B = 0.5*sin2ASin2B;
+
+    float pfSqAuB = sinSqA + sinSqB - 2.*sinSqA*sinSqB;
+    float sinSqApB = pfSqAuB + halfSin2ASin2B;
+    float cosSqAmB = 1. - pfSqAuB + halfSin2ASin2B;
+
+    float pTransmittance = sin2ASin2B / (sinSqApB * cosSqAmB);
+
+    return pTransmittance;
+}
