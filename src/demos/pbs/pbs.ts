@@ -266,6 +266,7 @@ module akra {
 			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
 			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+			// pPass.setTexture('FRESNEL_TEXTURE', null);
 			pPass.setTexture('FRESNEL_TEXTURE', pFresnelTexture);
 			pPass.setForeign("bUseFresnelTexture", bFresnelTexture);
 
@@ -288,12 +289,12 @@ module akra {
 	var lightDiffColor: color.Color = new Color(0.1, 0.1, 0.1, 1.0);
 	var spiralRadius: float = 40.;
 
-	var omniLightConst: uint = 4;
-	var lightPoss1: Array<math.Vec3> = [
-		new math.Vec3(0, 11, 16),
-		new math.Vec3(0, 6, 16),
-		new math.Vec3(0, 3, 16),
-		new math.Vec3(0, 0, 16)];
+	// var omniLightConst: uint = 4;
+	// var lightPoss1: Array<math.Vec3> = [
+	// 	new math.Vec3(0, 11, 0),
+	// 	new math.Vec3(0, 6, 0),
+	// 	new math.Vec3(0, 3, 0),
+	// 	new math.Vec3(0, 0, 0)];
 
 	var omniLightRound: uint = 4;
 	var lightPoss2: Array<math.Vec3> = [
@@ -305,6 +306,7 @@ module akra {
 	var nd = pScene.createNode();
 	nd.attachToParent(pScene.getRootNode());
 	nd.setPosition(0., 0., 20.);
+	var lightDiffColorSpiral: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
 	var orbitalAngSpeed: float = 0.001
 	var totalLightSources: uint = 20;
 
@@ -320,18 +322,18 @@ module akra {
 	function createLighting(): void {
 		var pOmniLight: IOmniLight;
 
-		// Four constant points of light in front of objects
-		for (var i = 0; i < omniLightConst; i++) {
-			pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512, "omni-light-const-" + i.toString());
-			pOmniLight.attachToParent(pScene.getRootNode());
-			pOmniLight.setEnabled(true);
-			pOmniLight.getParams().ambient.set(0);
-			pOmniLight.getParams().diffuse.set(lightDiffColor);
-			pOmniLight.getParams().specular.set(lightDiffColor);
-			pOmniLight.getParams().attenuation.set(omniLightAttenuation);
-			pOmniLight.setShadowCaster(false);
-			pOmniLight.addPosition(lightPoss1[i]);
-		};
+		// // Four constant points of light in front of objects
+		// for (var i = 0; i < omniLightConst; i++) {
+		// 	pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512, "omni-light-const-" + i.toString());
+		// 	pOmniLight.attachToParent(pScene.getRootNode());
+		// 	pOmniLight.setEnabled(true);
+		// 	pOmniLight.getParams().ambient.set(0);
+		// 	pOmniLight.getParams().diffuse.set(lightDiffColor);
+		// 	pOmniLight.getParams().specular.set(lightDiffColor);
+		// 	pOmniLight.getParams().attenuation.set(omniLightAttenuation);
+		// 	pOmniLight.setShadowCaster(false);
+		// 	pOmniLight.addPosition(lightPoss1[i]);
+		// };
 
 		// Moving lights in round
 		var pOmniLightRoundList: IOmniLight[] = new Array(omniLightRound);
@@ -360,8 +362,8 @@ module akra {
 			pOmniLightSpiralList[i].attachToParent(nd);
 			pOmniLightSpiralList[i].setEnabled(true);
 			pOmniLightSpiralList[i].getParams().ambient.set(0);
-			pOmniLightSpiralList[i].getParams().diffuse.set(lightDiffColor);
-			pOmniLightSpiralList[i].getParams().specular.set(lightDiffColor);
+			pOmniLightSpiralList[i].getParams().diffuse.set(lightDiffColorSpiral);
+			pOmniLightSpiralList[i].getParams().specular.set(lightDiffColorSpiral);
 			pOmniLightSpiralList[i].getParams().attenuation.set(omniLightAttenuation);
 			pOmniLightSpiralList[i].setShadowCaster(false);
 			pOmniLightSpiralList[i].addRelPosition(spiralPosition(i), 0, 0);
@@ -389,10 +391,12 @@ module akra {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 		});
-		pViewport.getEffect().addComponent("precalculateFresnel");
+		pViewport.getEffect().addComponent("akra.system.precalculateFresnel");
 
+		akra.config.__VIEW_INTERNALS__ = true;
 		//for render call
 		pRenderTarget.update();
+		akra.config.__VIEW_INTERNALS__ = false;
 	}
 
 	function createSkyBox(): void {
@@ -497,22 +501,22 @@ module akra {
 		/////////////////// LIGHT SOURCES MARKS
 		// Four constant points of light in front of objects
 		var lightPointsScale: uint = 0.4;
-		for (var i = 0; i < omniLightConst; i++) {
-			var pModelRoot: INode = loadModel("SPHERE.DAE", 
-				(model)=>{
-					model.explore( function(node) {
-						if(akra.scene.SceneModel.isModel(node)) {
-							var pMat: IMaterial = material.create();
-							pMat.shininess = 0.;
-							pMat.specular = new Color(0.0, 0.0, 0.0, 1.0);
-							pMat.diffuse = new Color(0.0, 0.0, 0.0, 1.0);
-							pMat.emissive = new Color(0.9, 0.9, 0.9, 1.);
+		// for (var i = 0; i < omniLightConst; i++) {
+		// 	var pModelRoot: INode = loadModel("SPHERE.DAE", 
+		// 		(model)=>{
+		// 			model.explore( function(node) {
+		// 				if(akra.scene.SceneModel.isModel(node)) {
+		// 					var pMat: IMaterial = material.create();
+		// 					pMat.shininess = 0.;
+		// 					pMat.specular = new Color(0.0, 0.0, 0.0, 1.0);
+		// 					pMat.diffuse = new Color(0.0, 0.0, 0.0, 1.0);
+		// 					pMat.emissive = new Color(0.9, 0.9, 0.9, 1.);
 
-							node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
-							}
-						});
-					}, 'cube-light-const-'+i.toString(), nd).scale(lightPointsScale).setPosition(lightPoss1[i]);
-		};
+		// 					node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
+		// 					}
+		// 				});
+		// 			}, 'cube-light-const-'+i.toString(), nd).scale(lightPointsScale).setPosition(lightPoss1[i]);
+		// };
 
 		// Moving lights in round
 		var pCubeRoundList: INode[] = new Array(omniLightRound);
@@ -570,7 +574,7 @@ module akra {
 		////////////////// JUST OBJECTS
 		// GOLDEN TEAPOTS: first row
 		var teapotDistance: float = 6.0; // distance between teapots
-		var totalTeapots: float = 5;
+		var totalTeapots: float = 7;
 		var goldenSpecular: color.Color = new Color(0.999, 0.71, 0.29, 1.0);
 		var goldenDiffuse: color.Color = new Color(0.999, 0.86, 0.57, 1.0);
 		for (var i = 0; i < totalTeapots; i++) {
