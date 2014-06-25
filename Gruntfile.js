@@ -94,6 +94,15 @@ module.exports = function (grunt) {
 		}
 	});
 
+	//create task for demos.
+	grunt.config("parallel.demos", {
+		tasks: util.getDemos(grunt.config('DemosSourceDir')).map(function (task) { 
+			return {
+				grunt: true,
+				args: [task].concat(grunt.option.flags())
+			}
+		})
+	});
 
 	if (grunt.option('Release') || grunt.option('release')) {
 		grunt.config("Configuration", 'Release');
@@ -158,8 +167,7 @@ module.exports = function (grunt) {
 	]);
 
 	grunt.registerTask("addons", ['build:core', 'parallel:addons']);
-
-
+	
 	//grunt.registerTask("build", ["compile", "concat", "uglify"]);
 	//grunt.registerTask("generate", ["compile", "build", "copy:public"]);
 	//return grunt.registerTask("preview", ["generate", "connect:preview", "regarde"]);
