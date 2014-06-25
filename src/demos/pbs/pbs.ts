@@ -36,8 +36,8 @@ module akra {
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pSky: model.Sky = null;
 	export var pPBSData = null;
-	export var pSkyboxTexture = null;
-	export var pSkyboxTextures = null;
+	export var pSkyboxTexture: ITexture = null;
+	export var pSkyboxTextures: IMap<ITexture> = null;
 	export var pEnvTexture = null;
 	export var pFresnelTexture: ITexture = null;
 
@@ -97,21 +97,28 @@ module akra {
 		});
 	}
 
-	var teapotSpecular = new Color(0.999, 0.71, 0.29, 1.0);
-	var teapotDiffuse = new Color(0.999, 0.86, 0.57, 1.0);
-	var totalLightSources = 10;
+	var teapotMaterialKey: string;
+	var metalSphereMaterialKey: string;
+	var nonmetalSphereMaterialKey: string;
+	var teapotDistance: float = 6.0; // distance between teapots
+	var totalTeapots: float = 7;
+	var pTeapots: INode[] = new Array(totalTeapots);
+	var sphereDistance: float = 5.0; // distance between spheres
+	var totalSpheres: float = 10;
+	var pNonmetalSpheres: INode[] = new Array(totalSpheres);
+	var pMetalSpheres: INode[] = new Array(totalSpheres);
 
 	function createViewport(): IViewport3D {
 		var pViewport: ILPPViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
+		(<render.ForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
 		window.onresize = function (event) {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		var counter = 0;
-		var pEffect = (<render.LPPViewport>pViewport).getEffect();
+		var pGUI = new dat.GUI();
 
 		var pSkyboxTexturesKeys = [
 			'desert',
@@ -122,50 +129,29 @@ module akra {
 			'church',
 			'basilica',
 		];
-		pSkyboxTextures = { };
-		for(var i=0; i<pSkyboxTexturesKeys.length; i++) {
-			console.log("Creating skybox: ",pSkyboxTexturesKeys[i],pSkyboxTexturesKeys[i].toUpperCase());
-			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-"+pSkyboxTexturesKeys[i]);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadResource("SKYBOX_"+pSkyboxTexturesKeys[i].toUpperCase());
-			console.log("Done!");
+		pSkyboxTextures = {};
+		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
+
+			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
 		};
 
-		var pGUI = new dat.GUI();
-
-		var pMaterialPresets = {
-			Gold: {
-				_F0: new Color(1., 0.71, 0.29),
-				_Diffuse: new Color(1.00, 0.86, 0.57),
-			},
-			Copper: {
-				_F0: new Color(0.95, 0.64, 0.54),
-				_Diffuse: new Color(0.98, 0.82, 0.76),
-			},
-			Plastic: {
-				_F0: new Color(0.03, 0.03, 0.03),
-				_Diffuse: new Color(0.21, 0.21, 0.21),
-			},
-			Iron: {
-				_F0: new Color(0.56, 0.57, 0.58),
-				_Diffuse: new Color(0.77, 0.78, 0.78),
-			},
-			Aluminium: {
-				_F0: new Color(0.91, 0.92, 0.92),
-				_Diffuse: new Color(0.96, 0.96, 0.97),
-			},
-			Silver: {
-				_F0: new Color(0.95, 0.93, 0.88),
-				_Diffuse: new Color(0.98, 0.97, 0.95),
-			},
-			Water: {
-				_F0: new Color(0.02, 0.02, 0.02),
-				_Diffuse: new Color(0.15, 0.15, 0.15),
-			},
-			Glass: {
-				_F0: new Color(0.08, 0.08, 0.08),
-				_Diffuse: new Color(0.31, 0.31, 0.31),
-			}
-		};
+		var pMetalMaterialKeys = [
+			"gold",
+			"copper",
+			"iron",
+			"aluminium",
+			"silver",
+		];
+		metalSphereMaterialKey = "aluminium";
+		var pNonmetalMaterialKeys = [
+			"plastic",
+			"water",
+			"glass"
+		];
+		nonmetalSphereMaterialKey = "plastic";
+		var pMaterialKeys = [].concat(pMetalMaterialKeys, pNonmetalMaterialKeys);
+		teapotMaterialKey = "gold";
 
 		var pPbsSpecG = {
 			Implicit: 0,
@@ -193,63 +179,52 @@ module akra {
 			Fresnel: 2
 		};
 
-		pPBSData = {
-			isUsePBS: true,
-			useFresnelTexture: false,
-			_Material: pMaterialPresets.Gold,
-			pPbsSpecG: pPbsSpecG.Schlick,
-		}
-
-		var pPBSFolder = pGUI.addFolder("pbs");
-		(<dat.OptionController>pPBSFolder.add(pPBSData, 'isUsePBS')).name("use PBS").onChange((bPBS:boolean)=>{
-			if (bPBS){
-				(<IShadedViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
-			}
-			else {
-				(<IShadedViewport>pViewport).setShadingModel(EShadingModel.BLINNPHONG);
-			}
-
-			});
-		var bFresnelTexture = false;
-		(<dat.OptionController>pPBSFolder.add(pPBSData, 'useFresnelTexture')).name("use FresTex").onChange((bFresTex:boolean)=>{
-			bFresnelTexture = bFresTex;
-			});
-		(<dat.OptionController>pPBSFolder.add({Material:"Gold"}, 'Material', Object.keys(pMaterialPresets))).name("Material").onChange((sKey) => {
-			teapotSpecular.set(pMaterialPresets[sKey]._F0);
-			teapotDiffuse.set(pMaterialPresets[sKey]._Diffuse);
+		var pMaterialsFolder = pGUI.addFolder("materials");
+		(<dat.OptionController>pMaterialsFolder.add({Material:"gold"}, 'Material', pMaterialKeys)).name("Teapot").onChange((sKey) => {
+			for (var i = 0; i < totalTeapots; i++) {
+				(<ISceneObject>pTeapots[i].getChild().getChild()).getRenderable().getSurfaceMaterial().getMaterial().set(sKey);
+			};
 		});
+		(<dat.OptionController>pMaterialsFolder.add({Material:"silver"}, 'Material', pMetalMaterialKeys)).name("Metal Sphere").onChange((sKey) => {
+			for (var i = 0; i < totalSpheres; i++) {
+				(<ISceneObject>pMetalSpheres[i].getChild().getChild()).getRenderable().getSurfaceMaterial().getMaterial().set(sKey);
+			};
+		});
+		(<dat.OptionController>pMaterialsFolder.add({Material:"plastic"}, 'Material', pNonmetalMaterialKeys)).name("Nonmetal Sphere").onChange((sKey) => {
+			for (var i = 0; i < totalSpheres; i++) {
+				(<ISceneObject>pNonmetalSpheres[i].getChild().getChild()).getRenderable().getSurfaceMaterial().getMaterial().set(sKey);
+			};
+		});
+		var pPBSFolder = pGUI.addFolder("pbs");
+		var bFresnelTexture : boolean = false;
+		(<dat.OptionController>pPBSFolder.add({'use':bFresnelTexture}, 'use')).name("Precalc texture").onChange((bFresTex:boolean)=>{
+			bFresnelTexture = bFresTex;
+		});
+		
 		(<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-				(<render.LPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-			}
+			(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
 
 		var iPbsSpecG = 3;
-		(<dat.OptionController>pPBSFolder.add({PbsSpecG:"Schlick"}, 'PbsSpecG', Object.keys(pPbsSpecG))).name("PBS Spec G").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({PbsSpecG:"Schlick"}, 'PbsSpecG', Object.keys(pPbsSpecG))).name("Geometric visibility").onChange((sKey) => {
 			iPbsSpecG = pPbsSpecG[sKey];
-			console.log(iPbsSpecG);
 		});
 
 		var iPbsDiffuse = 0;
-		(<dat.OptionController>pPBSFolder.add({PbsDiffuse:"Lambert"}, 'PbsDiffuse', Object.keys(pPbsDiffuse))).name("PBS Diffuse").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({PbsDiffuse:"Lambert"}, 'PbsDiffuse', Object.keys(pPbsDiffuse))).name("Diffuse").onChange((sKey) => {
 			iPbsDiffuse = pPbsDiffuse[sKey];
-			console.log(iPbsDiffuse);
 		});
 
 		var iPbsSpecD = 2;
-		(<dat.OptionController>pPBSFolder.add({PbsSpecD:"GGX"}, 'PbsSpecD', Object.keys(pPbsSpecD))).name("PBS Spec D").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({PbsSpecD:"GGX"}, 'PbsSpecD', Object.keys(pPbsSpecD))).name("Scattering").onChange((sKey) => {
 			iPbsSpecD = pPbsSpecD[sKey];
-			console.log(iPbsSpecD);
 		});
 
 		var iPbsSpecF = 1;
-		(<dat.OptionController>pPBSFolder.add({PbsSpecF:"Schlick"}, 'PbsSpecF', Object.keys(pPbsSpecF))).name("PBS Spec F").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({PbsSpecF:"Schlick"}, 'PbsSpecF', Object.keys(pPbsSpecF))).name("Fresnel").onChange((sKey) => {
 			iPbsSpecF = pPbsSpecF[sKey];
-			console.log(iPbsSpecF);
 		});
-
-		(<IShadedViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -266,7 +241,6 @@ module akra {
 			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
 
 			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
-			// pPass.setTexture('FRESNEL_TEXTURE', null);
 			pPass.setTexture('FRESNEL_TEXTURE', pFresnelTexture);
 			pPass.setForeign("bUseFresnelTexture", bFresnelTexture);
 
@@ -285,7 +259,7 @@ module akra {
 
 	var orbitalAngSpeed: float = 0.001
 	// Light sources data
-	var omniLightAttenuation: math.Vec3 = new math.Vec3(1., 0., 1.);
+	var omniLightAttenuation: math.Vec3 = new math.Vec3(1., 0., 0.01);
 	var lightDiffColor: color.Color = new Color(0.1, 0.1, 0.1, 1.0);
 	var spiralRadius: float = 40.;
 
@@ -402,16 +376,18 @@ module akra {
 	function createSkyBox(): void {
 		pSkyboxTexture = pSkyboxTextures['desert'];
 
-		if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-			(<render.LPPViewport>pViewport).setSkybox(pSkyboxTexture);
+		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
+			var pModel = addons.cube(pScene);
+			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}
+		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTexture);
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
 		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
 
-		(<IShadedViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<IForwardViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 	}
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -507,62 +483,59 @@ module akra {
 		// 			model.explore( function(node) {
 		// 				if(akra.scene.SceneModel.isModel(node)) {
 		// 					var pMat: IMaterial = material.create();
+		// 					pMat.set("black");
 		// 					pMat.shininess = 0.;
-		// 					pMat.specular = new Color(0.0, 0.0, 0.0, 1.0);
-		// 					pMat.diffuse = new Color(0.0, 0.0, 0.0, 1.0);
-		// 					pMat.emissive = new Color(0.9, 0.9, 0.9, 1.);
+		// 					pMat.emissive.set(0.9, 0.9, 0.9, 1.);
 
 		// 					node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
 		// 					}
 		// 				});
-		// 			}, 'cube-light-const-'+i.toString(), nd).scale(lightPointsScale).setPosition(lightPoss1[i]);
+		// 			}, 'sphere-light-const-'+i.toString(), nd).scale(lightPointsScale).setPosition(lightPoss1[i]);
 		// };
 
 		// Moving lights in round
-		var pCubeRoundList: INode[] = new Array(omniLightRound);
+		var pSphereRoundList: INode[] = new Array(omniLightRound);
 		for (var i = 0; i < omniLightRound; i++) {
-			pCubeRoundList[i] = loadModel("SPHERE.DAE", 
+			pSphereRoundList[i] = loadModel("SPHERE.DAE", 
 				(model)=>{
 					model.explore( function(node) {
 						if(akra.scene.SceneModel.isModel(node)) {
 							var pMat: IMaterial = material.create();
+							pMat.set("black");
 							pMat.shininess = 0.;
-							pMat.specular = new Color(0.0, 0.0, 0.0, 1.0);
-							pMat.diffuse = new Color(0.0, 0.0, 0.0, 1.0);
-							pMat.emissive = new Color(0.9, 0.9, 0.9, 1.);
+							pMat.emissive.set(0.9, 0.9, 0.9, 1.);
 
 							node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
 							}
 						});
-					}, 'cube-light-round-'+i.toString(), nd).scale(lightPointsScale).setPosition(lightPoss2[i]);
+					}, 'sphere-light-round-'+i.toString(), nd).scale(lightPointsScale).setPosition(lightPoss2[i]);
 		};
 		pScene.beforeUpdate.connect(() => {
 			for (var i = 0; i < omniLightRound; i++) {
-				pCubeRoundList[i].addOrbitRotationByEulerAngles(orbitalAngSpeed, 0, 0);
+				pSphereRoundList[i].addOrbitRotationByEulerAngles(orbitalAngSpeed, 0, 0);
 			}
 		})
 
 		// Moving lights in spiral
-		var pCubeSpiralList: INode[] = new Array(totalLightSources);
+		var pSphereSpiralList: INode[] = new Array(totalLightSources);
 		for (var i = 0; i < totalLightSources; i++) {
-			pCubeSpiralList[i] = loadModel("SPHERE.DAE", 
+			pSphereSpiralList[i] = loadModel("SPHERE.DAE", 
 				(model)=>{
 					model.explore( function(node) {
 						if(akra.scene.SceneModel.isModel(node)) {
 							var pMat: IMaterial = material.create();
+							pMat.set("black");
 							pMat.shininess = 0.;
-							pMat.specular = new Color(0.0, 0.0, 0.0, 1.0);
-							pMat.diffuse = new Color(0.0, 0.0, 0.0, 1.0);
-							pMat.emissive = new Color(0.9, 0.9, 0.9, 1.);
+							pMat.emissive.set(0.9, 0.9, 0.9, 1.);
 
 							node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
 							}
 						});
-					}, 'cube-light-spiral-'+i.toString(), nd).scale(lightPointsScale).setPosition(spiralPosition(i), 0, 0);
+					}, 'sphere-light-spiral-'+i.toString(), nd).scale(lightPointsScale).setPosition(spiralPosition(i), 0, 0);
 		};
 		pScene.beforeUpdate.connect(() => {
 			for (var i = 0; i < totalLightSources; i++) {
-				pCubeSpiralList[i].addOrbitRotationByEulerAngles(spiralRotation(i), 0, 0);
+				pSphereSpiralList[i].addOrbitRotationByEulerAngles(spiralRotation(i), 0, 0);
 			}
 		})
 
@@ -570,70 +543,60 @@ module akra {
 		function calcShi(i: uint, ma: uint) {
 			return (1.0 - i / ma) * 0.8 + 0.1;
 		}
+		function calcPos(i: uint, tot: uint, dis: float) {
+			return dis * (i - (tot - 1) / 2);
+		}
 
 		////////////////// JUST OBJECTS
-		// GOLDEN TEAPOTS: first row
-		var teapotDistance: float = 6.0; // distance between teapots
-		var totalTeapots: float = 7;
-		var goldenSpecular: color.Color = new Color(0.999, 0.71, 0.29, 1.0);
-		var goldenDiffuse: color.Color = new Color(0.999, 0.86, 0.57, 1.0);
+		// default(GOLDEN) TEAPOTS: first row
 		for (var i = 0; i < totalTeapots; i++) {
-			loadModel("TEAPOT.DAE",
+			pTeapots[i] = loadModel("TEAPOT.DAE",
 				(model) => {
 					model.explore(function (node) {
 						if (akra.scene.SceneModel.isModel(node)) {
 							var pMat: IMaterial = material.create();
+							pMat.set(teapotMaterialKey);
 							pMat.shininess=calcShi(i, totalTeapots);
-							pMat.specular=goldenSpecular;
-							pMat.diffuse=goldenDiffuse;
-							pMat.emissive=new Color(0.0, 0.0, 0.0, 1.0);
+							pMat.emissive.set(0.0, 0.0, 0.0, 1.0);
 
 							node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
 						}
 					});
-				}, 'teapot-' + i.toString(), nd).scale(3.0).addRelPosition(teapotDistance * (i - (totalTeapots - 1) / 2), 8.0, 0.0);
+				}, 'teapot-' + i.toString(), nd).scale(3.0).addRelPosition(calcPos(i, totalTeapots, teapotDistance), 8.0, 0.0);
 		};
 
-		// SILVER CUBES: second row
-		var cubeDistance: float = 5.0; // distance between cubes
-		var totalCubes: float = 10;
-		var silverSpecular: color.Color = new Color(0.95, 0.93, 0.88, 1.0);
-		var silverDiffuse: color.Color = new Color(0.98, 0.97, 0.95, 1.0);
-		for (var i = 0; i < totalCubes; i++) {
-			loadModel("SPHERE.DAE", 
+		// default(SILVER) SPHERES: second row
+		for (var i = 0; i < totalSpheres; i++) {
+			pMetalSpheres[i] = loadModel("SPHERE.DAE", 
 				(model)=>{
 					model.explore( function(node) {
 						if(akra.scene.SceneModel.isModel(node)) {
 							var pMat: IMaterial = material.create();
-							pMat.shininess=calcShi(i, totalCubes);
-							pMat.specular=silverSpecular;
-							pMat.diffuse=silverDiffuse;
-							pMat.emissive=new Color(0.0, 0.0, 0.0, 1.0);
+							pMat.set(metalSphereMaterialKey);
+							pMat.shininess=calcShi(i, totalSpheres);
+							pMat.emissive.set(0.0, 0.0, 0.0, 1.0);
 
 							node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
 							}
 						});
-					}, 'sphere-light-silver-'+i.toString(), nd).scale(4.0).setPosition(cubeDistance * (i - (totalCubes - 1) / 2), 2.0, 0.0);
+					}, 'sphere-metal-'+i.toString(), nd).scale(4.0).setPosition(calcPos(i, totalSpheres, sphereDistance), 2.0, 0.0);
 		};
 
-		// PLASTIC CUBES: third row
-		var plasticSpecular: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
-		var plasticDiffuse: color.Color = new Color(0.21, 0.21, 0.21, 1.0);
-		for (var i = 0; i < totalCubes; i++) {
-			loadModel("SPHERE.DAE", 
+		// default(PLASTIC) SPHERES: third row
+		for (var i = 0; i < totalSpheres; i++) {
+			pNonmetalSpheres[i] = loadModel("SPHERE.DAE", 
 				(model)=>{
 					model.explore( function(node) {
 						if(akra.scene.SceneModel.isModel(node)) {
 							var pMat: IMaterial = material.create();
-							pMat.shininess=calcShi(i, totalCubes);
-							pMat.specular=plasticSpecular;
-							pMat.diffuse=plasticDiffuse;
-							pMat.emissive=new Color(0.0, 0.0, 0.0, 1.0);
+							pMat.set(nonmetalSphereMaterialKey);
+							pMat.shininess=calcShi(i, totalSpheres);
+							pMat.emissive.set(0.0, 0.0, 0.0, 1.0);
 
 							node.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMat);
 							}
 						});
-					}, 'sphere-light-plastic-'+i.toString(), nd).scale(4.0).setPosition(cubeDistance * (i - (totalCubes - 1) / 2), -4.0, 0.0);
+					}, 'sphere-nonmetal-'+i.toString(), nd).scale(4.0).setPosition(calcPos(i, totalSpheres, sphereDistance), -4.0, 0.0);
 		};
 
 		pProgress.destroy();
