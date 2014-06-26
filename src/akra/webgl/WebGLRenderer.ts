@@ -98,6 +98,7 @@ module akra.webgl {
 		private _pFreeRenderStatesPool: IObjectArray<IWebGLContextStates> = new util.ObjectArray<IWebGLContextStates>();
 
 		private _pLastMaker: IAFXMaker = null;
+		private _pLastBufferMap: IBufferMap = null;
 
 		static DEFAULT_OPTIONS: IRendererOptions = {
 			depth: false,
@@ -735,37 +736,41 @@ module akra.webgl {
 
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
-			if (!isNull(pBufferMap.getIndex())) {
-				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
-			}
-
-			for (var i: uint = 0; i < pAttributeInfo.length; i++) {
-				var sAttrName: string = pAttributeInfo[i].name;
-				var sAttrSemantic: string = pAttributeInfo[i].semantic;
-				var iLoc: int = pAttribLocations[sAttrName];
-				var pFlow: IDataFlow = pInput.attrs[i];
-				var pData: data.VertexData = null;
-				var sSemantics: string = null;
-
-				if (pFlow.type === EDataFlowTypes.MAPPABLE) {
-					pData = <data.VertexData>pFlow.mapper.data;
-					sSemantics = pFlow.mapper.semantics;
-				}
-				else {
-					pData = <data.VertexData>pFlow.data;
-					sSemantics = sAttrSemantic;
+			if (this._pLastMaker !== pMaker || this._pLastBufferMap !== pBufferMap) {
+				if (!isNull(pBufferMap.getIndex())) {
+					this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
 				}
 
-				var pDecl: data.VertexDeclaration = <data.VertexDeclaration>pData.getVertexDeclaration();
-				var pVertexElement: data.VertexElement = <data.VertexElement>pDecl.findElement(sSemantics);
+				for (var i: uint = 0; i < pAttributeInfo.length; i++) {
+					var sAttrName: string = pAttributeInfo[i].name;
+					var sAttrSemantic: string = pAttributeInfo[i].semantic;
+					var iLoc: int = pAttribLocations[sAttrName];
+					var pFlow: IDataFlow = pInput.attrs[i];
+					var pData: data.VertexData = null;
+					var sSemantics: string = null;
 
-				this.bindWebGLBuffer(gl.ARRAY_BUFFER, (<WebGLVertexBuffer>pData.getBuffer()).getWebGLBuffer());
-				this._pWebGLContext.vertexAttribPointer(iLoc,
-					pVertexElement.count,
-					pVertexElement.type,
-					false,
-					pData.getStride(),
-					pVertexElement.offset);
+					if (pFlow.type === EDataFlowTypes.MAPPABLE) {
+						pData = <data.VertexData>pFlow.mapper.data;
+						sSemantics = pFlow.mapper.semantics;
+					}
+					else {
+						pData = <data.VertexData>pFlow.data;
+						sSemantics = sAttrSemantic;
+					}
+
+					var pDecl: data.VertexDeclaration = <data.VertexDeclaration>pData.getVertexDeclaration();
+					var pVertexElement: data.VertexElement = <data.VertexElement>pDecl.findElement(sSemantics);
+
+					this.bindWebGLBuffer(gl.ARRAY_BUFFER, (<WebGLVertexBuffer>pData.getBuffer()).getWebGLBuffer());
+					this._pWebGLContext.vertexAttribPointer(iLoc,
+						pVertexElement.count,
+						pVertexElement.type,
+						false,
+						pData.getStride(),
+						pVertexElement.offset);
+				}
+
+				this._pLastBufferMap = pBufferMap;
 			}
 
 			var pUniformNames: string[] = pMaker.getUniformNames();
@@ -790,6 +795,7 @@ module akra.webgl {
 			this.disable(gl.SCISSOR_TEST);
 			this._pTextureStateManager.reset();
 			this._pLastMaker = null;
+			this._pLastBufferMap = null;
 		}
 
 		_setViewport(pViewport: IViewport): void {
@@ -1007,7 +1013,7 @@ module akra.webgl {
 		}
 
 		enableWebGLVertexAttribs(iTotal: uint): void {
-			if (this._nActiveAttributes > iTotal) {
+			if (this._nActiveAttributes > iTotal && iTotal !== 0) {
 				for (var i: int = iTotal; i < this._nActiveAttributes; i++) {
 					this._pWebGLContext.disableVertexAttribArray(i);
 				}
@@ -1023,11 +1029,17 @@ module akra.webgl {
 
 		disableAllWebGLVertexAttribs(): void {
 			var i: uint = 0;
-			for (i = 0; i < this._nActiveAttributes; i++) {
+			for (i = 1; i < this._nActiveAttributes; i++) {
 				this._pWebGLContext.disableVertexAttribArray(i);
 			}
 
-			this._nActiveAttributes = 0;
+			this._nActiveAttributes = 1;
+		}
+
+		disableVertexAttribArray(iAttrib: uint) {
+			if (iAttrib > 0) {
+				this._pWebGLContext.disableVertexAttribArray(iAttrib);
+			}
 		}
 
 		getDefaultCanvas(): ICanvas3d {
@@ -1849,7 +1861,7 @@ module akra.webgl {
 
 		private static initStatesFromWebGLContext(pStatesTo: IWebGLContextStates, pWebGLContext: WebGLRenderingContext): IWebGLContextStates {
 			pStatesTo.blend = pWebGLContext.getParameter(gl.BLEND);
-			pStatesTo.blend_color = pWebGLContext.getParameter(gl.BLEND_COLOR);
+			//pStatesTo.blend_color = pWebGLContext.getParameter(gl.BLEND_COLOR);
 			pStatesTo.blend_dst_alpha = pWebGLContext.getParameter(gl.BLEND_DST_ALPHA);
 			pStatesTo.blend_dst_rgb = pWebGLContext.getParameter(gl.BLEND_DST_RGB);
 			pStatesTo.blend_equation_alpha = pWebGLContext.getParameter(gl.BLEND_EQUATION_ALPHA);
@@ -1880,26 +1892,26 @@ module akra.webgl {
 			pStatesTo.sample_buffers = pWebGLContext.getParameter(gl.SAMPLE_BUFFERS);
 			pStatesTo.sample_coverage_invert = pWebGLContext.getParameter(gl.SAMPLE_COVERAGE_INVERT);
 			pStatesTo.sample_coverage_value = pWebGLContext.getParameter(gl.SAMPLE_COVERAGE_VALUE);
-			pStatesTo.samples = pWebGLContext.getParameter(gl.SAMPLES);
+			//pStatesTo.samples = pWebGLContext.getParameter(gl.SAMPLES);
 
 			pStatesTo.scissor_test = pWebGLContext.getParameter(gl.SCISSOR_TEST);
 
-			pStatesTo.stencil_back_fail = pWebGLContext.getParameter(gl.STENCIL_BACK_FAIL);
-			pStatesTo.stencil_back_func = pWebGLContext.getParameter(gl.STENCIL_BACK_FUNC);
-			pStatesTo.stencil_back_pass_depth_fail = pWebGLContext.getParameter(gl.STENCIL_BACK_PASS_DEPTH_FAIL);
-			pStatesTo.stencil_back_pass_depth_pass = pWebGLContext.getParameter(gl.STENCIL_BACK_PASS_DEPTH_PASS);
-			pStatesTo.stencil_back_ref = pWebGLContext.getParameter(gl.STENCIL_BACK_REF);
-			pStatesTo.stencil_back_value_mask = pWebGLContext.getParameter(gl.STENCIL_BACK_VALUE_MASK);
-			pStatesTo.stencil_back_writemask = pWebGLContext.getParameter(gl.STENCIL_BACK_WRITEMASK);
-			pStatesTo.stencil_clear_value = pWebGLContext.getParameter(gl.STENCIL_CLEAR_VALUE);
-			pStatesTo.stencil_fail = pWebGLContext.getParameter(gl.STENCIL_FAIL);
-			pStatesTo.stencil_func = pWebGLContext.getParameter(gl.STENCIL_FUNC);
-			pStatesTo.stencil_pass_depth_fail = pWebGLContext.getParameter(gl.STENCIL_PASS_DEPTH_FAIL);
-			pStatesTo.stencil_pass_depth_pass = pWebGLContext.getParameter(gl.STENCIL_PASS_DEPTH_PASS);
-			pStatesTo.stencil_ref = pWebGLContext.getParameter(gl.STENCIL_REF);
-			pStatesTo.stencil_test = pWebGLContext.getParameter(gl.STENCIL_TEST);
-			pStatesTo.stencil_value_mask = pWebGLContext.getParameter(gl.STENCIL_VALUE_MASK);
-			pStatesTo.stencil_writemask = pWebGLContext.getParameter(gl.STENCIL_WRITEMASK);
+			//pStatesTo.stencil_back_fail = pWebGLContext.getParameter(gl.STENCIL_BACK_FAIL);
+			//pStatesTo.stencil_back_func = pWebGLContext.getParameter(gl.STENCIL_BACK_FUNC);
+			//pStatesTo.stencil_back_pass_depth_fail = pWebGLContext.getParameter(gl.STENCIL_BACK_PASS_DEPTH_FAIL);
+			//pStatesTo.stencil_back_pass_depth_pass = pWebGLContext.getParameter(gl.STENCIL_BACK_PASS_DEPTH_PASS);
+			//pStatesTo.stencil_back_ref = pWebGLContext.getParameter(gl.STENCIL_BACK_REF);
+			//pStatesTo.stencil_back_value_mask = pWebGLContext.getParameter(gl.STENCIL_BACK_VALUE_MASK);
+			//pStatesTo.stencil_back_writemask = pWebGLContext.getParameter(gl.STENCIL_BACK_WRITEMASK);
+			//pStatesTo.stencil_clear_value = pWebGLContext.getParameter(gl.STENCIL_CLEAR_VALUE);
+			//pStatesTo.stencil_fail = pWebGLContext.getParameter(gl.STENCIL_FAIL);
+			//pStatesTo.stencil_func = pWebGLContext.getParameter(gl.STENCIL_FUNC);
+			//pStatesTo.stencil_pass_depth_fail = pWebGLContext.getParameter(gl.STENCIL_PASS_DEPTH_FAIL);
+			//pStatesTo.stencil_pass_depth_pass = pWebGLContext.getParameter(gl.STENCIL_PASS_DEPTH_PASS);
+			//pStatesTo.stencil_ref = pWebGLContext.getParameter(gl.STENCIL_REF);
+			//pStatesTo.stencil_test = pWebGLContext.getParameter(gl.STENCIL_TEST);
+			//pStatesTo.stencil_value_mask = pWebGLContext.getParameter(gl.STENCIL_VALUE_MASK);
+			//pStatesTo.stencil_writemask = pWebGLContext.getParameter(gl.STENCIL_WRITEMASK);
 
 			pStatesTo.pack_alignment = pWebGLContext.getParameter(gl.PACK_ALIGNMENT);
 			pStatesTo.unpack_alignment = pWebGLContext.getParameter(gl.UNPACK_ALIGNMENT);

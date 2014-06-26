@@ -207,7 +207,7 @@ module akra.webgl {
 		maxVertexTextureImageUnits = pWebGLContext.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
 		maxCombinedTextureImageUnits = pWebGLContext.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 
-		stencilBits = pWebGLContext.getParameter(gl.STENCIL_BITS);
+		//stencilBits = pWebGLContext.getParameter(gl.STENCIL_BITS);
 		colorBits = [
 			pWebGLContext.getParameter(gl.RED_BITS),
 			pWebGLContext.getParameter(gl.GREEN_BITS),

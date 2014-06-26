@@ -792,8 +792,8 @@ module akra.webgl {
 				pWebGLContext.generateMipmap(this._eFaceTarget);
 			}
 
-			pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
-			pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+			pWebGLRenderer.disableVertexAttribArray(iPosAttrIndex);
+			pWebGLRenderer.disableVertexAttribArray(iTexAttrIndex);
 
 			pWebGLRenderer.deleteWebGLBuffer(pPositionBuffer);
 			pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);
@@ -1306,8 +1306,8 @@ module akra.webgl {
 				pWebGLContext.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 			}
 
-			pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
-			pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+			pWebGLRenderer.disableVertexAttribArray(iPosAttrIndex);
+			pWebGLRenderer.disableVertexAttribArray(iTexAttrIndex);
 
 			pWebGLRenderer.deleteWebGLBuffer(pPositionBuffer);
 			pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);
@@ -1554,8 +1554,8 @@ module akra.webgl {
 				}
 			}
 
-			pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
-			pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+			pWebGLRenderer.disableVertexAttribArray(iPosAttrIndex);
+			pWebGLRenderer.disableVertexAttribArray(iTexAttrIndex);
 
 			pWebGLRenderer.deleteWebGLBuffer(pPositionBuffer);
 			pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);

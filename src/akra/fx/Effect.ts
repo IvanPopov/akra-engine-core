@@ -787,14 +787,15 @@ module akra.fx {
 				"else { return vec3(0.); } " +
 				"\n#endif\n" +
 				"\n#ifdef A_VB_COMPONENT3\n" +
-				"if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
-				"else if(shift == 1){ " +
-				"if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0.5, (y + 1.)).r); " +
-				"else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " +
-				"else if(shift == 3){ " +
-				"if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
-				"else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
-				"else { return vec3(0.); } " +
+				/** Commented code don`t work on IE */
+				//"if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
+				//"else if(shift == 1){ " +
+				//"if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0.5, (y + 1.)).r); " +
+				//"else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+				//"else if(shift == 3){ " +
+				//"if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
+				//"else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
+				//"else { return vec3(0.); } " +
 				"\n#endif\n" +
 				"return vec3(0.);}",
 				"float3",
