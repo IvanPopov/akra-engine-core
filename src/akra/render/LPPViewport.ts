@@ -49,6 +49,11 @@ module akra.render {
 			super.setupSignals();
 		}
 
+		setBackgroundColor(cColor: IColor): void {
+			super.setBackgroundColor(cColor);
+			this._pResultLPPTexture.getBuffer().getRenderTarget().getViewport(0).setBackgroundColor(cColor);
+		}
+
 		getType(): EViewportTypes {
 			return EViewportTypes.LPPVIEWPORT;
 		} 
@@ -634,6 +639,7 @@ module akra.render {
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
+						pTechnique.getMethod().setSurfaceMaterial(pTechCurr.getMethod().getSurfaceMaterial());
 						pTechnique.addComponent("akra.system.prepare_lpp_geometry");
 					}
 
@@ -647,6 +653,7 @@ module akra.render {
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
+						pTechnique.getMethod().setSurfaceMaterial(pTechCurr.getMethod().getSurfaceMaterial());
 						pTechnique.addComponent("akra.system.apply_lpp_shading");
 						pTechnique.addComponent("akra.system.pbsSkyboxLighting");
 						pTechnique.addComponent("akra.system.pbsReflection");

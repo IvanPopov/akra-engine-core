@@ -13,9 +13,10 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.loadNpmTasks("grunt-contrib-copy");
 	grunt.loadNpmTasks("grunt-contrib-connect");
-	grunt.loadNpmTasks("grunt-regarde");
+	// grunt.loadNpmTasks("grunt-regarde");
 	grunt.loadNpmTasks('grunt-tslint');
 	grunt.loadNpmTasks('grunt-gjslint');
+	grunt.loadNpmTasks('grunt-parallel');
 
 	require('time-grunt')(grunt);
 
@@ -46,6 +47,26 @@ module.exports = function (grunt) {
 				src: ['built/*']
 			}
 		},
+
+		parallel: {
+		    addons: {
+		    	options: {
+					grunt: true
+				},
+		      	tasks: [
+			        'build:addon-base3dObjects',
+			       	'build:addon-navigation',
+			        'build:addon-filedrop',
+			        'build:addon-progress',
+			        'build:addon-compatibility',
+				]
+			},
+			// demos: {
+			// 	//DO NOT EDIT THIS SECTION
+			// 	//will be filled automatically
+			// }
+		},
+
 		regarde: {
 			src: {
 				files: ["src/**/*.*"],
@@ -73,6 +94,15 @@ module.exports = function (grunt) {
 		}
 	});
 
+	//create task for demos.
+	grunt.config("parallel.demos", {
+		tasks: util.getDemos(grunt.config('DemosSourceDir')).map(function (task) { 
+			return {
+				grunt: true,
+				args: [task].concat(grunt.option.flags())
+			}
+		})
+	});
 
 	if (grunt.option('Release') || grunt.option('release')) {
 		grunt.config("Configuration", 'Release');
@@ -136,7 +166,8 @@ module.exports = function (grunt) {
 		"build:addon-progress"
 	]);
 
-
+	grunt.registerTask("addons", ['build:core', 'parallel:addons']);
+	
 	//grunt.registerTask("build", ["compile", "concat", "uglify"]);
 	//grunt.registerTask("generate", ["compile", "build", "copy:public"]);
 	//return grunt.registerTask("preview", ["generate", "connect:preview", "regarde"]);

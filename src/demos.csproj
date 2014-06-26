@@ -336,14 +336,18 @@
     <Content Include="demos\parser\demo.xml" />
     <Content Include="demos\parser\patch.js" />
     <Content Include="demos\parser\test_files.js" />
-    <Content Include="demos\pbs-demo\dat.gui\dat.gui.min.js" />
-    <Content Include="demos\pbs-demo\data\models\rock\images\diffuse.dds" />
-    <Content Include="demos\pbs-demo\data\models\rock\images\normal.dds" />
-    <Content Include="demos\pbs-demo\data\models\rock\images\specular.dds" />
-    <Content Include="demos\pbs-demo\data\models\WoodSoldier\WoodSoldier.png" />
-    <Content Include="demos\pbs-demo\data\textures\lensflare_cookies.png" />
-    <Content Include="demos\pbs-demo\data\textures\lensflare_cookies_new.png" />
-    <Content Include="demos\pbs-demo\demo.xml" />
+    <Content Include="demos\pbs\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\pbs\data\models\oil\Images\oil_diffuse_1024.png" />
+    <Content Include="demos\pbs\data\models\oil\Images\oil_normal_1024.png" />
+    <Content Include="demos\pbs\data\models\oil\Images\oil_specular_1024.png" />
+    <Content Include="demos\pbs\data\models\oil\Images\_oil_specular_1024.png" />
+    <Content Include="demos\pbs\data\textures\skyboxes\desert-2a.png" />
+    <Content Include="demos\pbs\data\textures\skyboxes\desert-2c.png" />
+    <Content Include="demos\pbs\data\textures\skyboxes\park-01-cube.png" />
+    <Content Include="demos\pbs\demo.xml" />
+    <Content Include="demos\pbs\Measured BaseColor values Unreal.txt" />
+    <Content Include="demos\pbs\physically_based_cheatsheet1.png" />
+    <Content Include="demos\pbs\physically_based_cheatsheet2.png" />
     <Content Include="demos\performance\demo.xml" />
     <Content Include="demos\WoodSoldier\WoodSoldier.png" />
   </ItemGroup>
@@ -443,7 +447,6 @@
     <Content Include="demos\model-viewer\miner\models\miner\walk3.DAE" />
     <Content Include="demos\model-viewer\miner\models\miner\work_gun.DAE" />
     <Content Include="demos\model-viewer\miner\models\miner\work_hammer.DAE" />
-    <Content Include="demos\light-shafts\data\effects\blur.afx" />
     <Content Include="demos\light-shafts\data\effects\dirtylens.afx" />
     <Content Include="demos\light-shafts\data\effects\dof.afx" />
     <Content Include="demos\light-shafts\data\effects\lensflare.afx" />
@@ -451,16 +454,6 @@
     <Content Include="demos\light-shafts\data\models\rock\rock-1-low-p.DAE" />
     <Content Include="demos\light-shafts\data\models\torusknot.DAE" />
     <Content Include="demos\light-shafts\data\models\WoodSoldier\WoodSoldier.DAE" />
-    <Content Include="demos\pbs-demo\data\effects\blur.afx" />
-    <Content Include="demos\pbs-demo\data\effects\dirtylens.afx" />
-    <Content Include="demos\pbs-demo\data\effects\dof.afx" />
-    <Content Include="demos\pbs-demo\data\effects\lensflare.afx" />
-    <Content Include="demos\pbs-demo\data\effects\sunshaft.afx" />
-    <Content Include="demos\pbs-demo\data\models\rock\rock-1-low-p.DAE" />
-    <Content Include="demos\pbs-demo\data\models\torusknot.DAE" />
-    <Content Include="demos\pbs-demo\data\models\WoodSoldier\WoodSoldier.DAE" />
-    <Content Include="demos\pbs-demo\data\models\room-with-room.DAE" />
-    <Content Include="demos\pbs-demo\data\models\teapot.dae" />
     <Content Include="demos\game\data\data.map" />
     <Content Include="demos\game\data\models\barrel\barrel_and_support.DAE" />
     <Content Include="demos\game\data\models\barrel\images\barrel_diffuse.dds" />
@@ -662,6 +655,17 @@
     <Content Include="demos\mercedes\skins\silver-bezh.skin" />
     <Content Include="demos\mercedes\skins\unknown.skin" />
     <Content Include="demos\mercedes\index.jade" />
+    <Content Include="demos\pbs\data\models\oil\oil.DAE" />
+    <Content Include="demos\pbs\data\models\Sphere.DAE" />
+    <Content Include="demos\pbs\data\models\teapot.DAE" />
+    <Content Include="demos\pbs\data\models\torusknot.DAE" />
+    <Content Include="demos\pbs\data\textures\skyboxes\colosseum.dds" />
+    <Content Include="demos\pbs\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\pbs\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\pbs\data\textures\skyboxes\perea-beach1.dds" />
+    <Content Include="demos\pbs\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\pbs\data\textures\skyboxes\rome-church.dds" />
+    <Content Include="demos\pbs\data\textures\skyboxes\saint-peters-basilica.dds" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -670,7 +674,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="demos\pbs-demo\pbs-demo.ts" />
     <Content Include="demos\light-shafts\light-shafts.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -708,6 +711,7 @@
     <TypeScriptCompile Include="demos\mercedes\mercedes.ts" />
     <TypeScriptCompile Include="demos\miner\miner.ts" />
     <TypeScriptCompile Include="demos\model-viewer\model-viewer.ts" />
+    <TypeScriptCompile Include="demos\pbs\pbs.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="demos\anti-aliasing\" />

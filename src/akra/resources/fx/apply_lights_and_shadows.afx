@@ -354,3 +354,9 @@ technique pbsReflection{
         }
     }
 };
+
+technique precalculateFresnel {
+    pass {
+        PixelShader = compile precalculateFresnelfs();
+    }
+}

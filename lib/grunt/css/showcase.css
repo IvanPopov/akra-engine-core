@@ -619,15 +619,18 @@ b {
   background: url(../img/showcase/showcase-page.png) right top no-repeat;
   background-position: right 79px;
 }
+
 .b-showcase-gray-block {
   margin: 0;
   background: url(../img/showcase/technology-sep.png) 0 0 repeat-x;
   padding: 20px 0 0 0;
 }
+
 .b-showcase-gray-block .container .row {
   margin-right: -30px;
   margin-left: -30px;
 }
+
 .b-showcase-list {
   display: block;
   margin: 0 0 0 0;
@@ -635,6 +638,13 @@ b {
   list-style: none;
   background: url(../img/showcase/technology-sep.png) 0 0 repeat-x;
 }
+
+.b-showcase-list-light {
+  margin-top: 15px; 
+  margin-bottom: 15px; 
+  opacity: .5;
+}
+
 .b-showcase-text {
   background-color: rgba(130,131,132,0.9);
   padding: 20px 38px 15px;
@@ -666,7 +676,25 @@ b {
   vertical-align: bottom;
   border: 1px solid #3c3c3c;
   box-shadow: inset 1px 1px 1px 0px #b4b4b4, 1px 1px 1px 0px #b4b4b4;
+
+  /* extended */
+  box-shadow: none; 
+  border: 1px solid rgba(60, 60, 60, 0.3);
+  
 }
+
+.b-showcase-list-item-image img {
+  -moz-filter: grayscale(50%); 
+  -webkit-filter: grayscale(50%); 
+  filter: grayscale(50%);
+}
+
+.b-showcase-list-item:hover  .b-showcase-list-item-image img{
+   -moz-filter: grayscale(0%); 
+  -webkit-filter: grayscale(0%); 
+  filter: grayscale(0%);
+}
+
 .b-showcase-list-item-image img {
   max-width: 100%;
   max-height: 100%;
@@ -681,12 +709,24 @@ b {
   color: #fff;
   text-decoration: none;
   line-height: 1em;
+
+  /* extended */
+  margin-left: 3px; 
+  margin-bottom: 1px; 
+  font-size: 23px; 
+  font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe WP', 'Helvetica Neue', sans-serif;
 }
 .b-showcase-list-item-description {
   margin: 0;
   font-size: 11px;
   line-height: 1.5em;
   color: #000;
+
+  /* extended */
+  margin-left: 3px; 
+  font-size: 16px; 
+  color: white; 
+  font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe WP', 'Helvetica Neue', sans-serif;
 }
 .b-showcase-list-item-readmore {
   display: block;
@@ -695,7 +735,38 @@ b {
   line-height: 1.5em;
   color: #0053a5;
   text-decoration: none;
+
+  /* extended */
+  margin-left: 3px; 
+  margin-top: 10px; 
+  font-size: 17px;
+  background-color: #333; 
+  color: white; 
+  border: none; 
+  font-weight: bold; 
+  width: 80px; 
+  border-radius: 0px; 
+  font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe WP', 'Helvetica Neue', sans-serif;
+  display: inline-block;
 }
+
+.b-showcase-list-item-youtube {
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  margin-top: 10px;
+  margin-left: 10px;
+  background-color: #333; 
+  border: none; 
+  border-radius: 0px; 
+}
+
+.b-showcase-list-item-youtube img {
+  height: 37px;
+  padding: 0;
+  margin: 0;
+}
+
 .b-real-time-shaders {
   display: block;
   position: relative;

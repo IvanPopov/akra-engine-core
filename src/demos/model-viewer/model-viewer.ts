@@ -15,7 +15,7 @@ module akra {
 	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
-	export var modelsPath = path.parse(( AE_MODELS.content ).split(';')[0]).getDirName() + '/';
+	export var modelsPath = path.parse((AE_MODELS.content).split(';')[0]).getDirName() + '/';
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
@@ -256,13 +256,13 @@ module akra {
 
 
 		var pPBSFolder = pGUI.addFolder("pbs");
-		
-	  (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-	   // if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-		(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-	   // }
-		(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
-	  });
+
+		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+			// }
+			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
+		});
 
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
@@ -533,7 +533,7 @@ module akra {
 		});
 
 		var pModelsKeys = [
-			//'mercedes',
+		//'mercedes',
 			'miner',
 			'character',
 			'head',
@@ -560,7 +560,7 @@ module akra {
 							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
 						}
 					});
-					},
+				},
 			},
 			character: {
 				path: modelsPath + "/character/character.DAE",
@@ -575,7 +575,7 @@ module akra {
 							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
 						}
 					});
-					},
+				},
 			},
 			sponza: {
 				path: modelsPath + "/sponza/sponza.DAE",

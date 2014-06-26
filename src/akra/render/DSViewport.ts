@@ -310,6 +310,7 @@ module akra.render {
 							//TODO: need something else
 							pTechnique.render._syncSignal(pTechCurr.render);
 							pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
+							pTechnique.getMethod().setSurfaceMaterial(pTechCurr.getMethod().getSurfaceMaterial());
 							//pTechnique._syncTable(pTechCurr);
 
 							var iTotalPasses = pTechnique.getTotalPasses();
