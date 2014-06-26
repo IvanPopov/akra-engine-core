@@ -99,7 +99,7 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 					* ((IN.textureCoords-cookieCenterPos)/cookieSizeInTexture + float2(.5))
 						+ cookieBotLeft; // base cookie read position
 
-			float4 newLF;
+			float4 newLF = float4(0.);
 
 			float ABERRATION_SAMPLES = clamp(lensflareAberrationSamples,0.,20.);
 			float ABERRATION_SAMPLES_LENGTH = ABERRATION_SAMPLES-1.;
