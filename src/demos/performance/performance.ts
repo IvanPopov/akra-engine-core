@@ -36,6 +36,15 @@ module akra {
 		var fShiftZ: float = 0.;
 
 		var pCube: ISceneModel = addons.cube(pScene);
+		var pCubeMesh: IMesh = pCube.getMesh();
+		var pMaterial: IMaterial = material.create();
+		pMaterial.diffuse.set(color.RED);
+		pMaterial.ambient.set(color.BLACK);
+		pMaterial.specular.set(color.BLACK);
+		pMaterial.emissive.set(color.BLACK);
+		pMaterial.shininess = 1.;
+		
+
 		for (var i: uint = 0; i < nCount; i++) {
 			if (iCountInRow > iRow) {
 				iCountInRow = 0;
@@ -45,13 +54,14 @@ module akra {
 				fShiftZ = -iRow * fDZ;
 			}
 
-			pCube = i === 0 ? pCube : addons.cube(pScene);
+			pCube = pScene.createModel();
+			pCube.setMesh(pCubeMesh);
 			pCube.attachToParent(pScene.getRootNode());
 			pCube.scale(.5);
 			pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
-
-			(<IColor>pCube.getMesh().getSubset(0).getMaterial().diffuse).set(color.random(true));
-			(<IColor>pCube.getMesh().getSubset(0).getMaterial().ambient).set(color.BLACK);
+			pCube.getMesh().getSubset(0).getSurfaceMaterial().setMaterial(pMaterial);
+			//(<IColor>pCube.getMesh().getSubset(0).getMaterial().diffuse).set(color.random(true));
+			//(<IColor>pCube.getMesh().getSubset(0).getMaterial().ambient).set(color.BLACK);
 			
 			//pCube.scale(0.1);
 			((pCube) => {
@@ -63,6 +73,26 @@ module akra {
 			fShiftX += fDX;
 			iCountInRow++;
 		}
+	}
+
+	function createStatsDIV(pRenderTarget?: IRenderTarget) {
+		var pStatsDiv = document.createElement("div");
+
+		document.body.appendChild(pStatsDiv);
+		pStatsDiv.setAttribute("style",
+			"position: fixed;" +
+			"max-height: 40px;" +
+			"max-width: 120px;" +
+			"color: green;" +
+			"margin: 5px;" +
+			"font-family: Arial;");
+
+		if (isDefAndNotNull(pRenderTarget)) {
+			pRenderTarget.postUpdate.connect((pCanvas: ICanvas3d) => {
+				pStatsDiv.innerHTML = pRenderTarget.getAverageFPS().toFixed(2) + " fps";
+			});
+		}
+		return pStatsDiv;
 	}
 
 	function main(pEngine: IEngine) {
@@ -82,6 +112,8 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
+		createStatsDIV(pCanvas);
+
 		pViewport.setBackgroundColor(color.DARK_BLUE);
 		pViewport.setClearEveryFrame(true);
 
@@ -91,7 +123,7 @@ module akra {
 		pLight.setShadowCaster(false);
 
 		//loadManyModels(400, "CUBE.DAE");
-		loadManyCubes(400);
+		loadManyCubes(800);
 		pProgress.destroy();
 		pEngine.exec();
 	}

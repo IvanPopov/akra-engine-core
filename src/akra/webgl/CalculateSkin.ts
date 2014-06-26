@@ -333,9 +333,9 @@ module akra.webgl {
 		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFrameBuffer);
 		pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
 
-		pWebGLContext.disableVertexAttribArray(iPositionAttribLocation);
-		pWebGLContext.disableVertexAttribArray(iNormalAttribLocation);
-		pWebGLContext.disableVertexAttribArray(iDestinationAttribLocation);
+		pWebGLRenderer.disableVertexAttribArray(iPositionAttribLocation);
+		pWebGLRenderer.disableVertexAttribArray(iNormalAttribLocation);
+		pWebGLRenderer.disableVertexAttribArray(iDestinationAttribLocation);
 
 		pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, null);
 		pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);

@@ -13,7 +13,7 @@ declare var AE_MERCEDES_DATA: akra.IDep;
 
 module akra {
 
-	config.DEBUG = false;
+	//config.DEBUG = false;
 
 	if (!config.DEBUG) {
 		addons.compatibility.ignoreWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
@@ -321,7 +321,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 		var pViewport: IViewport3D = config.DEBUG ?
-			new render.LPPViewport(pCamera, 0., 0., 1., 1., 11) :
+			new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11) :
 			new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
 
 		pCanvas.addViewport(pViewport);
@@ -347,10 +347,10 @@ module akra {
 
 		var pFogEffectData = window['fog_effect_data'] = {
 			fogColor: 0.,
-			fogOpacity: 0.8,
-			fogStart: 14,
-			fogIndex: 11,
-			fogHeight: 2.3
+			fogOpacity: 0.03,
+			fogStart: 4,
+			fogIndex: 14,
+			fogHeight: 1
 		};
 
 		var bAdvancedSkybox: boolean = true;

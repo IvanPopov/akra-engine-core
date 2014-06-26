@@ -490,9 +490,9 @@ module akra.webgl {
 				pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, null);
 				pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);
 
-				pWebGLContext.disableVertexAttribArray(iValueAttribLocation);
-				pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
-				pWebGLContext.disableVertexAttribArray(iShiftAttribLocation);
+				pWebGLRenderer.disableVertexAttribArray(iValueAttribLocation);
+				pWebGLRenderer.disableVertexAttribArray(iIndexAttribLocation);
+				pWebGLRenderer.disableVertexAttribArray(iShiftAttribLocation);
 
 				//pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
 				//pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
@@ -637,7 +637,7 @@ module akra.webgl {
 
 					pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
 
-					pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
+					pWebGLRenderer.disableVertexAttribArray(iIndexAttribLocation);
 					pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, null);
 					pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, null);
 					//pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);

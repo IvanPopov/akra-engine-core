@@ -15698,6 +15698,7 @@ declare module akra.render {
         private _eFogType;
         constructor(pCamera: ICamera, fLeft?: number, fTop?: number, fWidth?: number, fHeight?: number, iZIndex?: number);
         public setupSignals(): void;
+        public setBackgroundColor(cColor: IColor): void;
         public getType(): EViewportTypes;
         public getView(): IRenderableObject;
         public getEffect(): IEffect;
@@ -16261,6 +16262,7 @@ declare module akra.webgl {
         private _pRenderStatesPool;
         private _pFreeRenderStatesPool;
         private _pLastMaker;
+        private _pLastBufferMap;
         static DEFAULT_OPTIONS: IRendererOptions;
         public getType(): ERenderers;
         public hasCapability(eCapability: ERenderCapabilities): boolean;
@@ -16333,6 +16335,7 @@ declare module akra.webgl {
         public useWebGLProgram(pProgram: WebGLProgram): void;
         public enableWebGLVertexAttribs(iTotal: number): void;
         public disableAllWebGLVertexAttribs(): void;
+        public disableVertexAttribArray(iAttrib: number): void;
         public getDefaultCanvas(): ICanvas3d;
         public clearFrameBuffer(iBuffers: number, cColor: IColor, fDepth: number, iStencil: number): void;
         public _disableTextureUnitsFrom(iUnit: number): void;

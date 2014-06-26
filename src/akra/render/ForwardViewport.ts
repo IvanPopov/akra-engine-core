@@ -438,6 +438,7 @@ module akra.render {
 						pTechnique = pRenderable.getTechnique(sMethod);
 						pTechnique.render._syncSignal(pTechCurr.render);
 						pTechnique.copyTechniqueOwnComponentBlend(pTechCurr);
+						pTechnique.getMethod().setSurfaceMaterial(pTechCurr.getMethod().getSurfaceMaterial());
 
 						pTechnique.addComponent("akra.system.applyForwardShading");
 						pTechnique.addComponent("akra.system.omniLighting");

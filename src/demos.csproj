@@ -447,7 +447,6 @@
     <Content Include="demos\model-viewer\miner\models\miner\walk3.DAE" />
     <Content Include="demos\model-viewer\miner\models\miner\work_gun.DAE" />
     <Content Include="demos\model-viewer\miner\models\miner\work_hammer.DAE" />
-    <Content Include="demos\light-shafts\data\effects\blur.afx" />
     <Content Include="demos\light-shafts\data\effects\dirtylens.afx" />
     <Content Include="demos\light-shafts\data\effects\dof.afx" />
     <Content Include="demos\light-shafts\data\effects\lensflare.afx" />

@@ -219,6 +219,7 @@ module akra {
 
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
 		pSky.setTime(13);
+		//pSky.sun.setShadowCaster(false);
 		//pSky.sun.setEnabled(false);
 
 
