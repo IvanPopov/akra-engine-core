@@ -355,14 +355,14 @@ module akra {
 
 		var bAdvancedSkybox: boolean = true;
 		var fSkyboxSharpness: float = .72;
-		(<IViewportFogged>pViewport).setFog(true);
+		(<IViewportFogged>pViewport).setFog(EFogType.VERTICAL);
 
 		if (config.DEBUG) {
 		
 			var pFogEffectFolder = pGUI.addFolder("fogEffect");
 
 			pGUI.add({ fog: true }, "fog").onChange((bValue) => {
-				(<IViewportFogged>pViewport).setFog(bValue);
+				(<IViewportFogged>pViewport).setFog(bValue ? EFogType.VERTICAL : EFogType.NONE);
 			});
 
 			(<dat.NumberControllerSlider>pFogEffectFolder.add(pFogEffectData, 'fogColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;

@@ -40,6 +40,13 @@ texture tex3:TEXTURE3;
 texture tex4:TEXTURE4;
 texture tex5:TEXTURE5;
 
+foreign bool isUseAlphatest : IS_USE_ALPHATEST;
+
+texture textureAlphatest : ALPHATEST_TEXTURE;
+
+float Alphatest_treshold : ALPHATEST_THRESHOLD = -1.;
+float Alphatest_width : ALPHATEST_WIDTH = 0.03;
+
 sampler sampler_diffuse:S_DIFFUSE  = sampler_state
 {
     Texture = <tex0>;
@@ -64,6 +71,14 @@ sampler sampler_normal:S_NORMAL  = sampler_state
 sampler sampler_shininess: S_SHININESS = sampler_state
 {
     Texture = <tex5>;
+};
+
+sampler sampler_ALPHATEST: SAMPLER_ALPHATEST = sampler_state
+{
+    Texture = <textureAlphatest>;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
 
 VS_OUT_2 vs_mesh_texture(VS_IN_2 IN) {
@@ -100,6 +115,7 @@ void fs_mesh_texture_deferre_pass_1(VS_OUT_2 IN){
         pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     }
 
+        applyAlphatestDegrade(IN.tc_diffuse.xy);
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
     }
@@ -118,6 +134,7 @@ void fs_mesh_texture_normal_shininess(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;    
     pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy);
 
+        applyAlphatestDegrade(IN.tc_diffuse.xy);
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
 }
 
@@ -130,6 +147,7 @@ void fs_mesh_texture_material(VS_OUT_2 IN){
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
     pixelData.material.transparency = defaultMaterial.transparency;
     
+        applyAlphatestDegrade(IN.tc_diffuse.xy);
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
     }
@@ -149,6 +167,7 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
     pixelData.material.transparency = defaultMaterial.transparency;
     
     //pixelData.material.emissive = float4(pixelData.normal, 1.);;
+        applyAlphatestDegrade(IN.tc_diffuse.xy);
     if(IS_USED_MIRROR_REFLECTION){
         applyMirrorReflection();
     }
@@ -200,6 +219,28 @@ sampler mirrorSampler = sampler_state{
 
 void applyMirrorReflection(){
     pixelData.material.emissive += .3 * tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
+}
+
+void applyAlphatestDegrade(float2 texPos){
+    if(isUseAlphatest) {
+        float temp = tex2D(sampler_ALPHATEST, texPos).r;
+        if(temp >= Alphatest_treshold) {
+            if(temp < Alphatest_treshold+Alphatest_width) {
+                float dr = (Alphatest_treshold+Alphatest_width-temp)/Alphatest_width;
+                // float r = clamp(6.*abs(dr-0.5)-1., 0., 1.);
+                // float g = clamp(-6.*abs(dr-0.333)+2.,0.,1.);
+                // float b = clamp(-6.*abs(dr-0.666)+2.,0.,1.);
+                float4 color2 = float4(1.,0.3,0.1,0.3);
+                float4 color1 = float4(1.,0.9,0.3,1.);
+                pixelData.material.emissive = color1*(1.-dr) + color2*dr;
+                // pixelData.material.emissive = float4(r,g,b,1.);
+            }
+        }
+        else {
+            discard;
+        }
+    }
+    //pixelData.material.diffuse = float4(float3(temp),1.);
 }
 
 technique mesh_texture {

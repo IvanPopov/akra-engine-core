@@ -40,10 +40,10 @@ module akra.material {
 				if (isString(arguments[0])) {
 					switch (arguments[0]) {
 						case "gold":
-							this.specular.set(1., 0.71, 0.29);
+							this.specular.set(1.00, 0.71, 0.29);
 							this.diffuse.set(1.00, 0.86, 0.57);
 							break;
-						case "cooper":
+						case "copper":
 							this.specular.set(0.95, 0.64, 0.54);
 							this.diffuse.set(0.98, 0.82, 0.76);
 							break;
@@ -61,7 +61,7 @@ module akra.material {
 							break;
 						case "silver": 
 							this.specular.set(0.95, 0.93, 0.88);
-							this.diffuse.set(10.98, 0.97, 0.95);
+							this.diffuse.set(0.98, 0.97, 0.95);
 							break;
 						case "water":
 							this.specular.set(0.02);
@@ -71,8 +71,12 @@ module akra.material {
 							this.specular.set(0.08);
 							this.diffuse.set(0.31);
 							break;
+						case "black":
+							this.specular.set(0.0);
+							this.diffuse.set(0.0);
+							break;
 						default:
-							logger.error("unknonw material: " + arguments[0]);
+							logger.error("unknown material: " + arguments[0]);
 					}
 				}
 				else {

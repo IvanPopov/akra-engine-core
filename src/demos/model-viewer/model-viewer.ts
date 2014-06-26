@@ -15,7 +15,7 @@ module akra {
 	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
-	export var modelsPath = path.parse(( AE_MODELS.content ).split(';')[0]).getDirName() + '/';
+	export var modelsPath = path.parse((AE_MODELS.content).split(';')[0]).getDirName() + '/';
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
@@ -50,6 +50,10 @@ module akra {
 	export var pSkyboxTextures: IMap<ITexture> = null;
 	export var pEnvTexture = null;
 	export var pDepthViewport = null;
+	export var pEffectData = null;
+	export var pModelsFiles = null;
+	export var pFireTexture: ITexture = null;
+	export var applyAlphaTest = null;
 
 	var pState = {
 		animate: true,
@@ -157,7 +161,7 @@ module akra {
 				pCamera.addRelPosition(0, -fSpeed, 0);
 			}
 		});
-		(<render.ForwardViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+		(<ILPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
 			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
@@ -168,7 +172,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 
-		var pViewport: IForwardViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -177,7 +181,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.ForwardViewport>pViewport).setFXAA(false);
+		(<render.LPPViewport>pViewport).setFXAA(true);
 		var counter = 0;
 
 		pGUI = new dat.GUI();
@@ -195,11 +199,11 @@ module akra {
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 
 			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
-			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
 
-			//pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
-			//pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			//pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
+			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
+			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		};
 
 		var pMaterialPresets = {
@@ -245,25 +249,36 @@ module akra {
 
 
 
+		pEffectData = { BLUR_RADIUS: 0.01, FIRE_THRESHOLD: 0.01 };
+		var pEffetsFolder = pGUI.addFolder("effects");
+		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'BLUR_RADIUS')).min(0.).max(250.).name("Blur radius");
+		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'FIRE_THRESHOLD')).min(0.).max(1.).step(0.01).name("Fire gate").__precision = 2;
+
+
 		var pPBSFolder = pGUI.addFolder("pbs");
-		
-	  (<dat.OptionController>pPBSFolder.add({Skybox:"desert"}, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-	   // if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-	   // }
-		(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
-	  });
 
-		(<IForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
+			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
+			// }
+			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
+		});
 
+		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+
+		var pEffect = pViewport.getEffect();
+		pEffect.addComponent("akra.system.blur");
 
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var pDepthTexture: ITexture = (<ILPPViewport>pViewport).getDepthTexture();
 
-			pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+			// pPass.setTexture('CUBETEXTURE0', pSkyboxTexture);
+			pPass.setTexture('DEPTH_TEXTURE', pDepthTexture);
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
+			pPass.setUniform("BLUR_RADIUS", pEffectData.BLUR_RADIUS);
 		});
 
 		return pViewport;
@@ -302,7 +317,7 @@ module akra {
 		pRenderTarget.attachDepthTexture(pDepthTexture);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
-		var pEffect = (<render.ForwardViewport>pTexViewport.getInternalViewport()).getEffect();
+		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
 		return pTexViewport;
 	}
 
@@ -328,15 +343,15 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		//pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-		//	(model) => {
-		//		model.explore(function (node) {
-		//			if (scene.SceneModel.isModel(node)) {
-		//				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
-		//			}
-		//		})
-		//		}, "test-omni-0-model", pOmniLight).scale(0.15);
-		//pOmniLightSphere.setPosition(0., 0., 0.);
+		pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+			(model) => {
+				model.explore(function (node) {
+					if (scene.SceneModel.isModel(node)) {
+						node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
+					}
+				})
+				}, "test-omni-0-model", pOmniLight).scale(0.15);
+		pOmniLightSphere.setPosition(0., 0., 0.);
 		pOmniLight.setPosition(lightPos1);
 
 		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-0");
@@ -349,15 +364,15 @@ module akra {
 		pOmniLight.getParams().attenuation.set(1, 0, 0.3);
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		//pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-		//	(model) => {
-		//		model.explore(function (node) {
-		//			if (scene.SceneModel.isModel(node)) {
-		//				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
-		//			}
-		//		})
-		//		}, "test-omni-0-model", pOmniLight).scale(0.15);
-		//pOmniLightSphere.setPosition(0., 0., 0.);
+		pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+			(model) => {
+				model.explore(function (node) {
+					if (scene.SceneModel.isModel(node)) {
+						node.getMesh().getSubset(0).getMaterial().emissive = new Color(1., 1., 1.);
+					}
+				})
+				}, "test-omni-0-model", pOmniLight).scale(0.15);
+		pOmniLightSphere.setPosition(0., 0., 0.);
 		pOmniLight.setPosition(lightPos2);
 	}
 
@@ -379,7 +394,7 @@ module akra {
 			(<IForwardViewport>pViewport).setSkyboxModel(pModel.getRenderable(0));
 		}
 		//if (pViewport.getType() === EViewportTypes.LPPVIEWPORT || pViewport.getType() === EViewportTypes.DSVIEWPORT) {
-		(<render.ForwardViewport>pViewport).setSkybox(pSkyboxTexture);
+		(<ILPPViewport>pViewport).setSkybox(pSkyboxTexture);
 		//}
 
 		pEnvTexture = pRmgr.createTexture(".env-map-texture-01");
@@ -387,7 +402,7 @@ module akra {
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 		pEnvTexture.unwrapCubeTexture(pSkyboxTexture);
 
-		(<IForwardViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
+		(<ILPPViewport>pViewport).setDefaultEnvironmentMap(pEnvTexture);
 	}
 
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
@@ -492,6 +507,15 @@ module akra {
 		console.log("------------- Start preloading models");
 		console.log("------------- + Models table");
 
+		pFireTexture = pRmgr.createTexture(".fire-degrade-texture");
+		pFireTexture.loadResource("FIRE_TEXTURE");
+
+		applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
+			pTech.getPass(iPass).setForeign('IS_USE_ALPHATEST', true);
+			pTech.getPass(iPass).setTexture('ALPHATEST_TEXTURE', pFireTexture);
+			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
+		};
+
 		pModelTable = addons.trifan(pScene, 2.5, 96);
 		pModelTable.attachToParent(pScene.getRootNode());
 		pModelTable.setPosition(0., -1.25, 0.);
@@ -500,6 +524,7 @@ module akra {
 				node.getMesh().getSubset(0).getMaterial().shininess = 0.7;
 				node.getMesh().getSubset(0).getMaterial().specular = plasticColorSpecular;
 				node.getMesh().getSubset(0).getMaterial().diffuse = plasticColorDiffuse;
+				node.getMesh().getSubset(0).getTechnique().render.connect(applyAlphaTest);
 				node.getMesh().getSubset(0).getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
 					pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
 					pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
@@ -508,7 +533,7 @@ module akra {
 		});
 
 		var pModelsKeys = [
-			//'mercedes',
+		//'mercedes',
 			'miner',
 			'character',
 			'head',
@@ -522,14 +547,20 @@ module akra {
 			// 'box',
 			// 'barrel',
 		];
-		var pModelsFiles = {
+		pModelsFiles = {
 			//mercedes: {
 			//	path: modelsPath + "/../../../mercedes/models/mercedes.DAE",
 			//	init: () => { }
 			//},
 			miner: {
 				path: modelsPath + "/miner/miner.DAE",
-				init: function (model) { },
+				init: function (model) {
+					model.explore(function (node) {
+						if (scene.SceneModel.isModel(node)) {
+							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
+						}
+					});
+				},
 			},
 			character: {
 				path: modelsPath + "/character/character.DAE",
@@ -537,7 +568,14 @@ module akra {
 			},
 			head: {
 				path: modelsPath + "/head/head.DAE",
-				init: function (model) { model.scale(0.7); },
+				init: function (model) {
+					model.scale(0.7);
+					model.explore(function (node) {
+						if (scene.SceneModel.isModel(node)) {
+							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
+						}
+					});
+				},
 			},
 			sponza: {
 				path: modelsPath + "/sponza/sponza.DAE",
@@ -570,17 +608,17 @@ module akra {
 		};
 		pModels = {};
 
-		pModels["miner"] = loadModel(pModelsFiles["miner"].path, null, "miner", pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
-		pCurrentModel = pModels["miner"];
+		var sFirstModelKey = "miner";
+		pModels[sFirstModelKey] = loadModel(pModelsFiles[sFirstModelKey].path, pModelsFiles[sFirstModelKey].init, sFirstModelKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
+		pCurrentModel = pModels[sFirstModelKey];
 		pCurrentModel.addPosition(0., 1000., 0.);
 
 		var pModelsFolder = pGUI.addFolder("models");
 
-		(<dat.OptionController>pModelsFolder.add({ Model: "miner" }, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
+		(<dat.OptionController>pModelsFolder.add({ Model: sFirstModelKey }, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
 			pCurrentModel.addPosition(0., -1000., 0.);
 			if (pModels[sKey] == null) {
-				pModels[sKey] = loadModel(pModelsFiles[sKey].path, null, sKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
-				pModelsFiles[sKey].init(pModels[sKey]);
+				pModels[sKey] = loadModel(pModelsFiles[sKey].path, pModelsFiles[sKey].init, sKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
 			}
 			pCurrentModel = pModels[sKey];
 			pCurrentModel.addPosition(0., 1000., 0.);
@@ -591,6 +629,7 @@ module akra {
 		pMirror.attachToParent(pModelTable);
 		pMirror.setPosition(0., 0., 0.);
 		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, 0.5, 96);
+		pCylinder.getRenderable().getTechnique().render.connect(applyAlphaTest);
 		pCylinder.attachToParent(pModelTable);
 		pCylinder.setPosition(0., -0.25, 0.);
 

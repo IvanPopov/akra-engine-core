@@ -42,7 +42,7 @@ module akra.render {
 		private _bRenderOnlyTransparentObjects: boolean = false;
 
 		private _pSkybox: IRenderableObject = null;
-		private _isFogEnabled: boolean = false;
+		private _eFogType: EFogType = EFogType.NONE;
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -337,12 +337,12 @@ module akra.render {
 		highlight(a): void {
 		}
 
-		setFog(bEnabled: boolean = true): void {
-			this._isFogEnabled = bEnabled;
+		setFog(eFogType: EFogType = EFogType.LINEAR): void {
+			this._eFogType = eFogType;
 		}
 
 		isFogged(): boolean {
-			return this._isFogEnabled;
+			return this._eFogType !== EFogType.NONE;
 		}
 
 		_onScreenRender(pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
@@ -414,7 +414,7 @@ module akra.render {
 				pPass.setForeign("IS_USED_SKYBOX_LIGHTING", false);
 			}
 
-			pPass.setForeign("IS_FOG_ENABLED", this._isFogEnabled);
+			pPass.setForeign("FOG_TYPE", this._eFogType);
 		}
 
 		private prepareForForwardShading(): void {

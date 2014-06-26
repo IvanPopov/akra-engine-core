@@ -18,6 +18,12 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="Main" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>
+              Path to demo entry point. If Main tag not specified, will
+              be used 'main.ts' as main script.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element ref="Exclude" minOccurs="0" maxOccurs="unbounded"/>
@@ -28,17 +34,11 @@
               </xs:annotation>
             </xs:attribute>
           </xs:complexType>
-          <xs:annotation>
-            <xs:documentation>
-              Path to demo entry point. If Main tag not specified, will
-              be used 'main.ts' as main script.
-            </xs:documentation>
-          </xs:annotation>
-          <xs:complexType>
+          <!--<xs:complexType>
             <xs:simpleContent>
               <xs:extension base="xs:string"/>
             </xs:simpleContent>
-          </xs:complexType>
+          </xs:complexType>-->
         </xs:element>
         <xs:element name="Description" maxOccurs="1">
           <xs:annotation>
