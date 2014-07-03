@@ -10,6 +10,8 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
+	addons.compatibility.requireWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+	addons.compatibility.requireWebGLExtension(webgl.OES_TEXTURE_FLOAT);
 	addons.compatibility.verify("non-compatible");
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
