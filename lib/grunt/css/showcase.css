@@ -634,7 +634,7 @@ b {
 .b-showcase-list {
   display: block;
   margin: 0 0 0 0;
-  padding: 17px 0 0 0;
+  padding: 17px 0 0 2px;
   list-style: none;
   background: url(../img/showcase/technology-sep.png) 0 0 repeat-x;
 }
@@ -663,7 +663,7 @@ b {
   margin: 0 33px 15px 0;
   padding: 0;
   vertical-align: top;
-  width: 254px;
+  width: 253px;
 }
 .b-showcase-list-item.last {
   margin: 0 0px 15px 0;
@@ -672,21 +672,28 @@ b {
   display: block;
   margin: 0 0 10px;
   height: 132px;
-  padding: 2px 1.5px 1.5px 2px;
+  /*padding: 2px 1.5px 1.5px 2px;*/
+  padding: 0;
   vertical-align: bottom;
-  border: 1px solid #3c3c3c;
-  box-shadow: inset 1px 1px 1px 0px #b4b4b4, 1px 1px 1px 0px #b4b4b4;
+  /*border: 1px solid #3c3c3c;*/
+  /*box-shadow: inset 1px 1px 1px 0px #b4b4b4, 1px 1px 1px 0px #b4b4b4;*/
 
   /* extended */
   box-shadow: none; 
-  border: 1px solid rgba(60, 60, 60, 0.3);
+  /*border: 1px solid rgba(60, 60, 60, 0.3);*/
   
 }
 
+.b-showcase-list-item-image img, .b-showcase-list-item-image iframe {
+  box-shadow: 0 0 3px #444444;
+}
+
 .b-showcase-list-item-image img {
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.333 0 0 0 0, 0 0.333 0 0 0, 0 0 0.333 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
   -moz-filter: grayscale(50%); 
   -webkit-filter: grayscale(50%); 
   filter: grayscale(50%);
+
 }
 
 .b-showcase-list-item:hover  .b-showcase-list-item-image img{

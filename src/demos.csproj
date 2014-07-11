@@ -408,7 +408,9 @@
     <Content Include="demos\arteries\data\AG\041.jpg" />
     <Content Include="demos\arteries\data\coords\coord4.txt" />
     <Content Include="demos\arteries\data\coords\coord_real_ag.txt" />
-    <Content Include="demos\arteries\demo.xml" />
+    <Content Include="demos\arteries\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\cube.dae">
       <SubType>Designer</SubType>
     </Content>
@@ -713,9 +715,7 @@
     <TypeScriptCompile Include="demos\model-viewer\model-viewer.ts" />
     <TypeScriptCompile Include="demos\pbs\pbs.ts" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="demos\anti-aliasing\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
