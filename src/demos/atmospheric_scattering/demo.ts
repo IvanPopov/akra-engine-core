@@ -287,7 +287,7 @@ module akra {
 
 		pScene.beforeUpdate.connect(update);
 
-		//pProgress.destroy();
+		pProgress.destroy();
 		pEngine.exec();
 	}
 
