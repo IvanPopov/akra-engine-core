@@ -1,6 +1,7 @@
 ﻿/// <reference path="../../../built/Lib/akra.d.ts" />
 
 declare var AE_PROGRESS_CSS: any;
+declare var AE_PROGRESS_YOUTUBE: any;
 
 module akra.addons {
 
@@ -54,6 +55,12 @@ module akra.addons {
 					"</div>" +
 				"</div>" +
 			"</div>" +
+			"<div class='ae-watch-video' onclick=\"window.open('" + "http://www.youtube.com/watch?v=LN4n0pTxWYs" + "', '_blank').focus()\">" +
+				"<table><tr>" +
+					"<td><img src='" + uri.currentPath() + AE_PROGRESS_YOUTUBE.content + "' /></td>" +
+					"<td>you can watch the <br />video while loading</td>" +
+					"</tr></table>" + 
+			"</div>" + 
 		"</div>" :
 		"<div class='ae-preloader'>" +
 			"<div class='ae-progress'>" +
@@ -66,6 +73,12 @@ module akra.addons {
 					"</div>" +
 				"</div>" +
 			"</div>" +
+			"<div class='ae-watch-video' onclick=\"window.open('" + "http://www.youtube.com/watch?v=LN4n0pTxWYs" + "', '_blank').focus()\">" +
+				"<table><tr>" +
+					"<td><img src='" + uri.currentPath() + AE_PROGRESS_YOUTUBE.content + "' /></td>" +
+					"<td>you can watch the <br />video while loading</td>" +
+					"</tr></table>" + 
+			"</div>" + 
 		"</div>"
 
 

@@ -43,7 +43,72 @@ div.ae-bar {
 }
 
 
+.ae-watch-video {
+	color: white;
+	margin: 0 auto;
+	font-family: Tahoma;
+	text-transform: uppercase;
 
+	animation: fadeIn 1s forwards;
+	-webkit-animation: fadeIn 1s forwards;
+	-moz-animation: fadeIn 1s forwards;
+
+	animation-delay: 5s;
+	-webkit-animation-delay: 5s;
+	-moz-animation-delay: 5s;
+
+	
+	margin-top: -50px;
+	opacity: 0;
+
+	position: relative;
+	top: 170px;
+}
+
+.ae-watch-video img {
+	display: block;
+	height: 64px;
+}
+.ae-watch-video table {
+	padding: 0;
+	border-collapse: collapse;
+	margin: 0 auto;
+}
+
+.ae-watch-video table td {
+	text-align: left;
+}
+
+.ae-watch-video table:hover {
+	padding: 5px;
+	background: #333;
+	cursor: pointer;
+}
+
+@-webkit-keyframes fadeIn {
+  0% {
+	opacity: 0;
+  }
+
+  100% {
+	opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+	opacity: 0;
+  }
+
+  100% {
+	opacity: 1;
+  }
+}
+
+.fadeIn {
+  -webkit-animation-name: fadeIn;
+  animation-name: fadeIn;
+}
 
 /*@-webkit-keyframes bounceInLeft {
 	0% {
