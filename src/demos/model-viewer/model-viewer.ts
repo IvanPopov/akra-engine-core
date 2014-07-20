@@ -319,9 +319,10 @@ module akra {
 
 
 
-		pEffectData = { BLUR_RADIUS: 0.01, FIRE_THRESHOLD: 0.01 };
+		pEffectData = { BLUR_RADIUS: 0.01, FIRE_THRESHOLD: 0.01, IS_USE_ALPHATEST: true };
 		var pEffetsFolder = pGUI.addFolder("effects");
 		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'BLUR_RADIUS')).min(0.).max(250.).name("Blur radius");
+		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'IS_USE_ALPHATEST')).name("Use alphatest");
 		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'FIRE_THRESHOLD')).min(0.).max(1.).step(0.01).name("Fire gate").__precision = 2;
 
 
@@ -586,7 +587,7 @@ module akra {
 		pFireTexture.loadResource("FIRE_TEXTURE");
 
 		applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
-			pTech.getPass(iPass).setForeign('IS_USE_ALPHATEST', true);
+			pTech.getPass(iPass).setForeign('IS_USE_ALPHATEST', pEffectData.IS_USE_ALPHATEST);
 			pTech.getPass(iPass).setTexture('ALPHATEST_TEXTURE', pFireTexture);
 			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
 		};
@@ -735,14 +736,6 @@ module akra {
 		pCylinder.getRenderable().getMaterial().specular = plasticColorSpecular;
 		pCylinder.attachToParent(pModelTable);
 		pCylinder.setPosition(0., -0.1, 0.);
-
-		// var pPlane = addons.createQuad(pScene, 100);
-		// // pPlane.getRenderable().getTechnique().render.connect(applyAlphaTest);
-		// pPlane.getRenderable().getMaterial().shininess = 0.6;
-		// pPlane.getRenderable().getMaterial().diffuse = plasticDarkColorDiffuse;
-		// pPlane.getRenderable().getMaterial().specular = plasticColorSpecular;
-		// pPlane.attachToParent(pModelTable);
-		// pPlane.setPosition(0., -0.2, 0.);
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
 			if (pViewport === akra.pViewport) {
