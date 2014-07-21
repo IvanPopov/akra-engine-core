@@ -793,6 +793,7 @@ module akra.webgl {
 
 		_endRender(): void {
 			this.disable(gl.SCISSOR_TEST);
+			this._disableTextureUnitsFrom(0);
 			this._pTextureStateManager.reset();
 			this._pLastMaker = null;
 			this._pLastBufferMap = null;

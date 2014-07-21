@@ -2,6 +2,9 @@
 <Demo Name="Atmospheric-scatterings" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
   <Description>Atmospheric scattering demo.</Description>
+  <Preview Src="*">
+    <YouTube Src="//www.youtube.com/embed/W0ocgQd_huU"/>
+  </Preview>
   <ItemGroup>
     <TypeScriptCompile Include="demo.ts"/>
   </ItemGroup>

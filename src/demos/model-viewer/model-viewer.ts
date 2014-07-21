@@ -11,8 +11,11 @@ declare var AE_RESOURCES: akra.IDep;
 declare var AE_MODELS: any;
 
 module akra {
-
+	addons.compatibility.requireWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+	addons.compatibility.requireWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
+	addons.compatibility.requireWebGLExtension(webgl.OES_TEXTURE_FLOAT);
 	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+	addons.compatibility.requireWebGLExtension(webgl.OES_STANDARD_DERIVATIVES);
 	addons.compatibility.verify("non-compatible");
 
 	export var modelsPath = path.parse((AE_MODELS.content).split(';')[0]).getDirName() + '/';
@@ -55,6 +58,7 @@ module akra {
 	export var pModelsFiles = null;
 	export var pFireTexture: ITexture = null;
 	export var applyAlphaTest = null;
+	export var bFPSCameraControls: boolean = false;
 
 	var pState = {
 		animate: true,
@@ -77,11 +81,22 @@ module akra {
 			rotation: new math.Vec2(0., 0.)
 		}
 	}
+	export var pCameraFPSParams = {
+		current: {
+			position: new math.Vec3(),
+			rotation: new math.Vec2(0., 0.)
+		},
+		target: {
+			position: new math.Vec3(),
+			rotation: new math.Vec2(0., 0.)
+		}
+	}
 
 	export var pModelTable = null;
 	export var pModels = null;
 	export var pCurrentModel = null;
 	export var pPodiumModel = null;
+	export var pOmniLights = null;
 
 	function createCamera(pRoot: ISceneNode = pScene.getRootNode()): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
@@ -99,17 +114,27 @@ module akra {
 			pReflectionCamera.update();
 
 			if (pCamera === pDefaultCamera) {
-				var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
-				var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+				if (bFPSCameraControls) {
+					var newRot: IVec2 = math.Vec2.temp(pCameraFPSParams.current.rotation).add(math.Vec2.temp(pCameraFPSParams.target.rotation).subtract(pCameraFPSParams.current.rotation).scale(0.15));
+					var newPos: IVec3 = math.Vec3.temp(pCameraFPSParams.current.position).add(math.Vec3.temp(pCameraFPSParams.target.position).subtract(pCameraFPSParams.current.position).scale(0.03));
 
-				pCameraParams.current.rotation.set(newRot);
-				pCameraParams.current.orbitRadius = newRad;
-				pCamera.setPosition(
-					newRad * -math.sin(newRot.x) * math.cos(newRot.y),
-					newRad * math.sin(newRot.y),
-					newRad * math.cos(newRot.x) * math.cos(newRot.y));
-				pCamera.lookAt(math.Vec3.temp(0, 0, 0));
+					pCameraFPSParams.current.rotation.set(newRot);
+					pCameraFPSParams.current.position.set(newPos);
+					pCamera.setPosition(newPos);
+					pCamera.setRotationByEulerAngles(-newRot.x, -newRot.y, 0.);
+				}
+				else {
+					var newRot: IVec2 = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
+					var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
 
+					pCameraParams.current.rotation.set(newRot);
+					pCameraParams.current.orbitRadius = newRad;
+					pCamera.setPosition(
+						newRad * -math.sin(newRot.x) * math.cos(newRot.y),
+						newRad * math.sin(newRot.y),
+						newRad * math.cos(newRot.x) * math.cos(newRot.y));
+					pCamera.lookAt(math.Vec3.temp(0, 0, 0));
+				}
 				pCamera.update();
 			}
 
@@ -136,37 +161,65 @@ module akra {
 				if (pKeymap.isMouseMoved()) {
 					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-					pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
-					pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
-
+					if(bFPSCameraControls) {
+						pCameraFPSParams.target.rotation.y = math.clamp(pCameraFPSParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 4., -1.2, 1.2);
+						pCameraFPSParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 4.;
+					}
+					else {
+						pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 2., -0.7, 1.2);
+						pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 2.;
+					}
 					pKeymap.update();
 				}
 
 			}
-			var fSpeed: float = 0.1 * 10;
+			var fSpeed: float = 0.1 * 3;
 			if (pKeymap.isKeyPress(EKeyCodes.W)) {
-				pCamera.addRelPosition(0, 0, -fSpeed);
+				// pCamera.addRelPosition(0, 0, -fSpeed);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.position.add(pCamera.getTempVectorForward().scale(-fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.S)) {
-				pCamera.addRelPosition(0, 0, fSpeed);
+				// pCamera.addRelPosition(0, 0, fSpeed);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.position.add(pCamera.getTempVectorForward().scale(fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.A) || pKeymap.isKeyPress(EKeyCodes.LEFT)) {
-				pCamera.addRelPosition(-fSpeed, 0, 0);
+				// pCamera.addRelPosition(-fSpeed, 0, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.position.add(pCamera.getTempVectorRight().scale(fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
-				pCamera.addRelPosition(fSpeed, 0, 0);
+				// pCamera.addRelPosition(fSpeed, 0, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.position.add(pCamera.getTempVectorRight().scale(-fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.UP)) {
-				pCamera.addRelPosition(0, fSpeed, 0);
+				// pCamera.addRelPosition(0, fSpeed, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.position.add(pCamera.getTempVectorUp().scale(fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
-				pCamera.addRelPosition(0, -fSpeed, 0);
+				// pCamera.addRelPosition(0, -fSpeed, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.position.add(pCamera.getTempVectorUp().scale(-fSpeed));
+				}
 			}
 		});
 		(<ILPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
 		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
 			//console.log("mousewheel moved: ",x,y,fDelta);
-			pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
+			if(bFPSCameraControls) {
+				pCameraFPSParams.target.position.add(pCamera.getTempVectorForward().scale( -fDelta / pViewport.getActualHeight() ));
+			}
+			else {
+				pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 2., 2., 15.);
+			}
 		});
 	}
 
@@ -208,6 +261,27 @@ module akra {
 			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		};
+
+		
+		pGUI.add({ fps_camera: bFPSCameraControls }, "fps_camera").onChange((bNewValue) => {
+			if(!bFPSCameraControls) {
+				pCameraFPSParams.current.rotation.set(pCameraParams.current.rotation);
+				pCameraFPSParams.target.rotation.set(pCameraFPSParams.current.rotation);
+				pCameraFPSParams.current.position.set(pCamera.getWorldPosition());
+				pCameraFPSParams.target.position.set(pCameraFPSParams.current.position);
+			}
+			bFPSCameraControls = bNewValue;
+		})
+
+		var bAdvancedSkybox: boolean = true;
+		var fSkyboxSharpness: float = .72;
+		pGUI.add({ skybox_sharpness: fSkyboxSharpness }, "skybox_sharpness", 0., 1., 0.01).onChange((fValue) => {
+			fSkyboxSharpness = fValue;
+		})
+
+		pGUI.add({ skybox_blur: bAdvancedSkybox }, "skybox_blur").onChange((bValue) => {
+			bAdvancedSkybox = bValue;
+		});
 
 		var pMaterialPresets = {
 			Gold: {
@@ -252,9 +326,10 @@ module akra {
 
 
 
-		pEffectData = { BLUR_RADIUS: 0.01, FIRE_THRESHOLD: 0.01 };
+		pEffectData = { BLUR_RADIUS: 0.01, FIRE_THRESHOLD: 0.01, IS_USE_ALPHATEST: true };
 		var pEffetsFolder = pGUI.addFolder("effects");
 		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'BLUR_RADIUS')).min(0.).max(250.).name("Blur radius");
+		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'IS_USE_ALPHATEST')).name("Use alphatest");
 		(<dat.NumberControllerSlider>pEffetsFolder.add(pEffectData, 'FIRE_THRESHOLD')).min(0.).max(1.).step(0.01).name("Fire gate").__precision = 2;
 
 
@@ -295,8 +370,7 @@ module akra {
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
 			pPass.setUniform("BLUR_RADIUS", pEffectData.BLUR_RADIUS);
-
-			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", pCameraParams.current.orbitRadius < .2 ? 1. : fSkyboxSharpness);
+			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
 			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
 		});
@@ -344,7 +418,6 @@ module akra {
 	var lightPos1: math.Vec3 = new math.Vec3(1, 2, 2);
 	var lightPos2: math.Vec3 = new math.Vec3(-1, -2, 2);
 
-	export var pOmniLights: INode = null;
 	function createLighting(): void {
 		pOmniLights = pScene.createNode('lights-root');
 		pOmniLights.attachToParent(pCamera);
@@ -517,6 +590,7 @@ module akra {
 		var plasticColorSpecular: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
 		// var plasticColorDiffuse: color.Color = silverColorDiffuse;
 		var plasticColorDiffuse: color.Color = new Color(0.35, 0.35, 0.35, 1.0);
+		var plasticDarkColorDiffuse: color.Color = new Color(0.08, 0.08, 0.08, 1.0);
 
 		console.log("-------------");
 		console.log("-------------");
@@ -531,7 +605,7 @@ module akra {
 		pFireTexture.loadResource("FIRE_TEXTURE");
 
 		applyAlphaTest = function (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) {
-			pTech.getPass(iPass).setForeign('IS_USE_ALPHATEST', true);
+			pTech.getPass(iPass).setForeign('IS_USE_ALPHATEST', pEffectData.IS_USE_ALPHATEST);
 			pTech.getPass(iPass).setTexture('ALPHATEST_TEXTURE', pFireTexture);
 			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
 		};
@@ -565,6 +639,11 @@ module akra {
 			'rock',
 			'windspot',
 			'can',
+			'building01',
+			'building02',
+			'prop01',
+			'prop04',
+			'dress01',
 			// 'box',
 			// 'barrel',
 		];
@@ -734,6 +813,26 @@ module akra {
 				path: modelsPath + "/can/can.DAE",
 				init: function (model) { model.addPosition(0, 0.3, 0); },
 			},
+			building01: {
+				path: modelsPath + "/building01/building01.DAE",
+				init: function (model) { },
+			},
+			building02: {
+				path: modelsPath + "/building02/building02.DAE",
+				init: function (model) { },
+			},
+			prop01: {
+				path: modelsPath + "/prop01/prop01.DAE",
+				init: function (model) { model.addPosition(0, 0, 0); },
+			},
+			prop04: {
+				path: modelsPath + "/prop04/prop04.DAE",
+				init: function (model) { model.addPosition(0, 0, 0); },
+			},
+			dress01: {
+				path: modelsPath + "/dress01/dress01.DAE",
+				init: function (model) { model.addPosition(0, 0, 0); },
+			},
 		};
 		pModels = {};
 
@@ -767,6 +866,7 @@ module akra {
 		pCylinder.attachToParent(pModelTable);
 		pCylinder.getRenderable().getMaterial().diffuse = plasticColorDiffuse;
 		pCylinder.getRenderable().getMaterial().specular = plasticColorSpecular;
+		pCylinder.getRenderable().getMaterial().shininess = 0.7;
 		pCylinder.setPosition(0., -fCylinderHeight / 2., 0.);
 
 		//var pQuad = addons.createQuad(pScene, 100);

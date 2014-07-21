@@ -173,6 +173,7 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
     }
 }
 
+shared float3x3 transformNormalMat;
 float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
     float3 result_normal = float3(0.);
 
@@ -187,16 +188,15 @@ float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
         float3 binormal = cross(tangent, normal);
 
         //формируем матрицу трансформации
-        float3x3 m3fTransform;
-        m3fTransform[0] = tangent;
-        m3fTransform[1] = binormal;
-        m3fTransform[2] = normal;
+        transformNormalMat[0] = tangent;
+        transformNormalMat[1] = binormal;
+        transformNormalMat[2] = normal;
 
         texNormal.xy = (texNormal.xy - 0.5) * 2.;
 
         texNormal = normalize(texNormal);
 
-        result_normal = m3fTransform * texNormal;
+        result_normal = transformNormalMat * texNormal;
     }
 
     return normalize(result_normal);

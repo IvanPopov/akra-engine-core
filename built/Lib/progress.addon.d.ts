@@ -1,5 +1,6 @@
 ﻿/// <reference path="akra.d.ts" />
 declare var AE_PROGRESS_CSS: any;
+declare var AE_PROGRESS_YOUTUBE: any;
 declare module akra.addons {
     class Progress {
         private element;

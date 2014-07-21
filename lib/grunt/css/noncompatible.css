@@ -15,12 +15,12 @@
   padding-top: 170px;
   position: relative;
   left: -413px;
-  top: -174px;
+  top: -340px;
   width: 826px;
   height: 347px;
-  background: url(../img/compatibility.png);
+  /*background: url(../img/compatibility.png);*/
   background-repeat: no-repeat;
-  color: white;
+  color: #ccc;
 }
 
 #non-compatible .h3 {
@@ -29,7 +29,7 @@
   font-weight: 100;
   font-size: 25px;
   color: #555;
-  text-shadow: none;
+  /*text-shadow: none;*/
 }
 
 #non-compatible .h3 small {
@@ -42,24 +42,60 @@
   /*margin-top: -20px;*/
   font-family: Arial;
   font-size: 30px;
-  font-weight: 100;
-  text-shadow: 0 0 2px rgb(255, 255, 255);
-  color: white;
+  /*text-shadow: 0 0 2px black;*/
+  /*color: #333;*/
 }
 
 #non-compatible img {
-  margin-top: -18px;
-  margin-left: -15px;
-  margin-right: -15px;
+  width: 52px;
+  margin: 0 2px 0 2px;
+  -webkit-filter: saturate(.3);
+  filter: saturate(.3);
+}
+
+#non-compatible img:hover {
+  -webkit-filter: none;
+  filter: none;
 }
 
 #non-compatible h1 {
   font-family: Arial; 
-  text-shadow: 0 0 2px white; 
+  /*text-shadow: 0 0 2px black; */
   font-size: 44px;
 }
 
 #non-compatible a, #non-compatible img {
   text-decoration: none; 
   border: 0px;
+}
+
+#non-compatible div.watch-video {
+  width: 256px;
+  height: 256px;
+  background: url(../img/inside-youtube.png);
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+#non-compatible div.watch-video div.play {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto;
+  top: 65px;
+  background-image: url(../img/youtube-play.png);
+}
+
+#non-compatible div.watch-video:hover div.play{
+  background-image: url(../img/youtube-play-overlay.png);
+}
+
+#non-compatible div.overlay {
+  min-height: 100%;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: url(../img/body-bg.png);
 }
