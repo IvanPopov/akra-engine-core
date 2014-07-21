@@ -236,6 +236,7 @@ module akra {
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		var pSkyboxTexturesKeys = [
+			'plains',
 			'sunset'
 		];
 		pSkyboxTextures = {};
@@ -272,7 +273,7 @@ module akra {
 
 		var pPBSFolder = pGUI.addFolder("pbs");
 
-		(<dat.OptionController>pPBSFolder.add({ Skybox: 'sunset' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({ Skybox: 'plains' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
 			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			// }
@@ -371,7 +372,7 @@ module akra {
 	}
 
 	function createSkyBox(): void {
-		pSkyboxTexture = pSkyboxTextures['sunset'];
+		pSkyboxTexture = pSkyboxTextures['plains'];
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			var pModel = addons.cube(pScene);
