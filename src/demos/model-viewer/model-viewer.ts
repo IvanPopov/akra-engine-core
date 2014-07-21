@@ -41,6 +41,7 @@ module akra {
 
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
+	export var pDefaultCamera: ICamera = null;
 	export var pViewport: IViewport = null;
 	export var pReflectionCamera: ICamera = null;
 	export var pReflectionViewport: IViewport = null;
@@ -95,13 +96,13 @@ module akra {
 	export var pModels = null;
 	export var pCurrentModel = null;
 	export var pPodiumModel = null;
+	export var pOmniLights = null;
 
-	function createCamera(): ICamera {
+	function createCamera(pRoot: ISceneNode = pScene.getRootNode()): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
 
-		pCamera.attachToParent(pScene.getRootNode());
+		pCamera.attachToParent(pRoot);
 		pCamera.setPosition(Vec3.temp(0., 0., 4.2));
-
 		pCamera.update();
 
 		return pCamera;
@@ -111,29 +112,31 @@ module akra {
 		pScene.beforeUpdate.connect(() => {
 			pCamera.update();
 			pReflectionCamera.update();
-			if(bFPSCameraControls) {
-				var newRot: IVec2 = math.Vec2.temp(pCameraFPSParams.current.rotation).add(math.Vec2.temp(pCameraFPSParams.target.rotation).subtract(pCameraFPSParams.current.rotation).scale(0.15));
-				var newPos: IVec3 = math.Vec3.temp(pCameraFPSParams.current.position).add(math.Vec3.temp(pCameraFPSParams.target.position).subtract(pCameraFPSParams.current.position).scale(0.03));
 
-				pCameraFPSParams.current.rotation.set(newRot);
-				pCameraFPSParams.current.position.set(newPos);
-				pCamera.setPosition(newPos);
-				pCamera.setRotationByEulerAngles(-newRot.x,-newRot.y,0.);
+			if (pCamera === pDefaultCamera) {
+				if (bFPSCameraControls) {
+					var newRot: IVec2 = math.Vec2.temp(pCameraFPSParams.current.rotation).add(math.Vec2.temp(pCameraFPSParams.target.rotation).subtract(pCameraFPSParams.current.rotation).scale(0.15));
+					var newPos: IVec3 = math.Vec3.temp(pCameraFPSParams.current.position).add(math.Vec3.temp(pCameraFPSParams.target.position).subtract(pCameraFPSParams.current.position).scale(0.03));
+
+					pCameraFPSParams.current.rotation.set(newRot);
+					pCameraFPSParams.current.position.set(newPos);
+					pCamera.setPosition(newPos);
+					pCamera.setRotationByEulerAngles(-newRot.x, -newRot.y, 0.);
+				}
+				else {
+					var newRot: IVec2 = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
+					var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+
+					pCameraParams.current.rotation.set(newRot);
+					pCameraParams.current.orbitRadius = newRad;
+					pCamera.setPosition(
+						newRad * -math.sin(newRot.x) * math.cos(newRot.y),
+						newRad * math.sin(newRot.y),
+						newRad * math.cos(newRot.x) * math.cos(newRot.y));
+					pCamera.lookAt(math.Vec3.temp(0, 0, 0));
+				}
+				pCamera.update();
 			}
-			else {
-				var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
-				var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
-
-				pCameraParams.current.rotation.set(newRot);
-				pCameraParams.current.orbitRadius = newRad;
-				pCamera.setPosition(
-					newRad * -math.sin(newRot.x) * math.cos(newRot.y),
-					newRad * math.sin(newRot.y),
-					newRad * math.cos(newRot.x) * math.cos(newRot.y));
-				pCamera.lookAt(math.Vec3.temp(0, 0, 0));
-			}
-
-			pCamera.update();
 
 			var dist = math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition());
 			var up = pMirror.getTempVectorUp();
@@ -246,6 +249,7 @@ module akra {
 			'plains',
 			'church',
 			'basilica',
+			'sunset'
 		];
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
@@ -343,6 +347,19 @@ module akra {
 		var pEffect = pViewport.getEffect();
 		pEffect.addComponent("akra.system.blur");
 
+		var bAdvancedSkybox: boolean = true;
+		var fSkyboxSharpness: float = .72;
+		if (config.DEBUG) {
+			pGUI.add({ skybox_sharpness: fSkyboxSharpness }, "skybox_sharpness", 0., 1., 0.01).onChange((fValue) => {
+				fSkyboxSharpness = fValue;
+			})
+
+			pGUI.add({ skybox_blur: bAdvancedSkybox }, "skybox_blur").onChange((bValue) => {
+				bAdvancedSkybox = bValue;
+			});
+		}
+
+
 		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
@@ -353,7 +370,6 @@ module akra {
 			pPass.setUniform("SCREEN_ASPECT_RATIO",
 				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
 			pPass.setUniform("BLUR_RADIUS", pEffectData.BLUR_RADIUS);
-
 			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
 			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
 			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
@@ -383,7 +399,7 @@ module akra {
 	function createMirrorViewport(pReflNode: INode): IViewport {
 
 		pReflectionTexture = pRmgr.createTexture(".reflection_texture");
-		pReflectionTexture.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+		pReflectionTexture.create(1024, 1024, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
 			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
 
 		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
@@ -391,7 +407,7 @@ module akra {
 
 
 		var pDepthTexture = pRmgr.createTexture(".mirror - depth");
-		pDepthTexture.create(512, 512, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+		pDepthTexture.create(1024, 1024, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 		pRenderTarget.attachDepthTexture(pDepthTexture);
 
 		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
@@ -402,7 +418,6 @@ module akra {
 	var lightPos1: math.Vec3 = new math.Vec3(1, 2, 2);
 	var lightPos2: math.Vec3 = new math.Vec3(-1, -2, 2);
 
-	export var pOmniLights: INode = null;
 	function createLighting(): void {
 		pOmniLights = pScene.createNode('lights-root');
 		pOmniLights.attachToParent(pCamera);
@@ -546,7 +561,7 @@ module akra {
 	function main(pEngine: IEngine) {
 		std.setup(pCanvas);
 
-		pCamera = createCamera();
+		pDefaultCamera = pCamera = createCamera();
 		pViewport = createViewport();
 		pMirror = createMirror();
 		pViewport.setBackgroundColor(color.GRAY);
@@ -595,7 +610,8 @@ module akra {
 			pTech.getPass(iPass).setUniform("ALPHATEST_THRESHOLD", pEffectData.FIRE_THRESHOLD);
 		};
 
-		pModelTable = addons.trifan(pScene, 2.5, 96);
+		var fRadius = 3.;
+		pModelTable = addons.trifan(pScene, fRadius, 96);
 		pModelTable.attachToParent(pScene.getRootNode());
 		pModelTable.setPosition(0., -1.25, 0.);
 		pModelTable.explore(function (node) {
@@ -603,7 +619,7 @@ module akra {
 				node.getMesh().getSubset(0).getMaterial().shininess = 0.7;
 				node.getMesh().getSubset(0).getMaterial().specular = plasticColorSpecular;
 				node.getMesh().getSubset(0).getMaterial().diffuse = plasticColorDiffuse;
-				node.getMesh().getSubset(0).getTechnique().render.connect(applyAlphaTest);
+				//node.getMesh().getSubset(0).getTechnique().render.connect(applyAlphaTest);
 				node.getMesh().getSubset(0).getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
 					pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
 					pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
@@ -644,6 +660,114 @@ module akra {
 							node.getRenderable().getTechnique().render.connect(applyAlphaTest);
 						}
 					});
+
+
+					var pController: IAnimationController = pEngine.createAnimationController();
+
+					function anim2controller(pController: IAnimationController, sAnim: string): IAnimationContainer {
+						var pAnimModel: ICollada = <ICollada>pRmgr.getColladaPool().findResource(sAnim);
+						if (isNull(pAnimModel)) {
+							console.log("SKIP ANIMATION " + sAnim);
+							return;
+						}
+						var pIdleAnim: IAnimation = pAnimModel.extractAnimation(0);
+						var pCont: IAnimationContainer = animation.createContainer(pIdleAnim, sAnim);
+						//pCont.useLoop(true);
+						pController.addAnimation(pCont);
+
+						return pCont;
+					}
+
+					anim2controller(pController, "ANIM_MINER_IDLE0");
+					anim2controller(pController, "ANIM_MINER_IDLE1");
+					anim2controller(pController, "ANIM_MINER_IDLE2").enterFrame.connect((pContainer: IAnimationContainer, fRealTime: float, fTime: float): void => {
+						if (fTime > pContainer.getDuration()) {
+							pController.play.emit("ANIM_MINER_WORK_HAMMER");
+						}
+					});
+					anim2controller(pController, "ANIM_MINER_WALK1");
+					anim2controller(pController, "ANIM_MINER_WALK2");
+					anim2controller(pController, "ANIM_MINER_WALK3");
+					anim2controller(pController, "ANIM_MINER_WORK_GUN");
+					anim2controller(pController, "ANIM_MINER_WORK_HAMMER").enterFrame.connect((pContainer: IAnimationContainer, fRealTime: float, fTime: float): void => {
+						if (fTime > pContainer.getDuration()) {
+							pController.play.emit("ANIM_MINER_IDLE2");
+						}
+					});
+
+					var pCamRoot = (<IScene3d>pScene).createNode();
+					pCamRoot.attachToParent(pScene.getRootNode());
+					//pCamRoot.setPosition(-2, 0, 0);
+
+					var pCamCollada = <ICollada>pRmgr.getColladaPool().findResource("CAMERA_ANIM_DAE");
+					var pCamColladaRoot = pCamCollada.extractFullScene();
+					pCamColladaRoot.attachToParent(pCamRoot);
+
+					var pCamController: IAnimationController = pEngine.createAnimationController();
+					var pCamContainer = animation.createContainer(pCamCollada.extractAnimation(0));
+					pCamContainer.useLoop(true);
+					pCamController.addAnimation(pCamContainer);
+					pCamColladaRoot.addController(pCamController);
+					pCamController.play.emit(0);
+					
+
+					var pCamNode: ISceneNode = <ISceneNode>pCamColladaRoot.findEntity("node-CameraDummy");
+
+					//var pTestCube = addons.cube(pScene);
+					//pTestCube.setInheritance(ENodeInheritance.ALL);
+					//pTestCube.attachToParent(pCamNode);
+
+					var pAnimCamera = (<IScene3d>pScene).createCamera();
+					pAnimCamera.setInheritance(ENodeInheritance.ALL);
+					pAnimCamera.attachToParent(pCamNode);
+
+					pAnimCamera.addRelRotationByXYZAxis(0, Math.PI, 0);
+
+					akra["pAnimCamera"] = pAnimCamera;
+
+					pGUI.add({ activeCamera: 'default' }, 'activeCamera', [
+						'default',
+						'anim'
+					]).onChange((sName: string) => {
+						if (sName === 'anim') {
+							pCamera = pAnimCamera;
+							//pCamera.attachToParent(pCamNode);
+							//pCamera.setPosition(0., -1, 0.);
+							//pCamera.setRotationByXYZAxis(0., Math.PI, 0.);
+						}
+						else {
+							pCamera = pDefaultCamera;
+							//pCamera.attachToParent(pScene.getRootNode());
+						}
+
+						pViewport.setCamera(pCamera);
+					});
+
+
+
+					//(<IAnimation>pCont.getAnimation()).extend(<IAnimation>anim2controller(pController, "ANIM_MINER_WORK_HAMMER").getAnimation());
+
+
+					pGUI.add({ animation: null }, 'animation', [
+						'ANIM_MINER_IDLE0',
+						'ANIM_MINER_IDLE1',
+						'ANIM_MINER_IDLE2',
+						'ANIM_MINER_WALK1',
+						'ANIM_MINER_WALK2',
+						'ANIM_MINER_WALK3',
+						'ANIM_MINER_WORK_GUN',
+						'ANIM_MINER_WORK_HAMMER'
+					]).onChange((sName: string) => {
+							if (bMinerModel) {
+								pController.play.emit(sName);
+							}
+						});
+
+					if (bMinerModel) {
+						model.addController(pController);
+						pController.play.emit("ANIM_MINER_IDLE2");
+					}
+
 				},
 			},
 			character: {
@@ -713,6 +837,7 @@ module akra {
 		pModels = {};
 
 		var sFirstModelKey = "miner";
+		var bMinerModel = true;
 		pModels[sFirstModelKey] = loadModel(pModelsFiles[sFirstModelKey].path, pModelsFiles[sFirstModelKey].init, sFirstModelKey, pModelTable).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
 		pCurrentModel = pModels[sFirstModelKey];
 		pCurrentModel.addPosition(0., 1000., 0.);
@@ -726,33 +851,89 @@ module akra {
 			}
 			pCurrentModel = pModels[sKey];
 			pCurrentModel.addPosition(0., 1000., 0.);
+
+			bMinerModel = (sKey === "miner");
 		});
 
 		pCurrentModel.attachToParent(pModelTable);
 
 		pMirror.attachToParent(pModelTable);
 		pMirror.setPosition(0., 0., 0.);
-		var pCylinder = addons.cylinder(pScene, 2.5, 2.5, 0.2, 96);
-		pCylinder.getRenderable().getTechnique().render.connect(applyAlphaTest);
-		pCylinder.getRenderable().getMaterial().shininess = 0.7;
+
+		var fCylinderHeight = 0.1;
+		var pCylinder = addons.cylinder(pScene, fRadius, fRadius, fCylinderHeight, 96);
+		//pCylinder.getRenderable().getTechnique().render.connect(applyAlphaTest);
+		pCylinder.attachToParent(pModelTable);
 		pCylinder.getRenderable().getMaterial().diffuse = plasticColorDiffuse;
 		pCylinder.getRenderable().getMaterial().specular = plasticColorSpecular;
-		pCylinder.attachToParent(pModelTable);
-		pCylinder.setPosition(0., -0.1, 0.);
+		pCylinder.getRenderable().getMaterial().shininess = 0.7;
+		pCylinder.setPosition(0., -fCylinderHeight / 2., 0.);
+
+		//var pQuad = addons.createQuad(pScene, 100);
+		//pQuad.attachToParent(pModelTable);
+		//pQuad.getRenderable().getMaterial().diffuse = plasticColorDiffuse;
+		//pQuad.getRenderable().getMaterial().specular = plasticColorSpecular;
+		//pQuad.setPosition(0., -fCylinderHeight, 0.);
 
 		pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
 			if (pViewport === akra.pViewport) {
 				var normal = pMirror.getTempVectorUp();
 				var dist = pMirror.getWorldPosition().dot(normal);
 				(<IMirrorViewport>pReflectionViewport).getReflectionPlane().set(normal, dist);
-				if (pMirror.getTempVectorUp().dot(math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition())) > 0.) {
+				//if (pMirror.getTempVectorUp().dot(math.Vec3.temp(pCamera.getWorldPosition()).subtract(pMirror.getWorldPosition())) > 0.) {
 					pReflectionTexture.getBuffer().getRenderTarget().update();
-				}
+				//}
 			}
 		});
 
 		pProgress.destroy();
 		pEngine.exec();
+
+
+		//var pController: IAnimationController = pEngine.createAnimationController();
+
+		//function anim2controller(pController: IAnimationController, sAnim: string): IAnimationContainer {
+		//	var pAnimModel: ICollada = <ICollada>pRmgr.getColladaPool().findResource(sAnim);
+		//	if (isNull(pAnimModel)) {
+		//		console.log("SKIP ANIMATION " + sAnim);
+		//		return;
+		//	}
+		//	var pIdleAnim: IAnimation = pAnimModel.extractAnimation(0);
+		//	var pCont: IAnimationContainer = animation.createContainer(pIdleAnim, sAnim);
+		//	pCont.useLoop(true);
+		//	pController.addAnimation(pCont);
+
+		//	return pCont;
+		//}
+
+		//anim2controller(pController, "ANIM_MINER_IDLE0");
+		//anim2controller(pController, "ANIM_MINER_IDLE1");
+		//anim2controller(pController, "ANIM_MINER_IDLE2");
+		//anim2controller(pController, "ANIM_MINER_WALK1");
+		//anim2controller(pController, "ANIM_MINER_WALK2");
+		//anim2controller(pController, "ANIM_MINER_WALK3");
+		//anim2controller(pController, "ANIM_MINER_WORK_GUN");
+		//anim2controller(pController, "ANIM_MINER_WORK_HAMMER");
+
+		//pGUI.add({ animation: null }, 'animation', [
+		//	'ANIM_MINER_IDLE0',
+		//	'ANIM_MINER_IDLE1',
+		//	'ANIM_MINER_IDLE2',
+		//	'ANIM_MINER_WALK1',
+		//	'ANIM_MINER_WALK2',
+		//	'ANIM_MINER_WALK3',
+		//	'ANIM_MINER_WORK_GUN',
+		//	'ANIM_MINER_WORK_HAMMER'
+		//]).onChange((sName: string) => {
+		//	if (bMinerModel) {
+		//		pController.play.emit(sName);
+		//	}
+		//});
+
+		//if (bMinerModel) {
+		//	pCurrentModel.addController(pController);
+		//	pController.play.emit(0);			
+		//}
 	}
 
 	pEngine.depsLoaded.connect(main);

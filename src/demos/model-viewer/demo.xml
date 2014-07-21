@@ -43,8 +43,20 @@
         <ResourceFile Path="data/textures/skyboxes/rome-church.dds" Name="SKYBOX_CHURCH"/>
         <ResourceFile Path="data/textures/skyboxes/saint-peters-basilica.dds" Name="SKYBOX_BASILICA"/>
         <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset.dds" Name="SKYBOX_SUNSET"/>
         <ResourceFile Path="data/textures/skyboxes/perea-beach1.dds" Name="SKYBOX_BEACH"/>
         <ResourceFile Path="data/textures/skyboxes/park-01-cube.png" Name="ENVMAP"/>
+
+        <ResourceFile Path="data/models/camera_animation.DAE" Name="CAMERA_ANIM_DAE"/>
+        
+        <ResourceFile Path="data/models/miner/idle0.DAE" Name="ANIM_MINER_IDLE0"/>
+        <ResourceFile Path="data/models/miner/idle1.DAE" Name="ANIM_MINER_IDLE1"/>
+        <ResourceFile Path="data/models/miner/idle2.DAE" Name="ANIM_MINER_IDLE2"/>
+        <ResourceFile Path="data/models/miner/walk1.DAE" Name="ANIM_MINER_WALK1"/>
+        <ResourceFile Path="data/models/miner/walk2.DAE" Name="ANIM_MINER_WALK2"/>
+        <ResourceFile Path="data/models/miner/walk3.DAE" Name="ANIM_MINER_WALK3"/>
+        <ResourceFile Path="data/models/miner/work_gun.DAE" Name="ANIM_MINER_WORK_GUN"/>
+        <ResourceFile Path="data/models/miner/work_hammer.DAE" Name="ANIM_MINER_WORK_HAMMER"/>
       </Data>
     </Resource>
   </PropertyGroup>
