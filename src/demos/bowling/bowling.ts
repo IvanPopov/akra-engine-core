@@ -612,7 +612,7 @@ module akra {
 		];
 		pModelsFiles = {
 			bowling: {
-				path: modelsPath + "/bowling/bowling_scene.DAE",
+				path: modelsPath + "/bowling/bowling_scene.dae",
 				init: function (model) {
 					model.explore(function (node) {
 						if (scene.SceneModel.isModel(node)) {
