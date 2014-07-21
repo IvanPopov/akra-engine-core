@@ -76,6 +76,7 @@ module akra {
 	export var pCurrentModel = null;
 	export var pPhysObjects = null;
 	export var pPhysics = null;
+	export var funAnimation = null;
 
 	function createCamera(): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
@@ -452,23 +453,38 @@ module akra {
 		var pModelsKeys = [
 			'air06',
 		];
+		var pPlaneParts = window['object_planeParts'] = {};
 		pModelsFiles = {
 			air06: {
 				path: modelsPath + "/air06/air06.dae",
 				init: function (model) {
+					var hinges = [];
 					model.explore(function (node) {
 						if (scene.SceneModel.isModel(node)) {
 							// first handle local matrices trouble
 
-							// var intPos = math.Vec3.temp(), intRot = math.Quat4.temp(), intScale = math.Vec3.temp();
-							// node.getLocalMatrix().decompose(intRot, intScale, intPos);
+							var intPos = math.Vec3.temp(), intRot = math.Quat4.temp(), intScale = math.Vec3.temp();
+							node.getLocalMatrix().decompose(intRot, intScale, intPos);
 
-							// node.setLocalMatrix(new math.Mat4(1.));
-							// node.setRotation(intRot);
-							// node.setLocalScale(intScale);
-							// node.setPosition(intPos);
+							if(node.getName().match('hinge')) {
+								node.setVisible(false);
+							}
+							else {
+								pPlaneParts[node.getName()] = node;
+							}
+
+							node.setLocalMatrix(new math.Mat4(1.));
+							if(!(node.getParent()&&node.getParent().getName().match('hinge'))) {
+								node.setRotation(intRot);
+								node.setLocalScale(intScale);
+								node.setPosition(intPos);
+							}
 						}
 					});
+					
+					pScene.beforeUpdate.connect(function() {
+						funAnimation();
+						});
 				},
 			},
 		};
@@ -497,6 +513,29 @@ module akra {
 		createKeymap(pCamera);
 
 		animateCameras();
+
+		var funPhaser = window['fun_phaser'] = (freq: float = 1., phase: float = 1.) => {
+			return Math.sin(pEngine.getTime()*freq + phase);
+		}
+
+		funAnimation = window['fun_animation'] = () => {
+			pPlaneParts['plane_body'].setRotationByEulerAngles( 0, funPhaser(0.7,0.3)*0.05, funPhaser()*funPhaser(0.2)*0.06 );
+			pPlaneParts['plane_motor'].addRelRotationByEulerAngles( 0, -0.6, 0 );
+			pPlaneParts['plane_body'].setPosition( funPhaser(0.2)*0.1, funPhaser()*funPhaser(0.2)*0.1, 0);
+			pPlaneParts['plane_body_antenna_L'].setRotationByEulerAngles( funPhaser(60)*0.04, 0, funPhaser(58)*0.04 );
+			pPlaneParts['plane_body_antenna_R'].setRotationByEulerAngles( funPhaser(60,1)*0.04, 0, funPhaser(58)*0.04 );
+			pPlaneParts['plane_body_wing_eleron_R'].setRotationByEulerAngles( 0., 0., funPhaser(0.7,-0.8)*0.16 );
+			pPlaneParts['plane_body_wing_eleron_L'].setRotationByEulerAngles( 0., 0., funPhaser(0.7,2.4)*0.16 );
+			pPlaneParts['plane_body_wing_flap_L'].setRotationByEulerAngles( 0., 0., funPhaser(1,-0.6)*funPhaser(0.2)*0.07 );
+			pPlaneParts['plane_body_wing_flap_R'].setRotationByEulerAngles( 0., 0., funPhaser(1,-0.6)*funPhaser(0.2)*0.07 );
+			pPlaneParts['plane_body_tail_elevator_L'].setRotationByEulerAngles( 0., 0., funPhaser(1,-0.6)*funPhaser(0.2)*0.2 );
+			pPlaneParts['plane_body_tail_elevator_R'].setRotationByEulerAngles( 0., 0., funPhaser(1,-0.6)*funPhaser(0.2)*0.2 );
+		}
+
+		var funSmartPow = window['fun_smartPow'] = function( val, pow ) {
+			var sign=val>=0?1:-1;
+			return Math.pow(sign*val,pow)*sign;
+		}
 
 		pProgress.destroy();
 		pEngine.exec();
