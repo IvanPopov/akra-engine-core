@@ -35,8 +35,6 @@
       <UseInlining>False</UseInlining>
       
       <Data>
-        <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
-        <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
         <ResourceFile Path="data/textures/skyboxes/sunset.dds" Name="SKYBOX_SUNSET"/>
         <ResourceFile Path="data/textures/waternormals.jpg" Name="WATER_NORMALS"/>
       </Data>
