@@ -214,7 +214,6 @@ module akra {
 			exponential: 2,
 			vertical: 3
 		};
-		(<IViewportFogged>pViewport).setFog(3);
 
 		var pFogData = {
 			fColor: 0.5,
@@ -224,7 +223,7 @@ module akra {
 			fDensity: 0.
 		};
 
-		(<IViewportFogged>pViewport).setFog(EFogType.NONE);
+		(<IViewportFogged>pViewport).setFog(3);
 
 		var pFogFolder = pGUI.addFolder("fog");
 		(<dat.OptionController>pFogFolder.add({ FogType: "vertical" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
