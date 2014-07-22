@@ -240,6 +240,7 @@ module akra {
 
 		var pSkyboxTexturesKeys = [
 			'sunset',
+			'cloudtop'
 		];
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
