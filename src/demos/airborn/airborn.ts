@@ -240,19 +240,40 @@ module akra {
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		var pSkyboxTexturesKeys = [
-			'plains',
-			'sunset'
+			//'plains',
+			//'sunset'
+			'cloudtop'
 		];
 		pSkyboxTextures = {};
+
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
+			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
 
-			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+			var sPrefix: string = "SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase();
+			var pImages: string[] = [
+				sPrefix + "_POS_X",
+				sPrefix + "_NEG_X",
+				sPrefix + "_POS_Y",
+				sPrefix + "_NEG_Y",
+				sPrefix + "_POS_Z",
+				sPrefix + "_NEG_Z"
+			];
 
-			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
-			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
-			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-		};
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFlags(ETextureFlags.AUTOMIPMAP);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+		}
+
+		//for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
+
+		//	var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+
+		//	pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
+		//	pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
+		//	pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+		//	pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+		//};
 
 		
 		pGUI.add({ fps_camera: bFPSCameraControls }, "fps_camera").onChange((bNewValue) => {
@@ -277,7 +298,7 @@ module akra {
 
 		var pPBSFolder = pGUI.addFolder("pbs");
 
-		(<dat.OptionController>pPBSFolder.add({ Skybox: 'plains' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({ Skybox: 'cloudtop' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
 			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			// }
@@ -376,7 +397,7 @@ module akra {
 	}
 
 	function createSkyBox(): void {
-		pSkyboxTexture = pSkyboxTextures['plains'];
+		pSkyboxTexture = pSkyboxTextures['cloudtop'];
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			var pModel = addons.cube(pScene);
@@ -510,6 +531,13 @@ module akra {
 		createLighting();
 
 		createSkyBox();
+
+		//FINAL PREPARATIONS
+
+		createKeymap(pCamera);
+
+		animateCameras();
+
 		var ocean1 = window["ocean1"] = createOcean('1').setPosition(0, -30, 0);
 		var ocean2 = window["ocean2"] = createOcean('2').setPosition(-500, -30, 0);
 
@@ -579,10 +607,6 @@ module akra {
 		});
 
 		// FINAL PREPARAIONS
-
-		createKeymap(pCamera);
-
-		animateCameras();
 
 		var funPhaser = window['fun_phaser'] = (freq: float = 1., phase: float = 1.) => {
 			return Math.sin(pEngine.getTime()*freq + phase);

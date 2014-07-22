@@ -37,6 +37,12 @@
       <Data>
         <ResourceFile Path="data/textures/skyboxes/sunset.dds" Name="SKYBOX_SUNSET"/>
         <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_bk.jpg" Name="SKYBOX_CLOUDTOP_POS_X"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_ft.jpg" Name="SKYBOX_CLOUDTOP_NEG_X"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_lf.jpg" Name="SKYBOX_CLOUDTOP_POS_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_rt.jpg" Name="SKYBOX_CLOUDTOP_NEG_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_up.jpg" Name="SKYBOX_CLOUDTOP_POS_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_dn.jpg" Name="SKYBOX_CLOUDTOP_NEG_Y"/>
         <ResourceFile Path="data/textures/waternormals.jpg" Name="WATER_NORMALS"/>
       </Data>
     </Resource>
