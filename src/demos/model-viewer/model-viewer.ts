@@ -156,6 +156,16 @@ module akra {
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
+		pKeymap.bind("T", () => {
+			if (pGUI) {
+				for (var i = 0; i < pGUI.__controllers.length; i++) {
+					if (pGUI.__controllers[i].property === "fps_camera") {
+						pGUI.__controllers[i].__checkbox.click();
+						break;
+					}
+				}
+			}
+		});
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress()) {
 				if (pKeymap.isMouseMoved()) {
@@ -224,7 +234,6 @@ module akra {
 	}
 
 	var pGUI;
-
 	function createViewport(): IViewport3D {
 
 		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
@@ -239,7 +248,7 @@ module akra {
 		(<render.LPPViewport>pViewport).setFXAA(true);
 		var counter = 0;
 
-		pGUI = new dat.GUI();
+		window["pGUI"] = pGUI = new dat.GUI();
 
 		var pSkyboxTexturesKeys = [
 			'desert',
@@ -262,7 +271,6 @@ module akra {
 			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		};
 
-		
 		pGUI.add({ fps_camera: bFPSCameraControls }, "fps_camera").onChange((bNewValue) => {
 			if(!bFPSCameraControls) {
 				pCameraFPSParams.current.rotation.set(pCameraParams.current.rotation);
