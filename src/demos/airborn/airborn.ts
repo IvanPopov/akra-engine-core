@@ -216,9 +216,11 @@ module akra {
 		};
 
 		var pFogData = {
-			fColor: 0.5,
+			fColorR: 230,
+			fColorG: 210,
+			fColorB: 180,
 			fStart: 99,
-			fIndex: 137,
+			fIndex: 160,
 			fHeight: 0.39,
 			fDensity: 0.
 		};
@@ -229,7 +231,9 @@ module akra {
 		(<dat.OptionController>pFogFolder.add({ FogType: "vertical" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
 			(<IViewportFogged>pViewport).setFog(fogType[sKey]);
 		});
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColor')).min(0.).max(1.).step(0.01).name("color").__precision = 2;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorR')).min(0).max(255).step(1).name("colorR").__precision = 0;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorG')).min(0).max(255).step(1).name("colorG").__precision = 0;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorB')).min(0).max(255).step(1).name("colorB").__precision = 0;
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fStart')).min(0.).max(200.).name("start");
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fIndex')).min(0.01).max(200.).name("index");
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
@@ -295,7 +299,7 @@ module akra {
 			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
 
 			pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
-				pFogData.fColor, pFogData.fColor, pFogData.fColor, pFogData.fDensity));
+				pFogData.fColorR/255, pFogData.fColorG/255, pFogData.fColorB/255, pFogData.fDensity));
 			pPass.setUniform("FOG_EFFECT_START", pFogData.fStart);
 			pPass.setUniform("FOG_EFFECT_INDEX", pFogData.fIndex);
 			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
@@ -492,9 +496,9 @@ module akra {
 
 		var pStatsDiv = createStatsDIV();
 
-		pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
-			pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
-		});
+		//pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
+		//	pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
+		//});
 
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
