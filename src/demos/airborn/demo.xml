@@ -35,8 +35,15 @@
       <UseInlining>False</UseInlining>
       
       <Data>
-        <ResourceFile Path="data/textures/skyboxes/sunset.dds" Name="SKYBOX_SUNSET"/>
-        <ResourceFile Path="data/textures/skyboxes/plains-of-abraham.dds" Name="SKYBOX_PLAINS"/>
+        <Folder Path="data/models/air06"/>
+        <ResourceFile Path="data/models/air06/air06.dae" Name="AIR06.DAE"/>
+
+        <ResourceFile Path="data/textures/skyboxes/sunset_c00.jpg" Name="SKYBOX_SUNSET_POS_X"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c01.jpg" Name="SKYBOX_SUNSET_NEG_X"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c02.jpg" Name="SKYBOX_SUNSET_POS_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c03.jpg" Name="SKYBOX_SUNSET_NEG_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c04.jpg" Name="SKYBOX_SUNSET_POS_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c05.jpg" Name="SKYBOX_SUNSET_NEG_Z"/>
         <ResourceFile Path="data/textures/waternormals.jpg" Name="WATER_NORMALS"/>
       </Data>
     </Resource>

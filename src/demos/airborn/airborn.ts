@@ -6,7 +6,6 @@
 /// <reference path="../std/std.ts" />
 
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
-/// <reference path="../idl/3d-party/ammo.d.ts" />
 
 declare var AE_RESOURCES: akra.IDep;
 declare var AE_MODELS: any;
@@ -240,18 +239,27 @@ module akra {
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		var pSkyboxTexturesKeys = [
-			'plains',
-			'sunset'
+			'sunset',
 		];
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
+			
+			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
 
-			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+			var sPrefix: string = "SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase();
+			var pImages: string[] = [
+				sPrefix + "_POS_X",
+				sPrefix + "_NEG_X",
+				sPrefix + "_POS_Y",
+				sPrefix + "_NEG_Y",
+				sPrefix + "_POS_Z",
+				sPrefix + "_NEG_Z"
+			];
 
-			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
-			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
-			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFlags(ETextureFlags.AUTOMIPMAP);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 		};
 
 		
@@ -277,7 +285,7 @@ module akra {
 
 		var pPBSFolder = pGUI.addFolder("pbs");
 
-		(<dat.OptionController>pPBSFolder.add({ Skybox: 'plains' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+		(<dat.OptionController>pPBSFolder.add({ Skybox: 'sunset' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
 			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			// }
@@ -376,7 +384,7 @@ module akra {
 	}
 
 	function createSkyBox(): void {
-		pSkyboxTexture = pSkyboxTextures['plains'];
+		pSkyboxTexture = pSkyboxTextures['sunset'];
 
 		if (pViewport.getType() === EViewportTypes.FORWARDVIEWPORT) {
 			var pModel = addons.cube(pScene);
@@ -526,7 +534,7 @@ module akra {
 		var pPlaneParts = window['object_planeParts'] = {};
 		pModelsFiles = {
 			air06: {
-				path: modelsPath + "/air06/air06.dae",
+				path: 'AIR06.DAE',
 				init: function (model) {
 					var hinges = [];
 					model.explore(function (node) {
