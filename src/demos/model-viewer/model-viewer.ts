@@ -97,6 +97,9 @@ module akra {
 	export var pCurrentModel = null;
 	export var pPodiumModel = null;
 	export var pOmniLights = null;
+	export var pKeymap = null;
+	export var pSkyboxTexturesKeys = null;
+	export var pCurrentSkybox = null;
 
 	function createCamera(pRoot: ISceneNode = pScene.getRootNode()): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
@@ -152,7 +155,7 @@ module akra {
 	}
 
 	function createKeymap(pCamera: ICamera): void {
-		var pKeymap: IKeyMap = control.createKeymap();
+		pKeymap = control.createKeymap();
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
@@ -166,6 +169,16 @@ module akra {
 				}
 			}
 		});
+
+		pKeymap.bind("N", () => {
+			var keyInd = pSkyboxTexturesKeys.indexOf(pCurrentSkybox.Skybox);
+			keyInd = (keyInd+1) % pSkyboxTexturesKeys.length;
+			pCurrentSkybox.Skybox = pSkyboxTexturesKeys[keyInd];
+
+			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[pSkyboxTexturesKeys[keyInd]]);
+			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[pSkyboxTexturesKeys[keyInd]]);
+		});
+
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress()) {
 				if (pKeymap.isMouseMoved()) {
@@ -189,6 +202,12 @@ module akra {
 				if(bFPSCameraControls) {
 					pCameraFPSParams.target.position.add(pCamera.getTempVectorForward().scale(-fSpeed));
 				}
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.B)) {
+				pEffectData.FIRE_THRESHOLD = Math.min(pEffectData.FIRE_THRESHOLD + 0.01, 1.);
+			}
+			if (pKeymap.isKeyPress(EKeyCodes.V)) {
+				pEffectData.FIRE_THRESHOLD = Math.max(pEffectData.FIRE_THRESHOLD - 0.01, 0.);
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.S)) {
 				// pCamera.addRelPosition(0, 0, fSpeed);
@@ -250,7 +269,7 @@ module akra {
 
 		window["pGUI"] = pGUI = new dat.GUI();
 
-		var pSkyboxTexturesKeys = [
+		pSkyboxTexturesKeys = [
 			'desert',
 			'nature',
 			'colosseum',
@@ -342,13 +361,14 @@ module akra {
 
 
 		var pPBSFolder = pGUI.addFolder("pbs");
-
-		(<dat.OptionController>pPBSFolder.add({ Skybox: "desert" }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
+		pCurrentSkybox = { Skybox: "desert" };
+		(<dat.OptionController>pPBSFolder.add(pCurrentSkybox, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
 			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
 			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
 			// }
 			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
 		});
+
 
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
@@ -577,9 +597,9 @@ module akra {
 
 		var pStatsDiv = createStatsDIV();
 
-		pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
-			pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
-		});
+		// pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
+		// 	pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
+		// });
 
 		createKeymap(pCamera);
 
