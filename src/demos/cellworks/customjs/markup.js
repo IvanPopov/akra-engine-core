@@ -24,7 +24,7 @@ var setMarkup = function() {
 		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'}))
 		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'})));
 	$('#copyright').css({display:'inline-block',position:'absolute',bottom:30,right:20,width:200,height:70,fontSize:'16px'});
-	$('#logo').css({width:196,height:67,background:'url(http://dev.odserve.org/demos/img/showcase/logo.png) 0 0 no-repeat',
+	$('#logo').css({width:196,height:67,background:'url("http://dev.odserve.org/demos/img/showcase/logo.png") 0 0 no-repeat',
 		'-webkit-filter': 'drop-shadow(0px 0px 1px rgba(0,0,0,0.8))',
 	    'filter': 'url(#drop-shadow)',
 	    '-ms-filter': "progid:DXImageTransform.Microsoft.Dropshadow(OffX=0, OffY=0, Color='#222')",

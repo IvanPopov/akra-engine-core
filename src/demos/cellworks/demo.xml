@@ -51,19 +51,15 @@
       <UseInlining>False</UseInlining>
       
       <Data>
-        <ResourceFile Path="data/textures/skyboxes/sunset_px.jpg" Name="SKYBOX_SUNSET_POS_X"/>
-        <ResourceFile Path="data/textures/skyboxes/sunset_nx.jpg" Name="SKYBOX_SUNSET_NEG_X"/>
-        <ResourceFile Path="data/textures/skyboxes/sunset_py.jpg" Name="SKYBOX_SUNSET_POS_Y"/>
-        <ResourceFile Path="data/textures/skyboxes/sunset_ny.jpg" Name="SKYBOX_SUNSET_NEG_Y"/>
-        <ResourceFile Path="data/textures/skyboxes/sunset_pz.jpg" Name="SKYBOX_SUNSET_POS_Z"/>
-        <ResourceFile Path="data/textures/skyboxes/sunset_nz.jpg" Name="SKYBOX_SUNSET_NEG_Z"/>
+        <Folder Path="data/models/iphone5"/>
+        <ResourceFile Path="data/models/iphone5/iphone5.dae" Name="IPHONE5.DAE"/>
+
         <ResourceFile Path="data/textures/skyboxes/white_px.jpg" Name="SKYBOX_WHITE_POS_X"/>
         <ResourceFile Path="data/textures/skyboxes/white_nx.jpg" Name="SKYBOX_WHITE_NEG_X"/>
         <ResourceFile Path="data/textures/skyboxes/white_py.jpg" Name="SKYBOX_WHITE_POS_Y"/>
         <ResourceFile Path="data/textures/skyboxes/white_ny.jpg" Name="SKYBOX_WHITE_NEG_Y"/>
         <ResourceFile Path="data/textures/skyboxes/white_pz.jpg" Name="SKYBOX_WHITE_POS_Z"/>
         <ResourceFile Path="data/textures/skyboxes/white_nz.jpg" Name="SKYBOX_WHITE_NEG_Z"/>
-        <ResourceFile Path="data/textures/waternormals.jpg" Name="WATER_NORMALS"/>
       </Data>
     </Resource>
   </PropertyGroup>

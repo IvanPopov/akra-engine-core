@@ -5,15 +5,12 @@
 
 /// <reference path="../std/std.ts" />
 
-/// <reference path="../idl/3d-party/dat.gui.d.ts" />
-/// <reference path="../idl/3d-party/ammo.d.ts" />
-
 declare var AE_RESOURCES: akra.IDep;
 declare var AE_MODELS: any;
 
 module akra {
 
-	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+	// addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
 	export var modelsPath = path.parse((AE_MODELS.content).split(';')[0]).getDirName() + '/';
@@ -206,21 +203,11 @@ module akra {
 		(<render.LPPViewport>pViewport).setFXAA(true);
 		var counter = 0;
 
-		pGUI = new dat.GUI();
-
 		var pSkyboxTexturesKeys = [
 			'white',
-			'sunset'
 		];
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
-
-			// var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
-
-			// pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
-			// pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
-			// pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			// pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 			
 			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
 
@@ -240,50 +227,7 @@ module akra {
 			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 		};
 
-		
-		pGUI.add({ fps_camera: bFPSCameraControls }, "fps_camera").onChange((bNewValue) => {
-			if(!bFPSCameraControls) {
-				pCameraFPSParams.current.rotation.set(pCameraParams.current.rotation);
-				pCameraFPSParams.target.rotation.set(pCameraFPSParams.current.rotation);
-				pCameraFPSParams.current.position.set(pCamera.getWorldPosition());
-				pCameraFPSParams.target.position.set(pCameraFPSParams.current.position);
-			}
-			bFPSCameraControls = bNewValue;
-		})
-
-		var bAdvancedSkybox: boolean = false;
-		var fSkyboxSharpness: float = .52;
-		pGUI.add({ skybox_sharpness: fSkyboxSharpness }, "skybox_sharpness", 0., 1., 0.01).onChange((fValue) => {
-			fSkyboxSharpness = fValue;
-		})
-
-		pGUI.add({ skybox_blur: bAdvancedSkybox }, "skybox_blur").onChange((bValue) => {
-			bAdvancedSkybox = bValue;
-		});
-
-		var pPBSFolder = pGUI.addFolder("pbs");
-
-		(<dat.OptionController>pPBSFolder.add({ Skybox: 'white' }, 'Skybox', pSkyboxTexturesKeys)).name("Skybox").onChange((sKey) => {
-			// if (pViewport.getType() === EViewportTypes.LPPVIEWPORT) {
-			(<ILPPViewport>pViewport).setSkybox(pSkyboxTextures[sKey]);
-			// }
-			(<ITexture>pEnvTexture).unwrapCubeTexture(pSkyboxTextures[sKey]);
-		});
-
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
-
-		pViewport.render.connect((pViewport: IViewport, pTechnique: IRenderTechnique,
-			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
-			var pPass: IRenderPass = pTechnique.getPass(iPass);
-			var pDepthTexture: ITexture = (<ILPPViewport>pViewport).getDepthTexture();
-
-			pPass.setUniform("SCREEN_ASPECT_RATIO",
-				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
-
-			pPass.setUniform("SKYBOX_ADVANCED_SHARPNESS", fSkyboxSharpness);
-			pPass.setTexture("SKYBOX_UNWRAPED_TEXTURE", pEnvTexture);
-			pPass.setForeign("IS_USED_ADVANCED_SKYBOX", bAdvancedSkybox);
-		});
 
 		return pViewport;
 	}
@@ -473,7 +417,7 @@ module akra {
 		var pPlaneParts = window['object_planeParts'] = {};
 		pModelsFiles = {
 			iphone5: {
-				path: modelsPath + "/iphone5/iphone5.dae",
+				path: 'IPHONE5.DAE', //modelsPath + "/iphone5/iphone5.dae",
 				init: function (model) {
 					// var hinges = [];
 					// model.explore(function (node) {
@@ -512,18 +456,6 @@ module akra {
 		var sActiveModelKey = pModelsKeys[0];
 		pModels[sActiveModelKey] = loadModel(pModelsFiles[sActiveModelKey].path, pModelsFiles[sActiveModelKey].init, sActiveModelKey, pScene.getRootNode()).setPosition(0., 0., 0.).addPosition(0., 0., 0.);
 		pCurrentModel = pModels[sActiveModelKey];
-
-		var pModelsFolder = pGUI.addFolder("models");
-
-		(<dat.OptionController>pModelsFolder.add({ Model: sActiveModelKey }, 'Model', pModelsKeys)).name("Model").onChange((sKey) => {
-			pCurrentModel.addPosition(0., -1000., 0.);
-			if (pModels[sKey] == null) {
-				pModels[sKey] = loadModel(pModelsFiles[sKey].path, pModelsFiles[sKey].init, sKey, pScene.getRootNode()).setPosition(0., 0., 0.).addPosition(0., -1000., 0.);
-			}
-			pCurrentModel = pModels[sKey];
-			pCurrentModel.addPosition(0., 1000., 0.);
-			sActiveModelKey = sKey;
-		});
 
 		// FINAL PREPARAIONS
 
