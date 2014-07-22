@@ -123,6 +123,17 @@ module akra {
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
 
+		pKeymap.bind("T", () => {
+			if (pGUI) {
+				for (var i = 0; i < pGUI.__controllers.length; i++) {
+					if (pGUI.__controllers[i].property === "fps_camera") {
+						pGUI.__controllers[i].__checkbox.click();
+						break;
+					}
+				}
+			}
+		});
+
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress()) {
 				if (pKeymap.isMouseMoved()) {
