@@ -95,6 +95,7 @@
         <File Path="resources/fx/brdf.afx"/>
         <File Path="resources/fx/transparency.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/water.afx" />
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/apply_transparency.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
@@ -142,6 +143,7 @@
         <File Path="resources/fx/brdf.afx"/>
         <File Path="resources/fx/transparency.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/water.afx" />
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/apply_transparency.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>

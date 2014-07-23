@@ -495,7 +495,7 @@ module akra.webgl {
 						}                                                            \n\
 						vec3 up = cross(forward,right);                      \n\
 						float steps = power*2.;                              \n\
-						float angle = asin(texel_size*steps)*0.5*float(lod);                              \n\
+						float angle = asin(texel_size*steps)*0.5*float(8-lod);                              \n\
 						for(int i=0;i<128;i++) {                                                                           \n\
 							if(float(i)>=steps) {                                                                           \n\
 								break;                                                                                       \n\

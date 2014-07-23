@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Airborn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Aircraft demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="airborn.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/airborn/airborn.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <!--<Variable Name="AE_MODELS">data/models/</Variable>-->
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+
+      <Attachment Name="AE_MODELS">
+        <Folder Path="data/models/"/>
+        <Format>Enclosure</Format>
+      </Attachment>
+      
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      
+      <Data>
+        <Folder Path="data/models/air06"/>
+        <ResourceFile Path="data/models/air06/air06.dae" Name="AIR06.DAE"/>
+
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_c00.jpg" Name="SKYBOX_CLOUDTOP_POS_X"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_c01.jpg" Name="SKYBOX_CLOUDTOP_NEG_X"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_c02.jpg" Name="SKYBOX_CLOUDTOP_POS_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_c03.jpg" Name="SKYBOX_CLOUDTOP_NEG_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_c04.jpg" Name="SKYBOX_CLOUDTOP_POS_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/cloudtop_c05.jpg" Name="SKYBOX_CLOUDTOP_NEG_Z"/>
+
+        <ResourceFile Path="data/textures/skyboxes/sunset_c00.jpg" Name="SKYBOX_SUNSET_POS_X"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c01.jpg" Name="SKYBOX_SUNSET_NEG_X"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c02.jpg" Name="SKYBOX_SUNSET_POS_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c03.jpg" Name="SKYBOX_SUNSET_NEG_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c04.jpg" Name="SKYBOX_SUNSET_POS_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset_c05.jpg" Name="SKYBOX_SUNSET_NEG_Z"/>
+        <ResourceFile Path="data/textures/waternormals.jpg" Name="WATER_NORMALS"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

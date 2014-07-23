@@ -423,7 +423,7 @@ float4 calulatePBSReflection(float3 position, float3 normal,
     float3 fresnelReflectance;
 
     // Too bright envmap! multiplier
-    float3 envColor = getEnvMapColor(directionInsideCube, shininess, envSampler) * 0.5;
+    float3 envColor = getEnvMapColor(directionInsideCube, shininess, envSampler);// * 0.5;
     //if (specular.g < 0.2){
         //fresnelReflectance = float3(EnvBRDFApproxNonmetal( 1. - shi, NoV ));
     //}
