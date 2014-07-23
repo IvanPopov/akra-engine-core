@@ -1,0 +1,101 @@
+{
+	"files": [
+		{
+			"path": "../../src/akra/resources/HLSL.gr"
+		}
+	],
+	"deps": {
+		"files": [
+			{
+				"path": "../../src/akra/resources/fx/apply_forward_shading.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/apply_transparency.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/SystemEffects.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/Plane.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/fxaa.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/fog.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/skybox.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/TextureToScreen.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/mesh_geometry.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/prepare_shadows.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/terrain.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/prepareDeferredShading.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/generate_normal_map.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/sky.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/motion_blur.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/blur.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/edge_detection.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/wireframe.afx"
+			},
+			{
+				"path": "../../src/akra/resources/fx/sprite.afx"
+			}
+		],
+		"deps": {
+			"files": [
+				{
+					"path": "../../src/akra/resources/fx/mesh_texture.afx"
+				},
+				{
+					"path": "../../src/akra/resources/fx/apply_lights_and_shadows.afx"
+				},
+				{
+					"path": "../../src/akra/resources/fx/deferredShading.afx"
+				}
+			],
+			"deps": {
+				"files": [
+					{
+						"path": "../../src/akra/resources/fx/prepare_lpp_shading.afx"
+					},
+					{
+						"path": "../../src/akra/resources/fx/color_maps.afx"
+					}
+				],
+				"deps": {
+					"files": [
+						{
+							"path": "../../src/akra/resources/fx/render_plane_culling.afx"
+						},
+						{
+							"path": "../../src/akra/resources/fx/apply_lpp_shading.afx"
+						}
+					]
+				}
+			}
+		}
+	}
+}

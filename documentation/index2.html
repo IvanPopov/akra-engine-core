@@ -81,12 +81,15 @@
 		<div class="b-center" ng-click="clearSearch();">
 			<div class="b-left j-sidebar">
 				<ul class="b-side-menu j-side-menu">
+					<!-- Выводим всех родителей текущего модуля -->
 					<li  class="item parent" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
 						<documobject docobject="currParent" isparent="true" treeview arrow="'opened'" />
 					</li>
+					<!-- Выводим текущий модуль и все его данные -->
 					<li class="item parent has-sub-menu">
 						<documobject istreedisplay="isTreeDisplay" docobjectdata="currentObject.dataAsArray" docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'" />
 					</li>
+					<!-- Выводим всех сиблингов данного модуля -->
 					<li class="item" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
 						<documobject ng-if="currSibling.type=='modules'"  docobject="currSibling" treeview arrow="'closed'" />
 					</li>
