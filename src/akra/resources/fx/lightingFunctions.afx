@@ -278,7 +278,7 @@ float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCo
     float lightRealDepth = unprojZ(projMat, lightDepth); //negative
 
     float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow, 1.);
-    fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - lightRealDepth));
+    // fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - lightRealDepth));
     return fShadowMultiplier;
 }
 

@@ -200,7 +200,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.LPPViewport>pViewport).setFXAA(true);
+		//(<render.LPPViewport>pViewport).setFXAA(true);
 		var counter = 0;
 
 		var pSkyboxTexturesKeys = [
@@ -232,7 +232,7 @@ module akra {
 		// pOmniLights.setInheritance(ENodeInheritance.ALL);
 
 		var pOmniLight: IOmniLight;
-		var pOmniLightSphere;
+		var pLightSphere;
 
 		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "test-omni-0");
 
@@ -242,41 +242,121 @@ module akra {
 		pOmniLight.getParams().diffuse.set(1.0, 0.6, 0.3);
 		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
 		pOmniLight.getParams().attenuation.set(1, 0, 2);
-		pOmniLight.setShadowCaster(false);
+		pOmniLight.setShadowCaster(true);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLight.setPosition(lightPos1);
-		// pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-		// 	(model) => {
-		// 		model.explore(function (node) {
-		// 			if (scene.SceneModel.isModel(node)) {
-		// 				node.getMesh().getSubset(0).getMaterial().diffuse = new Color(1.0, 0.6, 0.3);
-		// 				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.0, 0.6, 0.3);
-		// 			}
-		// 		})
-		// 		}, "test-omni-0-model", pOmniLight).scale(0.15);
-		// pOmniLightSphere.setPosition(0., 0., 0.);
+		pOmniLight.setPosition(0., 2, 0);
+		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+			(model) => {
+				model.explore(function (node) {
+					if (scene.SceneModel.isModel(node)) {
+		 				node.getMesh().getSubset(0).getMaterial().diffuse.set(0);
+		 				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.0, 0.6, 0.3);
+						(<IMeshSubset>node.getMesh().getSubset(0)).setShadow(false);
+					}
+				})
+			}, "test-omni-0-model", pOmniLight).scale(0.15);
+		pLightSphere.setPosition(0., 0., 0.);
 
-		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 
-		pOmniLight.attachToParent(pOmniLights);
-		pOmniLight.setEnabled(true);
-		pOmniLight.getParams().ambient.set(0.0);
-		pOmniLight.getParams().diffuse.set(0.3, 0.6, 1.0);
-		pOmniLight.getParams().specular.set(1.0, 1.0, 1.0, 1.0);
-		pOmniLight.getParams().attenuation.set(1, 0, 2);
-		pOmniLight.setShadowCaster(false);
-		pOmniLight.setInheritance(ENodeInheritance.ALL);
-		pOmniLight.setPosition(lightPos2);
-		// pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-		// 	(model) => {
-		// 		model.explore(function (node) {
-		// 			if (scene.SceneModel.isModel(node)) {
-		// 				node.getMesh().getSubset(0).getMaterial().diffuse = new Color(0.3, 0.6, 1.0);
-		// 				node.getMesh().getSubset(0).getMaterial().emissive = new Color(0.3, 0.6, 1.0);
-		// 			}
-		// 		})
-		// 		}, "test-omni-1-model", pOmniLight).scale(0.15);
-		// pOmniLightSphere.setPosition(0., 0., 0.);
+		var pProjectLight1: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, true, 2048, "test-project-1");
+		window["pProjectLigh1"] = pProjectLight1;
+		pProjectLight1.attachToParent(pOmniLights);
+		pProjectLight1.setEnabled(true);
+		pProjectLight1.getParams().ambient.set(0.0);
+		pProjectLight1.getParams().diffuse.set(0.3, 0.6, 1.0);
+		pProjectLight1.getParams().specular.set(0.3, 0.3, 0.3, 1.0);
+		pProjectLight1.getParams().attenuation.set(1, 0, 0);
+		pProjectLight1.setShadowCaster(true);
+		pProjectLight1.setInheritance(ENodeInheritance.ALL);
+		pProjectLight1.getShadowCaster().setFOV(1.5);
+		pProjectLight1.lookAt(math.Vec3.temp(0, 0, -1));
+		pProjectLight1.setPosition(0, 0.5, 3);
+		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+			(model) => {
+				model.explore(function (node) {
+					if (scene.SceneModel.isModel(node)) {
+						node.getMesh().getSubset(0).getMaterial().diffuse.set(0);
+						node.getMesh().getSubset(0).getMaterial().emissive = new Color(0.3, 0.6, 1.0);
+						(<IMeshSubset>node.getMesh().getSubset(0)).setShadow(false);
+					}
+				})
+			}, "test-omni-1-model", pProjectLight1).scale(0.15);
+		pLightSphere.setPosition(0., 0., 0.);
+
+
+		var pProjectLight2: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, true, 2048, "test-project-2");
+
+		pProjectLight2.attachToParent(pOmniLights);
+		pProjectLight2.setEnabled(true);
+		pProjectLight2.getParams().ambient.set(0.0);
+		pProjectLight2.getParams().diffuse.set(0.3, 0.6, 1.0);
+		pProjectLight2.getParams().specular.set(0.3, 0.3, 0.3, 1.0);
+		pProjectLight2.getParams().attenuation.set(1, 0, 0);
+		pProjectLight2.setShadowCaster(true);
+		pProjectLight2.setInheritance(ENodeInheritance.ALL);
+		pProjectLight2.getShadowCaster().setFOV(1.5);
+		pProjectLight2.lookAt(math.Vec3.temp(0, 0, 1));
+		pProjectLight2.setPosition(0, 1., -3);
+		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+			(model) => {
+				model.explore(function (node) {
+					if (scene.SceneModel.isModel(node)) {
+						node.getMesh().getSubset(0).getMaterial().diffuse.set(0);
+						node.getMesh().getSubset(0).getMaterial().emissive = new Color(0.3, 0.6, 1.0);
+						(<IMeshSubset>node.getMesh().getSubset(0)).setShadow(false);
+					}
+				})
+			}, "test-omni-1-model", pProjectLight2).scale(0.15);
+		pLightSphere.setPosition(0., 0., 0.);
+
+
+		var pProjectLight3: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT, true, 2048, "test-project-2");
+
+		pProjectLight3.attachToParent(pOmniLights);
+		pProjectLight3.setEnabled(true);
+		pProjectLight3.getParams().ambient.set(0.0);
+		pProjectLight3.getParams().diffuse.set(0.3, 0.6, 1.0);
+		pProjectLight3.getParams().specular.set(0.3, 0.3, 0.3, 1.0);
+		pProjectLight3.getParams().attenuation.set(1, 0, 0);
+		pProjectLight3.setShadowCaster(true);
+		pProjectLight3.setInheritance(ENodeInheritance.ALL);
+		pProjectLight3.getShadowCaster().setFOV(1.5);
+		pProjectLight3.lookAt(math.Vec3.temp(-1, 0, 0));
+		pProjectLight3.setPosition(3, 1., 0);
+		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+			(model) => {
+				model.explore(function (node) {
+					if (scene.SceneModel.isModel(node)) {
+						node.getMesh().getSubset(0).getMaterial().diffuse.set(0);
+						node.getMesh().getSubset(0).getMaterial().emissive = new Color(0.3, 0.6, 1.0);
+						(<IMeshSubset>node.getMesh().getSubset(0)).setShadow(false);
+					}
+				})
+			}, "test-omni-1-model", pProjectLight3).scale(0.15);
+		pLightSphere.setPosition(0., 0., 0.);
+
+		function animateLight(pLight: ILightPoint, fTime: float) {
+			var pPos = pLight.getLocalPosition();
+			pPos.x = 3 * math.cos(fTime);
+			pPos.z = 3 * math.sin(fTime);
+
+			pLight.setPosition(pPos);
+			pLight.lookAt(math.Vec3.temp(0));
+		}
+
+		var t1 = 0;
+		var t2 = Math.PI / 2;
+		var t3 = Math.PI;
+
+		pScene.beforeUpdate.connect(() => {
+			animateLight(pProjectLight1, t1);
+			animateLight(pProjectLight2, t2);
+			animateLight(pProjectLight3, t3);
+
+			t1 += 1 / 60;
+			t2 += 1 / 60;
+			t3 += 1 / 60;
+		});
 	}
 
 	function createSky(): void {
@@ -409,6 +489,9 @@ module akra {
 			room: {
 				path: 'ROOM.DAE',
 				init: function (model) {
+					model.findEntity("room").getChild().findEntity("room").setShadow(false);
+					console.log(model.findEntity("room").getChild().findEntity("room"));
+					//model.findEntity("room").setShadow(false);
 					// var hinges = [];
 					// model.explore(function (node) {
 					// 	if (scene.SceneModel.isModel(node)) {
