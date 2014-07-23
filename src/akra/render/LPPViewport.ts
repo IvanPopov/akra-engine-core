@@ -302,7 +302,7 @@ module akra.render {
 		}
 
 		setAntialiasing(bEnabled: boolean = true): void {
-			this.setFXAA(true);
+			this.setFXAA(bEnabled);
 		}
 
 		isAntialiased(): boolean {

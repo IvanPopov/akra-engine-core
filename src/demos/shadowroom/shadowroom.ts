@@ -517,7 +517,7 @@ module akra {
 
 		pCamera = createCamera();
 		pViewport = createViewport();
-		pMirror = createMirror();
+		// pMirror = createMirror();
 		pViewport.setBackgroundColor(color.GRAY);
 		pViewport.setClearEveryFrame(true);
 
@@ -550,7 +550,7 @@ module akra {
 					console.log(model.findEntity("room").getChild().findEntity("room"));
 					
 
-					pMirror.attachToParent(model.findEntity("room").getChild().findEntity("room"));
+					/*pMirror.attachToParent(model.findEntity("room").getChild().findEntity("room"));
 					pMirror.setPosition(0., 0., 0.);
 
 					pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
@@ -565,7 +565,7 @@ module akra {
 					(<ISceneModel>model.findEntity("room").getChild().findEntity("room")).getMesh().getSubset(0).getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
 						pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
 						pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
-					});
+					});*/
 				},
 			},
 		};
@@ -601,9 +601,7 @@ module akra {
 
 		pProgress.destroy();
 		pEngine.exec();
-
-		(<render.LPPViewport>pViewport).setFXAA(true);
-
+		
 		if(window['setMarkup']) {
 			window['setMarkup']();
 		}
