@@ -18,8 +18,8 @@
         <CollapsePath>True</CollapsePath>
       </Attachment>
 
-      <Attachment Name="AE_MODELS">
-        <Folder Path="data/models/"/>
+      <Attachment Name="AE_SOUND_ENGINE">
+        <File Path="data/sounds/engine.wav" />
         <Format>Enclosure</Format>
       </Attachment>
       

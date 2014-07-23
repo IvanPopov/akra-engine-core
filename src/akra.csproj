@@ -22,6 +22,7 @@
     <Content Include="akra\io\RemoteFile.t.js" />
     <Content Include="akra\parser.xml" />
     <Content Include="akra\resources\fx\apply_forward_shading.afx" />
+    <Content Include="akra\resources\fx\advanced_skybox.afx" />
     <None Include="akra\resources\fx\apply_lights_and_shadows.afx" />
     <Content Include="akra\resources\fx\color_maps.afx" />
     <Content Include="akra\resources\fx\deferredShading.afx" />
@@ -66,6 +67,8 @@
     <Content Include="akra\resources\fx\render_plane_culling.afx" />
     <Content Include="akra\resources\fx\blur.afx" />
     <Content Include="akra\resources\fx\fog.afx" />
+    <Content Include="akra\resources\fx\filmgrain.afx" />
+    <Content Include="akra\resources\fx\transparency.afx" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
