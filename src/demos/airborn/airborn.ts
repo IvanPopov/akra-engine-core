@@ -328,9 +328,9 @@ module akra {
 		});
 
 		var canvas: HTMLCanvasElement = (<webgl.WebGLCanvas>pCanvas).getElement();
-		canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="sepia(1)";
+		// canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="sepia(1)";
 		
-		pGUI.add({sepia: true}, 'sepia').name('sepia').onChange((bEnabled) => {
+		pGUI.add({sepia: false}, 'sepia').name('sepia').onChange((bEnabled) => {
 			
 			if (bEnabled) {
 				canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="sepia(1)";
