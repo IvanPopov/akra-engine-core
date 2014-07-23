@@ -25,8 +25,10 @@
     <Content Include="akra-addons\addons\progress.xml" />
     <Content Include="akra-addons\addons\progress\full\bg.png" />
     <Content Include="akra-addons\addons\progress\full\progress.css" />
+    <Content Include="akra-addons\addons\progress\full\youtube.png" />
     <Content Include="akra-addons\addons\progress\min\bg.png" />
     <Content Include="akra-addons\addons\progress\min\progress.css" />
+    <Content Include="akra-addons\addons\progress\min\youtube.png" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
