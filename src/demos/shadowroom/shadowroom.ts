@@ -5,20 +5,21 @@
 
 /// <reference path="../std/std.ts" />
 
+/// <reference path="../idl/3d-party/dat.gui.d.ts" />
+
 declare var AE_RESOURCES: akra.IDep;
-declare var AE_MODELS: any;
 
 module akra {
 
 	// addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
-	export var modelsPath = path.parse((AE_MODELS.content).split(';')[0]).getDirName() + '/';
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
+	var pGUI: dat.GUI;
 
 	var pRenderOpts: IRendererOptions = {
-		premultipliedAlpha: false,
+		premultipliedAlpha: true,
 		preserveDrawingBuffer: true,
 		depth: true,
 		antialias: true
@@ -47,6 +48,12 @@ module akra {
 	export var pFireTexture: ITexture = null;
 	export var applyAlphaTest = null;
 	export var bFPSCameraControls: boolean = false;
+	export var bAnimate = false;
+
+	export var pReflectionCamera: ICamera = null;
+	export var pReflectionViewport: IViewport = null;
+	export var pReflectionTexture: ITexture = null;
+	export var pMirror: INode = null;
 
 	export var pCameraParams = {
 		current: {
@@ -74,6 +81,43 @@ module akra {
 	export var pPhysObjects = null;
 	export var pPhysics = null;
 	export var funAnimation = null;
+
+	function createMirror(): INode {
+		var pNode: INode = pScene.createNode().setPosition(0., -1.5, 0.);
+		pNode.setInheritance(ENodeInheritance.ROTPOSITION);
+		pReflectionCamera = createMirrorCamera(pNode);
+		pReflectionViewport = createMirrorViewport(pNode);
+
+		return pNode;
+	}
+
+	function createMirrorCamera(pReflNode: INode): ICamera {
+		var pReflectionCamera: ICamera = pScene.createCamera("reflection_camera_01");
+
+		pReflectionCamera.attachToParent(pScene.getRootNode());
+		pReflectionCamera.setInheritance(pCamera.getInheritance());
+
+		return pReflectionCamera;
+	}
+
+	function createMirrorViewport(pReflNode: INode): IViewport {
+
+		pReflectionTexture = pRmgr.createTexture(".reflection_texture");
+		pReflectionTexture.create(1024, 1024, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+
+		var pRenderTarget = pReflectionTexture.getBuffer().getRenderTarget();
+		pRenderTarget.setAutoUpdated(false);
+
+
+		var pDepthTexture = pRmgr.createTexture(".mirror - depth");
+		pDepthTexture.create(1024, 1024, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+		pRenderTarget.attachDepthTexture(pDepthTexture);
+
+		var pTexViewport: IMirrorViewport = <IMirrorViewport>pRenderTarget.addViewport(new render.MirrorViewport(pReflectionCamera, 0., 0., 1., 1., 0));
+		var pEffect = (<render.LPPViewport>pTexViewport.getInternalViewport()).getEffect();
+		return pTexViewport;
+	}
 
 	function createCamera(): ICamera {
 		var pCamera: ICamera = pScene.createCamera();
@@ -187,8 +231,6 @@ module akra {
 		});
 	}
 
-	var pGUI;
-
 	function createViewport(): IViewport3D {
 
 		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
@@ -200,7 +242,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		(<render.LPPViewport>pViewport).setFXAA(true);
+		
 		var counter = 0;
 
 		var pSkyboxTexturesKeys = [
@@ -219,7 +261,23 @@ module akra {
 
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
 
-		(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
+		// (<render.LPPViewport>pViewport).getEffect().addComponent("akra.system.filmgrain",);
+		// (<render.LPPViewport>pViewport).setFXAA(true);
+
+		pGUI.add({'film grain': false}, 'film grain').onChange((bValue: boolean) => {
+			if (bValue) {
+				(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
+			}
+			else {
+				(<IViewport3D>pViewport).getEffect().delComponent("akra.system.filmgrain");
+			}
+		});
+
+		pGUI.add({'fxaa': true}, 'fxaa').onChange((bValue: boolean) => {
+			(<render.LPPViewport>pViewport).setFXAA(bValue);
+		});
+
+		pGUI.add(akra, 'bAnimate').name('animate');
 
 		return pViewport;
 	}
@@ -247,7 +305,7 @@ module akra {
 		pOmniLight.setShadowCaster(true);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 		pOmniLight.setPosition(0., 2, 0);
-		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+		pLightSphere = loadModel("SPHERE.DAE",
 			(model) => {
 				model.explore(function (node) {
 					if (scene.SceneModel.isModel(node)) {
@@ -273,7 +331,7 @@ module akra {
 		pProjectLight1.getShadowCaster().setFOV(1.5);
 		pProjectLight1.lookAt(math.Vec3.temp(0, 0, -1));
 		pProjectLight1.setPosition(0, 0.5, 3);
-		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+		pLightSphere = loadModel("SPHERE.DAE",
 			(model) => {
 				model.explore(function (node) {
 					if (scene.SceneModel.isModel(node)) {
@@ -299,7 +357,7 @@ module akra {
 		pProjectLight2.getShadowCaster().setFOV(1.5);
 		pProjectLight2.lookAt(math.Vec3.temp(0, 0, 1));
 		pProjectLight2.setPosition(0, 1., -3);
-		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+		pLightSphere = loadModel("SPHERE.DAE",
 			(model) => {
 				model.explore(function (node) {
 					if (scene.SceneModel.isModel(node)) {
@@ -325,7 +383,7 @@ module akra {
 		pProjectLight3.getShadowCaster().setFOV(1.5);
 		pProjectLight3.lookAt(math.Vec3.temp(-1, 0, 0));
 		pProjectLight3.setPosition(3, 1., 0);
-		pLightSphere = loadModel(modelsPath + "/Sphere.DAE",
+		pLightSphere = loadModel("SPHERE.DAE",
 			(model) => {
 				model.explore(function (node) {
 					if (scene.SceneModel.isModel(node)) {
@@ -351,13 +409,16 @@ module akra {
 		var t3 = Math.PI;
 
 		pScene.beforeUpdate.connect(() => {
-			animateLight(pProjectLight1, t1);
-			animateLight(pProjectLight2, t2);
-			animateLight(pProjectLight3, t3);
+			if (bAnimate) {
+				animateLight(pProjectLight1, t1);
+				animateLight(pProjectLight2, t2);
+				animateLight(pProjectLight3, t3);
 
-			t1 += 1 / 60;
-			t2 += 1 / 60;
-			t3 += 1 / 60;
+			
+				t1 += 1 / 60 / 5;
+				t2 += 1 / 60 / 5;
+				t3 += 1 / 60 / 5;
+			}
 		});
 	}
 
@@ -452,22 +513,16 @@ module akra {
 
 	function main(pEngine: IEngine) {
 		std.setup(pCanvas);
+		 pGUI = new dat.GUI();
 
 		pCamera = createCamera();
 		pViewport = createViewport();
-		// pMirror = createMirror();
+		pMirror = createMirror();
 		pViewport.setBackgroundColor(color.GRAY);
 		pViewport.setClearEveryFrame(true);
 
 		var pStatsDiv = createStatsDIV();
-
-		// pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
-		// 	pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
-		// });
-
-		// window.onresize = () => {
-		// 	pCanvas.resize(window.innerWidth, window.innerHeight);
-		// };
+	
 
 		//createSky();
 
@@ -493,34 +548,24 @@ module akra {
 				init: function (model) {
 					model.findEntity("room").getChild().findEntity("room").setShadow(false);
 					console.log(model.findEntity("room").getChild().findEntity("room"));
-					//model.findEntity("room").setShadow(false);
-					// var hinges = [];
-					// model.explore(function (node) {
-					// 	if (scene.SceneModel.isModel(node)) {
-					// 		// first handle local matrices trouble
-
-					// 		var intPos = math.Vec3.temp(), intRot = math.Quat4.temp(), intScale = math.Vec3.temp();
-					// 		node.getLocalMatrix().decompose(intRot, intScale, intPos);
-
-					// 		if(node.getName().match('hinge')) {
-					// 			node.setVisible(false);
-					// 		}
-					// 		else {
-					// 			pPlaneParts[node.getName()] = node;
-					// 		}
-
-					// 		node.setLocalMatrix(new math.Mat4(1.));
-					// 		if(!(node.getParent()&&node.getParent().getName().match('hinge'))) {
-					// 			node.setRotation(intRot);
-					// 			node.setLocalScale(intScale);
-					// 			node.setPosition(intPos);
-					// 		}
-					// 	}
-					// });
 					
-					// pScene.beforeUpdate.connect(function() {
-					// 	funAnimation();
-					// 	});
+
+					pMirror.attachToParent(model.findEntity("room").getChild().findEntity("room"));
+					pMirror.setPosition(0., 0., 0.);
+
+					pCanvas.viewportPreUpdate.connect((pTarget: IRenderTarget, pViewport: IViewport) => {
+						if (pViewport === akra.pViewport) {
+							var normal = pMirror.getTempVectorUp();
+							var dist = pMirror.getWorldPosition().dot(normal);
+							(<IMirrorViewport>pReflectionViewport).getReflectionPlane().set(normal, dist);
+							pReflectionTexture.getBuffer().getRenderTarget().update();
+						}
+					});
+
+					(<ISceneModel>model.findEntity("room").getChild().findEntity("room")).getMesh().getSubset(0).getTechnique().render.connect((pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pLocalViewport) => {
+						pTech.getPass(iPass).setTexture("MIRROR_TEXTURE", pReflectionTexture);
+						pTech.getPass(iPass).setForeign("IS_USED_MIRROR_REFLECTION", true);
+					});
 				},
 			},
 		};
@@ -556,6 +601,9 @@ module akra {
 
 		pProgress.destroy();
 		pEngine.exec();
+
+		(<render.LPPViewport>pViewport).setFXAA(true);
+
 		if(window['setMarkup']) {
 			window['setMarkup']();
 		}
