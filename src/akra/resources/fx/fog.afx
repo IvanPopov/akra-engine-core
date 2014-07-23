@@ -1,0 +1,167 @@
+provide akra.system;
+
+include "common.afx";
+
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
+float4x4 invViewMat : INV_VIEW_CAMERA_MAT;
+float4x4 projMat : PROJ_MATRIX;
+texture tex0 : INPUT_TEXTURE;
+texture tex1 : DEPTH_TEXTURE;
+
+sampler screenSampler : INPUT_SAMPLER = sampler_state
+{
+	Texture = <tex0>;
+};
+
+sampler depthSampler : DEPTH_SAMPLER = sampler_state
+{
+	Texture = <tex1>;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 screenPosition : SCREEN_POSITION;
+	float2 textureCoords : TEXCOORD0;
+};
+
+VS_OUT fogvs(float2 pos: POSITION){
+	VS_OUT Out;
+
+	Out.position = float4(pos,0.,1.);
+	Out.screenPosition = pos;
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float4 fogColor: FOG_EFFECT_COLOR = float4(0.4);
+float fogStart: FOG_EFFECT_START = 5.;
+float fogIndex: FOG_EFFECT_INDEX = 20.;
+float fogHeight: FOG_EFFECT_HEIGHT = 0.7;
+
+float3 fogRealPosition(float2 textureCoords, float2 screenPosition)
+{
+	return unproj(projMat, float3(screenPosition, tex2D(depthSampler, textureCoords).x*2.-1.));;
+}
+
+float fogDistance(float2 textureCoords, float2 screenPosition)
+{
+	return length(unproj(projMat, float3(screenPosition, tex2D(depthSampler, textureCoords).x*2.-1.)));
+}
+
+///////////////////////////// Vertical fog /////////////////////////////////////
+// fogStart - where fog starts to apply
+// each fogIndex after that it increases by exponent
+// it linearly decays up to the fogHeight where there is no fog.
+// density of fog (fogColor.a) shows how much height affects fog
+float3 calcVerticalFog(float3 color, float3 pos)
+{
+	float dist = length(pos);
+
+	if (dist > fogStart) {
+		float4 worldPos = invViewMat * float4(pos, 1.);
+		float heightRel = (worldPos / worldPos.w).y / dist;
+
+		if (heightRel < fogHeight){
+			float fogFactor = 1.;
+			if (dist < fogStart + fogIndex * 6.)
+				fogFactor -= exp(-(dist-fogStart) / fogIndex);
+			if (heightRel > 0.)
+				fogFactor *= 1. - heightRel / fogHeight * (1. - fogColor.a);
+			color = lerp(color.rgb, fogColor.rgb, fogFactor);
+		}
+	}
+	return color;
+}
+
+float4 verticalFogfs(VS_OUT IN) : COLOR {
+	float4 color = tex2D(screenSampler, IN.textureCoords);
+	return float4(calcVerticalFog(color.rgb, fogRealPosition(
+		IN.textureCoords, IN.screenPosition)), color.a);
+};
+
+float4 forwardVerticalFogfs(float3 pos: VERTEX): COLOR {
+	return float4(calcVerticalFog(resultAFXColor.rgb, pos), resultAFXColor.a);
+};
+
+///////////////////////////// Linear fog ///////////////////////////////////////
+// fogStart - where fog starts to apply
+// fogStart + fogIndex - where there is nothing but the fog
+float3 calcLinearFog(float3 color, float dist)
+{
+    if (dist > fogStart + fogIndex)
+    	color = fogColor.rgb;
+    else if (dist > fogStart)
+    	color = lerp(color, fogColor.rgb, (dist - fogStart) / fogIndex);
+    return color;
+}
+
+float4 linearFogfs(VS_OUT IN): COLOR {
+	float4 color = tex2D(screenSampler, IN.textureCoords);
+	return float4(calcLinearFog(color.rgb, fogDistance(
+		IN.textureCoords, IN.screenPosition)), color.a);
+};
+
+float4 forwardLinearFogfs(float3 pos: VERTEX): COLOR {
+	return float4(calcLinearFog(resultAFXColor.rgb, length(pos)), resultAFXColor.a);
+};
+
+///////////////////////////// Exponential fog //////////////////////////////////
+// fogStart - where fog starts to apply
+// each fogIndex after that it increases by exponent
+float3 calcExponentialFog(float3 color, float dist)
+{
+    if (dist > fogStart + fogIndex * 6.) // saves some calculation
+    	color = fogColor.rgb;
+    else if (dist > fogStart)
+    	color = lerp(color, fogColor.rgb, 1. - exp(-(dist-fogStart) / fogIndex));
+    return color;
+}
+
+float4 exponentialFogfs(VS_OUT IN): COLOR {
+	float4 color = tex2D(screenSampler, IN.textureCoords);
+	return float4(calcExponentialFog(color.rgb, fogDistance(
+		IN.textureCoords, IN.screenPosition)), color.a);
+};
+
+float4 forwardExponentialFogfs(float3 pos: VERTEX): COLOR {
+	return float4(calcExponentialFog(resultAFXColor.rgb, length(pos)), resultAFXColor.a);
+};
+
+//Type of fog:
+// 0 - None
+// 1 - Linear
+// 2 - Exponential
+// 3 - Vertical
+foreign int FOG_TYPE = 0;
+technique fog : POST_EFFECT {
+	pass {
+		if(FOG_TYPE != 0){
+			VertexShader = compile fogvs();
+		}
+
+		if(FOG_TYPE == 1){		
+			PixelShader = compile linearFogfs();
+		}
+		else if(FOG_TYPE == 2){
+			PixelShader = compile exponentialFogfs();
+		}
+		else if(FOG_TYPE == 3){
+			PixelShader = compile verticalFogfs();
+		}
+	};
+};
+
+technique fogForForward {
+	pass {
+		if(FOG_TYPE == 1){			
+			PixelShader = compile forwardLinearFogfs();
+		}
+		else if(FOG_TYPE == 2){
+			PixelShader = compile forwardExponentialFogfs();
+		}
+		else if(FOG_TYPE == 3){
+			PixelShader = compile forwardVerticalFogfs();
+		}
+	}
+};

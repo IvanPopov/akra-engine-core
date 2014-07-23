@@ -1,1 +1,0 @@
-cd ../../../build && test --test tests/common/culling --html --ES6 && cd ../tests/common/culling

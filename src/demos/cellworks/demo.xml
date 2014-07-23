@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Cellworks" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Cellphone demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="cellworks.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/cellworks/cellworks.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <!--<Variable Name="AE_MODELS">data/models/</Variable>-->
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+
+      <Attachment>
+        <File Path="customjs/jquery-1.11.0.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+
+      <Attachment>
+        <File Path="customjs/markup.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+
+      <Attachment Name="AE_MODELS">
+        <Folder Path="data/models/"/>
+        <Format>Enclosure</Format>
+      </Attachment>
+      
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      
+      <Data>
+        <Folder Path="data/models/iphone5"/>
+        <ResourceFile Path="data/models/iphone5/iphone5.dae" Name="IPHONE5.DAE"/>
+
+        <ResourceFile Path="data/textures/skyboxes/white_px.jpg" Name="SKYBOX_WHITE_POS_X"/>
+        <ResourceFile Path="data/textures/skyboxes/white_nx.jpg" Name="SKYBOX_WHITE_NEG_X"/>
+        <ResourceFile Path="data/textures/skyboxes/white_py.jpg" Name="SKYBOX_WHITE_POS_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/white_ny.jpg" Name="SKYBOX_WHITE_NEG_Y"/>
+        <ResourceFile Path="data/textures/skyboxes/white_pz.jpg" Name="SKYBOX_WHITE_POS_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/white_nz.jpg" Name="SKYBOX_WHITE_NEG_Z"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

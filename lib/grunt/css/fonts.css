@@ -1,0 +1,59 @@
+@font-face {
+  font-family: 'AGHelvetica';
+  src: url('../fonts/aghelv_bold.eot'); src: url('../fonts/aghelv_bold.eot') format('embedded-opentype'),
+  url('../fonts/aghelv_bold.woff') format('woff'),
+  url('../fonts/aghelv_bold.ttf') format('truetype'),
+  url('../fonts/aghelv_bold.svg#AGHelveticaCyrBold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+  }
+@font-face {
+  font-family: 'AGHelvetica';
+  src: url('../fonts/aghelv_roman.eot');
+  src: url('../fonts/aghelv_roman.eot') format('embedded-opentype'),
+  url('../fonts/aghelv_roman.woff') format('woff'),
+  url('../fonts/aghelv_roman.ttf') format('truetype'),
+  url('../fonts/aghelv_roman.svg#AGHelveticaCyrRoman') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  }
+@font-face {
+  font-family: 'Hermes';
+  src: url('../fonts/hrm67.eot');
+  src: url('../fonts/hrm67.eot') format('embedded-opentype'),
+  url('../fonts/hrm67.woff') format('woff'),
+  url('../fonts/hrm67.ttf') format('truetype'),
+  url('../fonts/hrm67.svg#HermesCTTRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  }
+@font-face {
+  font-family: 'HelveticaCondenced';
+  src: url('../fonts/hcnd.eot');
+  src: url('../fonts/hcnd.eot') format('embedded-opentype'),
+  url('../fonts/hcnd.woff') format('woff'),
+  url('../fonts/hcnd.ttf') format('truetype'),
+  url('../fonts/hcnd.svg#HelvCondencedRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  }
+@font-face {
+  font-family: 'AGForeigner';
+  src: url('../fonts/ag_foreigner_roman_medium-webfont.eot');
+  src: url('../fonts/ag_foreigner_roman_medium-webfont.eot?#iefix') format('embedded-opentype'),
+  url('../fonts/ag_foreigner_roman_medium-webfont.woff') format('woff'),
+  url('../fonts/ag_foreigner_roman_medium-webfont.ttf') format('truetype'),
+  url('../fonts/ag_foreigner_roman_medium-webfont.svg#ag_foreigner-romanmedium') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  }
+@font-face {
+  font-family: 'AGForeigner';
+  src: url('../fonts/ag_foreigner_light_bold_bold-webfont.eot');
+  src: url('../fonts/ag_foreigner_light_bold_bold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('../fonts/ag_foreigner_light_bold_bold-webfont.woff') format('woff'),
+  url('../fonts/ag_foreigner_light_bold_bold-webfont.ttf') format('truetype'),
+  url('../fonts/ag_foreigner_light_bold_bold-webfont.svg#ag_foreigner_light-boldbold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+  }

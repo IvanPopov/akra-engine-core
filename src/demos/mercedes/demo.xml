@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Mercedes" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Advertising Mercedes-Benz demo.</Description>
+  <Template>index.jade</Template>
+  <ItemGroup>
+    <TypeScriptCompile Include="mercedes.ts"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/mercedes/mercedes.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+
+      <Attachment>
+        <Folder Path="css" />
+        <Format>Enclosure</Format>
+      </Attachment>
+
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-navigation" />
+      <Module Name="addon-base3dObjects" />
+    </Dependencies>
+    <Resource Name="AE_MERCEDES_DATA">
+      <Filename>data</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Folder Path="models/images" >
+          <Exclude Path="carbon.jpg"/>
+        </Folder>
+
+        <ResourceFile Path="models/mercedes.DAE" Name="MERCEDES.DAE" Type="DAE" />
+
+        <ResourceFile Path="skins/default.skin" Name="default"/>
+        <ResourceFile Path="skins/black_moon.skin" Name="black moon"/>
+        <ResourceFile Path="skins/dark-blue.skin" Name="dark blue"/>
+        <ResourceFile Path="skins/hot_lemon.skin" Name="hot lemon"/>
+        <ResourceFile Path="skins/hot_red_pepper.skin" Name="red hot pepper"/>
+        <ResourceFile Path="skins/red.skin" Name="red"/>
+        <ResourceFile Path="skins/red-origin.skin" Name="red origin"/>
+        <ResourceFile Path="skins/silver-bezh.skin" Name="silver beige"/>
+        <ResourceFile Path="skins/unknown.skin" Name="unknown"/>
+
+
+        <ResourceFile Path="textures/lightmap.png" Name="LIGHTMAP.PNG"/>
+        <ResourceFile Path="textures/grid.png" Name="GRID.PNG"/>
+        <!--<ResourceFile Path="data/textures/skyboxes/nightsky.dds" Name="SKYBOX_NIGHTSKY.DDS"/>-->
+        <ResourceFile Path="data/textures/skyboxes/posX.jpg" Name="SKYBOX_NIGHTSKY.DDS_POS_X" />
+        <ResourceFile Path="data/textures/skyboxes/negX.jpg" Name="SKYBOX_NIGHTSKY.DDS_NEG_X" />
+        <ResourceFile Path="data/textures/skyboxes/posY.jpg" Name="SKYBOX_NIGHTSKY.DDS_POS_Y" />
+        <ResourceFile Path="data/textures/skyboxes/negY.jpg" Name="SKYBOX_NIGHTSKY.DDS_NEG_Y" />
+        <ResourceFile Path="data/textures/skyboxes/posZ.jpg" Name="SKYBOX_NIGHTSKY.DDS_POS_Z" />
+        <ResourceFile Path="data/textures/skyboxes/negZ.jpg" Name="SKYBOX_NIGHTSKY.DDS_NEG_Z" />
+      </Data>
+    </Resource>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+      </Attachment>
+      <Module Name="addon-filedrop" />
+    </Dependencies>
+  </PropertyGroup>
+</Demo>

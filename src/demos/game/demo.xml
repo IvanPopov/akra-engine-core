@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Game" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Game.</Description>
+  <Main>index.jade</Main>
+  <Preview Src="preview.png">
+    <YouTube Src="//www.youtube.com/embed/EuDI_ROQoBw"/>
+  </Preview>
+  <ItemGroup>
+    <TypeScriptCompile Include="game.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/game/game.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+
+      <Attachment>
+        <File Path="content/pnotify/jquery.pnotify.min.js"/>
+        <Format>Enclosure</Format>
+        <Type>javascript</Type>
+      </Attachment>
+      <Attachment>
+        <File Path="content/pnotify/jquery.pnotify.default.css"/>
+        <Format>Enclosure</Format>
+        <Type>css</Type>
+      </Attachment>
+      <Attachment>
+        <File Path="content/pnotify/jquery.pnotify.default.icons.css"/>
+        <Format>Enclosure</Format>
+        <Type>css</Type>
+      </Attachment>
+
+      <Attachment>
+        <Folder Path="content/assets" />
+        <Format>Enclosure</Format>
+      </Attachment>
+      
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+    </Dependencies>
+    <Resource Name="AE_GAME_RESOURCES">
+      <Filename>game</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <ResourceFile Path="data/effects/sunshaft.afx" />
+        
+        <ResourceFile Path="data/textures/terrain/main_height_map_1025.dds" Name="TERRAIN_HEIGHT_MAP" />
+        <ResourceFile Path="data/textures/terrain/main_terrain_normal_map.dds" Name="TERRAIN_NORMAL_MAP" />
+        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX" />
+        <ResourceFile Path="data/textures/terrain/diffuse.dds" Name="MEGATEXTURE_MIN_LEVEL" />
+
+        <ResourceFile Path="data/models/barrel/barrel_and_support.DAE" Name="BARREL" />
+        <Folder Path="data/models/barrel/images/" />
+        
+        <ResourceFile Path="data/models/box/closed_box.DAE" Name="CLOSED_BOX" />
+        <Folder Path="data/models/box/images/" />
+        
+        <ResourceFile Path="data/models/tube/tube.DAE" Name="TUBE" />
+        <Folder Path="data/models/tube/images/" />
+        
+        <ResourceFile Path="data/models/tubing/tube_beeween_rocks.DAE" Name="TUBE_BETWEEN_ROCKS" />
+        <Folder Path="data/models/tubing/images/">
+          <Exclude Path="tech_diffuse.dds"/>
+          <Exclude Path="tech_normal.dds"/>
+          <Exclude Path="tech_specular.dds"/>
+        </Folder>
+        
+        <ResourceFile Path="data/models/character/charZ.DAE" Name="CHARACTER_MODEL" >
+          <ResourceFile Path="data/models/character/all-ih.json" Name="HERO_CONTROLLER" />
+        </ResourceFile>
+        <Folder Path="data/models/character/images/">
+          <Exclude Path="diffuse.dds"/>
+          <Exclude Path="normals.dds"/>
+          <Exclude Path="specular.dds"/>
+        </Folder>
+        
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

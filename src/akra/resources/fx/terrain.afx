@@ -1,0 +1,242 @@
+provide akra.system;
+
+include "common.afx";
+
+struct pos_tex{
+    float3 pos:POSITION;
+//    float3 norm: NORMAL;
+    float2 texcoord:TEXCOORD;
+};
+
+struct VS_IN{
+    pos_tex data[]:INDEX0;
+};
+
+struct VS_IN_ROAM{
+    pos_tex data[][]:INDEX0;
+};
+
+struct VS_OUT{
+    float4 pos:POSITION;
+    //float3 norm: NORMAL;
+    float3 vert:VERTEX;
+    float2 texcoord : TEXCOORD;
+    float3 edgeTest : EDGE_TEST;
+};
+
+float4x4 model_mat:MODEL_MATRIX;
+float4x4 view_mat:VIEW_MATRIX;
+float4x4 proj_mat:PROJ_MATRIX;
+
+VS_OUT vs_terrain(VS_IN IN) {
+    VS_OUT Out;
+
+    float4 pos = float4(IN.data.pos, 1.);
+
+    float4 vertex = view_mat * model_mat * pos;
+
+    Out.vert = vertex.xyz;
+    Out.pos = proj_mat * vertex;
+    //Out.norm = normalize((view_mat * model_mat * float4(IN.data.norm.xyz, 0.)).xyz);
+    Out.texcoord = float2(IN.data.texcoord.x,IN.data.texcoord.y);
+
+    if(mod(float(@(IN.data)),3.) == 0.){
+        Out.edgeTest = float3(1.,0.,0.);
+    }
+    else if(mod(float(@(IN.data)),3.) == 1.){
+        Out.edgeTest = float3(0.,1.,0.);
+    }
+    else {
+        Out.edgeTest = float3(0.,0.,1.);
+    }
+
+    return Out;
+}
+
+VS_OUT vs_terrain_roam(VS_IN_ROAM IN) {
+    VS_OUT Out;
+
+    float4 pos = float4(IN.data.pos, 1.);
+
+    float4 vertex = view_mat * model_mat * pos;
+
+    Out.vert = vertex.xyz;
+    Out.pos = proj_mat * vertex;
+    //Out.norm = normalize((view_mat * model_mat * float4(IN.data.norm.xyz, 0.)).xyz);
+    Out.texcoord = IN.data.texcoord;
+
+    if(mod(float(@@(IN.data)),3.) == 0.){
+        Out.edgeTest = float3(1.,0.,0.);
+    }
+    else if(mod(float(@@(IN.data)),3.) == 1.){
+        Out.edgeTest = float3(0.,1.,0.);
+    }
+    else {
+        Out.edgeTest = float3(0.,0.,1.);
+    }
+
+    return Out;
+}
+
+UniformMaterial defaultMaterial:MATERIAL;
+shared PixelData pixelData;
+
+
+sampler ptNormal:S_NORMAL_MAP = sampler_state
+{
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+
+bool isDebug, isRealNormal, isWithBalckSectors, showTriangles;
+
+foreign int NUM_TOTAL_LEVELS;
+
+sampler textureTerrain[NUM_TOTAL_LEVELS]: S_TERRAIN;
+float2 textureCoordOffset[NUM_TOTAL_LEVELS]: TEXTURE_LEVEL_OFFSET;
+bool testureLoadStatus[NUM_TOTAL_LEVELS]: TEXTURE_LOAD_STATUS;
+
+int minTextureLevel: MIN_MEGATEXTURE_LEVEL;
+
+float threshold;
+bool bColored = false;
+
+void fs_terrain(VS_OUT IN){
+    float4 color;
+    float2 new_texcoord;
+    float3 normal;
+
+    float4 mainColor = tex2D(textureTerrain[0], IN.texcoord);
+
+    bool isMainColored = (mainColor.xyz != float3(0.));
+    bool isNeedColored = true;
+
+    float texcoordMultiplier = exp2(float(NUM_TOTAL_LEVELS + minTextureLevel - 1));
+    //int i = NUM_TOTAL_LEVELS - 1;
+    for(int i = NUM_TOTAL_LEVELS - 1; i>0; i--){
+        if(isNeedColored){
+            new_texcoord = (IN.texcoord-textureCoordOffset[i]) * texcoordMultiplier;
+
+            if((new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0)){
+                color = tex2D(textureTerrain[i], new_texcoord);
+                
+                if(testureLoadStatus[i]){
+                    isNeedColored = false;
+                }
+                else if (color.xyz == float3(0.) && isMainColored) {
+                    isNeedColored = true;
+                }
+                else {
+                    isNeedColored = false;
+
+                    float modX = mod(1024. * new_texcoord.x, 32.);
+                    float modY = mod(1024. * new_texcoord.y, 32.);
+
+                    if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                        if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                            isNeedColored = true;
+                        }
+                    }
+                }
+                
+                if(bColored && isMainColored){
+                    if(i == 5){
+                        color = float4(1., 1., 0., 1.);
+                    }
+                    else if(i == 4){
+                        color = float4(0., 1., 1., 1.);
+                    }
+                    else if(i == 3){
+                        color = float4(1., 0., 1., 1.);
+                    }
+                    else if(i == 2){
+                        color = float4(1., 0., 0., 1.);
+                    }
+                    else if(i == 1){
+                        color = float4(0., 1., 0., 1.);
+                    }
+                    else {
+                        color = float4(0., 0., 0., 1.);
+                    }
+                }
+            }
+
+            texcoordMultiplier /= 2.;
+        }
+//        else {
+//            break;
+//        }
+    }
+
+    if(isNeedColored){
+        color = mainColor;
+        if(bColored && isMainColored){
+            color = float4(0., 0., 1., 1.);
+        }
+    }
+
+    normal = tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb;
+    //normal = float3(0.5, 0.5, 1.);
+
+    normal.xy = normal.xy * 2. - 1.;
+    normal = (view_mat * model_mat * float4(normal, 0.)).xyz;//float4(normalize(normal), 0.)).xyz);
+    pixelData.normal = normalize(normal);
+
+    // pixelData.normal = IN.norm;
+
+    if(isDebug){
+        if(isRealNormal){
+            pixelData.material.emissive = float4(tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb, 0.);
+            pixelData.material.diffuse = float4(0.);
+        }
+        else {
+            pixelData.material.emissive = float4((pixelData.normal.xyz + 1.)/2., 0.);
+            pixelData.material.diffuse = float4(0.);
+        }
+    }
+    else {
+        if(showTriangles)
+        {
+
+            float3 vBC = IN.edgeTest;
+            float3 d = fwidth(vBC);
+            float3 a3 = smoothstep(float3(0.0), float3(d * 0.95), vBC);
+            float edgeFactor = min(min(a3.x, a3.y), a3.z);
+
+            /*if(any(lessThan(IN.edgeTest, float3(0.02))))
+            {
+                pixelData.material.emissive = float4(0.5, 0.5, 0.5, 1.);
+            }
+            else {
+                pixelData.material.emissive = defaultMaterial.emissive;
+            }*/
+            pixelData.material.emissive = float4(mix(float3(1.0), float3(0.), edgeFactor), 1.);
+        }
+        else
+        {
+            pixelData.material.emissive = defaultMaterial.emissive; 
+        }
+        
+        pixelData.material.diffuse = color;
+    }
+    
+    //pixelData.material.ambient = defaultMaterial.ambient;
+
+    pixelData.material.ambient = float4(0.);
+    //pixelData.material.shininess = defaultMaterial.shininess;
+    //pixelData.material.specular = defaultMaterial.specular;
+}
+
+technique terrain{
+    pass p0 {
+        if(engine.terrain.isROAM){
+            VertexShader = compile vs_terrain_roam();
+        }
+        else {
+            VertexShader = compile vs_terrain();
+        }
+        
+        PixelShader = compile fs_terrain();
+    }
+}

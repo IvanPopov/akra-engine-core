@@ -1,0 +1,77 @@
+﻿doctype html
+html(lang="en")
+  head            
+    meta(charset="UTF-8")
+    title= demo.name
+    meta(name='description', content=demo.description)
+    
+    link(href='//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css', rel='stylesheet')
+    link(href='http://talkslab.com/metro-bootstrap/css/metro-bootstrap.css', rel='stylesheet')
+      
+    script(src='//code.jquery.com/jquery-1.10.2.min.js')
+    script(src='//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js')
+
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
+
+    - for (var i in demo.styles)
+      link(href=demo.styles[i], rel='stylesheet')
+                             
+
+    link(href='../css/demo.css', rel='stylesheet')
+  body
+    include noncompatible
+    button(type="button", class="btn btn-primary btn-lg", data-toggle="modal", data-target="#cfg", style="position: fixed; top: 25px; left: 25px; z-index: 100;")
+      span(class="glyphicon glyphicon-info-sign")
+
+    div#cfg(class="modal fade", tabindex="-1", role="dialog", aria-labelledby="CfgLabel", aria-hidden="true")
+      div.modal-dialog
+        div.modal-content
+          div.modal-header
+            button.close(type="button", data-dismiss="modal", aria-hidden="true").
+              &times;
+
+            h4.modal-title(id="CfgLabel") About
+          div.modal-body
+            ul(class="nav nav-tabs")
+              li.active
+                a(href="#main", data-toggle="tab") Навигация
+              li
+                a(href="#keyboard", data-toggle="tab") Параметры отображения
+              li
+                a(href="#gamepad", data-toggle="tab") Описание сосудов
+
+            div.tab-content
+              div#main(class="tab-pane fade in active")
+                h3 Вращение сцены
+                p Для вращения сцены необходимо зажать ориентационный куб, в правом нижнем углу, левой кнопкой мыши и потянуть в желуюмую сторону. 
+                p Для перехода к одной из проекций сцены нажмите на соответствующую сторону ориентационного куба.
+              
+                h3 Перемещение сцены
+                p Для перемещения сцены необходимо зажать среднюю кнопку мыши(колесеко) на любом месте сцены и потащить в желаемую сторону.
+
+              div#keyboard(class="tab-pane fade")
+                h3 Пролистывание срезов ангиографии
+                p.
+                :markdown
+                  Для изменения текущего среза необходимо открыть вкладку *slice* в верхнем правом меню и изменить значение поля **slice**.
+
+                
+
+                h3 Отображение сосуда
+                p.
+                :markdown
+                  Для отображения сосуда необходимо установить отметку **visible** в соответствующем поле, во вкладке *[имя сосуда].obj*
+                
+
+                p У каждого сосуда существует 3 режима отображения:
+                  ol
+                    li Edged faces - отображение текстурированного сосуда с наложением его полигональной сетки
+                    li Colored - отображение текстурованного сосуда
+                    li Wireframe - отображение полигональной сетки сосуда
+              div#gamepad(class="tab-pane fade")
+          
+          div.modal-footer
+            button(type="button", class="btn btn-default", data-dismiss="modal") Close
+    #progress
+    script(src=demo.src)

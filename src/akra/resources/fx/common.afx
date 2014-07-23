@@ -1,0 +1,67 @@
+const float PI = 3.14159265359;
+
+struct FragmentMaterial {
+	float4 diffuse:DIFFUSE;
+	float4 ambient:AMBIENT;
+	float4 emissive:EMISSIVE;
+	float4 specular:SPECULAR;
+	float shininess:SHININESS;
+	float transparency:TRANSPARENCY;
+};
+
+struct PixelData {
+	FragmentMaterial material: MATERIAL;
+
+	float3 normal   : NORMAL;
+	float3 position : POSITION; //in camera space
+	float  depth    : DEPTH;
+	int    id       : RENDER_OBJECT_ID;
+};
+
+struct UniformMaterial {
+    float4 ambient:AMBIENT;
+    float4 diffuse:DIFFUSE;
+    float4 specular:SPECULAR;
+    float4 emissive:EMISSIVE;
+    float shininess:SHININESS;
+    float transparency: TRANSPARENCY;
+};
+
+float rand(float2 co){
+	return fract(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
+}
+
+float3 unproj(float4x4 projMat, float3 screenCoords){
+	
+	//mat4[i] - i-й столбец матрицы 
+	//не строка, а именно столбец
+  
+	float z = -projMat[3][2]/(projMat[2][2] + screenCoords.z);
+	float y = -(screenCoords.y * z + projMat[2][1] * z)/projMat[1][1];
+	float x = -(screenCoords.x * z + projMat[2][0] * z)/projMat[0][0];
+  
+	return float3(x, y, z);
+}
+
+float unprojZ(float4x4 projMat, float screenZ){
+	return -projMat[3][2]/(projMat[2][2] + screenZ);
+}
+
+float unprojOrthoZ(float4x4 projMat, float screenZ){
+	return (screenZ - projMat[3][2])/projMat[2][2];
+	//return -projMat[3][2]/(projMat[2][2] + screenZ);
+}
+
+float dot_saturate (float3 a, float3 b) {
+	return clamp(dot(a,b),0.,1.);
+}
+
+float Squaref( float x )
+{
+    return x*x;
+}
+
+float3 Squaref3( float3 x )
+{
+    return x*x;
+}

@@ -1,0 +1,372 @@
+doctype html
+html
+head
+    title
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+
+    link(type='text/css', rel='stylesheet', href='http://yui.yahooapis.com/2.9.0/build/treeview/assets/skins/sam/treeview.css')
+    //
+       Optional CSS for for date editing with Calendar
+    link(type='text/css', rel='stylesheet', href='http://yui.yahooapis.com/2.9.0/build/calendar/assets/skins/sam/calendar.css')
+    //
+       Dependency source file 
+    script(src='http://yui.yahooapis.com/2.9.0/build/yahoo-dom-event/yahoo-dom-event.js')
+    //
+       Optional dependency source file 
+    script(src='http://yui.yahooapis.com/2.9.0/build/animation/animation-min.js', type='text/javascript')
+    //
+       Optional dependency source file for date editing with Calendar
+    script(src='http://yui.yahooapis.com/2.9.0/build/calendar/calendar-min.js')
+    //
+       Optional dependency source file to decode contents of yuiConfig markup attribute
+    script(src='http://yui.yahooapis.com/2.9.0/build/json/json-min.js')
+    //
+       TreeView source file 
+    script(src='http://yui.yahooapis.com/2.9.0/build/treeview/treeview-min.js')
+
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
+    - for (var i in demo.styles)
+      link(href=demo.styles[i], rel='stylesheet')
+
+    script(type='text/javascript').
+      var id;
+      var parser;
+      id = function (i) {
+          return document.getElementById(i);
+      };
+
+      function init() {
+          id('show_tree').onclick = function () {
+              id('tab_tree').className = 'active';
+              id('tab_syntax').className = '';
+          };
+
+          id('show_syntax').onclick = function () {
+              id('tab_tree').className = '';
+              id('tab_syntax').className = 'active';
+          };
+          id('show_settings').onclick = function () {
+              id('tab_code').className = '';
+              id('tab_settings').className = 'active';
+          };
+          id('show_code').onclick = function () {
+              id('tab_code').className = 'active';
+              id('tab_settings').className = '';
+          };
+          id('all_mode').onclick = function () {
+              id('add_mode').checked = false;
+              id('neg_mode').checked = false;
+          };
+          id('add_mode').onclick = function () {
+              id('all_mode').checked = false;
+          };
+          id('neg_mode').onclick = function () {
+              id('all_mode').checked = false;
+          };
+
+          id('tab_code').className = '';
+          id('tab_settings').className = 'active';
+          window.grammar.setValue(grammarSource);
+
+          id('tab_code').className = 'active';
+          id('tab_settings').className = '';
+          window.editor.setValue(testParseFileSource);
+
+          initParser();
+          parse();
+      }
+      var isInitOk;
+      function initParser() {
+          parser = new akra.util.EffectParser();
+          var time;
+          var grammar = window.grammar.getValue();
+          var parseType = id('lr').checked ? 1/*akra.parser.EParserType.k_LR1*/ : 2/*akra.parser.EParserType.k_LALR*/;
+          var parseMode = 0;
+
+          parseMode |= id('add_mode').checked ? 0x0004/*akra.parser.EParseMode.k_Add*/ : 0;
+          parseMode |= id('neg_mode').checked ? 0x0002/*akra.parser.EParseMode.k_Negate*/ : 0;
+          parseMode |= id('all_mode').checked ? 0x0001/*akra.parser.EParseMode.k_AllNode*/ : 0;
+          parseMode |= id('opt_mode').checked ? 0x0008/*akra.parser.EParseMode.k_Optimize*/ : 0;
+
+          time = new Date().getTime();
+          isInitOk = parser.init(grammar, parseMode, parseType);
+          time = new Date().getTime() - time;
+          if (isInitOk) {
+              id('grammar_info').innerHTML = "Time of last initialization: <span style='color: #0000ff; font-style: italic;'>" +
+                                             time + "ms</span>";
+          }
+          else {
+              id('grammar_info').innerHTML = "<span style='color: #ff0000;'> Error! Could not initialize grammar!</span>";
+          }
+      }
+      function treeInit() {
+          var tree = new YAHOO.widget.TreeView("treeview", [parser.getSyntaxTree().toTreeView()]);
+          id('collapse').onclick = function () {
+              tree.collapseAll();
+          };
+          id('expand').onclick = function () {
+              tree.expandAll();
+          };
+          tree.render();
+      }
+      function parse() {
+          if (isInitOk) {
+              var source = window.editor.getValue();
+              var time;
+              var n = 0;
+              time = new Date().getTime();
+              var isParseOk = parser.parse(source);
+              time = new Date().getTime() - time;
+              if (isParseOk === 1/*akra.parser.EParserCode.k_Ok*/) {
+                  id('code_info').innerHTML = "Time of parse: <span style='color: #0000ff; font-style: italic;'>" + time +
+                                              "ms</span>";
+                  document.getElementById("syntaxtree").innerHTML = "<pre>" +
+                                                                    (parser.getSyntaxTree().toHTMLString()) +
+                                                                    "</pre>";
+                  treeInit();
+              }
+              else {
+                  id('code_info').innerHTML = "<span style='color: #ff0000;'> Error! Syntax error!<br /> In line: " +
+                                              (isParseOk.line + 1) + "<br /> In column: " + isParseOk.iStart +
+                                              "<br /> Terminal: '" + isParseOk.sValue + "'</span>";
+              }
+          }
+      }
+    style(type='text/css').
+      .block {
+            display: inline;
+            float: left;
+            margin-left: 20px;
+        }
+
+      .block1 {
+          margin: auto;
+          width: 800px;
+          float: left;
+          margin-right: 5px;
+          height: 600px;
+          display: block;
+          height: 1000px;
+      }
+
+      .block2 {
+          display: block;
+          float: left;
+          margin-right: 5px;
+          height: 1000px;
+      }
+
+      .block3 {
+          display: block;
+          float: left;
+          width: 600px;
+          margin-right: 5px;
+          height: 1000px;
+      }
+
+      .CodeMirror {
+          border: 2px inset #dee;
+          /*heigth: 500px;*/
+      }
+
+      .CodeMirror-scroll {
+          height: 700px;
+          overflow: auto;
+      }
+
+      .title {
+          padding-left: 20px;
+      }
+
+      body {
+          font-family: Droid Sans, Arial, sans-serif;
+          line-height: 1.5;
+          margin: 3em auto;
+          padding: 0 1em;
+      }
+
+      h1 {
+          letter-spacing: -3px;
+          font-size: 3.23em;
+          font-weight: bold;
+          margin: 0;
+      }
+
+      h2 {
+          font-size: 1.23em;
+          font-weight: bold;
+          margin: 0 0;
+          letter-spacing: -1px;
+      }
+
+      h3 {
+          font-size: 1em;
+          font-weight: bold;
+          margin: .4em 0;
+      }
+
+      .tabs {
+          position: relative;
+          display: block;
+          /*margin-top: 30px;*/
+          height: 1px;
+      }
+
+          .tabs ul, .tabs li {
+              list-style-type: none;
+              margin: 0;
+              /*line-height: 0px;*/
+          }
+
+          .tabs h3 {
+              float: left;
+              position: relative;
+              margin: 0 6px 0 0;
+              border: 1px solid #bbb;
+              background-color: #eee;
+              border-bottom: none;
+              cursor: pointer;
+              z-index: 0;
+              -moz-border-radius-topleft: 6px;
+              -webkit-border-top-left-radius: 6px;
+              -ms-border-top-left-radius: 6px;
+              -o-border-top-left-radius: 6px;
+              border-top-left-radius: 6px;
+              -moz-border-radius-topright: 6px;
+              -webkit-border-top-right-radius: 6px;
+              -ms-border-top-right-radius: 6px;
+              -o-border-top-right-radius: 6px;
+              border-top-right-radius: 6px;
+          }
+
+          .tabs .active h3 {
+              background-color: #fff;
+              border-bottom-color: #fff;
+              z-index: 2;
+          }
+
+          .tabs h3 a {
+              padding: 0 10px;
+              line-height: 29px;
+              font-size: 15px;
+              font-weight: normal;
+          }
+
+          .tabs a {
+              color: black;
+              text-decoration: none;
+          }
+
+              .tabs a:visited {
+                  color: black;
+              }
+
+          .tabs .tab {
+              position: absolute;
+              display: none;
+              left: 0;
+              top: 29px;
+              right: 0;
+              border-top: 1px solid #bbb;
+              z-index: 1;
+              padding: 25px 5px 50px 5px;
+          }
+
+          .tabs .active .tab {
+              display: block;
+          }
+
+      .tab .area {
+          height: 700px;
+          overflow: auto;
+          border: 2px inset #dee;
+      }
+
+      .parse {
+          height: 100px;
+          width: 100px;
+          font-size: 20px;
+          font-weight: normal;
+          margin: 300px auto;
+      }
+  body.yui-skin-sam(onload='init();')
+    #parser
+      #codeTab.block1
+        .tabs
+          ul
+            li#tab_code.active
+              h3
+                a#show_code Code
+              .tab
+                h2.title Effect file code
+                textarea#code(autofocus='autofocus')
+                p#code_info(style='font-size: 13px; font-style: italic;')
+            li#tab_settings
+              h3
+                a#show_settings(autofocus='true') Settings
+              .tab
+                h2.title Grammar settings
+                #settings
+                  textarea#grammar(autofocus='true')
+                p#grammar_info(style='font-size: 13px; font-style: italic;')
+                .block
+                  p(style='font-size: 13px;')
+                    | Parser type:
+                    span(style='font-size: 13px; font-style: italic;')
+                      br
+                      input#lalr(type='radio', name='parser_type', checked='true')
+                      | LALR
+                      br
+                      input#lr(type='radio', name='parser_type')
+                      | LR
+                .block
+                  p(style='font-size: 13px;')
+                    | Parser flags:
+                    span(style='font-style: italic;')
+                      br
+                      input#add_mode(type='checkbox', name='parser_flag', checked='true')
+                      | Only marked with'--AN' created
+                      br
+                      input#neg_mode(type='checkbox', name='parser_flag', checked='true')
+                      | Not marked with '--NN' created
+                      br
+                      input#all_mode(type='checkbox', name='parser_flag')
+                      | All created
+                      br
+                      input#opt_mode(type='checkbox', name='parser_flag', checked='true')
+                      | Created nodes if it has more than one child
+                .block
+                  p
+                    input#init(type='button', style='height: 100px; font-size: 20px; width: 100px; margin-left: 100px;', value='Init', onclick='initParser();')
+      #buttons.block2
+        button.parse(onclick='parse();') Parse
+      #output.block3
+        .tabs
+          ul
+            li#tab_syntax.active
+              h3
+                a#show_syntax Syntax
+              .tab
+                h2.title Syntax tree like JavaScript
+                #syntaxtree.area
+            li#tab_tree
+              h3
+                a#show_tree Tree
+              .tab
+                h2.title Syntax tree like YAHOO TreeView
+                span(style='float: right; margin-top: 10px;')
+                  input#expand(type='button', value='Expand All')
+                  input#collapse(type='button', value='Collapse All')
+                #treeview(style='margin-top: 10px; margin-left: 20px;')
+    script(type='text/javascript').
+      window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-csrc"
+      });
+      window.grammar = CodeMirror.fromTextArea(document.getElementById("grammar"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-csrc"
+      });

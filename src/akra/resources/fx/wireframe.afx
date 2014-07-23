@@ -1,0 +1,66 @@
+provide akra.system;
+
+include "common.afx";
+
+bool overlay: WIREFRAME_OVERLAY;
+
+struct VS_IN
+{
+	float barycentric: BARYCENTRIC;
+};
+
+struct VS_OUT
+{
+    float3 edgeTest: EDGE_TEST;
+};
+
+VS_OUT vs_wireframe(VS_IN IN)
+{
+	VS_OUT Out;
+
+    if(IN.barycentric == 0.)
+    {
+        Out.edgeTest = float3(1.,0.,0.);
+    }
+    else if(IN.barycentric == 1.)
+    {
+        Out.edgeTest = float3(0.,1.,0.);
+    }
+    else 
+    {
+        Out.edgeTest = float3(0.,0.,1.);
+    }
+
+    return Out;
+}
+
+shared PixelData pixelData;
+
+void fs_wireframe(VS_OUT IN){
+	float3 vBC = IN.edgeTest;
+    float3 d = fwidth(vBC);
+    float3 a3 = smoothstep(float3(0.0), float3(d * 0.95), vBC);
+    float edgeFactor = min(min(a3.x, a3.y), a3.z);
+
+    float4 color = float4(mix(float3(85./255.), float3(0.), edgeFactor), 1.);
+
+    if (!overlay) {
+        if (edgeFactor == 1.) {
+            discard;
+        }
+        else {
+            color = float4(1., 1., 1., 1.);
+        }
+    }
+    else {
+        pixelData.material.emissive = color;
+    }
+}
+
+technique wireframe
+{
+    pass {
+        VertexShader = compile vs_wireframe();
+        PixelShader = compile fs_wireframe();
+    }
+}

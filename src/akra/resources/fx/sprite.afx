@@ -1,0 +1,75 @@
+provide akra.system;
+
+include "common.afx";
+
+texture tex0:SPRITE_TEXTURE;
+
+sampler sampler_sprite:S_SPRITE  = sampler_state
+{
+    Texture = <tex0>;
+};
+
+struct VS_IN
+{
+    float3 position_offset : POSITION_OFFSET;
+    float3 texture_position : TEXTURE_POSITION;
+};
+
+struct VS_OUT
+{
+    float4 position : POSITION;
+    float2 texture_position : TEXTURE_POSITION;
+};
+
+struct base_material{
+    float4 emissive:EMISSIVE;
+};
+
+shared PixelData pixelData;
+
+float4x4 model_mat : MODEL_MATRIX;
+float4x4 view_mat : VIEW_MATRIX;
+float4x4 proj_mat : PROJ_MATRIX;
+
+float3x3 rotationMatrix(float3 angles)
+{
+
+    float3x3 rotX = float3x3(1.,0.,0.,
+                    0.,cos(angles.x),sin(angles.x),
+                    0.,-sin(angles.x),cos(angles.x));
+
+    float3x3 rotY = float3x3(cos(angles.y),0.,-sin(angles.y),
+                        0.,1.,0.,
+                        sin(angles.y),0.,cos(angles.y));
+
+    float3x3 rotZ = float3x3(cos(angles.z),sin(angles.z),0.,
+                     -sin(angles.z),cos(angles.z),0.,
+                        0.,0.,1.);
+
+    return rotZ*rotY*rotX;
+}
+
+VS_OUT vs_base_sprite(VS_IN IN) 
+{
+    VS_OUT Out;
+    Out.texture_position = IN.texture_position.xy;
+
+    float4 pos = view_mat * model_mat * float4(0., 0., 0. ,1.) + float4(IN.position_offset, 0.);
+    Out.position = proj_mat * pos;
+
+    return Out;
+}
+
+void fs_base_sprite(VS_OUT IN): COLOR 
+{
+    pixelData.material.emissive = float4(IN.texture_position, 0., 1.) + tex2D(sampler_sprite, IN.texture_position);
+}
+
+technique base_sprite
+{
+    pass p0
+    {
+        VertexShader = compile vs_base_sprite();
+        PixelShader = compile fs_base_sprite();
+    }
+}

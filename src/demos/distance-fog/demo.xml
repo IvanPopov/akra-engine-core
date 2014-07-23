@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Distance Fog Demo" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Distance fog demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="distance-fog.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/distance-fog/distance-fog.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+      
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>False</Archive>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Folder Path="data"/>
+        <ResourceFile Path="data/models/teapot.DAE" Name="TEAPOT.DAE"/>
+        <!--<ResourceFile Path="data/models/cube.DAE" Name="CUBE.DAE"/>-->
+        <ResourceFile Path="data/models/Sphere.DAE" Name="SPHERE.DAE"/>
+        <ResourceFile Path="../cube.DAE" Name="CUBE.DAE"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

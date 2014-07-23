@@ -1,0 +1,724 @@
+{
+	"asset": {
+		"unit": {
+			"name": "meter",
+			"meter": 1
+		},
+		"upAxis": "Y_UP",
+		"title": null,
+		"subject": null,
+		"created": "Thu May 29 2014 21:38:01 GMT+0400 (Московское время (зима))",
+		"modified": "Thu May 29 2014 21:38:01 GMT+0400 (Московское время (зима))",
+		"contributor": {
+			"author": null,
+			"authoringTool": "Akra Engine exporter;Version 0.0.1;Browser Chrome, 35.0.1916.114 (Windows)",
+			"comments": null,
+			"copyright": null,
+			"sourceData": null
+		},
+		"keywords": null
+	},
+	"library": [
+		{
+			"type": 7,
+			"name": "disc",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.20392157137393951,
+				0.20392157137393951,
+				0.20392157137393951,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.24263311922550201,
+			"guid": 1136
+		},
+		{
+			"type": 7,
+			"name": "tire",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.03529411926865578,
+				0.03529411926865578,
+				0.03529411926865578,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.4190935790538788,
+			"guid": 1137
+		},
+		{
+			"type": 7,
+			"name": "Rim_metal",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.23529411852359772,
+				0.23529411852359772,
+				0.23529411852359772,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.5183525681495667,
+			"guid": 1143
+		},
+		{
+			"type": 7,
+			"name": "engine",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.6000000238418579,
+			"guid": 1257
+		},
+		{
+			"type": 7,
+			"name": "plastic",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.18431372940540314,
+				0.18431372940540314,
+				0.18431372940540314,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.17646044492721558,
+			"guid": 1310
+		},
+		{
+			"type": 7,
+			"name": "glass_wind",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.8705882430076599,
+				0.8705882430076599,
+				0.8705882430076599,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 0.8271583914756775,
+			"shininess": 0.9200000166893005,
+			"guid": 1311
+		},
+		{
+			"type": 7,
+			"name": "plastic_1",
+			"diffuse": [
+				0.13333329558372498,
+				0.13333329558372498,
+				0.13333329558372498,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1424
+		},
+		{
+			"type": 7,
+			"name": "chrome",
+			"diffuse": [
+				0.3176470994949341,
+				0.3294118046760559,
+				0.3294118046760559,
+				1
+			],
+			"specular": [
+				1,
+				0.9882352948188782,
+				0.9882352948188782,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.6065828204154968,
+			"guid": 1430
+		},
+		{
+			"type": 7,
+			"name": "interior",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.06666667014360428,
+				0.06666667014360428,
+				0.06666667014360428,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.4190935790538788,
+			"guid": 1431
+		},
+		{
+			"type": 7,
+			"name": "carbonfiber",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.4080647826194763,
+			"guid": 1432
+		},
+		{
+			"type": 7,
+			"name": "HL_glass",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.6274510025978088,
+				0.6274510025978088,
+				0.6274510025978088,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 0.7389281392097473,
+			"shininess": 1,
+			"guid": 1433
+		},
+		{
+			"type": 7,
+			"name": "interior_1",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 4.76837158203125e-7,
+			"guid": 1434
+		},
+		{
+			"type": 7,
+			"name": "lights",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.5734964609146118,
+			"guid": 1440
+		},
+		{
+			"type": 7,
+			"name": "body_paint",
+			"diffuse": [
+				1,
+				1,
+				1,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.7278993725776672,
+			"guid": 1441
+		},
+		{
+			"type": 7,
+			"name": "plastic_2",
+			"diffuse": [
+				0.2039216011762619,
+				0.2039216011762619,
+				0.2039216011762619,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1642
+		},
+		{
+			"type": 7,
+			"name": "grille1",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.20392157137393951,
+				0.20392157137393951,
+				0.20392157137393951,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.23160433769226074,
+			"guid": 1643
+		},
+		{
+			"type": 7,
+			"name": "Material__276",
+			"diffuse": [
+				0.3764705955982208,
+				0.3764705955982208,
+				0.3764705955982208,
+				1
+			],
+			"specular": [
+				0.9803921580314636,
+				0.9803921580314636,
+				0.9803921580314636,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.8999999761581421,
+			"guid": 1649
+		},
+		{
+			"type": 7,
+			"name": "undercarriage",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0,
+			"guid": 1650
+		},
+		{
+			"type": 7,
+			"name": "chrome_2",
+			"diffuse": [
+				0.6549019813537598,
+				0.6549019813537598,
+				0.6549019813537598,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0.16470588743686676,
+				0.16470588743686676,
+				0.16470588743686676,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1684
+		},
+		{
+			"type": 7,
+			"name": "chrome_1",
+			"diffuse": [
+				0.41568630933761597,
+				0.41568630933761597,
+				0.41568630933761597,
+				1
+			],
+			"specular": [
+				0.8999999761581421,
+				0.8999999761581421,
+				0.8999999761581421,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.9899998903274536,
+			"guid": 1724
+		},
+		{
+			"type": 7,
+			"name": "_4_-_Default",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.4313725531101227,
+				0.4313725531101227,
+				0.4313725531101227,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 0.8823022842407227,
+			"shininess": 1,
+			"guid": 1749
+		},
+		{
+			"type": 7,
+			"name": "gauges",
+			"diffuse": [
+				0.9411764740943909,
+				1,
+				0.9882354140281677,
+				1
+			],
+			"specular": [
+				0.6000000238418579,
+				1,
+				0.9100000262260437,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1763
+		},
+		{
+			"type": 7,
+			"name": "Material__270",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				1,
+				1,
+				1,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1882
+		},
+		{
+			"type": 7,
+			"name": "Material__269",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0.9882352948188782,
+				0.9725490212440491,
+				0.9019607901573181,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1883
+		},
+		{
+			"type": 7,
+			"name": "Material__275",
+			"diffuse": [
+				1,
+				0.4117647111415863,
+				0.4117647111415863,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				1,
+				0.3137255012989044,
+				0.3137255012989044,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1913
+		},
+		{
+			"type": 7,
+			"name": "Material__274",
+			"diffuse": [
+				1,
+				0.3803921639919281,
+				0.3803921639919281,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				1,
+				0.3137255012989044,
+				0.3137255012989044,
+				1
+			],
+			"transparency": 1,
+			"shininess": 1,
+			"guid": 1919
+		},
+		{
+			"type": 7,
+			"name": "sls_interior",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				1,
+				1,
+				1,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.8600000143051147,
+			"guid": 2042
+		},
+		{
+			"type": 7,
+			"name": "bonnet",
+			"diffuse": [
+				0,
+				0,
+				0,
+				1
+			],
+			"specular": [
+				0.14509804546833038,
+				0.14509804546833038,
+				0.14509804546833038,
+				1
+			],
+			"emissive": [
+				0,
+				0,
+				0,
+				1
+			],
+			"transparency": 1,
+			"shininess": 0.6176115870475769,
+			"guid": 2071
+		}
+	],
+	"scenes": null
+}

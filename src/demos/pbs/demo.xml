@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="PBS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Physically based shading demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="pbs.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/pbs/pbs.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+      
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      <Module Name="addon-compatibility" />
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      <Data>
+        <Folder Path="data"/>
+        <ResourceFile Path="data/models/teapot.DAE" Name="TEAPOT.DAE"/>
+        <ResourceFile Path="data/models/Sphere.DAE" Name="SPHERE.DAE"/>
+
+        <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
+        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
+        <ResourceFile Path="data/textures/skyboxes/rome-church.dds" Name="SKYBOX_CHURCH"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>
