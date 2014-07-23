@@ -191,7 +191,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 
-		var pViewport: ILPPViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -200,7 +200,7 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		//(<render.LPPViewport>pViewport).setFXAA(true);
+		(<render.LPPViewport>pViewport).setFXAA(true);
 		var counter = 0;
 
 		var pSkyboxTexturesKeys = [
@@ -218,6 +218,8 @@ module akra {
 		};
 
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
+
+		(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
 
 		return pViewport;
 	}
