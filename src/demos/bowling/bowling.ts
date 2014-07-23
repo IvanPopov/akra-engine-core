@@ -58,8 +58,8 @@ module akra {
 			rotation: new math.Vec2(0., 0.)
 		},
 		target: {
-			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.)
+			orbitRadius: 7.2,
+			rotation: new math.Vec2(2.6, 0.3)
 		}
 	}
 	export var pCameraFPSParams = {

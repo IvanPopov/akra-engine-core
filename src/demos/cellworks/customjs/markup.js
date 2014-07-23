@@ -18,11 +18,11 @@ var setMarkup = function() {
 	$('#left').append($('<h2>Some phone brand</h2>')).append($('<p></p>').css({paddingRight:20,textAlign:'justify'}).html('Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil incidunt beatae id nesciunt tempora atque ipsum culpa modi ullam, hic tempore vel alias provident unde odit aliquam, aspernatur praesentium deserunt.</div><div>Eaque voluptates beatae quam voluptatum ullam soluta dicta pariatur suscipit repellendus esse ipsum, earum odio tenetur, optio officia itaque id perferendis neque nam sunt laboriosam? Tempore, debitis soluta ex laudantium.</div><div>Id vero dicta tempore esse iste, earum. Non iure tempora, facere illum sunt! Unde reiciendis minus nostrum hic est soluta maiores aliquid, temporibus dicta doloremque architecto facere, dolorum dolore cum.</div><div>Iste ipsam eveniet quaerat rem ea dolore asperiores est inventore corporis illo sit nam doloremque, aperiam! Doloribus aspernatur beatae perferendis, repellendus assumenda saepe explicabo. Perferendis in, cupiditate delectus accusantium explicabo.'));
 	$('#left').append($('<h4>Specs:</h4>').css({paddingLeft:20})).append($('<ul></ul>').css({paddingLeft:40})
 		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'}))
-		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'}))
-		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'}))
-		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'}))
-		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'}))
-		.append($('<li><small>prop 1</small></li>').css({listStyle:'none'})));
+		.append($('<li><small>prop 2</small></li>').css({listStyle:'none'}))
+		.append($('<li><small>prop 3</small></li>').css({listStyle:'none'}))
+		.append($('<li><small>prop 4</small></li>').css({listStyle:'none'}))
+		.append($('<li><small>prop 5</small></li>').css({listStyle:'none'}))
+		.append($('<li><small>prop 6</small></li>').css({listStyle:'none'})));
 	$('#copyright').css({display:'inline-block',position:'absolute',bottom:30,right:20,width:200,height:70,fontSize:'16px'});
 	$('#logo').css({width:196,height:67,background:'url("http://dev.odserve.org/demos/img/showcase/logo.png") 0 0 no-repeat',
 		'-webkit-filter': 'drop-shadow(0px 0px 1px rgba(0,0,0,0.8))',
