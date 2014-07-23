@@ -209,22 +209,12 @@ module akra {
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			
-			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
 
-			var sPrefix: string = "SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase();
-			var pImages: string[] = [
-				sPrefix + "_POS_X",
-				sPrefix + "_NEG_X",
-				sPrefix + "_POS_Y",
-				sPrefix + "_NEG_Y",
-				sPrefix + "_POS_Z",
-				sPrefix + "_NEG_Z"
-			];
-
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFlags(ETextureFlags.AUTOMIPMAP);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
+			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
+			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		};
 
 		(<ILPPViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);

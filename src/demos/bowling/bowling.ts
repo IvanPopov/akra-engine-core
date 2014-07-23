@@ -58,8 +58,8 @@ module akra {
 			rotation: new math.Vec2(0., 0.)
 		},
 		target: {
-			orbitRadius: 4.2,
-			rotation: new math.Vec2(0., 0.)
+			orbitRadius: 7.2,
+			rotation: new math.Vec2(2.6, 0.3)
 		}
 	}
 	export var pCameraFPSParams = {
@@ -210,12 +210,7 @@ module akra {
 
 		var pSkyboxTexturesKeys = [
 			'desert',
-			'nature',
-			'colosseum',
-			'beach',
-			'plains',
-			'church',
-			'basilica',
+			'sunset',
 		];
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
@@ -612,7 +607,7 @@ module akra {
 		];
 		pModelsFiles = {
 			bowling: {
-				path: modelsPath + "/bowling/bowling_scene.dae",
+				path: "BOWLING.DAE",
 				init: function (model) {
 					model.explore(function (node) {
 						if (scene.SceneModel.isModel(node)) {
