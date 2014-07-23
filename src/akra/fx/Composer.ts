@@ -73,6 +73,7 @@ module akra.fx {
 		// k_InputSampler,
 		k_InputTextureSize,
 		k_InputTextureRatio,
+		k_EngineTime,
 
 		k_useNormal,
 		k_isDebug,
@@ -815,6 +816,8 @@ module akra.fx {
 				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureSize] = instructions.VariableDeclInstruction._getIndex("INPUT_TEXTURE_SIZE");
 				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureRatio] = instructions.VariableDeclInstruction._getIndex("INPUT_TEXTURE_RATIO");
 
+				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_EngineTime] = instructions.VariableDeclInstruction._getIndex("ENGINE_TIME");
+
 				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_useNormal] = instructions.VariableDeclInstruction._getIndex("useNormal");
 				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isDebug] = instructions.VariableDeclInstruction._getIndex("isDebug");
 				this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isRealNormal] = instructions.VariableDeclInstruction._getIndex("isRealNormal");
@@ -893,6 +896,8 @@ module akra.fx {
 				Vec2.temp(this._pCurrentViewport.getActualWidth() / pLastTexture.getWidth(), this._pCurrentViewport.getActualHeight() / pLastTexture.getHeight());
 
 			}
+
+			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_EngineTime]] = this.getEngine().getTime();
 
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_useNormal]] = this.bUseNormalMap;
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isDebug]] = this.bIsDebug;
