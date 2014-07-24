@@ -429,6 +429,39 @@
     <Content Include="demos\pbs\physically_based_cheatsheet1.png" />
     <Content Include="demos\pbs\physically_based_cheatsheet2.png" />
     <Content Include="demos\performance\demo.xml" />
+    <Content Include="demos\shadowroom\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\shadowroom\data\models\mebel\table1\Wood 2000 x 2000 px 2106.JPG" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\laricina.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\w2.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\Wood 4252 x 1890 px 050313.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\wood_med12.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood02_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood01_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood03_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood04_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c00.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c01.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c02.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c03.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c04.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c05.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_nx.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_ny.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_nz.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_px.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_py.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_pz.jpg" />
+    <Content Include="demos\shadowroom\demo.xml" />
+    <Content Include="demos\shadowroom\preview.jpg" />
     <Content Include="demos\WoodSoldier\WoodSoldier.png" />
   </ItemGroup>
   <ItemGroup>
@@ -781,6 +814,20 @@
     <Content Include="demos\bowling\data\models\prop04\prop04.dae" />
     <Content Include="demos\bowling\data\models\rock\rock-1-low-p.DAE" />
     <Content Include="demos\bowling\data\models\Sphere.DAE" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.blend" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.blend1" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.dae" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf1\130112_shelf.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf2\Shelf Modus Factory N140312.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf3\Rack N070112.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf4\Shelf N021112.3ds" />
+    <Content Include="demos\shadowroom\data\models\mebel\table1\Table coffee N060913.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\Table N050913.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\Table N080713.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table4\Table N020413.3DS" />
+    <Content Include="demos\shadowroom\data\models\room\room.dae" />
+    <Content Include="demos\shadowroom\data\models\room\room_bak.dae" />
+    <Content Include="demos\shadowroom\data\models\Sphere.DAE" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -829,6 +876,7 @@
     <TypeScriptCompile Include="demos\miner\miner.ts" />
     <TypeScriptCompile Include="demos\model-viewer\model-viewer.ts" />
     <TypeScriptCompile Include="demos\pbs\pbs.ts" />
+    <TypeScriptCompile Include="demos\shadowroom\shadowroom.ts" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
