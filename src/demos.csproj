@@ -92,6 +92,23 @@
     <Content Include="demos\bowling\data\textures\skyboxes\saint-peters-basilica.dds" />
     <Content Include="demos\bowling\demo.xml" />
     <Content Include="demos\bowling\preview.jpg" />
+    <Content Include="demos\cellworks\customjs\jquery-1.11.0.min.js" />
+    <Content Include="demos\cellworks\customjs\markup.js" />
+    <Content Include="demos\cellworks\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\aniso.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\home.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\iPhone5_screen.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\iPhone5_text.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\speakergrill_b.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\speakergrill_c.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_nx.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_ny.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_nz.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_px.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_py.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_pz.jpg" />
+    <Content Include="demos\cellworks\demo.xml" />
+    <Content Include="demos\cellworks\preview.jpg" />
     <Content Include="demos\css\metro-bootstrap.css" />
     <Content Include="demos\distance-fog\dat.gui\dat.gui.min.js" />
     <Content Include="demos\distance-fog\data\effects\Measured BaseColor values Unreal.txt" />
@@ -828,6 +845,9 @@
     <Content Include="demos\shadowroom\data\models\room\room.dae" />
     <Content Include="demos\shadowroom\data\models\room\room_bak.dae" />
     <Content Include="demos\shadowroom\data\models\Sphere.DAE" />
+    <Content Include="demos\cellworks\data\models\iphone5.blend" />
+    <Content Include="demos\cellworks\data\models\iphone5\iphone5.dae" />
+    <Content Include="demos\cellworks\data\models\Sphere.DAE" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -871,6 +891,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="demos\airborn\airborn.ts" />
     <TypeScriptCompile Include="demos\bowling\bowling.ts" />
+    <TypeScriptCompile Include="demos\cellworks\cellworks.ts" />
     <TypeScriptCompile Include="demos\distance-fog\distance-fog.ts" />
     <TypeScriptCompile Include="demos\mercedes\mercedes.ts" />
     <TypeScriptCompile Include="demos\miner\miner.ts" />

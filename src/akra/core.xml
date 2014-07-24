@@ -103,6 +103,7 @@
           <ResourceFile Path="resources/fx/fxaa.afx"/>
           <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/filmgrain.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx">
@@ -150,6 +151,7 @@
           <ResourceFile Path="resources/fx/fxaa.afx"/>
           <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/filmgrain.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx"/>

@@ -8,16 +8,15 @@
 /// <reference path="../idl/3d-party/dat.gui.d.ts" />
 
 declare var AE_RESOURCES: akra.IDep;
-declare var AE_MODELS: any;
+declare var AE_SOUND_ENGINE: any;
 
 module akra {
 
 	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
-	export var modelsPath = path.parse((AE_MODELS.content).split(';')[0]).getDirName() + '/';
-
 	var pProgress = new addons.Progress(document.getElementById("progress"));
+	var sEngineSound: string = AE_SOUND_ENGINE.content;
 
 	var pRenderOpts: IRendererOptions = {
 		premultipliedAlpha: false,
@@ -204,7 +203,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 
-		var pViewport: ILPPViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -256,22 +255,12 @@ module akra {
 		pSkyboxTextures = {};
 		for (var i = 0; i < pSkyboxTexturesKeys.length; i++) {
 			
-			pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
+			var pTexture: ITexture = pSkyboxTextures[pSkyboxTexturesKeys[i]] = pRmgr.createTexture(".sky-box-texture-" + pSkyboxTexturesKeys[i]);
 
-			var sPrefix: string = "SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase();
-			var pImages: string[] = [
-				sPrefix + "_POS_X",
-				sPrefix + "_NEG_X",
-				sPrefix + "_POS_Y",
-				sPrefix + "_NEG_Y",
-				sPrefix + "_POS_Z",
-				sPrefix + "_NEG_Z"
-			];
-
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFlags(ETextureFlags.AUTOMIPMAP);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).loadImages(pImages);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			(<ITexture>(pSkyboxTextures[pSkyboxTexturesKeys[i]])).setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+			pTexture.setFlags(ETextureFlags.AUTOMIPMAP);
+			pTexture.loadResource("SKYBOX_" + pSkyboxTexturesKeys[i].toUpperCase());
+			pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		};
 
 		
@@ -325,6 +314,32 @@ module akra {
 			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
 		});
 
+		pViewport.setAntialiasing(true);
+		(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
+
+
+		pGUI.add({filmgrain: true}, 'filmgrain').name('film grain').onChange((bEnabled) => {
+			if (bEnabled) {
+				(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
+			}
+			else {
+				(<IViewport3D>pViewport).getEffect().delComponent("akra.system.filmgrain");
+			}
+		});
+
+		var canvas: HTMLCanvasElement = (<webgl.WebGLCanvas>pCanvas).getElement();
+		// canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="sepia(1)";
+		
+		pGUI.add({sepia: false}, 'sepia').name('sepia').onChange((bEnabled) => {
+			
+			if (bEnabled) {
+				canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="sepia(1)";
+			}
+			else {
+				canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="none";
+			}
+		});
+
 		return pViewport;
 	}
 
@@ -351,16 +366,7 @@ module akra {
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 		pOmniLight.setPosition(lightPos1);
-		// pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-		// 	(model) => {
-		// 		model.explore(function (node) {
-		// 			if (scene.SceneModel.isModel(node)) {
-		// 				node.getMesh().getSubset(0).getMaterial().diffuse = new Color(1.0, 0.6, 0.3);
-		// 				node.getMesh().getSubset(0).getMaterial().emissive = new Color(1.0, 0.6, 0.3);
-		// 			}
-		// 		})
-		// 		}, "test-omni-0-model", pOmniLight).scale(0.15);
-		// pOmniLightSphere.setPosition(0., 0., 0.);
+
 
 		pOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 
@@ -373,16 +379,7 @@ module akra {
 		pOmniLight.setShadowCaster(false);
 		pOmniLight.setInheritance(ENodeInheritance.ALL);
 		pOmniLight.setPosition(lightPos2);
-		// pOmniLightSphere = loadModel(modelsPath + "/Sphere.DAE",
-		// 	(model) => {
-		// 		model.explore(function (node) {
-		// 			if (scene.SceneModel.isModel(node)) {
-		// 				node.getMesh().getSubset(0).getMaterial().diffuse = new Color(0.3, 0.6, 1.0);
-		// 				node.getMesh().getSubset(0).getMaterial().emissive = new Color(0.3, 0.6, 1.0);
-		// 			}
-		// 		})
-		// 		}, "test-omni-1-model", pOmniLight).scale(0.15);
-		// pOmniLightSphere.setPosition(0., 0., 0.);
+
 	}
 
 	function createSky(): void {
@@ -516,15 +513,10 @@ module akra {
 
 		var pStatsDiv = createStatsDIV();
 
-		//pCanvas.postUpdate.connect((pCanvas: ICanvas3d) => {
-		//	pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
-		//});
-
 		window.onresize = () => {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		//createSky();
 
 		// CREATE ENVIRONMENT
 		createLighting();
@@ -572,9 +564,18 @@ module akra {
 						}
 					});
 					
+					
+
+					var audio = new Audio(sEngineSound);
+					audio.loop = true;
+					audio.play();
+
 					pScene.beforeUpdate.connect(function() {
+						audio.volume = math.clamp(15 - pCamera.getWorldPosition().length(), 0., 10.) / 50.;
+						console.log(audio.volume);
 						funAnimation();
-						});
+					});
+
 				},
 			},
 		};

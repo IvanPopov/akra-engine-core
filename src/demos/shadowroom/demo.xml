@@ -38,19 +38,7 @@
         <Folder Path="data/models/room"/>
         <ResourceFile Path="data/models/room/room.dae" Name="ROOM.DAE"/>
 
-        <ResourceFile Path="data/textures/skyboxes/white_px.jpg" Name="SKYBOX_WHITE_POS_X"/>
-        <ResourceFile Path="data/textures/skyboxes/white_nx.jpg" Name="SKYBOX_WHITE_NEG_X"/>
-        <ResourceFile Path="data/textures/skyboxes/white_py.jpg" Name="SKYBOX_WHITE_POS_Y"/>
-        <ResourceFile Path="data/textures/skyboxes/white_ny.jpg" Name="SKYBOX_WHITE_NEG_Y"/>
-        <ResourceFile Path="data/textures/skyboxes/white_pz.jpg" Name="SKYBOX_WHITE_POS_Z"/>
-        <ResourceFile Path="data/textures/skyboxes/white_nz.jpg" Name="SKYBOX_WHITE_NEG_Z"/>
-
-        <ResourceFile Path="data/textures/skyboxes/cube_c00.jpg" Name="SKYBOX_CUBE_POS_X"/>
-        <ResourceFile Path="data/textures/skyboxes/cube_c01.jpg" Name="SKYBOX_CUBE_NEG_X"/>
-        <ResourceFile Path="data/textures/skyboxes/cube_c02.jpg" Name="SKYBOX_CUBE_POS_Y"/>
-        <ResourceFile Path="data/textures/skyboxes/cube_c03.jpg" Name="SKYBOX_CUBE_NEG_Y"/>
-        <ResourceFile Path="data/textures/skyboxes/cube_c04.jpg" Name="SKYBOX_CUBE_POS_Z"/>
-        <ResourceFile Path="data/textures/skyboxes/cube_c05.jpg" Name="SKYBOX_CUBE_NEG_Z"/>
+        <ResourceFile Path="data/textures/skyboxes/cube.dds" Name="SKYBOX_CUBE"/>
       </Data>
     </Resource>
   </PropertyGroup>
