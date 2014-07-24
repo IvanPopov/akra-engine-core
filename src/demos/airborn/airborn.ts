@@ -203,7 +203,7 @@ module akra {
 
 	function createViewport(): IViewport3D {
 
-		var pViewport: ILPPViewport = new render.LPPViewport(pCamera, 0., 0., 1., 1., 11);
+		var pViewport: ILPPViewport = new render.ForwardViewport(pCamera, 0., 0., 1., 1., 11);
 
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -315,17 +315,17 @@ module akra {
 		});
 
 		pViewport.setAntialiasing(true);
-		(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
+		// (<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
 
 
-		pGUI.add({filmgrain: true}, 'filmgrain').name('film grain').onChange((bEnabled) => {
-			if (bEnabled) {
-				(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
-			}
-			else {
-				(<IViewport3D>pViewport).getEffect().delComponent("akra.system.filmgrain");
-			}
-		});
+		// pGUI.add({filmgrain: true}, 'filmgrain').name('film grain').onChange((bEnabled) => {
+		// 	if (bEnabled) {
+		// 		(<IViewport3D>pViewport).getEffect().addComponent("akra.system.filmgrain");
+		// 	}
+		// 	else {
+		// 		(<IViewport3D>pViewport).getEffect().delComponent("akra.system.filmgrain");
+		// 	}
+		// });
 
 		var canvas: HTMLCanvasElement = (<webgl.WebGLCanvas>pCanvas).getElement();
 		// canvas.style["WebkitFilter"] = canvas.style["MozFilter"] = canvas.style["filter"]  ="sepia(1)";
@@ -572,7 +572,7 @@ module akra {
 
 					pScene.beforeUpdate.connect(function() {
 						audio.volume = math.clamp(15 - pCamera.getWorldPosition().length(), 0., 10.) / 50.;
-						console.log(audio.volume);
+						// console.log(audio.volume);
 						funAnimation();
 					});
 
