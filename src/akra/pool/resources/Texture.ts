@@ -203,6 +203,10 @@ module akra.pool.resources {
 		}
 
 		setFilter(eParam: ETextureParameters, eValue: ETextureFilters): boolean {
+			// if(this.findResourceName() === '../../../../src/demos/shadowroom/data/models/room/sofa_normal.jpg') {
+			// 	console.log(ETextureParameters[eParam], ETextureFilters[eValue]);
+			// 	console.trace();
+			// }
 			if (this._pParams[eParam] === eValue) {
 				return true;
 			}

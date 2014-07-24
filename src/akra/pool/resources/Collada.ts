@@ -1480,11 +1480,8 @@ module akra.pool.resources {
 
 				debug.info("Load texture " + pImage.path + ".");
 
-				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
-
-				if (this.findRelatedResources(EResourceItemEvents.LOADED).indexOf(pTex) === -1) {
-					this.sync(pTex, EResourceItemEvents.LOADED);
-				}
+				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().createResource(pImage.path);
+				pTex.setFlags(pTex.getFlags() | ETextureFlags.AUTOMIPMAP);
 
 				//FIX THIS
 				pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
@@ -1492,6 +1489,20 @@ module akra.pool.resources {
 
 				pTex.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
 				pTex.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+
+				pTex.loadResource(<string>pImage.path);
+
+				pTex.loaded.connect(() => {
+						pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+						pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+						pTex.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+						pTex.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+					});
+
+				if (this.findRelatedResources(EResourceItemEvents.LOADED).indexOf(pTex) === -1) {
+					this.sync(pTex, EResourceItemEvents.LOADED);
+				}
+
 			}
 
 			return pTexture;
@@ -1640,7 +1651,7 @@ module akra.pool.resources {
 				var pXMLTech: Element = firstChild(pXMLExtra, "technique");
 				if (isDefAndNotNull(pXMLTech)) {
 					var pXMLBump: Element = firstChild(pXMLTech, "bump");
-					if (isDefAndNotNull(pXMLBump) && attr(pXMLBump, "bumptype") === "HEIGHTFIELD") {
+					if (isDefAndNotNull(pXMLBump)/* && attr(pXMLBump, "bumptype") === "HEIGHTFIELD"*/) {
 						(<IColladaPhong>pTech.value).textures.normal = this.COLLADATexture(firstChild(pXMLBump, "texture"));
 					}
 				}
