@@ -9,7 +9,9 @@ module akra {
 			window.onresize = function (event) {
 				pCanvas.resize(window.innerWidth, window.innerHeight);
 			}
-	}
+		}
+
+		(<IShadedViewport>pViewport).setShadingModel(EShadingModel.BLINNPHONG);
 
 		return pViewport;
 	}

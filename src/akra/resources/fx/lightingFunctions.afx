@@ -189,6 +189,7 @@ float4 applyBaseLightParams(PixelData pixelData, LightData lightData){
 }
 
 float kFixNormal = 0.5;
+float fFixIntencity = 1.; // HACK dor fix color in game.ts
 float fSunSpecular = 0.;
 float fSunAmbient = 0.;
 float3 camPos: CAMERA_POSITION;
@@ -203,7 +204,6 @@ float4 applyBaseLightParamsSun(PixelData pixelData, SunLightData lightData, floa
 */
 
     float4 color = float4(0.);
-
     float3 v3Pos = lightData.eyePos - pixelData.position.xyz;
     float fCos = dot(lightData.sunDir, v3Pos)/length(v3Pos);
     float fCos2 = fCos * fCos;
@@ -211,9 +211,13 @@ float4 applyBaseLightParamsSun(PixelData pixelData, SunLightData lightData, floa
     float3 Mie = getMiePhase(fCos, fCos2, lightData.hg) * lightData.ground1;
     float4 lightDiffuse = float4(0.);
 
-    lightDiffuse.rgb = getRayleighPhase(fCos2) * lightData.ground0 + Mie;
+    lightDiffuse.rgb = (getRayleighPhase(fCos2) * lightData.ground0 + Mie)*fFixIntencity;
     lightDiffuse.rgb = HDR(lightDiffuse.rgb);
     
+    if(IS_USED_PBS_SIMPLE){
+        return applyPBSLightParams(pixelData, lightData.eyePos, lightDiffuse.rgb, float3(1., 0., 0.));
+    }
+
     CalculatedLightParams lightParams = prepareBaseLightParamsSun(pixelData, float4(view * float4(lightData.sunDir, 0.)).xyz, lightDiffuse, float4(fSunAmbient), float4(fSunSpecular));
 
     if(IS_FOR_REAL_SHADING){
@@ -332,7 +336,7 @@ float ComputeVolumetricFog(float3 cameraToWorldPos)
   float cVolFogHeightDensityAtViewer = exp(-cHeightFalloff * camPos.y); 
   float fogInt = length( cameraToWorldPos ) * cVolFogHeightDensityAtViewer; 
   const float cSlopeThreshold = 0.01; 
-  if(abs(cameraToWorldPos.y) > cSlopeThreshold) 
+  if(abs(cameraToWorldPos.y) > cSlopeThreshold && cHeightFalloff != 0.0) 
   { 
     float t = cHeightFalloff * cameraToWorldPos.y; 
     fogInt *= (1.0 - exp(-t)) / t; 

@@ -473,15 +473,25 @@ module akra {
 
 	function createOcean(sub: String): ISceneModel {
 		var pOceanQuad: ISceneModel = addons.createQuad(pScene, 500, new math.Vec2(5000, 5000));
-		var pTexture: ITexture = pRmgr.createTexture("water_texture"+sub);
-		pTexture.loadImages(pRmgr.getImagePool().findResource("WATER_NORMALS"));
-		pOceanQuad.getRenderable(0).getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.NORMAL, pTexture, 0);
-
+		var pTexture: ITexture = pRmgr.createTexture("water_texture" + sub);
+		//pTexture.setFlags(pTexture.getFlags() | ETextureFlags.AUTOMIPMAP);
 		pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 		pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 		pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
 		pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
 
+		//pTexture.loaded.connect((pTexture: ITexture) => {
+		//	pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+		//	pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+		//	pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+		//	pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+		//});
+
+		pTexture.loadImages(pRmgr.getImagePool().findResource("WATER_NORMALS"));
+		pOceanQuad.getRenderable(0).getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.NORMAL, pTexture, 0);
+		
+	
+		
 		pOceanQuad.getRenderable(0).getEffect().addComponent("akra.system.water_surface");
 
 		var time: float = 0.0;

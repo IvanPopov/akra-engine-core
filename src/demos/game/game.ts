@@ -31,6 +31,8 @@
 /// <reference path="lib/updateCamera.ts" />
 /// <reference path="lib/virtualGamepad.ts" />
 
+/// <reference path="../idl/3d-party/dat.gui.d.ts" />
+
 declare var AE_GAME_RESOURCES: akra.IDep;
 
 module akra {
@@ -1692,6 +1694,9 @@ module akra {
 			var pCamera: ICamera = pViewport.getCamera();
 			// console.log(pCamera.isWorldMatrixNew());
 			switch (iPass) {
+				case 0:
+					pPass.setUniform("fFixIntencity", 0.2);
+					break;
 				case 2:
 					pCamera.update();
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
@@ -1720,6 +1725,13 @@ module akra {
 	}
 
 	function createModels(): void {
+		function disableShadow(node: IEntity) {
+			if (scene.SceneModel.isModel(node)) {
+				(<ISceneModel>node).setShadow(false);
+			}
+			return true;
+		}
+
 		var pImporter = new exchange.Importer(pEngine);
 		pImporter.loadDocument(pControllerData);
 		pMovementController = pImporter.getController();
@@ -1727,12 +1739,14 @@ module akra {
 		var pHeroNode: ISceneNode = <ISceneNode>createModelEx("CHARACTER_MODEL", pScene, pTerrain, pCamera, pMovementController);
 		setupCameras(pHeroNode);
 		initState(pHeroNode);
+		//pHeroNode.explore(disableShadow);
 
 		var pBox: ISceneNode = createModelEntry(pScene, "CLOSED_BOX");
 
 		pBox.scale(.25);
 		putOnTerrain(pBox, pTerrain, new Vec3(-2., -3.85, -5.));
 		pBox.addPosition(new Vec3(0., 1., 0.));
+		pBox.explore(disableShadow);
 
 		var pBarrel: ISceneNode = createModelEntry(pScene, "BARREL");
 
@@ -1740,28 +1754,29 @@ module akra {
 		pBarrel.setPosition(new Vec3(-30., -40.23, -15.00));
 		pBarrel.setRotationByXYZAxis(-17. * math.RADIAN_RATIO, -8. * math.RADIAN_RATIO, -15. * math.RADIAN_RATIO);
 
+		pBarrel.explore(disableShadow);
 
 		var pTube: ISceneNode = createModelEntry(pScene, "TUBE");
 
 		pTube.scale(19.);
 		pTube.setRotationByXYZAxis(0. * math.RADIAN_RATIO, -55. * math.RADIAN_RATIO, 0.);
 		pTube.setPosition(new Vec3(-16., -52.17, -66.));
-
+		pTube.explore(disableShadow);
 
 		var pTubeBetweenRocks: ISceneNode = createModelEntry(pScene, "TUBE_BETWEEN_ROCKS");
 
 		pTubeBetweenRocks.scale(2.);
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
 		pTubeBetweenRocks.setPosition(new Vec3(-55., -12.15, -82.00));
+		pTubeBetweenRocks.explore(disableShadow);
+		//pTubeBetweenRocks.explore((pEntity: IEntity) => {
+		//	if (scene.SceneModel.isModel(pEntity)) {
+		//		//debug.log((<ISceneModel>pEntity).getName(), "<<<");
+		//		(<ISceneModel>pEntity).getMesh().setShadow(false);
+		//	}
 
-		pTubeBetweenRocks.explore((pEntity: IEntity) => {
-			if (scene.SceneModel.isModel(pEntity)) {
-				//debug.log((<ISceneModel>pEntity).getName(), "<<<");
-				(<ISceneModel>pEntity).getMesh().setShadow(false);
-			}
-
-			return true;
-		});
+		//	return true;
+		//});
 
 
 		pScene.beforeUpdate.connect(update);
@@ -1770,6 +1785,62 @@ module akra {
 		self.activeCamera = self.cameras.indexOf(self.camera);
 	}
 
+	function createOcean(sub: string = guid().toString()): ISceneModel {
+		var pOceanQuad: ISceneModel = addons.createQuad(pScene, 800, new math.Vec2(8000, 8000));
+		pOceanQuad.setName("oceanQuad");
+		var pTexture: ITexture = pRmgr.createTexture("water_texture" + sub);
+		//pTexture.setFlags(pTexture.getFlags() | ETextureFlags.AUTOMIPMAP);
+		pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+		pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+		pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+		pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+
+		//pTexture.loaded.connect((pTexture: ITexture) => {
+		//	pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+		//	pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+		//	pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+		//	pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+		//});
+
+		pTexture.loadImages(pRmgr.getImagePool().findResource("WATER_NORMALS"));
+		pOceanQuad.getRenderable(0).getSurfaceMaterial().setTexture(ESurfaceMaterialTextures.NORMAL, pTexture, 0);
+
+
+
+		pOceanQuad.getRenderable(0).getEffect().addComponent("akra.system.water_surface");
+
+		var time: float = 0.0;
+		pOceanQuad.getRenderable(0).getTechniqueDefault().render.connect(
+			(pTech: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport) => {
+				pTech.getPass(iPass).setUniform("WATER_TIME", time);
+				time += 0.5 / 60.;
+			});
+		pOceanQuad.attachToParent(pScene.getRootNode());
+		pOceanQuad.setPosition(0, -80, 0);
+		pOceanQuad.setShadow(false);
+
+		var pMaterial = pOceanQuad.getRenderable(0).getMaterial();
+		pMaterial.emissive.set(0.0);
+		pMaterial.diffuse.set(0.0, 0.2, 0.3);
+		pMaterial.specular.set(0.2);
+		pMaterial.shininess = 0.8;
+
+		return pOceanQuad;
+	}
+
+	function createEnvTexture(pRmgr: IResourcePoolManager, pViewport: IShadedViewport, pCubeTexture: ITexture): ITexture {
+		var pEnvTexture: ITexture = pRmgr.createTexture(".env-map-texture-01");
+		pEnvTexture.create(1024, 512, 1, null, 0, 0, 0,
+			ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+		pEnvTexture.unwrapCubeTexture(pCubeTexture);
+
+		pViewport.setDefaultEnvironmentMap(pEnvTexture);
+
+		return pEnvTexture;
+	}
+
+	var pGUI;
+
 	function main(pEngine: IEngine): void {
 		//console.profileEnd();
 		//console.profile("Initialization");
@@ -1777,14 +1848,73 @@ module akra {
 		setup(pCanvas, pUI);
 
 		pCamera = self.camera = createCameras(pScene);
-		pViewport = createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
+		akra.self.viewport = pViewport = createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
 		pTerrain = self.terrain = createTerrain(pScene, true);
 		// (<any>pTerrain.megaTexture).connectToServer("ws://localhost:6112");
 		createModels();
 		pSkyBoxTexture = createSkyBox(pRmgr, <IDSViewport>pViewport);
+		createEnvTexture(pRmgr, <IDSViewport>pViewport, pSkyBoxTexture);
+
 		pSky = self.sky = createSky(pScene, 14.);
 
-		createLightShafts(<IDSViewport>pViewport, pSky);
+		createOcean();
+
+
+		pGUI = new dat.GUI();
+
+		var fogType = {
+			none: 0,
+			linear: 1,
+			exponential: 2,
+			vertical: 3
+		};
+
+		var pFogData = {
+			fColorR: 230,
+			fColorG: 210,
+			fColorB: 180,
+			fStart: 99,
+			fIndex: 160,
+			fHeight: 0.39,
+			fDensity: 0.
+		};
+
+		(<IViewportFogged>pViewport).setFog(0);
+
+		var pFogFolder = pGUI.addFolder("fog");
+		(<dat.OptionController>pFogFolder.add({ FogType: "none" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
+			(<IViewportFogged>pViewport).setFog(fogType[sKey]);
+		});
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorR')).min(0).max(255).step(1).name("colorR").__precision = 0;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorG')).min(0).max(255).step(1).name("colorG").__precision = 0;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorB')).min(0).max(255).step(1).name("colorB").__precision = 0;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fStart')).min(0.).max(200.).name("start");
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fIndex')).min(0.01).max(200.).name("index");
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
+		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
+
+		(<fx.Composer>pEngine.getComposer()).cGlobalDensity = 0.00017;
+		(<fx.Composer>pEngine.getComposer()).cHeightFalloff  = 0.037;
+		pViewport.render.connect((
+			pViewport: IDSViewport,
+			pTechnique: IRenderTechnique,
+			iPass: int,
+			pRenderable: IRenderableObject,
+			pSceneObject: ISceneObject): void => {
+
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			pPass.setUniform("fFixIntencity", 0.3);
+
+			pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
+				pFogData.fColorR / 255, pFogData.fColorG / 255, pFogData.fColorB / 255, pFogData.fDensity));
+			pPass.setUniform("FOG_EFFECT_START", pFogData.fStart);
+			pPass.setUniform("FOG_EFFECT_INDEX", pFogData.fIndex);
+			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
+		});
+		//pSky.sun.setShadowCaster(false);
+
+		//createLightShafts(<IDSViewport>pViewport, pSky);
 
 		//test viewports
 		// var pTestViewport = pCanvas.addViewport(new render.DSViewport(pCamera, .25, .25, .5, .5, 1.));

@@ -44,7 +44,7 @@ module akra {
 		animate: true,
 		lightShafts: true,
 		lensFlare: true,
-		dof: true,
+		//dof: false,
 		blur: true,
 		filmgrain: false
 	};
@@ -160,14 +160,14 @@ module akra {
 			}
 		});
 
-		pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
-			if (bEnabled) {
-				pEffect.addComponent("akra.system.dof");
-			}
-			else {
-				pEffect.delComponent("akra.system.dof");
-			}
-		});
+		//pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
+		//	if (bEnabled) {
+		//		pEffect.addComponent("akra.system.dof");
+		//	}
+		//	else {
+		//		pEffect.delComponent("akra.system.dof");
+		//	}
+		//});
 
 		pGUI.add(pState, 'blur').name('blur').onChange((bEnabled) => {
 			if (bEnabled) {
