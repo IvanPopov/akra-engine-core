@@ -5247,6 +5247,8 @@ declare module akra {
         images?: IColladaImageLoadOptions;
         /** Name of scene root node. */
         name?: string;
+        /** Determines whether to  convert all non-skinned meshes to singled indexed meshes on the fly. */
+        forceOptimization?: boolean;
     }
     interface IXMLExplorer {
         (pXML: Element, sName?: string): void;
@@ -16109,6 +16111,13 @@ declare module akra.webgl {
         public hideCursor(bHide?: boolean): void;
         public setCursor(sType: string): void;
         public create(sName?: string, iWidth?: number, iHeight?: number, isFullscreen?: boolean): boolean;
+        public brightness(fValue?: number): WebGLCanvas;
+        public grayscale(fValue: number): WebGLCanvas;
+        public sepia(fValue: number): WebGLCanvas;
+        public saturate(fValue: number): WebGLCanvas;
+        public invert(fValue: number): WebGLCanvas;
+        public contrast(fValue: number): WebGLCanvas;
+        private setCSSFilter(sFilter, sValue);
         /** @return TRUE if event already handled, FALSE if not handled */
         private checkOrSaveEventHandler(eType);
         public enableSupportForUserEvent(iType: number): number;

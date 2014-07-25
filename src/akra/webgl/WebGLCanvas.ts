@@ -143,6 +143,68 @@ module akra.webgl {
 			return true;
 		}
 
+		brightness(fValue: float = 1.): WebGLCanvas {
+			fValue = math.max(fValue, 0.);
+			return this.setCSSFilter("brightness", fValue.toFixed(4));
+		}
+
+		grayscale(fValue: float): WebGLCanvas {
+			fValue = math.clamp(fValue, 0., 1.);
+			return this.setCSSFilter("grayscale", fValue.toFixed(4));
+		}
+
+		sepia(fValue: float): WebGLCanvas {
+			fValue = math.clamp(fValue, 0., 1.);
+			return this.setCSSFilter("sepia", fValue.toFixed(4));
+		}
+
+		saturate(fValue: float): WebGLCanvas {
+			fValue = math.max(fValue, 0.);
+			return this.setCSSFilter("saturate", fValue.toFixed(4));
+		}
+
+		invert(fValue: float): WebGLCanvas {
+			fValue = math.clamp(fValue, 0., 1.);
+			return this.setCSSFilter("invert", fValue.toFixed(4));
+		}
+
+		contrast(fValue: float): WebGLCanvas {
+			fValue = math.max(fValue, 0.);
+			return this.setCSSFilter("contrast", fValue.toFixed(4));
+		}
+
+		hueRotate(iValue: uint): WebGLCanvas {
+			iValue = math.clamp(iValue, 0, 360);
+			return this.setCSSFilter("hue-rotate", String(iValue) + "deg");
+		}
+
+		private setCSSFilter(sFilter: string, sValue: string): WebGLCanvas {
+			var sCurrentValue: string =
+				this._pCanvas.style["WebkitFilter"] || this._pCanvas.style["MozFilter"] || this._pCanvas.style["filter"] || "";
+			var sNewValue: string = sFilter + "(" + sValue + ")";
+
+			var pProperties: string[] = sCurrentValue.split(' ');
+			var isSetted: boolean = false;
+
+			for (var i: int = 0; i < pProperties.length; ++i) {
+				if (pProperties[i].indexOf(sFilter) !== -1) {
+					pProperties[i] = sNewValue;
+					isSetted = true;
+					break;
+				}
+			}
+
+			if (!isSetted) {
+				pProperties.push(sNewValue);
+			}
+
+			this._pCanvas.style["WebkitFilter"] =
+			this._pCanvas.style["MozFilter"] =
+			this._pCanvas.style["filter"] = pProperties.join(' ');
+
+			return this;
+		}
+
 		/** @return TRUE if event already handled, FALSE if not handled */
 		private checkOrSaveEventHandler(eType: EUserEvents): boolean {
 			if (this._iUserHandledEvents & eType) return true;
