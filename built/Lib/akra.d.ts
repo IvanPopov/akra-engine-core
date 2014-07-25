@@ -5247,6 +5247,8 @@ declare module akra {
         images?: IColladaImageLoadOptions;
         /** Name of scene root node. */
         name?: string;
+        /** Determines whether to  convert all non-skinned meshes to singled indexed meshes on the fly. */
+        forceOptimization?: boolean;
     }
     interface IXMLExplorer {
         (pXML: Element, sName?: string): void;
