@@ -594,7 +594,7 @@ module akra {
 			animateLight(pSceneParts.pProjectLight2, t * 0.27 + Math.PI * 2. / 3.);
 			animateLight(pSceneParts.pProjectLight3, t * 0.27 + Math.PI * 4. / 3.);
 
-			pSceneParts.fan_propeller.addRelRotationByXYZAxis(0., -3. * Math.PI * pEngine.getElapsedTime(), 0.);
+			pSceneParts.fan_propeller.addRelRotationByXYZAxis(0., -1. * Math.PI * pEngine.getElapsedTime(), 0.);
 			pSceneParts.luster.setRotationByXYZAxis(funPhaser(1.6)*0.15, funPhaser(1.1, Math.PI/2.)*0.15, funPhaser(0.63)*0.15);
 
 		}

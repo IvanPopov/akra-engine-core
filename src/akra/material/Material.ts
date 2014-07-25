@@ -42,34 +42,42 @@ module akra.material {
 						case "gold":
 							this.specular.set(1.00, 0.71, 0.29);
 							this.diffuse.set(1.00, 0.86, 0.57);
+							this.diffuse.set(1.00, 0.86, 0.57).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "copper":
 							this.specular.set(0.95, 0.64, 0.54);
 							this.diffuse.set(0.98, 0.82, 0.76);
+							this.diffuse.set(0.98, 0.82, 0.76).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "plastic":
 							this.specular.set(0.03);
 							this.diffuse.set(0.21);
+							this.diffuse.set(0.21).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "iron":
 							this.specular.set(0.56, 0.57, 0.58);
 							this.diffuse.set(0.77, 0.78, 0.78);
+							this.diffuse.set(0.77, 0.78, 0.78).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "aluminium":
 							this.specular.set(0.91, 0.92, 0.92);
 							this.diffuse.set(0.96, 0.96, 0.97);
+							this.diffuse.set(0.96, 0.96, 0.97).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "silver": 
 							this.specular.set(0.95, 0.93, 0.88);
 							this.diffuse.set(0.98, 0.97, 0.95);
+							this.diffuse.set(0.98, 0.97, 0.95).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "water":
 							this.specular.set(0.02);
 							this.diffuse.set(0.15);
+							this.diffuse.set(0.15).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "glass":
 							this.specular.set(0.08);
 							this.diffuse.set(0.31);
+							this.diffuse.set(0.31).multiply( (math.Vec3.temp(this.specular.r,this.specular.g,this.specular.b).subtract(math.Vec3.temp(1.)).length() / 1.733) );
 							break;
 						case "black":
 							this.specular.set(0.0);
