@@ -44,7 +44,7 @@ module akra {
 		animate: true,
 		lightShafts: true,
 		lensFlare: true,
-		dof: true,
+		// dof: true,
 		blur: true,
 		filmgrain: false
 	};
@@ -160,14 +160,14 @@ module akra {
 			}
 		});
 
-		pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
-			if (bEnabled) {
-				pEffect.addComponent("akra.system.dof");
-			}
-			else {
-				pEffect.delComponent("akra.system.dof");
-			}
-		});
+		// pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
+		// 	if (bEnabled) {
+		// 		pEffect.addComponent("akra.system.dof");
+		// 	}
+		// 	else {
+		// 		pEffect.delComponent("akra.system.dof");
+		// 	}
+		// });
 
 		pGUI.add(pState, 'blur').name('blur').onChange((bEnabled) => {
 			if (bEnabled) {
@@ -272,7 +272,7 @@ module akra {
 
 		(<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImages(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE"));
 		//var iCounter: int = 0;
-		var pDofFocalPlane: float = 0.;
+		// var pDofFocalPlane: float = 0.;
 
 		pViewport.render.connect((pViewport: ILPPViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -292,9 +292,9 @@ module akra {
 			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
 			pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
 
-			if (iPass === 0 && pTechnique.hasComponent("akra.system.dof")) {
-				pDofFocalPlane = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth() / 2., pViewport.getActualHeight() / 2., 1.)).subtract(pCamera.getWorldPosition()).z;
-			}
+			// if (iPass === 0 && pTechnique.hasComponent("akra.system.dof")) {
+			// 	pDofFocalPlane = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth() / 2., pViewport.getActualHeight() / 2., 1.)).subtract(pCamera.getWorldPosition()).z;
+			// }
 			// pDofData.DOF_FOCAL_PLANE = pDofFocalPlane;
 
 			pPass.setUniform('SUNSHAFT_ANGLE', pSunshaftData.SUNSHAFT_ANGLE);
