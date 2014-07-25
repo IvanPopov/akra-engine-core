@@ -1783,6 +1783,10 @@ module akra {
 
 		self.cameras = fetchAllCameras(pScene);
 		self.activeCamera = self.cameras.indexOf(self.camera);
+
+		self.cameras.forEach((pCamera: ICamera) => {
+			pCamera.setFarPlane(2000);
+		});
 	}
 
 	function createOcean(sub: string = guid().toString()): ISceneModel {
@@ -1840,27 +1844,52 @@ module akra {
 	}
 
 	var pGUI;
-
-	function main(pEngine: IEngine): void {
-		//console.profileEnd();
-		//console.profile("Initialization");
-
-		setup(pCanvas, pUI);
-
-		pCamera = self.camera = createCameras(pScene);
-		akra.self.viewport = pViewport = createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
-		pTerrain = self.terrain = createTerrain(pScene, true);
-		// (<any>pTerrain.megaTexture).connectToServer("ws://localhost:6112");
-		createModels();
-		pSkyBoxTexture = createSkyBox(pRmgr, <IDSViewport>pViewport);
-		createEnvTexture(pRmgr, <IDSViewport>pViewport, pSkyBoxTexture);
-
-		pSky = self.sky = createSky(pScene, 14.);
-
-		createOcean();
-
-
+	var pLensflareData = null;
+	function createOnViewportRender(pViewport: IViewport) {
 		pGUI = new dat.GUI();
+
+		pLensflareData = {
+			LENSFLARE_COOKIES_TEXTURE: pEngine.getResourceManager().createTexture("LENSFLARE_COOKIES_TEXTURE"),
+			LENSFLARE_TEXTURE_LOCATIONS: {
+				COOKIE1: new math.Vec4(.0, .5, .5, .0),
+				COOKIE2: new math.Vec4(.5, .5, 1., .0),
+				COOKIE3: new math.Vec4(.0, .5625, 1., .5),
+				//COOKIE4: new math.Vec4(.25, .5, .5, .25),
+				//COOKIE5: new math.Vec4(.5, .5, 1., .0),
+				//COOKIE6: new math.Vec4(.0, 1., .5, .5),
+				//COOKIE7: new math.Vec4(.5, 1., 1., .5),
+			},
+			LENSFLARE_COOKIE_PARAMS: null,
+			LENSFLARE_LIGHT_POSITION: null,
+			LENSFLARE_LIGHT_ANGLE: null,
+			LENSFLARE_DECAY: 16.,
+			LENSFLARE_INTENSITY: 0.17,
+			LENSFLARE_ABERRATION_SCALE: 0.07,
+			LENSFLARE_ABERRATION_SAMPLES: 5,
+			LENSFLARE_ABERRATION_FACTOR: 1.6,
+		};
+
+		pLensflareData.LENSFLARE_COOKIE_PARAMS = [
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(140., 140., 2.3, 0.2) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., 1.9, 0.2) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 1.65, 0.3) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(64., 64., 1.4, 0.4) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE3, PROPERTIES: new math.Vec4(2048., 64., 1., 1.0) },
+			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE1, PROPERTIES: new math.Vec4(200., 200., 0.45, 0.5) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., 0.5, 0.4) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., 0.2, 0.3) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., 0.05, 0.2) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.1, 0.3) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., -0.3, 0.4) },
+			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(200., 200., -0.35, 0.3) },
+			//{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.45, 0.4) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(240., 240., -0.65, 0.2) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(128., 128., -0.85, 0.35) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(180., 180., -1.1, 0.2) },
+			{ TEXTURE_LOCATION: pLensflareData.LENSFLARE_TEXTURE_LOCATIONS.COOKIE2, PROPERTIES: new math.Vec4(100., 100., -1.7, 0.4) },
+		];
+
+		(<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImages(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE"));
 
 		var fogType = {
 			none: 0,
@@ -1894,7 +1923,10 @@ module akra {
 		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		(<fx.Composer>pEngine.getComposer()).cGlobalDensity = 0.00017;
-		(<fx.Composer>pEngine.getComposer()).cHeightFalloff  = 0.037;
+		(<fx.Composer>pEngine.getComposer()).cHeightFalloff = 0.037;
+
+		(<IShadedViewport>pViewport).getEffect().addComponent("akra.system.lensflare");
+
 		pViewport.render.connect((
 			pViewport: IDSViewport,
 			pTechnique: IRenderTechnique,
@@ -1903,15 +1935,68 @@ module akra {
 			pSceneObject: ISceneObject): void => {
 
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-			pPass.setUniform("fFixIntencity", 0.3);
+			var pCamera: ICamera = pViewport.getCamera();
+			pPass.setUniform("fFixIntencity", 1);
 
 			pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
 				pFogData.fColorR / 255, pFogData.fColorG / 255, pFogData.fColorB / 255, pFogData.fDensity));
 			pPass.setUniform("FOG_EFFECT_START", pFogData.fStart);
 			pPass.setUniform("FOG_EFFECT_INDEX", pFogData.fIndex);
 			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
+
+
+			var v3fLightDir: IVec3 = math.Vec3.temp(self.sky.getSunDirection());
+			var pLightInDeviceSpace: IVec3 = math.Vec3.temp();
+			var pDepthTexture: ITexture = (<render.DSViewport>pViewport).getDepthTexture();
+			pCamera.projectPoint(math.Vec3.temp(pCamera.getWorldPosition()).add(v3fLightDir), pLightInDeviceSpace);
+
+			pLightInDeviceSpace.x = (pLightInDeviceSpace.x + 1) / 2;
+			pLightInDeviceSpace.y = (pLightInDeviceSpace.y + 1) / 2;
+
+			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
+			pLensflareData.LENSFLARE_LIGHT_ANGLE = pCamera.getWorldMatrix().toQuat4().multiplyVec3(math.Vec3.temp(0., 0., -1.)).dot(v3fLightDir);
+
+			pPass.setTexture('OBJECT_ID_TEXTURE', pViewport.getTextureWithObjectID());
+			pPass.setTexture('LENSFLARE_COOKIES_TEXTURE', pLensflareData.LENSFLARE_COOKIES_TEXTURE);
+			pPass.setUniform('LENSFLARE_COOKIE_PARAMS', pLensflareData.LENSFLARE_COOKIE_PARAMS);
+			pPass.setForeign('LENSFLARE_COOKIES_TOTAL', pLensflareData.LENSFLARE_COOKIE_PARAMS.length);
+			pPass.setUniform('LENSFLARE_LIGHT_POSITION', pLensflareData.LENSFLARE_LIGHT_POSITION);
+			pPass.setUniform('LENSFLARE_LIGHT_ANGLE', pLensflareData.LENSFLARE_LIGHT_ANGLE);
+			pPass.setUniform('LENSFLARE_INTENSITY', pLensflareData.LENSFLARE_INTENSITY);
+			pPass.setUniform('LENSFLARE_DECAY', pLensflareData.LENSFLARE_DECAY);
+			pPass.setUniform('LENSFLARE_SKYDOME_ID', self.sky.skyDome.getRenderID(0));
+			pPass.setUniform('LENSFLARE_ABERRATION_SCALE', pLensflareData.LENSFLARE_ABERRATION_SCALE);
+			pPass.setUniform('LENSFLARE_ABERRATION_SAMPLES', pLensflareData.LENSFLARE_ABERRATION_SAMPLES);
+			pPass.setUniform('LENSFLARE_ABERRATION_FACTOR', pLensflareData.LENSFLARE_ABERRATION_FACTOR);
+
+			pPass.setUniform("DEPTH_TEXTURE_RATIO",
+				math.Vec2.temp(pViewport.getActualWidth() / pDepthTexture.getWidth(), pViewport.getActualHeight() / pDepthTexture.getHeight()));
+			pPass.setUniform("SCREEN_ASPECT_RATIO",
+				math.Vec2.temp(pViewport.getActualWidth() / pViewport.getActualHeight(), 1.));
+
+			pPass.setForeign("PhysicalSpecG", 1/*Neumann*/);
 		});
+	}
+
+	function main(pEngine: IEngine): void {
+		//console.profileEnd();
+		//console.profile("Initialization");
+
+		setup(pCanvas, pUI);
+
+		pCamera = self.camera = createCameras(pScene);
+		akra.self.viewport = pViewport = createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
+		pTerrain = self.terrain = createTerrain(pScene, true);
+		// (<any>pTerrain.megaTexture).connectToServer("ws://localhost:6112");
+		createModels();
+		pSkyBoxTexture = createSkyBox(pRmgr, <IDSViewport>pViewport);
+		createEnvTexture(pRmgr, <IDSViewport>pViewport, pSkyBoxTexture);
+
+		pSky = self.sky = createSky(pScene, 14.);
+
+		createOcean();
+		createOnViewportRender(pViewport);
+
 		//pSky.sun.setShadowCaster(false);
 
 		//createLightShafts(<IDSViewport>pViewport, pSky);

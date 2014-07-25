@@ -43,9 +43,10 @@ float4 getNoise( float2 uv )
 
 shared float3x3 transformNormalMat;
 float4x4 view_mat:VIEW_MATRIX;
+float2 uvScale = float2(1., 1.);
 
 void fs_water(float3 texCoord: TEXCOORD0, float3 vert: VERTEX){
-	float4 noise = getNoise(texCoord.xy);
+	float4 noise = getNoise(texCoord.xy * uvScale);
 	float l = length(vert);
 	
 	float x0 = 10.;

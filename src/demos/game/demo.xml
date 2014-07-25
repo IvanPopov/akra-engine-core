@@ -54,6 +54,8 @@
       <UseInlining>False</UseInlining>
       <Data>
         <ResourceFile Path="data/effects/sunshaft.afx" />
+        <ResourceFile Path="data/textures/lensflare_cookies_new.png" Name="LENSFLARE_COOKIES_TEXTURE"/>
+        <ResourceFile Path="data/effects/lensflare.afx"/>
         
         <ResourceFile Path="data/textures/terrain/main_height_map_1025.dds" Name="TERRAIN_HEIGHT_MAP" />
         <ResourceFile Path="data/textures/terrain/main_terrain_normal_map.dds" Name="TERRAIN_NORMAL_MAP" />
