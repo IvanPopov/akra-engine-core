@@ -102,7 +102,8 @@ module akra.pool.resources {
 			scene: true,
 			extractPoses: true,
 			skeletons: [],
-			images: { flipY: false }
+			images: { flipY: false },
+			forceOptimization: false
 		};
 
 		private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
@@ -1159,6 +1160,7 @@ module akra.pool.resources {
 		}
 
 		private optimizeCOLLADAMesh(pMesh: IColladaMesh): IColladaMesh {
+			debug.time("MESH OPTIMIZATION <" + this.findResourceName() + ">");
 			var pPolyGroup = pMesh.polygons;
 
 			var pHashIndices: IIntMap = <any>{};
@@ -1299,6 +1301,7 @@ module akra.pool.resources {
 				}
 			});
 
+			debug.timeEnd("MESH OPTIMIZATION <" + this.findResourceName() + ">");
 			return pMesh;
 		}
 
@@ -2524,7 +2527,7 @@ module akra.pool.resources {
 			var sMeshName: string = pGeometry.id;
 
 			//we cant optimize skinned mesh, because animation can be placed in file differen from current
-			if (!isSkinned && !Collada.isCOLLADAMeshOptimized(pGeometry.mesh)) {
+			if (this.getOptions().forceOptimization && !isSkinned && !Collada.isCOLLADAMeshOptimized(pGeometry.mesh)) {
 				pNodeData = this.optimizeCOLLADAMesh(pGeometry.mesh);
 			}
 			else {
@@ -2622,20 +2625,25 @@ module akra.pool.resources {
 								case data.Usages.POSITION:
 								case data.Usages.NORMAL:
 
-									/*
-									 Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
-									 */
+									if (isSkinned) {
+										/*
+										 Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
+										 */
 
-									pDataExt = new Float32Array((<Float32Array>pData).length / 3 * 4);
+										pDataExt = new Float32Array((<Float32Array>pData).length / 3 * 4);
 
-									for (var y = 0, n = 0, m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
-										pDataExt[n++] = pData[m++];
-										pDataExt[n++] = pData[m++];
-										pDataExt[n++] = pData[m++];
+										for (var y = 0, n = 0, m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
+											pDataExt[n++] = pData[m++];
+											pDataExt[n++] = pData[m++];
+											pDataExt[n++] = pData[m++];
+										}
+
+										pData = pDataExt;
+										pDecl = [VE.float3(sSemantic), VE.end(16)];
 									}
-
-									pData = pDataExt;
-									pDecl = [VE.float3(sSemantic), VE.end(16)];
+									else {
+										pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+									}
 
 									break;
 								case data.Usages.TEXCOORD:
@@ -3337,6 +3345,8 @@ module akra.pool.resources {
 			}
 
 			function replaceValue(pXML: Element, pValue: float): void {
+				if (!pXML) return;
+
 				var pXMLColor: Element = firstChild(pXML, "float");
 
 				if (!isDefAndNotNull(pXMLColor)) {

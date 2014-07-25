@@ -9,7 +9,7 @@ declare var AE_RESOURCES: akra.IDep;
 declare var AE_MODELS: any;
 
 module akra {
-
+	console.time("LOADING");
 	// addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
 	addons.compatibility.verify("non-compatible");
 
@@ -421,6 +421,7 @@ module akra {
 	function loadModel(sPath, fnCallback?: Function, name?: String, pRoot?: ISceneNode): ISceneNode {
 		var pModelRoot: ISceneNode = pScene.createNode();
 		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
+		//pModel.setOptions({ forceOptimization: true });
 
 		pModelRoot.setName(name || sPath.match(/[^\/]+$/)[0] || 'unnamed_model');
 		if (pRoot != null) {
@@ -601,9 +602,8 @@ module akra {
 
 		pProgress.destroy();
 		pEngine.exec();
-		if(window['setMarkup']) {
-			window['setMarkup']();
-		}
+
+		console.timeEnd("LOADING");
 	}
 
 	pEngine.depsLoaded.connect(main);
