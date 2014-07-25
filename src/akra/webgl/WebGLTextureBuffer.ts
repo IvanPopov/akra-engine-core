@@ -910,9 +910,9 @@ module akra.webgl {
 			}
 			
 			// FIX: mipmap generation must be done in WebGLInternalTexture instead
-			// if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0)) {
-			// 	pWebGLContext.generateMipmap(this._eFaceTarget);
-			// }
+			if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0) && this._eTarget === gl.TEXTURE_2D) {
+				pWebGLContext.generateMipmap(this._eFaceTarget);
+			}
 
 			pWebGLRenderer.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
 			
