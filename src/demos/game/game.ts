@@ -1846,7 +1846,7 @@ module akra {
 	var pGUI;
 	var pLensflareData = null;
 	function createOnViewportRender(pViewport: IViewport) {
-		pGUI = new dat.GUI();
+		//pGUI = new dat.GUI();
 
 		pLensflareData = {
 			LENSFLARE_COOKIES_TEXTURE: pEngine.getResourceManager().createTexture("LENSFLARE_COOKIES_TEXTURE"),
@@ -1891,36 +1891,36 @@ module akra {
 
 		(<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImages(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE"));
 
-		var fogType = {
-			none: 0,
-			linear: 1,
-			exponential: 2,
-			vertical: 3
-		};
+		//var fogType = {
+		//	none: 0,
+		//	linear: 1,
+		//	exponential: 2,
+		//	vertical: 3
+		//};
 
-		var pFogData = {
-			fColorR: 230,
-			fColorG: 210,
-			fColorB: 180,
-			fStart: 99,
-			fIndex: 160,
-			fHeight: 0.39,
-			fDensity: 0.
-		};
+		//var pFogData = {
+		//	fColorR: 230,
+		//	fColorG: 210,
+		//	fColorB: 180,
+		//	fStart: 99,
+		//	fIndex: 160,
+		//	fHeight: 0.39,
+		//	fDensity: 0.
+		//};
 
-		(<IViewportFogged>pViewport).setFog(0);
+		//(<IViewportFogged>pViewport).setFog(0);
 
-		var pFogFolder = pGUI.addFolder("fog");
-		(<dat.OptionController>pFogFolder.add({ FogType: "none" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
-			(<IViewportFogged>pViewport).setFog(fogType[sKey]);
-		});
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorR')).min(0).max(255).step(1).name("colorR").__precision = 0;
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorG')).min(0).max(255).step(1).name("colorG").__precision = 0;
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorB')).min(0).max(255).step(1).name("colorB").__precision = 0;
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fStart')).min(0.).max(200.).name("start");
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fIndex')).min(0.01).max(200.).name("index");
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
-		(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
+		//var pFogFolder = pGUI.addFolder("fog");
+		//(<dat.OptionController>pFogFolder.add({ FogType: "none" }, 'FogType', Object.keys(fogType))).name("Type of fog").onChange((sKey) => {
+		//	(<IViewportFogged>pViewport).setFog(fogType[sKey]);
+		//});
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorR')).min(0).max(255).step(1).name("colorR").__precision = 0;
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorG')).min(0).max(255).step(1).name("colorG").__precision = 0;
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fColorB')).min(0).max(255).step(1).name("colorB").__precision = 0;
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fStart')).min(0.).max(200.).name("start");
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fIndex')).min(0.01).max(200.).name("index");
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fHeight')).min(0.).max(1.).step(0.01).name("height").__precision = 2;
+		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		(<fx.Composer>pEngine.getComposer()).cGlobalDensity = 0.00017;
 		(<fx.Composer>pEngine.getComposer()).cHeightFalloff = 0.037;
@@ -1938,11 +1938,11 @@ module akra {
 			var pCamera: ICamera = pViewport.getCamera();
 			pPass.setUniform("fFixIntencity", 1);
 
-			pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
-				pFogData.fColorR / 255, pFogData.fColorG / 255, pFogData.fColorB / 255, pFogData.fDensity));
-			pPass.setUniform("FOG_EFFECT_START", pFogData.fStart);
-			pPass.setUniform("FOG_EFFECT_INDEX", pFogData.fIndex);
-			pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
+			//pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
+			//	pFogData.fColorR / 255, pFogData.fColorG / 255, pFogData.fColorB / 255, pFogData.fDensity));
+			//pPass.setUniform("FOG_EFFECT_START", pFogData.fStart);
+			//pPass.setUniform("FOG_EFFECT_INDEX", pFogData.fIndex);
+			//pPass.setUniform("FOG_EFFECT_HEIGHT", pFogData.fHeight);
 
 
 			var v3fLightDir: IVec3 = math.Vec3.temp(self.sky.getSunDirection());
@@ -1976,6 +1976,8 @@ module akra {
 
 			pPass.setForeign("PhysicalSpecG", 1/*Neumann*/);
 		});
+
+		(<webgl.WebGLCanvas>self.canvas).brightness(.8).saturate(.8).contrast(1.2);
 	}
 
 	function main(pEngine: IEngine): void {
