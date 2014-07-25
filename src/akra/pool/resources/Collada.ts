@@ -1483,29 +1483,34 @@ module akra.pool.resources {
 
 				debug.info("Load texture " + pImage.path + ".");
 
-				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().createResource(pImage.path);
-				pTex.setFlags(pTex.getFlags() | ETextureFlags.AUTOMIPMAP);
+				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().findResource(pImage.path);
 
-				//FIX THIS
-				pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-				pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+				if (isNull(pTex)) {
 
-				pTex.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
-				pTex.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+					pTex = <ITexture>this.getManager().getTexturePool().createResource(pImage.path);
+					pTex.setFlags(pTex.getFlags() | ETextureFlags.AUTOMIPMAP);
 
-				pTex.loadResource(<string>pImage.path);
+					//FIX THIS
+					pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+					pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 
-				pTex.loaded.connect(() => {
+					pTex.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+					pTex.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
+
+					pTex.loadResource(<string>pImage.path);
+
+					//FIXME: remove this hack!!!
+					pTex.loaded.connect(() => {
 						pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 						pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 						pTex.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
 						pTex.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
 					});
+				}
 
 				if (this.findRelatedResources(EResourceItemEvents.LOADED).indexOf(pTex) === -1) {
 					this.sync(pTex, EResourceItemEvents.LOADED);
 				}
-
 			}
 
 			return pTexture;
@@ -2642,7 +2647,8 @@ module akra.pool.resources {
 										pDecl = [VE.float3(sSemantic), VE.end(16)];
 									}
 									else {
-										pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+										//FIXME: [VE.custom(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
+										pDecl = [VE.float3(sSemantic)];
 									}
 
 									break;
