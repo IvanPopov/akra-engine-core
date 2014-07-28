@@ -36,6 +36,9 @@
 declare var AE_GAME_RESOURCES: akra.IDep;
 
 module akra {
+
+	export var SERVER_URL: string = config.DEBUG ? "ws://localhost:6112" : "ws://odserve.org:6112";
+
 	addons.compatibility.requireWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
 	addons.compatibility.requireWebGLExtension(webgl.OES_ELEMENT_INDEX_UINT);
 	addons.compatibility.requireWebGLExtension(webgl.OES_TEXTURE_FLOAT);

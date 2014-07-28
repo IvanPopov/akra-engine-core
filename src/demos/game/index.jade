@@ -70,7 +70,7 @@ html
       $('#useMegaTexture').change(function(){
         var megaTexture = akra.self.terrain.getMegaTexture();
         if (this.checked) {
-          megaTexture.connectToServer("ws://odserve.org:6112");
+          megaTexture.connectToServer(akra.SERVER_URL);
         }
       else {
         megaTexture.disconnectFromServer();
