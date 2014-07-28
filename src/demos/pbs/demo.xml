@@ -30,6 +30,7 @@
         <Folder Path="data"/>
         <ResourceFile Path="data/models/teapot.DAE" Name="TEAPOT.DAE"/>
         <ResourceFile Path="data/models/Sphere.DAE" Name="SPHERE.DAE"/>
+        <ResourceFile Path="data/models/camera_animation.DAE" Name="CAMERA_ANIM_DAE"/>
 
         <ResourceFile Path="data/textures/skyboxes/nature.dds" Name="SKYBOX_NATURE"/>
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
