@@ -115,7 +115,7 @@ module akra {
 	var pMetalSpheres: INode[] = new Array(totalSpheres);
 
 	function createViewport(): IViewport3D {
-		var pViewport: ILPPViewport = new render.DSViewport(pCamera);
+		var pViewport: ILPPViewport = new render.ForwardViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 		(<render.ForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
