@@ -148,10 +148,16 @@ module akra.render {
 				// if (!pLight.enabled) {
 				//     continue;
 				// }
-
-				v4fLightPosition.set(pLight.getWorldPosition(), 1.);
-				pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
-				v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
+				if (pLight.getLightType() === ELightTypes.SUN) {
+					v4fLightPosition.set((<ISunParameters>pLight.getParams()).eyePosition, 1.);
+					pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
+					v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
+				}
+				else {
+					v4fLightPosition.set(pLight.getWorldPosition(), 1.);
+					pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
+					v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
+				}
 
 				if (pLight.getLightType() === ELightTypes.OMNI) {
 
@@ -228,6 +234,7 @@ module akra.render {
 						var pSkyDome: ISceneModel = pSunLight.getSkyDome();
 						var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
 						(<UniformSunShadow>pUniformData).setLightData(<ISunParameters>pLight.getParams(), iSkyDomeId);
+						(<UniformSunShadow>pUniformData).LIGHT_DATA.EYE_POSITION.set(v3fLightTransformPosition);
 						pUniforms.sunShadows.push(<UniformSunShadow>pUniformData);
 
 						pUniforms.textures.push(pSunLight.getDepthTexture());
@@ -245,6 +252,7 @@ module akra.render {
 						var pSkyDome: ISceneModel = pSunLight.getSkyDome();
 						var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
 						(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.getParams(), iSkyDomeId);
+						(<UniformSun>pUniformData).LIGHT_DATA.EYE_POSITION.set(v3fLightTransformPosition);
 						pUniforms.sun.push(<UniformSun>pUniformData);
 					}
 				}

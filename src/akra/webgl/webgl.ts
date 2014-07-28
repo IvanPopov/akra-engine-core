@@ -238,9 +238,11 @@ module akra.webgl {
 	})(createContext());
 
 	export function hasExtension(sExtName: string): boolean {
-		for (var i: int = 0; i < pSupportedExtensionList.length; ++i) {
-			if (pSupportedExtensionList[i].search(sExtName) != -1) {
-				return true;
+		if (isSupported) {
+			for (var i: int = 0; i < pSupportedExtensionList.length; ++i) {
+				if (pSupportedExtensionList[i].search(sExtName) != -1) {
+					return true;
+				}
 			}
 		}
 

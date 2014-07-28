@@ -95,6 +95,7 @@
         <File Path="resources/fx/brdf.afx"/>
         <File Path="resources/fx/transparency.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/water.afx" />
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/apply_transparency.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
@@ -102,6 +103,7 @@
           <ResourceFile Path="resources/fx/fxaa.afx"/>
           <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/filmgrain.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx">
@@ -141,6 +143,7 @@
         <File Path="resources/fx/brdf.afx"/>
         <File Path="resources/fx/transparency.afx"/>
         <ResourceFile Path="resources/HLSL.gr">
+          <ResourceFile Path="resources/fx/water.afx" />
           <ResourceFile Path="resources/fx/apply_forward_shading.afx" />
           <ResourceFile Path="resources/fx/apply_transparency.afx" />
           <ResourceFile Path="resources/fx/SystemEffects.afx"/>
@@ -148,6 +151,7 @@
           <ResourceFile Path="resources/fx/fxaa.afx"/>
           <ResourceFile Path="resources/fx/fog.afx"/>
           <ResourceFile Path="resources/fx/skybox.afx"/>
+          <ResourceFile Path="resources/fx/filmgrain.afx"/>
           <ResourceFile Path="resources/fx/TextureToScreen.afx"/>
           <ResourceFile Path="resources/fx/mesh_geometry.afx">
             <ResourceFile Path="resources/fx/mesh_texture.afx"/>

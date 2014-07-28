@@ -106,7 +106,7 @@ bool normalFix;
 
 void fs_mesh_texture_deferre_pass_1(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;    
-    pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy);
+    pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy, IN.vert);
 
     pixelData.material.emissive = clamp(defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy)), 0., 1.);
     pixelData.material.diffuse = clamp(defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy)), 0., 1.);
@@ -132,7 +132,7 @@ void fs_mesh_texture_deferre_pass_2(VS_OUT_2 IN){
 
 void fs_mesh_texture_normal_shininess(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;    
-    pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy);
+    pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy, IN.vert);
 
         applyAlphatestDegrade(IN.tc_diffuse.xy);
     pixelData.material.shininess = clamp(defaultMaterial.shininess + tex2D(sampler_shininess, float2(IN.tc_shininess.xy)).r, 0., 1.);
@@ -157,7 +157,7 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
 
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;    
     
-    pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy);
+    pixelData.normal = calcNormal(texNormal, IN.norm.xyz, IN.tc_normal.xy, IN.vert);
     pixelData.material.emissive = clamp(defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy)), 0., 1.);
     pixelData.material.diffuse = clamp(defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy)), 0., 1.);
     pixelData.material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
@@ -173,7 +173,8 @@ void fs_mesh_texture_full(VS_OUT_2 IN){
     }
 }
 
-float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
+shared float3x3 transformNormalMat;
+float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal, float3 vertexPos) {
     float3 result_normal = float3(0.);
 
     if(texNormal == float3(0.) || !useNormal){
@@ -182,23 +183,25 @@ float3 calcNormal(float3 texNormal, float3 vertexNormal, float2 tc_normal) {
     else {        
         float3 normal = normalize(vertexNormal);
         float3 tangent = float3(dFdx(tc_normal.x), dFdy(tc_normal.x), 0.);
-        tangent.z = -dot(tangent.xy,normal.xy)/normal.z;
+        tangent.z = -dot(tangent.xy,normal.xy)/abs(normal.z);
         tangent = normalize(tangent);
         float3 binormal = cross(tangent, normal);
 
         //формируем матрицу трансформации
-        float3x3 m3fTransform;
-        m3fTransform[0] = tangent;
-        m3fTransform[1] = binormal;
-        m3fTransform[2] = normal;
+        transformNormalMat[0] = tangent;
+        transformNormalMat[1] = binormal;
+        transformNormalMat[2] = normal;
 
         texNormal.xy = (texNormal.xy - 0.5) * 2.;
 
         texNormal = normalize(texNormal);
 
-        result_normal = m3fTransform * texNormal;
+        // result_normal = transformNormalMat * texNormal;
+        float3 newNormal = normalize(transformNormalMat * texNormal);
+        result_normal = normal + (newNormal-normal) * dot(normalize(-vertexPos), normal);
     }
 
+    // return normalize(vertexNormal);
     return normalize(result_normal);
 }
 
@@ -218,7 +221,7 @@ sampler mirrorSampler = sampler_state{
 };
 
 void applyMirrorReflection(){
-    pixelData.material.emissive += .3 * tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
+    pixelData.material.emissive += .7 * tex2D(mirrorSampler, float2(1. - fragCoord.x/viewportSize.x, fragCoord.y/viewportSize.y));
 }
 
 void applyAlphatestDegrade(float2 texPos){

@@ -1,10 +1,17 @@
 link(href='../css/noncompatible.css', rel='stylesheet')
+
 #non-compatible
+  div.overlay
+  //- iframe(style="width: 640px; height: 480px;", src=demo.youtube, frameborder="0", allowfullscreen, showsearch="0", showinfo="0", controls="1", theme="dark")
   div.splashscreen
     h1 Oops, we have a problem :(
+      div.watch-video(onclick=("window.open('" + "http://www.youtube.com/watch?v=LN4n0pTxWYs" + "', '_blank').focus()"))
+        div.play
       div.h3.error See console log for details.
       div 
-        div.h2 Try a different browser
+        div.h2 Watch video or
+          br
+          | Try a different browser
         a(href='https://www.google.com/intl/en/chrome/browser/')
           img(src='../img/chrome.png')
         a(href='http://www.mozilla.org/')

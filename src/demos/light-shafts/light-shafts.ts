@@ -10,6 +10,8 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
+	addons.compatibility.requireWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+	addons.compatibility.requireWebGLExtension(webgl.OES_TEXTURE_FLOAT);
 	addons.compatibility.verify("non-compatible");
 
 	var pProgress = new addons.Progress(document.getElementById("progress"));
@@ -43,7 +45,8 @@ module akra {
 		lightShafts: true,
 		lensFlare: true,
 		dof: true,
-		blur: true
+		blur: true,
+		filmgrain: false
 	};
 
 	export var animateTimeOfDay = () => {
@@ -138,6 +141,15 @@ module akra {
 			}
 		});
 
+		pGUI.add(pState, 'filmgrain').name('film grain').onChange((bEnabled) => {
+			if (bEnabled) {
+				pEffect.addComponent("akra.system.filmgrain");
+			}
+			else {
+				pEffect.delComponent("akra.system.filmgrain");
+			}
+		});
+
 
 		pGUI.add(pState, 'lensFlare').name('lensFlare').onChange((bEnabled) => {
 			if (bEnabled) {
@@ -148,14 +160,14 @@ module akra {
 			}
 		});
 
-		pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
-			if (bEnabled) {
-				pEffect.addComponent("akra.system.dof");
-			}
-			else {
-				pEffect.delComponent("akra.system.dof");
-			}
-		});
+		// pGUI.add(pState, 'dof').name('dof').onChange((bEnabled) => {
+		// 	if (bEnabled) {
+		// 		pEffect.addComponent("akra.system.dof");
+		// 	}
+		// 	else {
+		// 		pEffect.delComponent("akra.system.dof");
+		// 	}
+		// });
 
 		pGUI.add(pState, 'blur').name('blur').onChange((bEnabled) => {
 			if (bEnabled) {
@@ -166,18 +178,18 @@ module akra {
 			}
 		});
 
-        var pSkyBoxTexture: ITexture = pRmgr.createTexture(".sky-box-texture");
-        pSkyBoxTexture.loadResource("SKYBOX");
+		var pSkyBoxTexture: ITexture = pRmgr.createTexture(".sky-box-texture");
+		pSkyBoxTexture.loadResource("SKYBOX");
 
-        // pGUI.add({
-        //     test: () => {
-        //         var pTexture = pRmgr.createTexture("redtexture");
-        //         pTexture.create(1024, 512, 1, null, 0, 0, 0,
-        //             ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
-        //         pTexture.unwrapCubeTexture(pSkyBoxTexture);
-        //         pCanvas.addViewport(new render.TextureViewport(pTexture,.1,.1,.5,.5*pViewport.getActualWidth()/pViewport.getActualHeight()*pTexture.getHeight()/pTexture.getWidth(),10));
-        //     }
-        // }, "test").name("unwrap");
+		// pGUI.add({
+		//     test: () => {
+		//         var pTexture = pRmgr.createTexture("redtexture");
+		//         pTexture.create(1024, 512, 1, null, 0, 0, 0,
+		//             ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+		//         pTexture.unwrapCubeTexture(pSkyBoxTexture);
+		//         pCanvas.addViewport(new render.TextureViewport(pTexture,.1,.1,.5,.5*pViewport.getActualWidth()/pViewport.getActualHeight()*pTexture.getHeight()/pTexture.getWidth(),10));
+		//     }
+		// }, "test").name("unwrap");
 
 		var pShaftsFolder = pGUI.addFolder("light-shafts");
 		(<dat.NumberControllerSlider>pShaftsFolder.add(pSunshaftData, 'SUNSHAFT_SHARPNESS'))
@@ -260,7 +272,7 @@ module akra {
 
 		(<ITexture>pLensflareData.LENSFLARE_COOKIES_TEXTURE).loadImages(pEngine.getResourceManager().getImagePool().findResource("LENSFLARE_COOKIES_TEXTURE"));
 		//var iCounter: int = 0;
-		var pDofFocalPlane: float = 0.;
+		// var pDofFocalPlane: float = 0.;
 
 		pViewport.render.connect((pViewport: ILPPViewport, pTechnique: IRenderTechnique,
 			iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject) => {
@@ -280,9 +292,9 @@ module akra {
 			pLensflareData.LENSFLARE_LIGHT_POSITION = pLightInDeviceSpace;
 			pLensflareData.LENSFLARE_LIGHT_ANGLE = pSunshaftData.SUNSHAFT_ANGLE;
 
-			if (iPass === 0 && pTechnique.hasComponent("akra.system.dof")) {
-				pDofFocalPlane = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth() / 2., pViewport.getActualHeight() / 2., 1.)).subtract(pCamera.getWorldPosition()).z;
-			}
+			// if (iPass === 0 && pTechnique.hasComponent("akra.system.dof")) {
+			// 	pDofFocalPlane = pViewport.unprojectPoint(math.Vec3.temp(pViewport.getActualWidth() / 2., pViewport.getActualHeight() / 2., 1.)).subtract(pCamera.getWorldPosition()).z;
+			// }
 			// pDofData.DOF_FOCAL_PLANE = pDofFocalPlane;
 
 			pPass.setUniform('SUNSHAFT_ANGLE', pSunshaftData.SUNSHAFT_ANGLE);

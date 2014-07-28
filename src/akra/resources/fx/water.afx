@@ -1,0 +1,84 @@
+provide akra.system;
+
+include "common.afx";
+
+shared PixelData pixelData;
+
+struct VS_OUT {
+	float3 worldPos: WORLD_POSITION;
+};
+
+float4x4 model_mat:MODEL_MATRIX;
+
+VS_OUT vs_water(float4 pos: POSITION){
+	VS_OUT Out;
+
+	Out.worldPos = (model_mat * float4(pos.xyz, 1.0)).xyz;
+	return Out;
+} 
+
+texture tex0:TEXTURE4;
+
+sampler sampler_normal:S_NORMAL  = sampler_state
+{
+    Texture = <tex0>;
+};
+
+float time: WATER_TIME = 0.;
+
+float4 getNoise( float2 uv )
+{
+	float2 uv0 = ( uv / 103.0 ) + float2(time / 17.0, time / 29.0);
+	float2 uv1 = uv / 107.0-float2( time / -19.0, time / 31.0 );
+	float2 uv2 = uv / float2( 8907.0, 9803.0 ) + float2( time / 101.0, time / 97.0 );
+	float2 uv3 = uv / float2( 1091.0, 1027.0 ) - float2( time / 109.0, time / -113.0 );
+	float4 noise = (( tex2D( sampler_normal, uv0 ) ) +
+      		( tex2D( sampler_normal, uv1 ) ) +
+      		( tex2D( sampler_normal, uv2 ) ) +
+		( tex2D( sampler_normal, uv3 ) ));
+	//noise.xy = noise.xy * 0.5 - 1.;
+	// noise.z = 4.;
+	return noise * 0.5 - 1.0;
+}
+
+shared float3x3 transformNormalMat;
+float4x4 view_mat:VIEW_MATRIX;
+float2 uvScale = float2(1., 1.);
+
+void fs_water(float3 texCoord: TEXCOORD0, float3 vert: VERTEX){
+	float4 noise = getNoise(texCoord.xy * uvScale);
+	float l = length(vert);
+	
+	float x0 = 10.;
+	float y0 = 1.;
+	float x1 = 500.;
+	float y1 = 100.;
+
+	float expK = exp(log(y1 - y0 + 1.)/x1/(x1-x0) * l * (l -x0)) + y0 - 1.;
+	float k = l > 10. ? expK : 1.;
+	float3 surfaceNormal = normalize(noise.xzy * float3( 1.2 / k, 1.0, 1.2 / k));
+	pixelData.normal = ((view_mat * model_mat * float4(surfaceNormal, 0.)).xyz);
+
+	float3 view_dir = normalize(-vert);
+	float3 normal_dir = pixelData.normal;
+	float NoV = dot(pixelData.normal, view_dir);
+
+	if(NoV < 0.){
+		float3 reflect_dir = normalize(-view_dir + 2.*normal_dir*dot(normal_dir,view_dir));
+		float3 geomNormal = normalize((view_mat * model_mat * float4(0., 1., 0., 0.)).xyz);
+
+		reflect_dir -= dot(reflect_dir, geomNormal) * geomNormal;
+		reflect_dir = normalize(reflect_dir);
+
+		pixelData.normal = normalize((reflect_dir + view_dir));
+		// normal_dir -= NoV * 1.05 * view_dir;
+		// pixelData.normal = normalize(normal_dir);
+	}
+}
+
+technique water_surface{
+	pass {
+		//VertexShader = compile vs_water();
+		PixelShader = compile fs_water();
+	}
+}

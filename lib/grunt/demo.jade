@@ -9,9 +9,8 @@ html(lang="en")
     - for (var i in demo.styles)
       link(href=demo.styles[i], rel='stylesheet')
   body
-    - for (var i in demo.scripts)
-      script(src=demo.scripts[i])
-        
     #progress
     include noncompatible
+    - for (var i in demo.scripts)
+      script(src=demo.scripts[i])
     script(src=demo.src)

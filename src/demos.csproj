@@ -17,7 +17,98 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="demos\airborn\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\airborn\data\models\air01\T_CHER\T_CHER\C-ALAS.TGA" />
+    <Content Include="demos\airborn\data\models\air01\T_CHER\T_CHER\C-ALERON.TGA" />
+    <Content Include="demos\airborn\data\models\air01\T_CHER\T_CHER\C-HELICE.TGA" />
+    <Content Include="demos\airborn\data\models\air01\T_CHER\T_CHER\C-LADO.TGA" />
+    <Content Include="demos\airborn\data\models\air01\T_CHER\T_CHER\C-TREN.TGA" />
+    <Content Include="demos\airborn\data\models\air01\T_CHER\T_CHER\LAKE3.JPG" />
+    <Content Include="demos\airborn\data\models\air02\500D\500DLINE.JPG" />
+    <Content Include="demos\airborn\data\models\air02\500D\500DMAT.JPG" />
+    <Content Include="demos\airborn\data\models\air02\500D\500DNUM.JPG" />
+    <Content Include="demos\airborn\data\models\air02\500D\LAKE3.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SBEEH.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SBEMS.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SHELC.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SHENG.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SLTRB.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SLTRR.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SNUMR.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SPICF.JPG" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\LAKEREM.JPG" />
+    <Content Include="demos\airborn\data\models\air04\air04_diffuse.jpg" />
+    <Content Include="demos\airborn\data\models\air04\air04_gloss.jpg" />
+    <Content Include="demos\airborn\data\models\air04\air04_rotate.jpg" />
+    <Content Include="demos\airborn\data\models\air04\air04_rotate_alpha.jpg" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SBEEH.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SBEMS.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SHELC.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SHENG.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SLTRB.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SLTRR.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SNUMR.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\G17SPICF.JPG" />
+    <Content Include="demos\airborn\data\models\air05\G17S\LAKEREM.JPG" />
+    <Content Include="demos\airborn\data\models\air06\images\air06_bump.jpg" />
+    <Content Include="demos\airborn\data\models\air06\images\air06_diffuse.jpg" />
+    <Content Include="demos\airborn\data\models\air06\images\air06_diffuse_big.jpg" />
+    <Content Include="demos\airborn\data\models\air06\images\air06_rotate.jpg" />
+    <Content Include="demos\airborn\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\airborn\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\airborn\demo.xml" />
+    <Content Include="demos\airborn\preview.jpg" />
     <Content Include="demos\atmospheric_scattering\demo.xml" />
+    <Content Include="demos\bowling\ammo\ammo.min.js" />
+    <Content Include="demos\bowling\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\bowling\data\models\barrel\images\barrel_diffuse.dds" />
+    <Content Include="demos\bowling\data\models\barrel\images\barrel_normal.dds" />
+    <Content Include="demos\bowling\data\models\barrel\images\barrel_specular.dds" />
+    <Content Include="demos\bowling\data\models\barrel\images\stand_diffuse.dds" />
+    <Content Include="demos\bowling\data\models\barrel\images\stand_normal.dds" />
+    <Content Include="demos\bowling\data\models\barrel\images\stand_specular.dds" />
+    <Content Include="demos\bowling\data\models\bowling\bowl.png" />
+    <Content Include="demos\bowling\data\models\bowling\floorh.png" />
+    <Content Include="demos\bowling\data\models\bowling\images\bowl.png" />
+    <Content Include="demos\bowling\data\models\bowling\images\floorh.png" />
+    <Content Include="demos\bowling\data\models\can\images\can_diffuse_1024.png" />
+    <Content Include="demos\bowling\data\models\can\images\can_normal_1024.png" />
+    <Content Include="demos\bowling\data\models\can\images\can_specular_1024.png" />
+    <Content Include="demos\bowling\data\models\oil\images\oil_diffuse_1024.png" />
+    <Content Include="demos\bowling\data\models\oil\images\oil_normal_1024.png" />
+    <Content Include="demos\bowling\data\models\oil\images\oil_specular_1024.png" />
+    <Content Include="demos\bowling\data\models\oil\images\_oil_specular_1024.png" />
+    <Content Include="demos\bowling\data\models\rock\images\diffuse.dds" />
+    <Content Include="demos\bowling\data\models\rock\images\normal.dds" />
+    <Content Include="demos\bowling\data\models\rock\images\specular.dds" />
+    <Content Include="demos\bowling\data\textures\fire.png" />
+    <Content Include="demos\bowling\data\textures\skyboxes\colosseum.dds" />
+    <Content Include="demos\bowling\data\textures\skyboxes\desert-3.dds" />
+    <Content Include="demos\bowling\data\textures\skyboxes\nature.dds" />
+    <Content Include="demos\bowling\data\textures\skyboxes\park-01-cube.png" />
+    <Content Include="demos\bowling\data\textures\skyboxes\perea-beach1.dds" />
+    <Content Include="demos\bowling\data\textures\skyboxes\plains-of-abraham.dds" />
+    <Content Include="demos\bowling\data\textures\skyboxes\rome-church.dds" />
+    <Content Include="demos\bowling\data\textures\skyboxes\saint-peters-basilica.dds" />
+    <Content Include="demos\bowling\demo.xml" />
+    <Content Include="demos\bowling\preview.jpg" />
+    <Content Include="demos\cellworks\customjs\jquery-1.11.0.min.js" />
+    <Content Include="demos\cellworks\customjs\markup.js" />
+    <Content Include="demos\cellworks\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\aniso.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\home.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\iPhone5_screen.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\iPhone5_text.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\speakergrill_b.jpg" />
+    <Content Include="demos\cellworks\data\models\iphone5\images\speakergrill_c.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_nx.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_ny.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_nz.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_px.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_py.jpg" />
+    <Content Include="demos\cellworks\data\textures\skyboxes\white_pz.jpg" />
+    <Content Include="demos\cellworks\demo.xml" />
+    <Content Include="demos\cellworks\preview.jpg" />
     <Content Include="demos\css\metro-bootstrap.css" />
     <Content Include="demos\distance-fog\dat.gui\dat.gui.min.js" />
     <Content Include="demos\distance-fog\data\effects\Measured BaseColor values Unreal.txt" />
@@ -87,7 +178,9 @@
     <Content Include="demos\light-shafts\demo.xml" />
     <Content Include="demos\mercedes\css\mercedes-benz-logo.png" />
     <Content Include="demos\mercedes\dat.gui\dat.gui.js" />
-    <Content Include="demos\mercedes\demo.xml" />
+    <Content Include="demos\mercedes\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\mercedes\grid.jpg" />
     <Content Include="demos\mercedes\models\images\0_grille1_alpha.png" />
     <Content Include="demos\mercedes\models\images\1_nodamage_lod0.png" />
@@ -101,7 +194,9 @@
     <Content Include="demos\mercedes\textures\grid.png" />
     <Content Include="demos\mercedes\textures\lightmap.png" />
     <Content Include="demos\miner\dat.gui\dat.gui.js" />
-    <Content Include="demos\miner\demo.xml" />
+    <Content Include="demos\miner\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\miner\grid.jpg" />
     <Content Include="demos\miner\models\miner\images\gun_diffuse.dds" />
     <Content Include="demos\miner\models\miner\images\gun_normal.dds" />
@@ -172,7 +267,9 @@
     <Content Include="demos\model-viewer\data\textures\skyboxes\plains-of-abraham.dds" />
     <Content Include="demos\model-viewer\data\textures\skyboxes\rome-church.dds" />
     <Content Include="demos\model-viewer\data\textures\skyboxes\saint-peters-basilica.dds" />
-    <Content Include="demos\model-viewer\demo.xml" />
+    <Content Include="demos\model-viewer\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\model-viewer\miner\dat.gui\dat.gui.js" />
     <Content Include="demos\model-viewer\miner\demo.xml" />
     <Content Include="demos\model-viewer\miner\grid.jpg" />
@@ -349,6 +446,79 @@
     <Content Include="demos\pbs\physically_based_cheatsheet1.png" />
     <Content Include="demos\pbs\physically_based_cheatsheet2.png" />
     <Content Include="demos\performance\demo.xml" />
+    <Content Include="demos\shadowroom\dat.gui\dat.gui.min.js" />
+    <Content Include="demos\shadowroom\data\door_ornament2.jpg" />
+    <Content Include="demos\shadowroom\data\door_ornament2_bump.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\carpet_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\door1\door_ornament.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\door1\door_ornament_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\door1\door_wood.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\door1\door_wood_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\magazines\magazine_1.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\magazines\magazine_2.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\magazines\magazine_3.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\magazines\magazine_4.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\pimp_wall.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\pimp_wall_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\plaster_wall_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\sofa\sofa_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table1\Wood 2000 x 2000 px 2106.JPG" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\laricina.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\w2.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\Wood 4252 x 1890 px 050313.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\wood_med12.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood02_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wall_normal.png" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood01_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood03_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\mebel\wood04_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\door_ornament.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\door_ornament_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\door_wood.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\door_wood_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood01_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood03_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\images\wood04_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c00.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c01.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c02.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c03.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c04.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube_c05.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_nx.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_ny.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_nz.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_px.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_py.jpg" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\white_pz.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\magazine_1.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\magazine_2.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\magazine_3.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\magazine_4.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\pimp_wall.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\pimp_wall_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\plaster_wall_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\sofa_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood01_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood01_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood03_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood03_normal.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood04_diffuse.jpg" />
+    <Content Include="demos\shadowroom\data\models\room\wood04_normal.jpg" />
+    <Content Include="demos\shadowroom\demo.xml" />
+    <Content Include="demos\shadowroom\preview.jpg" />
     <Content Include="demos\WoodSoldier\WoodSoldier.png" />
   </ItemGroup>
   <ItemGroup>
@@ -408,7 +578,9 @@
     <Content Include="demos\arteries\data\AG\041.jpg" />
     <Content Include="demos\arteries\data\coords\coord4.txt" />
     <Content Include="demos\arteries\data\coords\coord_real_ag.txt" />
-    <Content Include="demos\arteries\demo.xml" />
+    <Content Include="demos\arteries\demo.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="demos\cube.dae">
       <SubType>Designer</SubType>
     </Content>
@@ -666,6 +838,78 @@
     <Content Include="demos\pbs\data\textures\skyboxes\plains-of-abraham.dds" />
     <Content Include="demos\pbs\data\textures\skyboxes\rome-church.dds" />
     <Content Include="demos\pbs\data\textures\skyboxes\saint-peters-basilica.dds" />
+    <Content Include="demos\airborn\data\models\air01.blend" />
+    <Content Include="demos\airborn\data\models\air01.blend1" />
+    <Content Include="demos\airborn\data\models\air01\Airplane T-CHER L N250712.3DS" />
+    <Content Include="demos\airborn\data\models\air02\Helicopter 500D N140612.3DS" />
+    <Content Include="demos\airborn\data\models\air03\Airplane G17S N270911.3DS" />
+    <Content Include="demos\airborn\data\models\air03\G17S\G17S\G17SL.MAX" />
+    <Content Include="demos\airborn\data\models\air04\Airplane AN-2 N200314.3DS" />
+    <Content Include="demos\airborn\data\models\air05\Airplane_G17S N190609.3DS" />
+    <Content Include="demos\airborn\data\models\air06.blend" />
+    <Content Include="demos\airborn\data\models\air06.blend1" />
+    <Content Include="demos\airborn\data\models\air06\air06.dae" />
+    <Content Include="demos\airborn\data\models\air06\Airplane N220114.3DS" />
+    <Content Include="demos\airborn\data\models\air06\Airplane N87MT N220114.3DS" />
+    <Content Include="demos\airborn\data\models\Sphere.DAE" />
+    <Content Include="demos\bowling\data\effects\lensflare.afx" />
+    <Content Include="demos\bowling\data\models\barrel\barrel.DAE" />
+    <Content Include="demos\bowling\data\models\barrel\barrel_and_support.DAE" />
+    <Content Include="demos\bowling\data\models\barrel\barrel_support.DAE" />
+    <Content Include="demos\bowling\data\models\bowling\bowling.blend" />
+    <Content Include="demos\bowling\data\models\bowling\bowling.blend1" />
+    <Content Include="demos\bowling\data\models\bowling\bowling_ball.dae" />
+    <Content Include="demos\bowling\data\models\bowling\bowling_kegel.dae" />
+    <Content Include="demos\bowling\data\models\bowling\bowling_scene.blend" />
+    <Content Include="demos\bowling\data\models\bowling\bowling_scene.blend1" />
+    <Content Include="demos\bowling\data\models\bowling\bowling_scene.dae" />
+    <Content Include="demos\bowling\data\models\bowling\keggel.blend" />
+    <Content Include="demos\bowling\data\models\bowling\keggel.blend1" />
+    <Content Include="demos\bowling\data\models\can\can.DAE" />
+    <Content Include="demos\bowling\data\models\oil\oil.DAE" />
+    <Content Include="demos\bowling\data\models\prop01\prop01.dae" />
+    <Content Include="demos\bowling\data\models\prop04\prop04.dae" />
+    <Content Include="demos\bowling\data\models\rock\rock-1-low-p.DAE" />
+    <Content Include="demos\bowling\data\models\Sphere.DAE" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.blend" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.blend1" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.dae" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf1\130112_shelf.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf2\Shelf Modus Factory N140312.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf3\Rack N070112.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf4\Shelf N021112.3ds" />
+    <Content Include="demos\shadowroom\data\models\mebel\table1\Table coffee N060913.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\Table N050913.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\Table N080713.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table4\Table N020413.3DS" />
+    <Content Include="demos\shadowroom\data\models\room\room.dae" />
+    <Content Include="demos\shadowroom\data\models\room\room_bak.dae" />
+    <Content Include="demos\shadowroom\data\models\Sphere.DAE" />
+    <Content Include="demos\cellworks\data\models\iphone5.blend" />
+    <Content Include="demos\cellworks\data\models\iphone5\iphone5.dae" />
+    <Content Include="demos\cellworks\data\models\Sphere.DAE" />
+    <Content Include="demos\shadowroom\data\models\mebel\camera\Photocamera.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\cup1\19Cup  N010208.3ds" />
+    <Content Include="demos\shadowroom\data\models\mebel\cup2\Cup - kitchen accessories.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\door1\Door N301213.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\fan1\Fan N050811.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\lamp1\Luster N281213.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\magazines\Magazines N300411.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.blend" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.blend1" />
+    <Content Include="demos\shadowroom\data\models\mebel\scene.dae" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf1\130112_shelf.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf2\Shelf Modus Factory N140312.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf3\Rack N070112.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\shelf4\Shelf N021112.3ds" />
+    <Content Include="demos\shadowroom\data\models\mebel\sofa\Alison sofa, Ulivi Salotti.mtl" />
+    <Content Include="demos\shadowroom\data\models\mebel\table1\Table coffee N060913.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table2\Table N050913.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table3\Table N080713.3DS" />
+    <Content Include="demos\shadowroom\data\models\mebel\table4\Table N020413.3DS" />
+    <Content Include="demos\shadowroom\data\models\room\room.dae" />
+    <Content Include="demos\shadowroom\data\models\Sphere.DAE" />
+    <Content Include="demos\shadowroom\data\textures\skyboxes\cube.dds" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -707,15 +951,17 @@
     <Content Include="demos\game\lib\virtualGamepad.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="demos\airborn\airborn.ts" />
+    <TypeScriptCompile Include="demos\bowling\bowling.ts" />
+    <TypeScriptCompile Include="demos\cellworks\cellworks.ts" />
     <TypeScriptCompile Include="demos\distance-fog\distance-fog.ts" />
     <TypeScriptCompile Include="demos\mercedes\mercedes.ts" />
     <TypeScriptCompile Include="demos\miner\miner.ts" />
     <TypeScriptCompile Include="demos\model-viewer\model-viewer.ts" />
     <TypeScriptCompile Include="demos\pbs\pbs.ts" />
+    <TypeScriptCompile Include="demos\shadowroom\shadowroom.ts" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="demos\anti-aliasing\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

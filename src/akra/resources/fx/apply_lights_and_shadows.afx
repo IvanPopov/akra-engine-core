@@ -73,7 +73,8 @@ float4 applyMaterialAlpha() : COLOR {
     //color.a = NoV;
 
     //color.g = color.a;
-
+    // color.rgb = (pixelData.normal + 1.)/2.;
+    // color.a = 1.;
     return color;
 }
 
@@ -266,7 +267,7 @@ float4 applyPBSSkyboxLighting(): COLOR {
     else {
         float3 direction = (invView*float4(pixelData.normal,0.)).xyz;
 
-        float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5;
+        float3 envColor = getEnvMapColor(direction, 0.1, envSampler0) * 0.5 * ( length(float3(1.) - pixelData.material.specular.xyz) * 0.577 );
         color += float4(envColor, 1.) * pixelData.material.diffuse;
         return color;
     }

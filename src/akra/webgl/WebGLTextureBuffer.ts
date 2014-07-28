@@ -495,7 +495,7 @@ module akra.webgl {
 						}                                                            \n\
 						vec3 up = cross(forward,right);                      \n\
 						float steps = power*2.;                              \n\
-						float angle = asin(texel_size*steps)*0.5*float(lod);                              \n\
+						float angle = asin(texel_size*steps)*0.5*float(8-lod);                              \n\
 						for(int i=0;i<128;i++) {                                                                           \n\
 							if(float(i)>=steps) {                                                                           \n\
 								break;                                                                                       \n\
@@ -910,9 +910,9 @@ module akra.webgl {
 			}
 			
 			// FIX: mipmap generation must be done in WebGLInternalTexture instead
-			// if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0)) {
-			// 	pWebGLContext.generateMipmap(this._eFaceTarget);
-			// }
+			if (bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0) && this._eTarget === gl.TEXTURE_2D) {
+				pWebGLContext.generateMipmap(this._eFaceTarget);
+			}
 
 			pWebGLRenderer.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
 			

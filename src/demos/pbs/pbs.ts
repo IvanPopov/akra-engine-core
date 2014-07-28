@@ -1,6 +1,7 @@
 /// <reference path="../../../built/Lib/akra.d.ts" />
 /// <reference path="../../../built/Lib/base3dObjects.addon.d.ts" />
 /// <reference path="../../../built/Lib/progress.addon.d.ts" />
+/// <reference path="../../../built/Lib/compatibility.addon.d.ts" />
 
 /// <reference path="../std/std.ts" />
 
@@ -9,6 +10,11 @@
 declare var AE_RESOURCES: akra.IDep;
 
 module akra {
+	addons.compatibility.requireWebGLExtension(webgl.WEBGL_DEPTH_TEXTURE);
+	addons.compatibility.requireWebGLExtension(webgl.OES_TEXTURE_FLOAT);
+	addons.compatibility.requireWebGLExtension(webgl.WEBGL_COMPRESSED_TEXTURE_S3TC);
+	addons.compatibility.verify("non-compatible");
+
 	var pProgress = new addons.Progress(document.getElementById("progress"));
 
 	var pRenderOpts: IRendererOptions = {

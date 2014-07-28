@@ -10,8 +10,8 @@ sampler screenSampler : INPUT_SAMPLER = sampler_state
 {
 	Texture = <tex0>;
 	MipFilter = LINEAR;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 };
 
 sampler depthSampler : SAMPLER_SCENE_DEPTH = sampler_state
@@ -31,9 +31,9 @@ VS_OUT vs_fxaa_shading(float2 pos: POSITION){
 	VS_OUT Out;
 
 	Out.position = float4(pos,0.,1.);
-    Out.screenPosition = pos;
+	Out.screenPosition = pos;
 	//Out.textureCoords = float2(texCoodrX,texCoordY);
-    Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
+	Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
 	
 	return Out;
 };
@@ -52,7 +52,7 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	//}
 	//if (IN.textureCoords.x > 0.502){
 		//if (IN.textureCoords.y < 0.498){ //SE bottom right
-			//return fxaaOldTransformed2Hybrid(IN.textureCoords);
+			return fxaaOldTransformed2Hybrid(IN.textureCoords);
 		//}
 		//if (IN.textureCoords.y > 0.502){ //NE top right
 			//return tex2D(screenSampler, IN.textureCoords);
@@ -61,7 +61,7 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	//return float4(1., 0., 0., 1.);
 
 
-    return tex2D(screenSampler, IN.textureCoords);
+	return tex2D(screenSampler, IN.textureCoords);
 
 
 };
@@ -1009,15 +1009,15 @@ float4 transformedFxaa1(float2 pos)
 	}
 
 	float dist = abs(fxaaDepthTexture(toPosM) - fxaaDepthTexture(pos));
- 	
+	
 	float3 shit = fxaaTexture(posM).xyz;
- 	float3 shit2 = rgbM;
- 	
+	float3 shit2 = rgbM;
+	
 	if (dist > 0.001){
 		if (shit.x < shit2.x) shit.x += (shit2.x - shit.x)*0.4;
 		if (shit.y < shit2.y) shit.y += (shit2.y - shit.y)*0.4;
 		if (shit.z < shit2.z) shit.z += (shit2.z - shit.z)*0.4;
- 	
+	
 		if (shit.x > shit2.x) shit.x -= (shit2.x - shit.x)*0.4;
 		if (shit.y > shit2.y) shit.y -= (shit2.y - shit.y)*0.4;
 		if (shit.z > shit2.z) shit.z -= (shit2.z - shit.z)*0.4;

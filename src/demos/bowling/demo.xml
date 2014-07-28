@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Demo Name="Bowling" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/grunt/schema.xsd">
+  <Description>Bowling demo.</Description>
+  <ItemGroup>
+    <TypeScriptCompile Include="bowling.ts"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptOutFile>../../../$(BuiltDir)/demos/bowling/bowling.js</TypeScriptOutFile>
+    <TypeScriptPropagateEnumConstants>True</TypeScriptPropagateEnumConstants>
+    <!--<Variable Name="AE_MODELS">data/models/</Variable>-->
+    <Dependencies>
+      <Attachment>
+        <File Path="dat.gui/dat.gui.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+      
+      <Attachment>
+        <File Path="ammo/ammo.min.js"/>
+        <Format>Enclosure</Format>
+        <OutDir>js</OutDir>
+        <Type>javascript</Type>
+        <CollapsePath>True</CollapsePath>
+      </Attachment>
+
+      <Attachment Name="AE_MODELS">
+        <Folder Path="data/models/"/>
+        <Format>Enclosure</Format>
+      </Attachment>
+      
+      <Module Name="addon-compatibility" />
+      <Module Name="addon-progress" />
+      <Module Name="addon-base3dObjects" />
+      
+    </Dependencies>
+    <Resource Name="AE_RESOURCES">
+      <Filename>data</Filename>
+      <Archive>True</Archive>
+      <CompressionLevel>Ultra</CompressionLevel>
+      <UseInlining>False</UseInlining>
+      
+      <Data>
+        <Folder Path="data/models/bowling"/>
+        <ResourceFile Path="data/models/bowling/bowling_scene.dae" Name="BOWLING.DAE"/>
+
+        <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX_DESERT"/>
+        <ResourceFile Path="data/textures/skyboxes/sunset.dds" Name="SKYBOX_SUNSET"/>
+      </Data>
+    </Resource>
+  </PropertyGroup>
+</Demo>

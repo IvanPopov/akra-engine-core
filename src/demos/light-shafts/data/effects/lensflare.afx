@@ -74,6 +74,8 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 
 	float objId = tex2D(deferredSampler,_clamped_lightPosInTexture * depthTextureRatio / screenTextureRatio).w;
 
+	float2 abberationDelta = sign(screenPositionClamped)*pow(abs(screenPositionClamped)*aspectRatioNormalized,float2(lensflareAberrationFactor));
+
 	if (lensflareAngle <= 0.	||
 		_clamped_lightPosInTexture != lightPosInTexture || 
 		(objId != 0. && objId != lensflareSkydomeId)) {
@@ -118,7 +120,7 @@ float4 fs_lensflare_shading(VS_OUT IN) : COLOR {
 						newLF += 
 						tex2D(lensflareCookiesSampler, 
 							clamp(
-								cookieReadPos + (cookieTopRight-cookieBotLeft)*aberrationScale*sign(screenPositionClamped)*pow((screenPositionClamped)*aspectRatioNormalized,float2(lensflareAberrationFactor)),
+								cookieReadPos + (cookieTopRight-cookieBotLeft)*abberationDelta*aberrationScale,
 								cookieTopLeft,
 								cookieBotRight
 							)
