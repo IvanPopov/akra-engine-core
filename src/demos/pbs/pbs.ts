@@ -38,6 +38,7 @@ module akra {
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
+	export var pDefaultCamera: ICamera = null;
 	export var pViewport: IViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pSky: model.Sky = null;
@@ -78,7 +79,7 @@ module akra {
 	}
 
 	function createCamera(): ICamera {
-		var pCamera: ICamera = pScene.createCamera();
+		var pCamera: ICamera = pDefaultCamera = pScene.createCamera();
 
 		pCamera.addPosition(Vec3.temp(-2.9563467216312262, 3.900536759964575, -15.853719720993343));
 		pCamera.setRotation(Quat4.temp(-0.0002096413471319314, 0.999332356829426, -0.005808150890586638, -0.03607023740685555));
@@ -89,7 +90,7 @@ module akra {
 		return pCamera;
 	}
 
-	function animateCameras(): void {
+	function animateCamera(pCamera: ICamera): void {
 		pScene.beforeUpdate.connect(() => {
 			pCamera.update();
 			if(bFPSCameraControls) {
@@ -204,6 +205,56 @@ module akra {
 			if(!bFPSCameraControls) {
 				pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 10., 25., 50.);
 			}
+		});
+	}
+
+	function init_animated_camera() {
+		var pCamRoot = (<IScene3d>pScene).createNode();
+		pCamRoot.attachToParent(pScene.getRootNode());
+		pCamRoot.setPosition(0., -3., 0.).setLocalScale(math.Vec3.temp(6.));
+
+		var pCamCollada = <ICollada>pRmgr.getColladaPool().findResource("CAMERA_ANIM_DAE");
+		var pCamColladaRoot = pCamCollada.extractFullScene();
+		pCamColladaRoot.attachToParent(pCamRoot);
+
+		var pCamController: IAnimationController = pEngine.createAnimationController();
+		var pCamContainer = animation.createContainer(pCamCollada.extractAnimation(0));
+		pCamContainer.useLoop(true);
+		pCamController.addAnimation(pCamContainer);
+		pCamColladaRoot.addController(pCamController);
+		pCamController.play.emit(0);
+		
+
+		var pCamNode: ISceneNode = <ISceneNode>pCamColladaRoot.findEntity("node-CameraDummy");
+
+		//var pTestCube = addons.cube(pScene);
+		//pTestCube.setInheritance(ENodeInheritance.ALL);
+		//pTestCube.attachToParent(pCamNode);
+
+		var pAnimCamera = (<IScene3d>pScene).createCamera();
+		pAnimCamera.setInheritance(ENodeInheritance.ALL);
+		pAnimCamera.attachToParent(pCamNode);
+
+		pAnimCamera.addRelRotationByXYZAxis(0, Math.PI, 0);
+
+		akra["pAnimCamera"] = pAnimCamera;
+
+		pGUI.add({ activeCamera: 'default' }, 'activeCamera', [
+			'default',
+			'anim'
+		]).onChange((sName: string) => {
+			if (sName === 'anim') {
+				pCamera = pAnimCamera;
+				//pCamera.attachToParent(pCamNode);
+				//pCamera.setPosition(0., -1, 0.);
+				//pCamera.setRotationByXYZAxis(0., Math.PI, 0.);
+			}
+			else {
+				pCamera = pDefaultCamera;
+				//pCamera.attachToParent(pScene.getRootNode());
+			}
+
+			pViewport.setCamera(pCamera);
 		});
 	}
 
@@ -581,9 +632,11 @@ module akra {
 			pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
 		});
 
-		createKeymap(pCamera);
+		createKeymap(pDefaultCamera);
 
-		animateCameras();
+		animateCamera(pDefaultCamera);
+
+		init_animated_camera();
 
 		pCamera.setFOV(Math.PI/4);
 
