@@ -419,9 +419,9 @@ float4 calulatePBSReflection(float3 position, float3 normal,
     // float3 reflect_dir = reflect(view_dir, normal_dir);
     float3 directionInsideCube = (invView * float4(reflect_dir, 0.)).xyz;
     float NoV = dot(normal_dir, view_dir);
-    if(NoV < 0.){
-        return float4(0.);
-    }
+    //if(NoV < 0.){
+        //return float4(0., 1., 0., 1.);;
+    //}
     NoV = saturate(NoV);
 
     float3 fresnelReflectance;
