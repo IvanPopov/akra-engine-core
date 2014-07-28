@@ -59,11 +59,15 @@
         
         <ResourceFile Path="data/textures/terrain/main_height_map_1025.dds" Name="TERRAIN_HEIGHT_MAP" />
         <ResourceFile Path="data/textures/terrain/main_terrain_normal_map.dds" Name="TERRAIN_NORMAL_MAP" />
+        <ResourceFile Path="data/textures/terrain/terrain_shadows.jpg" Name="TERRAIN_SHADOW_MAP" />
         <ResourceFile Path="data/textures/skyboxes/desert-3.dds" Name="SKYBOX" />
         <ResourceFile Path="data/textures/terrain/diffuse.dds" Name="MEGATEXTURE_MIN_LEVEL" />
 
         <ResourceFile Path="data/textures/waternormals.jpg" Name="WATER_NORMALS"/>
-
+        
+        <ResourceFile Path="data/models/windspot/WINDSPOT.DAE" Name="WINDSPOT" />
+        <Folder Path="data/models/windspot/images/" />
+        
         <ResourceFile Path="data/models/barrel/barrel_and_support.DAE" Name="BARREL" />
         <Folder Path="data/models/barrel/images/" />
         

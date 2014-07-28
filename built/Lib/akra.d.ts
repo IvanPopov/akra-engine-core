@@ -5694,6 +5694,7 @@ declare module akra {
     interface ITerrainMaps {
         height: IImg;
         normal: IImg;
+        shadow?: IImg;
     }
     interface ITerrainSampleData {
         iColor: number;
@@ -15258,6 +15259,7 @@ declare module akra.terrain {
         public _bShowMegaTexture: boolean;
         public _bMegaTextureCreated: boolean;
         public _sSurfaceTextures: string;
+        public _pShadowMapTexture: ITexture;
         constructor(pScene: IScene3d, eType?: EEntityTypes);
         public getDataFactory(): IRenderDataCollection;
         public getWorldExtents(): IRect3d;
