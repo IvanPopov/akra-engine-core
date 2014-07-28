@@ -1838,7 +1838,7 @@ module akra {
 
 		var pMaterial = pOceanQuad.getRenderable(0).getMaterial();
 		pMaterial.emissive.set(0.0);
-		pMaterial.diffuse.set(0.0, 0.2, 0.3);
+		pMaterial.diffuse.set(0, 0.05, 0.1);
 		pMaterial.specular.set(0.2);
 		pMaterial.shininess = 0.8;
 
@@ -1936,7 +1936,7 @@ module akra {
 		//(<dat.NumberControllerSlider>pFogFolder.add(pFogData, 'fDensity')).min(0.).max(1.).step(0.01).name("density").__precision = 2;
 
 		(<fx.Composer>pEngine.getComposer()).cGlobalDensity = 0.00017;
-		(<fx.Composer>pEngine.getComposer()).cHeightFalloff = 0.037;
+		(<fx.Composer>pEngine.getComposer()).cHeightFalloff = 0.042;
 
 		(<IShadedViewport>pViewport).getEffect().addComponent("akra.system.lensflare");
 
@@ -1949,7 +1949,7 @@ module akra {
 
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pCamera: ICamera = pViewport.getCamera();
-			pPass.setUniform("fFixIntencity", 1);
+			pPass.setUniform("fFixIntencity", 1.);
 
 			//pPass.setUniform("FOG_EFFECT_COLOR", new math.Vec4(
 			//	pFogData.fColorR / 255, pFogData.fColorG / 255, pFogData.fColorB / 255, pFogData.fDensity));
@@ -1990,7 +1990,7 @@ module akra {
 			pPass.setForeign("PhysicalSpecG", 1/*Neumann*/);
 		});
 
-		(<webgl.WebGLCanvas>self.canvas).brightness(.8).saturate(.8).contrast(1.2);
+		//(<webgl.WebGLCanvas>self.canvas).brightness(.8).saturate(.8).contrast(1.2);
 	}
 
 	function main(pEngine: IEngine): void {
