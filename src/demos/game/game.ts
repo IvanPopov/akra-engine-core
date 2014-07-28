@@ -1540,10 +1540,10 @@ module akra {
 		var pControls: IGameControls = self.hero.controls;
 		var pTriggersData: Function[] = pTriggers.triggers;
 
-		if (pGamepad.buttons[EGamepadCodes.SELECT]) {
+		if (pGamepad.buttons[EGamepadCodes.SELECT].pressed) {
 			pStat.blocked = true;
 		}
-		if (pGamepad.buttons[EGamepadCodes.START]) {
+		if (pGamepad.buttons[EGamepadCodes.START].pressed) {
 			pStat.blocked = false;
 		}
 		if (pStat.blocked) {
@@ -1573,18 +1573,18 @@ module akra {
 		pControls.direct.y = fDirectY;
 		pControls.direct.x = fDirectX;
 
-		pControls.forward = !!pGamepad.buttons[EGamepadCodes.PAD_TOP];
-		pControls.back = !!pGamepad.buttons[EGamepadCodes.PAD_BOTTOM];
-		pControls.left = !!pGamepad.buttons[EGamepadCodes.PAD_LEFT];
-		pControls.right = !!pGamepad.buttons[EGamepadCodes.PAD_RIGHT];
+		pControls.forward = !!pGamepad.buttons[EGamepadCodes.PAD_TOP].pressed;
+		pControls.back = !!pGamepad.buttons[EGamepadCodes.PAD_BOTTOM].pressed;
+		pControls.left = !!pGamepad.buttons[EGamepadCodes.PAD_LEFT].pressed;
+		pControls.right = !!pGamepad.buttons[EGamepadCodes.PAD_RIGHT].pressed;
 
-		pControls.dodge = !!pGamepad.buttons[EGamepadCodes.FACE_1];
-		pControls.gun = !!pGamepad.buttons[EGamepadCodes.FACE_4];
-		pControls.harpoon = !!pGamepad.buttons[EGamepadCodes.FACE_3];
+		pControls.dodge = !!pGamepad.buttons[EGamepadCodes.FACE_1].pressed;
+		pControls.gun = !!pGamepad.buttons[EGamepadCodes.FACE_4].pressed;
+		pControls.harpoon = !!pGamepad.buttons[EGamepadCodes.FACE_3].pressed;
 
-		pControls.fire = pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER_BOTTOM];
+		pControls.fire = pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER_BOTTOM].value;
 
-		if (pGamepad.buttons[EGamepadCodes.LEFT_SHOULDER_BOTTOM] > 0.5) {
+		if (pGamepad.buttons[EGamepadCodes.LEFT_SHOULDER_BOTTOM].value > 0.5) {
 			if (iSWTimer == -1) {
 				iSWTimer = setTimeout(() => {
 					iSWTimer = -1;
@@ -1632,12 +1632,12 @@ module akra {
 	function isDefaultCamera(pViewport: IViewport, pKeymap: IKeyMap, pCamera: ICamera, pCharacterCamera: ICamera, pGamepad: Gamepad): boolean {
 
 		if (pKeymap.isKeyPress(EKeyCodes.N1) ||
-			(pGamepad && pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER])) {
+			(pGamepad && pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER].pressed)) {
 			pCharacterCamera.lookAt(self.hero.head.getWorldPosition());
 			pViewport.setCamera(pCharacterCamera);
 		}
 		else if (pKeymap.isKeyPress(EKeyCodes.N2) ||
-			(pGamepad && pGamepad.buttons[EGamepadCodes.LEFT_SHOULDER])) {
+			(pGamepad && pGamepad.buttons[EGamepadCodes.LEFT_SHOULDER].pressed)) {
 			pViewport.setCamera(pCamera);
 		}
 
