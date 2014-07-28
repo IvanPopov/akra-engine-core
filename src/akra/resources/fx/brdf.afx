@@ -98,7 +98,7 @@ float D_Blinn( float Roughness, float NoH )
     float m = Roughness * Roughness;
     float m2 = m * m;
     float n = 2. / m2 - 2.;
-    return (n+2.) / 2. * pow( saturate(NoH), n ); // 1 mad, 1 exp, 1 mul, 1 log
+    return (n+2.) / 2. * pow( max(saturate(NoH),0.00001), n ); // 1 mad, 1 exp, 1 mul, 1 log
 }
 
 // [Beckmann 1963, "The scattering of electromagnetic waves from rough surfaces"]
@@ -107,7 +107,7 @@ float D_Beckmann( float Roughness, float NoH )
     float m = Roughness * Roughness;
     float m2 = m * m;
     float NoH2 = NoH * NoH;
-    return exp( (NoH2 - 1.) / (m2 * NoH2) ) / ( m2 * NoH2 * NoH2 );
+    return exp( (NoH2 - 1.) / max(m2 * NoH2, 0.00001) ) / max( m2 * NoH2 * NoH2, 0.00001);
 }
 
 // GGX / Trowbridge-Reitz
