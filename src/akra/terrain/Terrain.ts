@@ -77,6 +77,8 @@ module akra.terrain {
 		protected _bMegaTextureCreated: boolean = false;
 		protected _sSurfaceTextures: string = "";
 
+		protected _pShadowMapTexture: ITexture = null;
+
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN) {
 			super(pScene, eType);
 			this._pEngine = pScene.getManager().getEngine();
@@ -252,6 +254,12 @@ module akra.terrain {
 			// convert the height map to
 			// data stored in local tables
 			this._buildHeightAndNormalTables(pMaps.height, pMaps.normal);
+
+			if (isDefAndNotNull(pMaps.shadow)) {
+				this._pShadowMapTexture = this.getScene().getManager().getEngine().getResourceManager().createTexture(".terrain-shadow-map-" + this.guid);
+				this._pShadowMapTexture.loadImages(pMaps.shadow);
+				pMaps.shadow.destroyResource();
+			}
 
 			pMaps.height.destroyResource();
 			pMaps.normal.destroyResource();
@@ -552,6 +560,7 @@ module akra.terrain {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setSamplerTexture("S_NORMAL_MAP", this._pNormalMapTexture);
+			pPass.setSamplerTexture("S_SHADOW_MAP", this._pShadowMapTexture);
 
 			if (config.terrain.useMegaTexture) {
 				if (this._bMegaTextureCreated && this._bShowMegaTexture) {

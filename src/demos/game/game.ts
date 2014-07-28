@@ -1751,17 +1751,19 @@ module akra {
 		var pBarrel: ISceneNode = createModelEntry(pScene, "BARREL");
 
 		pBarrel.scale(.75);
-		pBarrel.setPosition(new Vec3(-30., -40.23, -15.00));
-		pBarrel.setRotationByXYZAxis(-17. * math.RADIAN_RATIO, -8. * math.RADIAN_RATIO, -15. * math.RADIAN_RATIO);
+		pBarrel.setPosition(new Vec3(25, 3, -106));
+		pBarrel.setRotationByXYZAxis(0, 2.2, 0.75 / 6);
 
 		pBarrel.explore(disableShadow);
+		window["barrel"] = pBarrel;
 
 		var pTube: ISceneNode = createModelEntry(pScene, "TUBE");
 
 		pTube.scale(19.);
-		pTube.setRotationByXYZAxis(0. * math.RADIAN_RATIO, -55. * math.RADIAN_RATIO, 0.);
-		pTube.setPosition(new Vec3(-16., -52.17, -66.));
+		pTube.setRotationByXYZAxis(0.1/18*3.14, 0.5/18*3.14, 0);
+		pTube.setPosition(new Vec3(44, -15, -51.3));
 		pTube.explore(disableShadow);
+		window["tube"] = pTube;
 
 		var pTubeBetweenRocks: ISceneNode = createModelEntry(pScene, "TUBE_BETWEEN_ROCKS");
 
@@ -1769,6 +1771,17 @@ module akra {
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
 		pTubeBetweenRocks.setPosition(new Vec3(-55., -12.15, -82.00));
 		pTubeBetweenRocks.explore(disableShadow);
+
+		var pWindspot: ISceneNode = createModelEntry(pScene, "WINDSPOT");
+
+		pWindspot.scale(2.);
+		pWindspot.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
+		pWindspot.setPosition(new Vec3(4, 2, -120));
+		pWindspot.setRotationByXYZAxis(0, 0, 0.2 / 18 * 3.14);
+		pWindspot.explore(disableShadow);
+
+		window["windspot"] = pWindspot;
+
 		//pTubeBetweenRocks.explore((pEntity: IEntity) => {
 		//	if (scene.SceneModel.isModel(pEntity)) {
 		//		//debug.log((<ISceneModel>pEntity).getName(), "<<<");
