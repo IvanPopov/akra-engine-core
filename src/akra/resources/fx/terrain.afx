@@ -225,8 +225,10 @@ void fs_terrain(VS_OUT IN){
             pixelData.material.emissive = defaultMaterial.emissive; 
         }
         // color += 0.2;
-        color *= 2.5 * float4(tex2D(ptShadow, float2(IN.texcoord.x, IN.texcoord.y)).rgb, 1.);
-        pixelData.material.diffuse = color;
+        color *= 1.8 * float4(tex2D(ptShadow, float2(IN.texcoord.x, IN.texcoord.y)).rgb, 1.);
+        // pixelData.material.diffuse = color;
+        pixelData.material.diffuse = float4(0.);
+        pixelData.material.emissive = float4(color);
     }
     
     //pixelData.material.ambient = defaultMaterial.ambient;
