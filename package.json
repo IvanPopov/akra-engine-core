@@ -13,7 +13,6 @@
     "grunt-contrib-nodeunit": "~0.2.0",
     "grunt-contrib-uglify": "~0.2.7",
     "grunt-typescript": "~0.2.4",
-    "grunt-regarde": "~0.1.1",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-contrib-clean": "~0.5.0",
@@ -34,7 +33,7 @@
     "marked": "~0.3.1",
     "grunt-cli": "^0.1.13",
     "xmldom": "~0.1.19",
-    "node-native-zip": "~1.1.0",
+    "node-native-zip": "latest",
     "temporary": "0.0.8",
     "grunt-parallel": "~0.3.1"
   },

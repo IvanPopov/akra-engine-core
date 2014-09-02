@@ -146,6 +146,7 @@
     <Content Include="demos\game\content\pnotify\jquery.pnotify.default.icons.css" />
     <Content Include="demos\game\content\pnotify\jquery.pnotify.js" />
     <Content Include="demos\game\content\pnotify\jquery.pnotify.min.js" />
+    <Content Include="demos\game\dat.gui\dat.gui.min.js" />
     <Content Include="demos\game\data\models\can\images\can_diffuse_1024.png" />
     <Content Include="demos\game\data\models\can\images\can_normal_1024.png" />
     <Content Include="demos\game\data\models\can\images\can_specular_1024.png" />
@@ -167,6 +168,7 @@
     <Content Include="demos\game\demo.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="demos\game\preview.png" />
     <Content Include="demos\glass.png" />
     <Content Include="demos\light-shafts\dat.gui\dat.gui.min.js" />
     <Content Include="demos\light-shafts\data\models\rock\images\diffuse.dds" />

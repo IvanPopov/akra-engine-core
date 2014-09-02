@@ -59,7 +59,7 @@
               <texture texture="tubeB_specular_tga-sampler" texcoord="CHANNEL1"/>
             </specular>
             <shininess>
-              <float>.2</float>
+              <float>.4</float>
             </shininess>
             <reflective>
               <color>0 0 0 1</color>
@@ -149,7 +149,7 @@
               <texture texture="tubeA_specular_tga-sampler" texcoord="CHANNEL1"/>
             </specular>
             <shininess>
-              <float>.2</float>
+              <float>.4</float>
             </shininess>
             <reflective>
               <color>0 0 0 1</color>
@@ -239,7 +239,7 @@
               <texture texture="tech_specular_tga-sampler" texcoord="CHANNEL1"/>
             </specular>
             <shininess>
-              <float>.2</float>
+              <float>.4</float>
             </shininess>
             <reflective>
               <color>0 0 0 1</color>

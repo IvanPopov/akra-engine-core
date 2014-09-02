@@ -38,6 +38,7 @@ module akra {
 	export var pScene = pEngine.getScene();
 	export var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	export var pCamera: ICamera = null;
+	export var pDefaultCamera: ICamera = null;
 	export var pViewport: IViewport = null;
 	export var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	export var pSky: model.Sky = null;
@@ -47,13 +48,38 @@ module akra {
 	export var pEnvTexture = null;
 	export var pFresnelTexture: ITexture = null;
 
+	export var bFPSCameraControls: boolean = false;
+
+	export var pCameraParams = {
+		current: {
+			orbitRadius: 1.,
+			rotation: new math.Vec2(0., 0.)
+		},
+		target: {
+			orbitRadius: 50.,
+			rotation: new math.Vec2(0., 0.)
+		}
+	}
+	export var pCameraFPSParams = {
+		current: {
+			rotation: new math.Vec2(0., 0.),
+			velocity: new math.Vec3(),
+		},
+		target: {
+			rotation: new math.Vec2(0., 0.),
+			velocity: new math.Vec3(),
+			speed: 20
+		}
+	}
+
+
 	export var animateTimeOfDay = () => {
 		pSky.setTime(new Date().getTime() % 24000 / 500 - 24);
 		requestAnimationFrame(animateTimeOfDay);
 	}
 
 	function createCamera(): ICamera {
-		var pCamera: ICamera = pScene.createCamera();
+		var pCamera: ICamera = pDefaultCamera = pScene.createCamera();
 
 		pCamera.addPosition(Vec3.temp(-2.9563467216312262, 3.900536759964575, -15.853719720993343));
 		pCamera.setRotation(Quat4.temp(-0.0002096413471319314, 0.999332356829426, -0.005808150890586638, -0.03607023740685555));
@@ -64,44 +90,175 @@ module akra {
 		return pCamera;
 	}
 
+	function animateCamera(pCamera: ICamera): void {
+		pScene.beforeUpdate.connect(() => {
+			pCamera.update();
+			if(bFPSCameraControls) {
+				var newRot: IVec2 = math.Vec2.temp(pCameraFPSParams.current.rotation).add(math.Vec2.temp(pCameraFPSParams.target.rotation).subtract(pCameraFPSParams.current.rotation).scale(0.15));
+				var newVel: IVec3 = math.Vec3.temp(pCameraFPSParams.current.velocity).add(math.Vec3.temp(pCameraFPSParams.target.velocity).subtract(pCameraFPSParams.current.velocity).scale(0.03));
+
+				pCameraFPSParams.current.velocity.set(newVel);
+				pCameraFPSParams.current.rotation.set(newRot);
+				// pCamera.setPosition(newPos);
+				pCamera.setRotationByEulerAngles(-newRot.x,-newRot.y,0.);
+				pCamera.getLocalPosition().add( newVel.scale(pEngine.getElapsedTime()) );
+			}
+			else {
+				var newRot = math.Vec2.temp(pCameraParams.current.rotation).add(math.Vec2.temp(pCameraParams.target.rotation).subtract(pCameraParams.current.rotation).scale(0.15));
+				var newRad = pCameraParams.current.orbitRadius * (1. + (pCameraParams.target.orbitRadius - pCameraParams.current.orbitRadius) * 0.03);
+
+				pCameraParams.current.rotation.set(newRot);
+				pCameraParams.current.orbitRadius = newRad;
+				pCamera.setPosition(
+					newRad * -math.sin(newRot.x) * math.cos(newRot.y),
+					newRad * math.sin(newRot.y) + 1.2,
+					newRad * math.cos(newRot.x) * math.cos(newRot.y));
+				pCamera.lookAt(math.Vec3.temp(0, 1.2, 0));
+			}
+
+			pCamera.update();
+		});
+	}
+
 	function createKeymap(pCamera: ICamera): void {
 		var pKeymap: IKeyMap = control.createKeymap();
 		pKeymap.captureMouse((<any>pCanvas).getElement());
 		pKeymap.captureKeyboard(document);
+
+		pKeymap.bind("T", () => {
+			if (pGUI) {
+				for (var i = 0; i < pGUI.__controllers.length; i++) {
+					if (pGUI.__controllers[i].property === "fps_camera") {
+						pGUI.__controllers[i].__checkbox.click();
+						break;
+					}
+				}
+			}
+			else {
+				if(!bFPSCameraControls) {
+					pCameraFPSParams.current.rotation.set(pCameraParams.current.rotation);
+					pCameraFPSParams.target.rotation.set(pCameraFPSParams.current.rotation);
+				}
+				bFPSCameraControls = !bFPSCameraControls;
+			}
+		});
 
 		pScene.beforeUpdate.connect(() => {
 			if (pKeymap.isMousePress()) {
 				if (pKeymap.isMouseMoved()) {
 					var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-					pCamera.addRelRotationByXYZAxis(-(v2fMouseShift.y / pViewport.getActualHeight() * 10.0), 0., 0.);
-					pCamera.addRotationByXYZAxis(0., -(v2fMouseShift.x / pViewport.getActualWidth() * 10.0), 0.);
-
+					if(bFPSCameraControls) {
+						pCameraFPSParams.target.rotation.y = math.clamp(pCameraFPSParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 4., -1.2, 1.2);
+						pCameraFPSParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 4.;
+					}
+					else {
+						pCameraParams.target.rotation.y = math.clamp(pCameraParams.target.rotation.y + v2fMouseShift.y / pViewport.getActualHeight() * 3., -0.29, 0.34);
+						pCameraParams.target.rotation.x += v2fMouseShift.x / pViewport.getActualHeight() * 3.;
+					}
 					pKeymap.update();
 				}
 
 			}
-			var fSpeed: float = 0.1 * 10;
+			var fSpeed: float = pCameraFPSParams.target.speed;
+			pCameraFPSParams.target.velocity.set(0., 0., 0.);
 			if (pKeymap.isKeyPress(EKeyCodes.W)) {
-				pCamera.addRelPosition(0, 0, -fSpeed);
+				// pCamera.addRelPosition(0, 0, -fSpeed);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.velocity.add(pCamera.getTempVectorForward().scale(-fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.S)) {
-				pCamera.addRelPosition(0, 0, fSpeed);
+				// pCamera.addRelPosition(0, 0, fSpeed);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.velocity.add(pCamera.getTempVectorForward().scale(fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.A) || pKeymap.isKeyPress(EKeyCodes.LEFT)) {
-				pCamera.addRelPosition(-fSpeed, 0, 0);
+				// pCamera.addRelPosition(-fSpeed, 0, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.velocity.add(pCamera.getTempVectorRight().scale(fSpeed));
+				}
 			}
 			if (pKeymap.isKeyPress(EKeyCodes.D) || pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
-				pCamera.addRelPosition(fSpeed, 0, 0);
+				// pCamera.addRelPosition(fSpeed, 0, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.velocity.add(pCamera.getTempVectorRight().scale(-fSpeed));
+				}
 			}
-			if (pKeymap.isKeyPress(EKeyCodes.UP) || pKeymap.isKeyPress(EKeyCodes.Q)) {
-				pCamera.addRelPosition(0, fSpeed, 0);
+			if (pKeymap.isKeyPress(EKeyCodes.UP)) {
+				// pCamera.addRelPosition(0, fSpeed, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.velocity.add(pCamera.getTempVectorUp().scale(fSpeed));
+				}
 			}
-			if (pKeymap.isKeyPress(EKeyCodes.DOWN) || pKeymap.isKeyPress(EKeyCodes.E)) {
-				pCamera.addRelPosition(0, -fSpeed, 0);
+			if (pKeymap.isKeyPress(EKeyCodes.DOWN)) {
+				// pCamera.addRelPosition(0, -fSpeed, 0);
+				if(bFPSCameraControls) {
+					pCameraFPSParams.target.velocity.add(pCamera.getTempVectorUp().scale(-fSpeed));
+				}
+			}
+		});
+		(<ILPPViewport>pViewport).enableSupportForUserEvent(EUserEvents.MOUSEWHEEL);
+		pViewport.mousewheel.connect((pViewport, x: float, y: float, fDelta: float) => {
+			//console.log("mousewheel moved: ",x,y,fDelta);
+			if(!bFPSCameraControls) {
+				pCameraParams.target.orbitRadius = math.clamp(pCameraParams.target.orbitRadius - fDelta / pViewport.getActualHeight() * 10., 25., 50.);
 			}
 		});
 	}
+
+	function init_animated_camera() {
+		var pCamRoot = (<IScene3d>pScene).createNode();
+		pCamRoot.attachToParent(pScene.getRootNode());
+		pCamRoot.setPosition(0., -3., 0.).setLocalScale(math.Vec3.temp(6.));
+
+		var pCamCollada = <ICollada>pRmgr.getColladaPool().findResource("CAMERA_ANIM_DAE");
+		var pCamColladaRoot = pCamCollada.extractFullScene();
+		pCamColladaRoot.attachToParent(pCamRoot);
+
+		var pCamController: IAnimationController = pEngine.createAnimationController();
+		var pCamContainer = animation.createContainer(pCamCollada.extractAnimation(0));
+		pCamContainer.useLoop(true);
+		pCamController.addAnimation(pCamContainer);
+		pCamColladaRoot.addController(pCamController);
+		pCamController.play.emit(0);
+		
+
+		var pCamNode: ISceneNode = <ISceneNode>pCamColladaRoot.findEntity("node-CameraDummy");
+
+		//var pTestCube = addons.cube(pScene);
+		//pTestCube.setInheritance(ENodeInheritance.ALL);
+		//pTestCube.attachToParent(pCamNode);
+
+		var pAnimCamera = (<IScene3d>pScene).createCamera();
+		pAnimCamera.setInheritance(ENodeInheritance.ALL);
+		pAnimCamera.attachToParent(pCamNode);
+
+		pAnimCamera.addRelRotationByXYZAxis(0, Math.PI, 0);
+
+		akra["pAnimCamera"] = pAnimCamera;
+
+		pGUI.add({ activeCamera: 'default' }, 'activeCamera', [
+			'default',
+			'anim'
+		]).onChange((sName: string) => {
+			if (sName === 'anim') {
+				pCamera = pAnimCamera;
+				//pCamera.attachToParent(pCamNode);
+				//pCamera.setPosition(0., -1, 0.);
+				//pCamera.setRotationByXYZAxis(0., Math.PI, 0.);
+			}
+			else {
+				pCamera = pDefaultCamera;
+				//pCamera.attachToParent(pScene.getRootNode());
+			}
+
+			pViewport.setCamera(pCamera);
+		});
+	}
+
+	var pGUI;
 
 	var teapotMaterialKey: string;
 	var metalSphereMaterialKey: string;
@@ -115,7 +272,7 @@ module akra {
 	var pMetalSpheres: INode[] = new Array(totalSpheres);
 
 	function createViewport(): IViewport3D {
-		var pViewport: ILPPViewport = new render.DSViewport(pCamera);
+		var pViewport: ILPPViewport = new render.ForwardViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 		(<render.ForwardViewport>pViewport).setShadingModel(EShadingModel.PBS_SIMPLE);
@@ -124,7 +281,17 @@ module akra {
 			pCanvas.resize(window.innerWidth, window.innerHeight);
 		};
 
-		var pGUI = new dat.GUI();
+		pGUI = new dat.GUI();
+
+		pGUI.add({ fps_camera: bFPSCameraControls }, "fps_camera").onChange((bNewValue) => {
+			if(!bFPSCameraControls) {
+				pCameraFPSParams.current.rotation.set(pCameraParams.current.rotation);
+				pCameraFPSParams.target.rotation.set(pCameraFPSParams.current.rotation);
+				// pCameraFPSParams.current.position.set(pCamera.getWorldPosition());
+				// pCameraFPSParams.target.position.set(pCameraFPSParams.current.position);
+			}
+			bFPSCameraControls = bNewValue;
+		})
 
 		var pSkyboxTexturesKeys = [
 			'desert',
@@ -281,7 +448,7 @@ module akra {
 
 	var nd = pScene.createNode();
 	nd.attachToParent(pScene.getRootNode());
-	nd.setPosition(0., 0., 20.);
+	nd.setPosition(0., 0., 0.);
 	var lightDiffColorSpiral: color.Color = new Color(0.05, 0.05, 0.05, 1.0);
 	var orbitalAngSpeed: float = 0.001
 	var totalLightSources: uint = 20;
@@ -465,7 +632,12 @@ module akra {
 			pStatsDiv.innerHTML = pCanvas.getAverageFPS().toFixed(2) + " fps";
 		});
 
-		createKeymap(pCamera);
+		createKeymap(pDefaultCamera);
+
+		animateCamera(pDefaultCamera);
+
+		init_animated_camera();
+
 		pCamera.setFOV(Math.PI/4);
 
 		window.onresize = () => {

@@ -10,6 +10,7 @@ module akra {
 	export interface ITerrainMaps {
 		height: IImg;
 		normal: IImg;
+		shadow?: IImg;
 	}
 	
 	export interface ITerrainSampleData {

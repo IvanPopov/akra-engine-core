@@ -99,9 +99,16 @@ module akra.control {
 			if (!isNull(sID)) {
 				for (i = 0; i < this._pCollection.getLength(); ++i) {
 					if (this._pCollection.value(i).id == sID) {
+						if (this._pCollection.value(i).buttons.length === 0) {
+							return null;
+						}
 						return this._pCollection.value(i);
 					}
 				}
+			}
+
+			if (this._pCollection.value(i) && this._pCollection.value(i).buttons.length === 0) {
+				return null;
 			}
 
 			return this._pCollection.value(i);
