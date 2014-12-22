@@ -19,34 +19,54 @@ Official site - http://odserve.org
 
 You can see the demos from this repo here - http://dev.odserve.org/demos/
 
+### Getting started
+
+```bash
+npm install
+
+# build core and all modules (debug mode)
+grunt
+# or use: grunt --release 
+
+# build all demos (debug mode)
+grunt demo
+# or use: grunt demo --release
+# or build single demo: grunt demo:demo_name
+
+# show list of available demos: 
+grunt demo --list
+```
+
 ### Build
 
 Build all:
 
-```
+* Use <i>Debug</i> mode for building stand alone app.
+* Use <i>Release</i> mode for building optimized stand alone web-application.
+* Use <i>Dev</i> mode for building app in develop mode. 
+
+```bash
 grunt all
+#or use just: grunt
 ```
 
-Build core:
-
-```
-grunt build:core [--release | --debug | -dev] [--webgl-debug] [--pretty_print] 
-```
-
-Build addons:
-
-```
-grunt build:addon-{name}
+```bash
+# build core
+grunt build:core [--release | --debug | --dev] [--webgl-debug] [--pretty_print] 
 ```
 
-For example:
+```bash
+# build addons
+grunt build:addon-{name} [--release | --debug | --dev]
 
-```
-grunt build:addon-navigation [--release | --debug | -dev]
+# for example
+grunt build:addon-navigation [--release | --debug | --dev]
 ```
 
-Build demo:
+```bash
+# Build demo
+grunt demo:{name} [--release | --debug | --dev]
 
-```
-grunt demo:{name} [--release | --debug | -dev]
+# build all demos
+grunt demo [--release | --debug | --dev]
 ```
