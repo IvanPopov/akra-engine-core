@@ -13,7 +13,22 @@ Official site - http://odserve.org
 ----
 <i>Akra Engine features / WebGL Game Engine</i>
  
-[![Alt text for your video](http://img.youtube.com/vi/ATKItjpDC7I/0.jpg)](http://youtu.be/ATKItjpDC7I)
+[![Akra Engine features / WebGL Game Engine](http://img.youtube.com/vi/ATKItjpDC7I/0.jpg)](http://youtu.be/ATKItjpDC7I)
+
+Features list:
+
+* Physically based shading, 
+* Cascade shadow maps
+* Real-time reflections
+* Precomputed skinned animation
+* Deferred/forward/light-prepass rendering support
+* Forward shading
+* GLSL/HLSL compatible shader language
+* Megatexture support
+* Real-time texture streaming
+
+See more information [here](http://odserve.org/en/technology).
+
 
 ### Demos
 
