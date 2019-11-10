@@ -27,7 +27,7 @@
     "wrench": "latest",
     "semver": "latest",
     "shelljs": "latest",
-    "uglify-js": "~2.4.12",
+    "uglify-js": "~3.6.8",
     "jade": "~1.2.0",
     "node-markdown": "~0.1.1",
     "marked": "~0.3.1",
