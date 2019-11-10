@@ -24,7 +24,7 @@
     "grunt-tslint": "~0.3.2",
     "grunt-typescript": "~0.2.4",
     "jade": "~1.2.0",
-    "marked": "~0.3.1",
+    "marked": "~0.3.18",
     "node-markdown": "~0.1.1",
     "node-native-zip": "latest",
     "node-zip": "~1.0.1",
