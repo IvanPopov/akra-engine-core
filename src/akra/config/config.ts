@@ -25,7 +25,7 @@ module akra.config {
 	/** 
 	 * Display debugging information while parsing effects. 
 	 */
-	export const AFX_DEBUG_PARSER: boolean = false;
+	export const AFX_DEBUG_PARSER: boolean = true;
 
 	/**
 	 * If there is support for loading effects in text form, is TRUE.
