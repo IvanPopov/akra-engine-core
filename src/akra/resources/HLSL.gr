@@ -15,6 +15,7 @@ Decl : ImportDecl
 Decl : ProvideDecl
 Decl : IncludeDecl
 
+# todo: fix problemds with missing ';'
 IncludeDecl : T_KW_INCLUDE String --AN --F includeCode
 
 ImportDecl : T_KW_IMPORT ComplexNameOpt ShiftOpt ExtOpt
@@ -108,6 +109,14 @@ ObjectType : T_KW_STATEBLOCK
 ObjectType : T_KW_VIDEOBUFFER
 ObjectType : T_KW_PTR
 
+# struct Name
+# {
+#     [InterpolationModifier] Type[RxC] MemberName;
+#     ...
+# };
+# 
+# https://msdn.microsoft.com/ru-ru/library/windows/desktop/bb509668(v=vs.85).aspx
+
 Struct : T_KW_STRUCT StructBegin StructEnd --AN
 Struct : T_KW_STRUCT StructBegin StructDecls StructEnd
 StructDecl : T_KW_STRUCT Id StructBegin StructEnd --AN
@@ -150,6 +159,15 @@ InitializerOpt : Initializer
 AddressOpt :
 AddressOpt : FromExpr
 
+# [Storage_Class] [Type_Modifier] Type Name[Index]
+#    [: Semantic]
+#    [: Packoffset]
+#    [: Register];
+#    [Annotations]
+#    [= Initial_Value]
+#
+# https://msdn.microsoft.com/ru-ru/library/windows/desktop/bb509706(v=vs.85).aspx
+
 VariableDecl : UsageType Variables ';' --AN
 VarStructDecl : UsageStructDecl Variables ';' --AN
 Variables : Variable --NN
@@ -158,6 +176,14 @@ Variable : VariableDim SemanticsOpt AnnotationOpt InitializerOpt --AN
 VariableDim : Id --AN
 VariableDim : VariableDim '[' ConstantExpr ']'
 VariableDim : VariableDim '[' ']' AddressOpt
+
+
+# [StorageClass] [clipplanes()] [precise] Return_Value Name ( [ArgumentList] ) [: Semantic]
+# {
+#   [StatementBlock]
+# };
+# 
+# https://msdn.microsoft.com/ru-ru/library/windows/desktop/bb509607(v=vs.85).aspx
 
 FunctionDecl : FunctionDef ';' --AN
 FunctionDecl : FunctionDef AnnotationOpt StmtBlock
@@ -168,6 +194,11 @@ ParamList : ParamListBegin T_KW_VOID ParamListEnd
 ParamList : ParamListBegin ParameterDecls ParamListEnd
 ParamListBegin : '('
 ParamListEnd : ')'
+
+
+# [InputModifier] Type Name [: Semantic] [InterpolationModifier] [= Initializers]
+# 
+# https://msdn.microsoft.com/ru-ru/library/windows/desktop/bb509606(v=vs.85).aspx
 
 ParameterDecls : ParameterDecl --NN
 ParameterDecls : ParameterDecls ',' ParameterDecl
